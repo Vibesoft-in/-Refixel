@@ -28,11 +28,11 @@
     color: #fff;
     font-size: 15px;
     margin: 0;
-    background: #0f6e56;
+    background: #012245;
     padding: 8px 15px 8px 15px;
     border-radius: 9px;
     cursor: pointer;
-    border: solid 1px #0f6e56;
+    border: solid 1px #012245;
 }
 
 /** NEW DESIGN **/
@@ -128,7 +128,7 @@
 }
 .right_name_two h6 {
     font-size: 10px;
-    color: #0f6e56;
+    color: #012245;
     font-weight: 600;
     margin: 0 0 2px 0;
 }
@@ -345,7 +345,7 @@
 }
 .saved_ribbon p {
     font-size: 13px;
-    color: #0f6e56;
+    color: #012245;
     margin: 0 0 0 0;
     text-align: center;
     font-weight: 600;
@@ -462,7 +462,7 @@
     font-size: 15px;
 }
 .slider_tt_lft h6 strong {
-    color: #0f6e56;
+    color: #012245;
     font-weight: 500;
     margin: 0 0 0 2px;
     font-size: 14px;
@@ -484,11 +484,11 @@
     font-weight: 600;
     margin: 10px 0 0px;
     text-decoration: none;
-    color: #0f6e56;
+    color: #012245;
     border-radius: 5px;
     align-items: center;
     width: 114px;
-    border: solid 1px #0f6e56;
+    border: solid 1px #012245;
     justify-content: center;
     padding: 4px 0 4px 0px;
 }
@@ -511,7 +511,7 @@
     margin-top: 0px;
 }
 .slider_tt_rgt button {
-    background: #0f6e56;
+    background: #012245;
     padding: 8px 10px 8px 8px;
     border-radius: 8px;
     border: solid 1px #095a46;
@@ -671,7 +671,7 @@ ul.slick-dots {
     text-decoration: none;
     color: #fff;
     float: right;
-    background: #0f6e56;
+    background: #012245;
     font-size: 16px;
     padding: 10px 15px 10px 15px;
     border-radius: 25px;
@@ -714,7 +714,7 @@ ul.slick-dots {
 }
 
 .payble_amount #advanceBtn {
-    background: #0f6e56;
+    background: #012245;
     border: none;
     width: 100%;
     padding: 0 0;
@@ -742,7 +742,7 @@ ul.slick-dots {
 .cp-secure svg {
     width: 13px;
     height: 13px;
-    color: #0f6e56;
+    color: #012245;
 }
 .cp-secure img {
     width: 105px;
@@ -926,7 +926,7 @@ ul.slick-dots {
 .ct-header-badge {
     background: #e1f5ee;
     font-size: 13px;
-    color: #0f6e56;
+    color: #012245;
     padding: 3px 7px 3px 7px;
     border-radius: 4px;
 	font-weight:500;
@@ -981,7 +981,7 @@ ul.slick-dots {
 .mb-stat-num {
     font-size: 24px;
     font-weight: 700;
-    color: #0F6E56;
+    color: #012245;
     letter-spacing: -0.02em;
     line-height: 1;
     margin-bottom: 4px;
@@ -1018,8 +1018,8 @@ ul.slick-dots {
     white-space: nowrap;
 }
 .mb-ftab.active {
-    background: #0f6e56;
-    border-color: #0f6e56;
+    background: #012245;
+    border-color: #012245;
     color: #fff;
 }
 .mb-empty {
@@ -1039,7 +1039,7 @@ ul.slick-dots {
 .mb-empty-icon svg {
     width: 32px;
     height: 32px;
-    color: #0f6e56;
+    color: #012245;
 }
 .mb-empty h3 {
     font-size: 17px;
@@ -1055,7 +1055,7 @@ ul.slick-dots {
 .mb-empty-cta {
     display: inline-block;
     padding: 12px 28px;
-    background: #0f6e56;
+    background: #012245;
     color: #fff !important;
     border-radius: 12px;
     font-weight: 600;
@@ -1143,7 +1143,7 @@ ul.slick-dots {
     line-height: 38px;
     text-decoration: none;
     font-size: 14px;
-    background: #0f6e56;
+    background: #012245;
 }
 
 
@@ -1274,7 +1274,7 @@ ul.slick-dots {
 .cart_products p {
     font-size: 12px;
     margin: 0 0 10px 0;
-    color: #0f6e56;
+    color: #012245;
     background: #e1f5ee;
     display: inline-block;
     padding: 2px 10px 3px 10px;
@@ -1288,9 +1288,9 @@ ul.slick-dots {
     height: 26px;
     text-align: center;
     line-height: 24px;
-    border: solid 1px #0f6e56;
+    border: solid 1px #012245;
     border-radius: 5px;
-    color: #0f6e56;
+    color: #012245;
     cursor: pointer;
     font-size: 14px;
     margin: 0 0 20px 0;
@@ -1298,7 +1298,7 @@ ul.slick-dots {
 .carprd_price h4 {
     font-size: 18px;
     font-weight: 600;
-    color: #0f6e56;
+    color: #012245;
     margin: 0 0 0 0;
 }
 .carprd_price p {
@@ -1335,7 +1335,7 @@ ul.slick-dots {
 .add_services {
     width: 49%;
     height: 48px;
-    background: #0f6e56;
+    background: #012245;
     border: none;
     border-radius: 35px;
     color: #fff !important;
@@ -1736,7 +1736,7 @@ button.continue_btn {
 }
 .summary_items p span{}
 .summary_items p span del {
-    color: #0f6e56;
+    color: #012245;
 }
 
 .summary_items h4 {
@@ -1756,7 +1756,7 @@ button.continue_btn {
 	color: #7a9490;
 }
 .summary_items h4 span del {
-    color: #0f6e56;
+    color: #012245;
 }
 .summary_items h5 {
     color: #344d46;
@@ -1784,7 +1784,7 @@ button.continue_btn {
     border-radius: 5px;
 }
 .summary_items h2 span {
-    color: #0f6e56;
+    color: #012245;
     font-size: 16px;
     font-weight: 700;
     letter-spacing: 0;
@@ -1799,7 +1799,7 @@ button.continue_btn {
     padding: 15px 15px;
 }
 .summary_items h6 span del {
-    color: #0f6e56;
+    color: #012245;
 }
 .cp-savings {
     margin: 0 0px 10px;
@@ -1808,7 +1808,7 @@ button.continue_btn {
     padding: 8px 6px;
     text-align: center;
     font-size: 12.5px;
-    color: #0f6e56;
+    color: #012245;
     font-weight: 600;
 }
 .cancellation {
@@ -1866,8 +1866,8 @@ button.continue_btn {
     width: 95%;
 }
 .editAddressBtn {
-    border: solid 1px #0f6e56;
-    background: #0f6e56;
+    border: solid 1px #012245;
+    background: #012245;
     font-size: 15px;
     color: #ffffff;
     width: 50px;
@@ -1928,14 +1928,14 @@ button.continue_btn {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #0f6e56 !important;
+    color: #012245 !important;
     text-decoration: none !important;
     font-weight: 500;
     width: 100%;
     padding: 10px 0 10px 0;
     border-radius: 10px;
     margin: 15px 0 15px 0;
-    border: dashed 1px #0f6e56;
+    border: dashed 1px #012245;
 }
 .more_input_field p {
     margin: 0 0 0 0;
@@ -1979,12 +1979,12 @@ button.continue_btn {
     transition: all 250ms ease;
 }
 .saved_address .radio input[type=radio]:checked + .radio-label:before {
-  background-color: #0f6e56;
+  background-color: #012245;
   box-shadow: inset 0 0 0 4px #f4f4f4;
 }
 .saved_address .radio input[type=radio]:focus + .radio-label:before {
   outline: none;
-  border-color: #0f6e56;
+  border-color: #012245;
 }
 .saved_address .radio input[type=radio]:disabled + .radio-label:before {
   box-shadow: inset 0 0 0 4px #f4f4f4;
@@ -2130,7 +2130,7 @@ button.continue_btn {
     background: #e1f5ee;
     text-align: center;
     line-height: 35px;
-    color: #0f6e56;
+    color: #012245;
     border-radius: 6px;
     margin: 1px 10px 0 0;
     font-size: 18px;
@@ -2189,8 +2189,8 @@ button.continue_btn {
 }
 
 .date_slote ul li input[type="radio"]:checked + label {
-    border: solid 1px #0f6e56;
-    color: #0f6e56;
+    border: solid 1px #012245;
+    color: #012245;
     background: #f1fff7;
 }
 
@@ -2214,7 +2214,7 @@ button.continue_btn {
     background: #e1f5ee;
     text-align: center;
     line-height: 35px;
-    color: #0f6e56;
+    color: #012245;
     border-radius: 6px;
     margin: 1px 10px 0 0;
     font-size: 18px;
@@ -2263,8 +2263,8 @@ button.continue_btn {
 }
 
 .times_slote ul li input[type="radio"]:checked + label {
-    border: solid 1px #0f6e56;
-    color: #0f6e56;
+    border: solid 1px #012245;
+    color: #012245;
     background: #f1fff7;
 }
 
@@ -2293,7 +2293,7 @@ button.continue_btn {
     color: #777;
     font-size: 13px;
 }
-.secure_mdrs i{ color:#0f6e56;}
+.secure_mdrs i{ color:#012245;}
 
 .close_btn_slots{
 	display: inline-block;
@@ -2391,7 +2391,7 @@ button.continue_btn {
     display: inline-block;
     width: 4px;
     height: 16px;
-    background: #0f6e56;
+    background: #012245;
     border-radius: 2px;
     position: relative;
     top: 2px;
@@ -2752,13 +2752,13 @@ button.continue_btn {
 .slider_tt_lft h6 del{ font-size: 13px;}
 .slider_tt_lft ul{ display:none;}
 .slider_tt_lft a{ font-size: 12px; padding: 3px 0 3px 0px; width: 112px; border-radius: 5px;}
-.slider_tt_rgt button{ margin: -15px auto 0; background: #0f6e56;
-        border: solid 1px #0f6e56;}
+.slider_tt_rgt button{ margin: -15px auto 0; background: #012245;
+        border: solid 1px #012245;}
 .details_footer ul li img { margin: 4px 7px 0 0;}		
 .details_footer ul li{ font-size: 15px; align-items: flex-start; justify-content: start; line-height: 25px; padding: 0 0 10px 0;}
 .serhead_titl p{ font-size: 13px;}
-.view_my_cartprice { position: fixed; bottom: 70px; width: 91%; padding: 10px 15px; left: 50%; background: #ffffff; transform: translate(-50%, 0px); border-radius: 28px; box-shadow: #0f6e56 0 0 3px; border: none;}
-.view_my_cartprice h4 a{ background: #0f6e56; padding: 10px 15px; font-size: 15px;} 
+.view_my_cartprice { position: fixed; bottom: 70px; width: 91%; padding: 10px 15px; left: 50%; background: #ffffff; transform: translate(-50%, 0px); border-radius: 28px; box-shadow: #012245 0 0 3px; border: none;}
+.view_my_cartprice h4 a{ background: #012245; padding: 10px 15px; font-size: 15px;} 
 .view_my_cartprice h4{ color: #263339; font-size: 16px;} 
 .view_my_cartprice h4 strong p{ color: #676767;}
 .footer_main{ display:none;}
@@ -2807,7 +2807,7 @@ border-top: solid 1px #ddd; background: #fff}
 .promowidget_one a{ top: 60%;}
 .back_to_page{ width:100%;}
 .saved_address .radio label p{ white-space: normal; overflow: auto; text-overflow: ellipsis; width: 84%; padding: 0 15px 0 32px; font-size: 14px;}
-.editAddressBtn{border: solid 1px #0f6e56; background: #0f6e56;}
+.editAddressBtn{border: solid 1px #012245; background: #012245;}
 .our_cart ul li:hover .account_dropdown{ display:none;}
 .more_input_field{ font-size: 13px;}
 .summary_items p{ font-size: 14px;}
@@ -2853,7 +2853,7 @@ border-top: solid 1px #ddd; background: #fff}
 .slider_tt_lft a{ font-size: 12px; padding: 3px 0 3px 0px; width: 112px; border-radius: 5px;}
 .details_footer ul li{ font-size: 13px;}
 .serhead_titl p{ font-size: 13px;}
-.view_my_cartprice { position: fixed; bottom: 15px; width: 85%; padding: 10px 15px; left: 50%; background: #0f6e56; transform: translate(-50%, 0px);
+.view_my_cartprice { position: fixed; bottom: 15px; width: 85%; padding: 10px 15px; left: 50%; background: #012245; transform: translate(-50%, 0px);
  border-radius: 15px;}
 .view_my_cartprice h4 a{ background: #263339; padding: 10px 15px; font-size: 15px;} 
 .view_my_cartprice h4{ color: #ffffff; font-size: 16px;} 
