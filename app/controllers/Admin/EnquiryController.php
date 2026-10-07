@@ -37,7 +37,7 @@ class EnquiryController extends Controller
         ];
 
         return $this->render('admin.enquiries.index', [
-            'title'     => 'Customer Enquiries | Primodomus Admin',
+            'title'     => 'Customer Enquiries | REFIXEL Admin',
             'enquiries' => $enquiries,
             'status'    => $status,
             'counts'    => $counts,
@@ -63,7 +63,7 @@ class EnquiryController extends Controller
         $attachments = Database::fetchAll("SELECT * FROM booking_attachments WHERE booking_id = :bid", ['bid' => $id]);
 
         return $this->render('admin.enquiries.show', [
-            'title'        => "Enquiry #{$booking['booking_no']} | Primodomus Admin",
+            'title'        => "Enquiry #{$booking['booking_no']} | REFIXEL Admin",
             'booking'      => $booking,
             'staffMembers' => $staffMembers,
             'attachments'  => $attachments,
@@ -97,3 +97,4 @@ class EnquiryController extends Controller
         return $this->redirect('/admin/enquiries/' . $id);
     }
 }
+

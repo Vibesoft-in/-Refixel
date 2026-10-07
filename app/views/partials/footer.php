@@ -40,7 +40,7 @@
   transform: translateY(0);
 }
 </style>
-<div id="footer" class="footer_main" style="background: #0a1c33; color: #cbd5e1; padding: 60px 0 30px 0; position: relative; z-index: 10;">
+<div id="footer" class="footer_main" style="background: #0a1c33; color: #cbd5e1; padding: 24px 0 30px 0; position: relative; z-index: 10;">
   <div class="container">
     <div class="row">
       <!-- Col 1: Brand & Social -->
@@ -124,7 +124,7 @@
             </li>
             <li class="d-flex" style="gap: 10px;">
               <i class="fa fa-phone text-refixel-orange mt-1"></i>
-              <a href="tel:+919458182006" class="footer-nav-link" style="color: #cbd5e1; text-decoration: none;">+91 94581 82006</a>
+              <a href="tel:+918791154730" class="footer-nav-link" style="color: #cbd5e1; text-decoration: none;">+91 87911 54730</a>
             </li>
           </ul>
         </div>

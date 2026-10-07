@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Primodomus Cron: Retry Failed Notifications
+ * REFIXEL Cron: Retry Failed Notifications
  * Identifies notifications that failed during network glitches or provider downtimes and retries dispatch.
  * Usage: php cron/retry_failed_notifications.php
  */
@@ -57,3 +57,4 @@ foreach ($failedNotifications as $n) {
 }
 
 echo "[CRON] Retry sweep completed. Processed: {$retried}, Recovered: {$recovered}\n";
+

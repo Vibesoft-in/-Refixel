@@ -24,22 +24,23 @@ ob_start();
     letter-spacing: 0.3px;
   }
   .soft-btn-primary {
-    background-color: #0f6e56;
+    background-color: #f25b29;
     color: #ffffff;
     border: none;
   }
   .soft-btn-primary:hover {
-    background-color: #0b5341;
+    background-color: #db4918;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 110, 86, 0.2);
+    box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);
   }
   .soft-btn-outline {
     background-color: transparent;
-    color: #0f6e56;
-    border: 1px solid #0f6e56;
+    color: #f25b29;
+    border: 1px solid #ffdacf;
   }
   .soft-btn-outline:hover {
-    background-color: #f0f7f5;
+    background-color: #fff3ec;
+    border-color: #f25b29;
   }
   .dash-heading {
     font-weight: 600;
@@ -68,10 +69,10 @@ ob_start();
     background-color: #f1f5f9;
   }
   .glass-banner {
-    background: rgba(239, 250, 246, 0.6);
+    background: rgba(255, 243, 236, 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(15, 110, 86, 0.1) !important;
+    border: 1px solid rgba(242, 91, 41, 0.15) !important;
   }
   .glass-blob {
     position: absolute;
@@ -81,10 +82,10 @@ ob_start();
     opacity: 0.4;
   }
   .glass-blob.top-right {
-    top: -30px; right: 10%; width: 120px; height: 120px; background: #0f6e56;
+    top: -30px; right: 10%; width: 120px; height: 120px; background: #f25b29;
   }
   .glass-blob.bottom-right {
-    bottom: -30px; right: -20px; width: 100px; height: 100px; background: #34d399;
+    bottom: -30px; right: -20px; width: 100px; height: 100px; background: #fb923c;
   }
   .badge-soft {
     border-radius: 6px;
@@ -92,7 +93,7 @@ ob_start();
     padding: 6px 12px;
     font-size: 12px;
   }
-  .badge-soft-success { background: #dcfce7; color: #166534; }
+  .badge-soft-success { background: #fff3ec; color: #f25b29; border: 1px solid #ffdacf; }
   .badge-soft-warning { background: #fef3c7; color: #92400e; }
   .badge-soft-info { background: #e0f2fe; color: #075985; }
   .badge-soft-danger { background: #fee2e2; color: #991b1b; }
@@ -102,7 +103,7 @@ ob_start();
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px; font-weight: 500;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#0f6e56; text-decoration: none;">Home</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29; text-decoration: none;">Home</a></li>
       <li class="breadcrumb-item active text-muted" aria-current="page">My Account</li>
     </ol>
   </nav>

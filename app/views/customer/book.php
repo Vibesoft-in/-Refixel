@@ -8,8 +8,8 @@ $selectedServiceId = $service['id'] ?? 0;
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#0f6e56;">Home</a></li>
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#0f6e56;">Services</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#f25b29;">Services</a></li>
       <li class="breadcrumb-item active" aria-current="page">Schedule Booking</li>
     </ol>
   </nav>
@@ -34,7 +34,7 @@ $selectedServiceId = $service['id'] ?? 0;
                   <h6 class="font-weight-bold mb-0"><?= \App\Core\View::e($service['name']) ?></h6>
                   <small class="text-muted">Estimated duration: ~<?= (int)($service['duration_minutes'] ?? 60) ?> mins</small>
                 </div>
-                <h5 class="font-weight-bold mb-0" style="color: #0f6e56;">₹<?= number_format((float)$service['starting_price'], 0) ?></h5>
+                <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$service['starting_price'], 0) ?></h5>
               </div>
             <?php else: ?>
               <select name="service_id" id="serviceIdSelect" class="form-control" required>
@@ -49,7 +49,7 @@ $selectedServiceId = $service['id'] ?? 0;
           </div>
 
           <!-- Contact Details -->
-          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0f6e56;">1. Contact Details</h5>
+          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">1. Contact Details</h5>
           <div class="form-row">
             <div class="col-md-6 form-group">
               <label class="font-weight-bold small">Full Name <span class="text-danger">*</span></label>
@@ -69,7 +69,7 @@ $selectedServiceId = $service['id'] ?? 0;
           </div>
 
           <!-- Address & City -->
-          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0f6e56;">2. Service Address</h5>
+          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">2. Service Address</h5>
           
           <div class="form-group mb-3">
             <label class="font-weight-bold small d-block mb-2">Address Type</label>
@@ -118,7 +118,7 @@ $selectedServiceId = $service['id'] ?? 0;
           </div>
 
           <!-- Preferred Slot -->
-          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0f6e56;">3. Preferred Schedule</h5>
+          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">3. Preferred Schedule</h5>
           <div class="form-row">
             <div class="col-md-6 form-group">
               <label class="font-weight-bold small">Date <span class="text-danger">*</span></label>
@@ -141,7 +141,7 @@ $selectedServiceId = $service['id'] ?? 0;
             <textarea name="issue_details" rows="2" class="form-control" placeholder="e.g. Please bring extra tile descaler, parking available in basement"></textarea>
           </div>
 
-          <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#0f6e56; border-radius: 8px; font-size: 16px;">
+          <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
             Confirm & Schedule Booking &rarr;
           </button>
         </form>
@@ -150,8 +150,8 @@ $selectedServiceId = $service['id'] ?? 0;
 
     <!-- Booking Summary Sticky Card -->
     <div class="col-lg-4">
-      <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#f7fbf9; border:1px solid #dcece7;">
-        <h4 class="font-weight-bold mb-3" style="font-size: 20px;">Booking Summary</h4>
+      <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#fff8f5; border:1px solid #ffdacf;">
+        <h4 class="font-weight-bold mb-3" style="font-size: 20px; color: #0a1c33;">Booking Summary</h4>
 
         <div class="d-flex justify-content-between mb-2 small text-muted">
           <span>Service Base Fee:</span>
@@ -159,7 +159,7 @@ $selectedServiceId = $service['id'] ?? 0;
         </div>
         <div class="d-flex justify-content-between mb-2 small text-muted">
           <span>Safety & Hygiene Gear:</span>
-          <span class="text-success font-weight-bold">FREE</span>
+          <span class="font-weight-bold" style="color: #f25b29;">FREE</span>
         </div>
         <div class="d-flex justify-content-between mb-2 small text-muted">
           <span>Taxes & GST (18%):</span>
@@ -168,12 +168,12 @@ $selectedServiceId = $service['id'] ?? 0;
         <hr>
         <div class="d-flex justify-content-between align-items-baseline mb-4">
           <span class="font-weight-bold">Estimated Total:</span>
-          <h3 class="font-weight-bold mb-0" style="color: #0f6e56;" id="summaryTotal">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></h3>
+          <h3 class="font-weight-bold mb-0" style="color: #f25b29;" id="summaryTotal">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></h3>
         </div>
 
         <div class="p-3 rounded bg-white border mb-3 small" style="line-height: 1.8;">
-          <div class="d-flex align-items-center mb-1 text-success font-weight-bold">
-            <i class="fa fa-shield mr-2"></i> Primodomus Promise
+          <div class="d-flex align-items-center mb-1 font-weight-bold" style="color: #f25b29;">
+            <i class="fa fa-shield mr-2"></i> REFIXEL Promise
           </div>
           <p class="text-muted mb-0">Pay securely after completion. No advance required. Full 24-hour re-clean guarantee on all packages.</p>
         </div>

@@ -24,7 +24,7 @@ class BookingController extends Controller
         $allServices = Service::getActive();
 
         return $this->render('customer.book', [
-            'title'       => 'Schedule Doorstep Service | Primodomus',
+            'title'       => 'Schedule Doorstep Service | REFIXEL',
             'description' => 'Book verified home and office maintenance services with transparent starting prices and 24-hour guarantee.',
             'service'     => $service,
             'allServices' => $allServices,
@@ -36,7 +36,7 @@ class BookingController extends Controller
         $cart = Cart::getDetails();
 
         return $this->render('customer.cart', [
-            'title'       => 'Your Service Cart | Primodomus',
+            'title'       => 'Your Service Cart | REFIXEL',
             'description' => 'Review selected home cleaning and repair packages, calculate prices, and schedule your doorstep visit.',
             'cart'        => $cart,
         ], 'customer');
@@ -291,9 +291,10 @@ class BookingController extends Controller
         $bookingNo = (string)$request->query('booking_no', '');
 
         return $this->render('customer.book-success', [
-            'title'       => 'Booking Confirmed | Primodomus',
-            'description' => 'Your doorstep service booking has been confirmed with Primodomus.',
+            'title'       => 'Booking Confirmed | REFIXEL',
+            'description' => 'Your doorstep service booking has been confirmed with REFIXEL.',
             'booking_no'  => $bookingNo,
         ], 'customer');
     }
 }
+

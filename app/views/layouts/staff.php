@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title><?= \App\Core\View::e($title ?? 'Technician Portal | Primodomus') ?></title>
+  <title><?= \App\Core\View::e($title ?? 'Technician Portal | REFIXEL') ?></title>
   <link href="<?= \App\Core\View::asset('img/favicon.png') ?>" rel="shortcut icon" type="image/x-icon" />
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <style>
     :root {
-      --primary: #0f6e56;
-      --primary-dark: #0b5240;
-      --primary-light: #e6f4f1;
+      --primary: #f25b29;
+      --primary-dark: #d44d20;
+      --primary-light: #fff3ef;
       --accent: #e59819;
-      --dark: #1b2e28;
-      --gray-bg: #f8faf9;
-      --card-border: #e2ece7;
+      --dark: #1e1a18;
+      --gray-bg: #f9f8f7;
+      --card-border: #f0e8e4;
     }
     body {
       font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -165,8 +165,8 @@
   ?>
   <div class="staff-header">
     <a href="<?= \App\Core\View::url('/staff') ?>" class="brand-title">
-      <img src="<?= \App\Core\View::asset('img/favicon.png') ?>" alt="Primodomus" style="height: 22px;">
-      <span>Primodomus Field Ops</span>
+      <img src="<?= \App\Core\View::asset('img/favicon.png') ?>" alt="REFIXEL" style="height: 22px;">
+      <span>REFIXEL Field Ops</span>
     </a>
     <div class="d-flex align-items-center">
       <span class="user-badge mr-2">
@@ -206,3 +206,4 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

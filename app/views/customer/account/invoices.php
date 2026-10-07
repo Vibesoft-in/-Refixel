@@ -25,12 +25,12 @@
             <tr>
               <td class="font-weight-500 text-dark"><?= \App\Core\View::e($inv['invoice_no']) ?></td>
               <td>
-                <a href="<?= \App\Core\View::url('/account/bookings/' . (int)$inv['booking_id']) ?>" class="font-weight-500 text-decoration-none" style="color:#0f6e56;">
+                <a href="<?= \App\Core\View::url('/account/bookings/' . (int)$inv['booking_id']) ?>" class="font-weight-500 text-decoration-none" style="color:#f25b29;">
                   #<?= \App\Core\View::e($inv['booking_no'] ?? 'N/A') ?>
                 </a>
               </td>
               <td class="text-muted"><?= \App\Core\View::e(substr((string)$inv['issued_at'], 0, 10)) ?></td>
-              <td class="font-weight-500" style="color: #0f6e56;">₹<?= number_format((float)$inv['total'], 2) ?></td>
+              <td class="font-weight-500" style="color: #0a1c33;">₹<?= number_format((float)$inv['total'], 2) ?></td>
               <td class="text-muted">₹<?= number_format((float)$inv['gst_amount'], 2) ?></td>
               <td>
                 <span class="badge-soft badge-soft-success">PAID</span>

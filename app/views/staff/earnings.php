@@ -13,7 +13,7 @@ $availableMonths = $availableMonths ?? [];
   </div>
 
   <!-- Financial Metrics Grid -->
-  <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: linear-gradient(135deg, #0f6e56 0%, #0b5240 100%); color: #fff;">
+  <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: linear-gradient(135deg, #f25b29 0%, #d44d20 100%); color: #fff;">
     <div class="card-body p-3">
       <div class="text-white-50 small text-uppercase font-weight-bold">Total Earnings</div>
       <h2 class="font-weight-bold text-white mb-2">₹<?= number_format((float)$summary['total_earned'], 2) ?></h2>

@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
         datasets: [{
           label: 'Collections (₹)',
           data: <?= json_encode($chartData['data'] ?? []) ?>,
-          backgroundColor: '#0f6e56',
+          backgroundColor: '#f25b29',
           borderRadius: 4
         }]
       },
@@ -183,3 +183,4 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
+

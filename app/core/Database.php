@@ -16,7 +16,7 @@ class Database
         if (self::$instance === null) {
             $host = Env::get('DB_HOST', '127.0.0.1');
             $port = Env::get('DB_PORT', 3306);
-            $db   = Env::get('DB_DATABASE', 'primodomus_db');
+            $db   = Env::get('DB_DATABASE', 'REFIXEL_db');
             $user = Env::get('DB_USERNAME', 'root');
             $pass = Env::get('DB_PASSWORD', '');
             $charset = Env::get('DB_CHARSET', 'utf8mb4');
@@ -92,3 +92,4 @@ class Database
         return self::getConnection()->rollBack();
     }
 }
+

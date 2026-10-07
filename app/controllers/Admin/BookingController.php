@@ -56,7 +56,7 @@ class BookingController extends Controller
         ];
 
         return $this->render('admin.bookings.index', [
-            'title'         => 'Manage Bookings & Jobs | Primodomus Admin',
+            'title'         => 'Manage Bookings & Jobs | REFIXEL Admin',
             'bookings'      => $bookings,
             'currentStatus' => $status ?? 'all',
             'search'        => $search,
@@ -88,7 +88,7 @@ class BookingController extends Controller
         $invoice = Database::fetchOne("SELECT i.* FROM invoices i JOIN payments p ON i.payment_id = p.id WHERE p.booking_id = :bid LIMIT 1", ['bid' => $id]);
 
         return $this->render('admin.bookings.show', [
-            'title'        => "Booking #{$booking['booking_no']} | Primodomus Admin",
+            'title'        => "Booking #{$booking['booking_no']} | REFIXEL Admin",
             'booking'      => $booking,
             'job'          => $job,
             'staffMembers' => $staffMembers,
@@ -266,9 +266,10 @@ class BookingController extends Controller
         );
 
         return $this->render('admin.bookings.calendar', [
-            'title' => 'Dispatch & Booking Calendar | Primodomus Admin',
+            'title' => 'Dispatch & Booking Calendar | REFIXEL Admin',
             'month' => $month,
             'jobs'  => $jobs,
         ], 'admin');
     }
 }
+

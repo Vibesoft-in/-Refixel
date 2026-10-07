@@ -1,6 +1,6 @@
 <?php
 /**
- * Primodomus - Customer Cart View
+ * REFIXEL - Customer Cart View
  */
 $user = \App\Core\Auth::user();
 $customerProfile = $user ? \App\Core\Database::fetchOne("SELECT address, city, pincode FROM customer_profiles WHERE user_id = ?", [$user['id']]) : null;
@@ -12,8 +12,8 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#0f6e56;">Home</a></li>
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#0f6e56;">Services</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#f25b29;">Services</a></li>
       <li class="breadcrumb-item active" aria-current="page">Your Service Cart</li>
     </ol>
   </nav>
@@ -24,13 +24,13 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
       <div class="col-md-7 col-lg-5 text-center">
         <div class="card p-5 border-0 shadow-sm" style="border-radius: 20px;">
           <div class="mb-4">
-            <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 90px; height: 90px; background: #eaf4f0; color: #0f6e56; font-size: 42px;">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 90px; height: 90px; background: #fff3ec; color: #f25b29; font-size: 42px;">
               <i class="fa fa-shopping-cart"></i>
             </div>
           </div>
           <h3 class="font-weight-bold mb-2" style="color: #1a1a1a;">Your cart is empty</h3>
           <p class="text-muted small mb-4">You haven't selected any home or commercial maintenance packages yet. Explore our verified services to get started.</p>
-          <a href="<?= \App\Core\View::url('/services') ?>" class="btn text-white px-5 py-3 font-weight-bold" style="background:#0f6e56; border-radius: 50px;">
+          <a href="<?= \App\Core\View::url('/services') ?>" class="btn text-white px-5 py-3 font-weight-bold" style="background:#f25b29; border-radius: 50px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
             Explore Services Now &rarr;
           </a>
         </div>
@@ -60,7 +60,7 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
                   <div>
                     <h6 class="font-weight-bold mb-1" style="font-size: 15px;"><?= \App\Core\View::e($item['name']) ?></h6>
                     <small class="text-muted d-block">Est. duration: ~<?= (int)$item['duration'] ?> mins</small>
-                    <span class="font-weight-bold" style="color: #0f6e56;">₹<?= number_format((float)$item['unit_price'], 0) ?> each</span>
+                    <span class="font-weight-bold" style="color: #f25b29;">₹<?= number_format((float)$item['unit_price'], 0) ?> each</span>
                   </div>
                 </div>
 
@@ -189,7 +189,7 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
               <textarea name="issue_details" rows="2" class="form-control" placeholder="Any access gates, specific stains, or precautions"></textarea>
             </div>
 
-            <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#0f6e56; border-radius: 8px; font-size: 16px;">
+            <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
               Confirm Booking & Schedule Visit &rarr;
             </button>
           </form>
@@ -198,7 +198,7 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
 
       <!-- Price Breakdown Sticky Summary -->
       <div class="col-lg-5">
-        <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#f7fbf9; border: 1px solid #dcece7;">
+        <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#fff8f5; border: 1px solid #ffdacf;">
           <h4 class="font-weight-bold mb-3" style="font-size: 20px;">Price Summary</h4>
 
           <div class="d-flex justify-content-between mb-2 small text-muted">
@@ -207,7 +207,7 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
           </div>
           <div class="d-flex justify-content-between mb-2 small text-muted">
             <span>Safety, Hygiene & Tools:</span>
-            <span class="text-success font-weight-bold">FREE</span>
+            <span class="font-weight-bold" style="color: #f25b29;">FREE</span>
           </div>
           <div class="d-flex justify-content-between mb-2 small text-muted">
             <span>GST Tax (18%):</span>
@@ -216,12 +216,12 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
           <hr>
           <div class="d-flex justify-content-between align-items-baseline mb-4">
             <span class="font-weight-bold" style="font-size: 17px;">Total Payable:</span>
-            <h3 class="font-weight-bold mb-0" style="color: #0f6e56;">₹<?= number_format((float)$cart['total'], 0) ?></h3>
+            <h3 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$cart['total'], 0) ?></h3>
           </div>
 
           <div class="p-3 rounded bg-white border mb-3 small" style="line-height: 1.8;">
-            <div class="d-flex align-items-center mb-1 text-success font-weight-bold">
-              <i class="fa fa-shield mr-2"></i> Primodomus Guarantee
+            <div class="d-flex align-items-center mb-1 font-weight-bold" style="color: #f25b29;">
+              <i class="fa fa-shield mr-2"></i> REFIXEL Guarantee
             </div>
             <p class="text-muted mb-0">Zero advance payment. Pay after inspection via UPI or Cash. 24-hour satisfaction re-work warranty included.</p>
           </div>
@@ -277,3 +277,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+

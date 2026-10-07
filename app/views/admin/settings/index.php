@@ -40,7 +40,7 @@ $settings = $settings ?? [];
           <div class="form-row">
             <div class="col-md-6 form-group mb-3">
               <label class="font-weight-bold small text-dark">Company / Platform Name</label>
-              <input type="text" name="business_name" class="form-control" value="<?= View::e($settings['business_name'] ?? 'Primodomus') ?>">
+              <input type="text" name="business_name" class="form-control" value="<?= View::e($settings['business_name'] ?? 'REFIXEL') ?>">
             </div>
 
             <div class="col-md-6 form-group mb-3">
@@ -57,7 +57,7 @@ $settings = $settings ?? [];
 
             <div class="col-md-6 form-group mb-3">
               <label class="font-weight-bold small text-dark">Official Support Email</label>
-              <input type="email" name="support_email" class="form-control" value="<?= View::e($settings['support_email'] ?? 'care@primodomus.com') ?>">
+              <input type="email" name="support_email" class="form-control" value="<?= View::e($settings['support_email'] ?? 'care@REFIXEL.com') ?>">
             </div>
           </div>
 
@@ -87,7 +87,7 @@ $settings = $settings ?? [];
 
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">Admin Alert Notification Email</label>
-            <input type="email" name="admin_notification_email" class="form-control" value="<?= View::e($settings['admin_notification_email'] ?? 'admin@primodomus.com') ?>">
+            <input type="email" name="admin_notification_email" class="form-control" value="<?= View::e($settings['admin_notification_email'] ?? 'admin@REFIXEL.com') ?>">
             <small class="form-text text-muted">Receives instant notifications whenever a new booking or enquiry is placed.</small>
           </div>
 
@@ -163,3 +163,4 @@ $settings = $settings ?? [];
     </div>
   </form>
 </div>
+

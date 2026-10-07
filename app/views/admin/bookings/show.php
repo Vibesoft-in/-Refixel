@@ -181,7 +181,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
           <div class="timeline pl-2" style="border-left: 2px solid #e2ece7;">
             <?php foreach ($history as $h): ?>
               <div class="position-relative pl-3 pb-3">
-                <div style="position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #0f6e56; border: 2px solid #fff;"></div>
+                <div style="position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #f25b29; border: 2px solid #fff;"></div>
                 <div class="d-flex justify-content-between">
                   <span class="font-weight-bold small text-dark">
                     <?= ucfirst(str_replace('_', ' ', $h['to_status'])) ?>
@@ -204,7 +204,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
     <!-- Right Column: Operations Panel (Assign, Reschedule, Status) -->
     <div class="col-lg-4">
       <!-- Assign / Reassign Staff Card -->
-      <div class="stat-card mb-3" style="border: 2px solid #0f6e56;">
+      <div class="stat-card mb-3" style="border: 2px solid #f25b29;">
         <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-user-plus text-success mr-2"></i>Technician Assignment</h6>
         
         <?php if (!empty($booking['staff_name'])): ?>
@@ -341,3 +341,4 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
     </div>
   </div>
 </div>
+

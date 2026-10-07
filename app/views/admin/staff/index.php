@@ -44,7 +44,7 @@ $staff = $staff ?? [];
               <tr>
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mr-2 text-primary font-weight-bold" style="width: 38px; height: 38px; border: 1.5px solid #0f6e56;">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mr-2 text-primary font-weight-bold" style="width: 38px; height: 38px; border: 1.5px solid #f25b29;">
                       <?= strtoupper(substr($s['name'], 0, 1)) ?>
                     </div>
                     <div>
@@ -98,3 +98,4 @@ $staff = $staff ?? [];
     </div>
   </div>
 </div>
+

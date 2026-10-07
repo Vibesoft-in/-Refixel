@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= \App\Core\View::e($title ?? 'Professional Home and Commercial Services | Primodomus') ?></title>
-  <meta name="keywords" content="home cleaning services, commercial cleaning services, office cleaning services, professional cleaning company, primodomus" />
-  <meta name="description" content="<?= \App\Core\View::e($description ?? 'Primodomus provides professional home and commercial cleaning services, including deep cleaning, painting, plumbing, pest control and trusted maintenance solutions. Book Now!') ?>">
-  <meta name="author" content="primodomus">
+  <title><?= \App\Core\View::e($title ?? 'Professional Home and Commercial Services | REFIXEL') ?></title>
+  <meta name="keywords" content="home cleaning services, commercial cleaning services, office cleaning services, professional cleaning company, REFIXEL" />
+  <meta name="description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services, including deep cleaning, painting, plumbing, pest control and trusted maintenance solutions. Book Now!') ?>">
+  <meta name="author" content="REFIXEL">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="<?= \App\Core\View::e($canonicalUrl ?? \App\Core\View::url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
 
-  <meta property="og:title" content="<?= \App\Core\View::e($title ?? 'Professional Home & Commercial Services | Primodomus') ?>">
-  <meta property="og:description" content="<?= \App\Core\View::e($description ?? 'Primodomus provides professional home and commercial cleaning services. Book Now!') ?>">
+  <meta property="og:title" content="<?= \App\Core\View::e($title ?? 'Professional Home & Commercial Services | REFIXEL') ?>">
+  <meta property="og:description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services. Book Now!') ?>">
   <meta property="og:image" content="<?= \App\Core\View::e($ogImage ?? \App\Core\View::asset('img/logo.svg')) ?>">
   <meta property="og:url" content="<?= \App\Core\View::e($canonicalUrl ?? \App\Core\View::url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
   <meta property="og:type" content="website">
 
   <?php
-    $appUrl = \App\Core\Env::get('APP_URL', 'https://www.primodomus.com');
+    $appUrl = \App\Core\Env::get('APP_URL', 'https://www.REFIXEL.com');
     $defaultSchema = [
       '@context' => 'https://schema.org',
       '@type'    => 'HomeAndConstructionBusiness',
@@ -26,7 +26,7 @@
       'logo'     => $appUrl . '/assets/img/refixel-logo-horizontal.png',
       'image'    => $appUrl . '/assets/img/hero-banner.webp',
       'telephone'=> \App\Models\Setting::get('company_phone', '+91 99533 58855'),
-      'email'    => \App\Models\Setting::get('company_email', 'care@primodomus.com'),
+      'email'    => \App\Models\Setting::get('company_email', 'care@REFIXEL.com'),
       'priceRange'=> '₹₹',
       'address'  => [
         '@type'          => 'PostalAddress',
@@ -58,7 +58,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
-  <!-- Primodomus Live Visual Stylesheets -->
+  <!-- REFIXEL Live Visual Stylesheets -->
   <link rel="stylesheet" href="<?= \App\Core\View::asset('css/style.css') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/css/style.css') ?>" />
   <link rel="stylesheet" href="<?= \App\Core\View::asset('css/page-style.css') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/css/page-style.css') ?>" />
 </head>
@@ -91,7 +91,7 @@
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
 
-  <!-- Global Primodomus Interactive Script -->
+  <!-- Global REFIXEL Interactive Script -->
   <script>
   document.addEventListener('DOMContentLoaded', function() {
     var baseUrl = '<?= rtrim(\App\Core\View::url(), '/') ?>';
@@ -259,4 +259,5 @@
   </script>
 </body>
 </html>
+
 

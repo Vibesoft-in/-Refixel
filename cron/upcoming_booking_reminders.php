@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Primodomus Cron: Upcoming Booking Reminders
+ * REFIXEL Cron: Upcoming Booking Reminders
  * Dispatches reminders to customers and technicians for appointments scheduled in the next 24-48 hours.
  * Usage: php cron/upcoming_booking_reminders.php
  */
@@ -54,3 +54,4 @@ foreach ($bookings as $b) {
 }
 
 echo "[CRON] Finished upcoming booking reminders. Total dispatched: {$count}\n";
+

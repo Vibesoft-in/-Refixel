@@ -76,7 +76,7 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
         </a>
       </div>
       <div class="col-4 p-1">
-        <a href="https://wa.me/<?= View::e($waPhone) ?>?text=<?= urlencode("Hello " . $job['customer_name'] . ", I am your Primodomus technician for booking #" . $job['booking_no'] . ".") ?>" 
+        <a href="https://wa.me/<?= View::e($waPhone) ?>?text=<?= urlencode("Hello " . $job['customer_name'] . ", I am your REFIXEL technician for booking #" . $job['booking_no'] . ".") ?>" 
            target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success btn-block py-2 font-weight-bold" style="border-color: #25d366; color: #25d366;">
           <i class="fa fa-whatsapp fa-lg d-block mb-1"></i>WhatsApp
         </a>
@@ -112,8 +112,8 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
   </div>
 
   <!-- WORKFLOW ACTION PANEL (Status Driven) -->
-  <div class="job-card mb-3" style="border: 2px solid #0f6e56; background: #fafffd;">
-    <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-tasks text-success mr-2"></i>Job Actions</h6>
+  <div class="job-card mb-3" style="border: 2px solid #f25b29; background: #fff8f5;">
+    <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-tasks mr-2" style="color:#f25b29;"></i>Job Actions</h6>
 
     <?php if ($job['status'] === 'assigned'): ?>
       <p class="small text-muted mb-3">This job has been assigned to you. Please accept it to confirm you are taking charge.</p>
@@ -241,7 +241,7 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
       <div class="timeline pl-2" style="border-left: 2px solid #e2ece7;">
         <?php foreach ($history as $h): ?>
           <div class="position-relative pl-3 pb-3">
-            <div style="position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #0f6e56; border: 2px solid #fff;"></div>
+            <div style="position: absolute; left: -7px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #f25b29; border: 2px solid #fff;"></div>
             <div class="d-flex justify-content-between">
               <span class="font-weight-bold small text-dark"><?= ucfirst(str_replace('_', ' ', $h['to_status'])) ?></span>
               <span class="text-muted" style="font-size: 11px;"><?= View::e($h['created_at']) ?></span>
@@ -255,3 +255,4 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
     <?php endif; ?>
   </div>
 </div>
+

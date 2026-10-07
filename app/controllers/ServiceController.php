@@ -20,13 +20,15 @@ class ServiceController extends Controller
         $categories = Category::getActive();
         $allServices = Service::getActive();
         $cities = ServiceArea::getActiveCities();
+        $activeCat = (string)($request->query('category') ?? $request->query('cat') ?? 'all');
 
         return $this->render('customer.services.index', [
-            'title'       => 'All Home & Commercial Services | Primodomus',
-            'description' => 'Explore professional home cleaning, painting, pest control, plumbing, carpentry, and AC services across Indian metro cities.',
-            'categories'  => $categories,
-            'services'    => $allServices,
-            'cities'      => $cities,
+            'title'          => 'All Home & Commercial Services | REFIXEL',
+            'description'    => 'Explore professional home cleaning, painting, pest control, plumbing, carpentry, and AC services across Indian metro cities.',
+            'categories'     => $categories,
+            'services'       => $allServices,
+            'cities'         => $cities,
+            'activeCategory' => $activeCat,
         ], 'customer');
     }
 
@@ -72,14 +74,16 @@ class ServiceController extends Controller
 
     protected function renderCategoryPage(array $cat, string $cityName, string $rawCity): Response
     {
-        $services = Service::getActiveByCategory((int)$cat['id']);
+        $categories = Category::getActive();
+        $allServices = Service::getActive();
+        $cities = ServiceArea::getActiveCities();
         $relatedCategories = Category::getRelated((int)$cat['id'], 4);
         $serviceAreas = ServiceArea::getByCity($cityName);
         $faqs = Faq::getGlobal();
         $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-'));
 
-        $title = "Professional {$cat['name']} Services in {$cityName} | Primodomus";
-        $description = "Looking for verified {$cat['name']} in {$cityName}? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
+        $title = "Available {$cat['name']} Packages - Available in your location | REFIXEL";
+        $description = "Looking for verified {$cat['name']} - Available in your location? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
         $canonicalUrl = View::url("/{$cat['slug']}-services-in-{$cleanCitySlug}");
 
         // Build Schema.org Structured Data
@@ -88,7 +92,7 @@ class ServiceController extends Controller
             '@graph'   => [
                 [
                     '@type'       => 'LocalBusiness',
-                    'name'        => "Primodomus {$cat['name']} Services in {$cityName}",
+                    'name'        => "REFIXEL {$cat['name']} Services - Available in your location",
                     'description' => $description,
                     'url'         => $canonicalUrl,
                     'areaServed'  => [
@@ -116,7 +120,7 @@ class ServiceController extends Controller
                         [
                             '@type'    => 'ListItem',
                             'position' => 3,
-                            'name'     => "{$cat['name']} in {$cityName}",
+                            'name'     => "{$cat['name']} - Available in your location",
                             'item'     => $canonicalUrl,
                         ],
                     ],
@@ -124,15 +128,19 @@ class ServiceController extends Controller
             ],
         ];
 
-        return $this->render('customer.services.category', [
+        return $this->render('customer.services.index', [
             'title'             => $title,
             'description'       => $description,
             'canonicalUrl'      => $canonicalUrl,
             'schemaData'        => $schemaData,
             'category'          => $cat,
-            'services'          => $services,
+            'categories'        => $categories,
+            'services'          => $allServices,
+            'activeCategory'    => $cat['slug'],
             'city'              => $cityName,
+            'currentCity'       => $cityName,
             'citySlug'          => $cleanCitySlug,
+            'cities'            => $cities,
             'relatedCategories' => $relatedCategories,
             'serviceAreas'      => $serviceAreas,
             'faqs'              => $faqs,
@@ -152,8 +160,8 @@ class ServiceController extends Controller
         $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-'));
 
         $price = number_format((float)$svc['starting_price'], 0);
-        $title = "{$svc['name']} in {$cityName} | Primodomus";
-        $description = "Book {$svc['name']} in {$cityName} starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee.";
+        $title = "{$svc['name']} - Available in your location | REFIXEL";
+        $description = "Book {$svc['name']} - Available in your location starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee.";
         $canonicalUrl = View::url("/{$svc['slug']}-in-{$cleanCitySlug}");
 
         // Build Schema.org Structured Data
@@ -162,12 +170,12 @@ class ServiceController extends Controller
             '@graph'   => [
                 [
                     '@type'        => 'Service',
-                    'name'         => "{$svc['name']} in {$cityName}",
+                    'name'         => "{$svc['name']} - Available in your location",
                     'description'  => $description,
                     'url'          => $canonicalUrl,
                     'provider'     => [
                         '@type' => 'Organization',
-                        'name'  => 'Primodomus',
+                        'name'  => 'REFIXEL',
                         'url'   => View::url('/'),
                     ],
                     'areaServed'   => [
@@ -204,7 +212,7 @@ class ServiceController extends Controller
                         [
                             '@type'    => 'ListItem',
                             'position' => 3,
-                            'name'     => "{$svc['name']} in {$cityName}",
+                            'name'     => "{$svc['name']} - Available in your location",
                             'item'     => $canonicalUrl,
                         ],
                     ],
@@ -264,6 +272,20 @@ class ServiceController extends Controller
         $cat = Category::findBySlug($slug . '-services');
         if ($cat) return $cat;
 
+        // 5. Aliases
+        if (in_array($slug, ['fall-ceiling', 'fall-ceiling-services', 'false-ceiling', 'false-ceiling-services', 'pop-ceiling', 'pop-false-ceiling', 'ceiling', 'masonry', 'masonry-services', 'masonry-construction', 'civil-work'], true)) {
+            $cat = Category::findBySlug('fall-ceiling-services') ?? Category::findBySlug('masonry-services');
+            if ($cat) return $cat;
+        }
+        if ($slug === 'electrician' || $slug === 'electricians') {
+            $cat = Category::findBySlug('electrician') ?? Category::findBySlug('appliance-repair');
+            if ($cat) return $cat;
+        }
+        if ($slug === 'appliance-repair' || $slug === 'appliance' || $slug === 'appliances') {
+            $cat = Category::findBySlug('appliance-repair') ?? Category::findBySlug('electrician');
+            if ($cat) return $cat;
+        }
+
         return null;
     }
 
@@ -286,6 +308,13 @@ class ServiceController extends Controller
         $svc = Service::findBySlug($slug . '-service');
         if ($svc) return $svc;
 
+        // 4. Aliases
+        if (in_array($slug, ['brick-masonry-repair', 'brickwork-wall-masonry-repair', 'fall-ceiling', 'false-ceiling', 'fall-ceiling-service'], true)) {
+            $svc = Service::findBySlug('fall-ceiling-installation');
+            if ($svc) return $svc;
+        }
+
         return null;
     }
 }
+

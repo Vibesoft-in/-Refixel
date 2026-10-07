@@ -11,7 +11,8 @@ return [
     'password'   => Env::get('MAIL_PASSWORD', ''),
     'encryption' => Env::get('MAIL_ENCRYPTION', 'tls'),
     'from'       => [
-        'address' => Env::get('MAIL_FROM_ADDRESS', 'bookings@primodomus.com'),
-        'name'    => Env::get('MAIL_FROM_NAME', 'Primodomus Service Platform'),
+        'address' => Env::get('MAIL_FROM_ADDRESS', 'bookings@REFIXEL.com'),
+        'name'    => Env::get('MAIL_FROM_NAME', 'REFIXEL Service Platform'),
     ],
 ];
+

@@ -20,7 +20,7 @@ class HomeController extends Controller
         $cities = ServiceArea::getActiveCities();
 
         return $this->render('customer.home', [
-            'title'      => 'Professional Home and Commercial Services | Primodomus',
+            'title'      => 'Professional Home and Commercial Services | REFIXEL',
             'categories' => $categories,
             'faqs'       => $faqs,
             'reviews'    => $reviews,
@@ -28,3 +28,4 @@ class HomeController extends Controller
         ], 'customer');
     }
 }
+

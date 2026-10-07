@@ -32,7 +32,7 @@ class ContentController extends Controller
         $services = Service::all('name ASC');
 
         return $this->render('admin.content.faqs', [
-            'title'    => 'Manage FAQs | Primodomus Admin',
+            'title'    => 'Manage FAQs | REFIXEL Admin',
             'faqs'     => $faqs,
             'services' => $services,
         ], 'admin');
@@ -83,7 +83,7 @@ class ContentController extends Controller
         $services = Service::all('name ASC');
 
         return $this->render('admin.content.gallery', [
-            'title'    => 'Manage Gallery | Primodomus Admin',
+            'title'    => 'Manage Gallery | REFIXEL Admin',
             'items'    => $items,
             'services' => $services,
         ], 'admin');
@@ -151,7 +151,7 @@ class ContentController extends Controller
         );
 
         return $this->render('admin.content.reviews', [
-            'title'   => 'Customer Reviews Moderation | Primodomus Admin',
+            'title'   => 'Customer Reviews Moderation | REFIXEL Admin',
             'reviews' => $reviews,
         ], 'admin');
     }
@@ -177,7 +177,7 @@ class ContentController extends Controller
     {
         $areas = ServiceArea::all('city ASC, pincode ASC');
         return $this->render('admin.content.areas', [
-            'title' => 'Service Areas & Pincodes | Primodomus Admin',
+            'title' => 'Service Areas & Pincodes | REFIXEL Admin',
             'areas' => $areas,
         ], 'admin');
     }
@@ -222,7 +222,7 @@ class ContentController extends Controller
     {
         $steps = ProcessStep::all('step_no ASC');
         return $this->render('admin.content.steps', [
-            'title' => 'Service Process Steps | Primodomus Admin',
+            'title' => 'Service Process Steps | REFIXEL Admin',
             'steps' => $steps,
         ], 'admin');
     }
@@ -264,7 +264,7 @@ class ContentController extends Controller
         );
 
         return $this->render('admin.content.checklists', [
-            'title'            => 'Service Checklists | Primodomus Admin',
+            'title'            => 'Service Checklists | REFIXEL Admin',
             'items'            => $items,
             'services'         => $services,
             'currentServiceId' => $serviceId,
@@ -305,3 +305,4 @@ class ContentController extends Controller
         return $this->redirect('/admin/content/checklists');
     }
 }
+

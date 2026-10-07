@@ -19,7 +19,7 @@ class ReportController extends Controller
         $staffLeaderboard = Report::getStaffLeaderboard(8);
 
         return $this->render('admin.reports.index', [
-            'title'            => 'Analytics & Reports | Primodomus Admin',
+            'title'            => 'Analytics & Reports | REFIXEL Admin',
             'summary'          => $summary,
             'chartData'        => $chartData,
             'statusDist'       => $statusDist,
@@ -28,3 +28,4 @@ class ReportController extends Controller
         ], 'admin');
     }
 }
+

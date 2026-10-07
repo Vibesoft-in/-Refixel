@@ -35,7 +35,7 @@ class DashboardController extends Controller
         $topStaff = Report::getStaffLeaderboard(4);
 
         return $this->render('admin.dashboard', [
-            'title'          => 'Admin Operations Dashboard | Primodomus',
+            'title'          => 'Admin Operations Dashboard | REFIXEL',
             'summary'        => $summary,
             'chartData'      => $chartData,
             'statusDist'     => $statusDist,
@@ -46,3 +46,4 @@ class DashboardController extends Controller
         ], 'admin');
     }
 }
+

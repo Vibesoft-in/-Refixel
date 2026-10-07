@@ -35,7 +35,7 @@ class JobController extends Controller
         ];
 
         return $this->render('staff.jobs.index', [
-            'title'  => 'My Assigned Jobs | Primodomus Staff',
+            'title'  => 'My Assigned Jobs | REFIXEL Staff',
             'jobs'   => $jobs,
             'filter' => $filter,
             'counts' => $counts,
@@ -59,7 +59,7 @@ class JobController extends Controller
         $afterPhotos = array_filter($photos, fn($p) => $p['type'] === 'after');
 
         return $this->render('staff.jobs.show', [
-            'title'               => "Job #{$job['id']} - {$job['service_name']} | Primodomus Staff",
+            'title'               => "Job #{$job['id']} - {$job['service_name']} | REFIXEL Staff",
             'job'                 => $job,
             'history'             => $history,
             'photos'              => $photos,
@@ -175,7 +175,7 @@ class JobController extends Controller
         $afterPhotos = array_filter($photos, fn($p) => $p['type'] === 'after');
 
         return $this->render('staff.jobs.complete', [
-            'title'        => "Complete Job #{$id} | Primodomus Staff",
+            'title'        => "Complete Job #{$id} | REFIXEL Staff",
             'job'          => $job,
             'beforePhotos' => $beforePhotos,
             'afterPhotos'  => $afterPhotos,
@@ -251,3 +251,4 @@ class JobController extends Controller
         }
     }
 }
+

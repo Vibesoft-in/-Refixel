@@ -28,7 +28,7 @@ class EarningsController extends Controller
         $availableMonths = array_values(array_unique(array_column($allEarnings, 'month')));
 
         return $this->render('staff.earnings', [
-            'title'           => 'My Earnings & Payouts | Primodomus Staff',
+            'title'           => 'My Earnings & Payouts | REFIXEL Staff',
             'summary'         => $summary,
             'earnings'        => $earnings,
             'selectedMonth'   => $selectedMonth,
@@ -36,3 +36,4 @@ class EarningsController extends Controller
         ], 'staff');
     }
 }
+

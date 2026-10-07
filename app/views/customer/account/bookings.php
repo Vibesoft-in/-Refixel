@@ -41,7 +41,7 @@
           
           <!-- Content -->
           <div class="mb-3">
-            <div class="font-weight-600 mb-2" style="color: #0f6e56; font-size: 14px;"><?= \App\Core\View::e($b['service_name'] ?? 'Home Service') ?></div>
+            <div class="font-weight-600 mb-2" style="color: #0a1c33; font-size: 14px;"><?= \App\Core\View::e($b['service_name'] ?? 'Home Service') ?></div>
             <div class="d-flex align-items-center text-muted" style="font-size: 12px;">
               <div class="mr-3"><i class="fa fa-calendar text-primary opacity-75 mr-1"></i> <?= \App\Core\View::e($b['preferred_date']) ?></div>
               <div><i class="fa fa-clock-o text-primary opacity-75 mr-1"></i> <?= \App\Core\View::e($b['preferred_time']) ?></div>
@@ -75,7 +75,7 @@
             <tr>
               <td class="font-weight-500 text-dark">#<?= \App\Core\View::e($b['booking_no']) ?></td>
               <td>
-                <span class="font-weight-500" style="color: #0f6e56;"><?= \App\Core\View::e($b['service_name'] ?? 'Home Service') ?></span>
+                <span class="font-weight-500" style="color: #0a1c33;"><?= \App\Core\View::e($b['service_name'] ?? 'Home Service') ?></span>
               </td>
               <td>
                 <div class="font-weight-500 text-dark"><?= \App\Core\View::e($b['preferred_date']) ?></div>

@@ -30,7 +30,7 @@ class StaffController extends Controller
         );
 
         return $this->render('admin.staff.index', [
-            'title' => 'Field Workforce & Technicians | Primodomus Admin',
+            'title' => 'Field Workforce & Technicians | REFIXEL Admin',
             'staff' => $staff,
         ], 'admin');
     }
@@ -39,7 +39,7 @@ class StaffController extends Controller
     {
         $categories = Category::all('name ASC');
         return $this->render('admin.staff.create', [
-            'title'      => 'Register Field Technician | Primodomus Admin',
+            'title'      => 'Register Field Technician | REFIXEL Admin',
             'categories' => $categories,
         ], 'admin');
     }
@@ -130,7 +130,7 @@ class StaffController extends Controller
         $earningsSummary = StaffEarning::getSummary((int)$id);
 
         return $this->render('admin.staff.show', [
-            'title'           => "Technician: {$user['name']} | Primodomus Admin",
+            'title'           => "Technician: {$user['name']} | REFIXEL Admin",
             'user'            => $user,
             'profile'         => $profile,
             'skills'          => $skills,
@@ -180,3 +180,4 @@ class StaffController extends Controller
         return $this->redirect('/admin/staff/' . $id);
     }
 }
+

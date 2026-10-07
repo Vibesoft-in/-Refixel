@@ -111,7 +111,7 @@ class Notifier
      */
     public static function notifyNewBookingAdmin(array $booking): void
     {
-        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@primodomus.com'));
+        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@REFIXEL.com'));
         self::send('email', $adminEmail, 'admin_new_booking', [
             'booking_no'    => $booking['booking_no'] ?? '',
             'service_name'  => $booking['service_name'] ?? 'Home Service',
@@ -218,7 +218,7 @@ class Notifier
         }
 
         // Alert Admin
-        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@primodomus.com'));
+        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@REFIXEL.com'));
         self::send('email', $adminEmail, 'admin_alert', [
             'title'   => "Job Completed: Booking #{$booking['booking_no']}",
             'message' => "Technician {$data['staff_name']} completed service for {$data['customer_name']}.",
@@ -256,7 +256,7 @@ class Notifier
      */
     public static function notifyAdminAlert(string $title, string $message, array $context = []): void
     {
-        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@primodomus.com'));
+        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@REFIXEL.com'));
         self::send('email', $adminEmail, 'admin_alert', [
             'title'   => $title,
             'message' => $message,
@@ -287,3 +287,4 @@ class Notifier
         }
     }
 }
+

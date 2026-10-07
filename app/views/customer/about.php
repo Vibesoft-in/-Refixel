@@ -8,7 +8,7 @@
       <!-- Wide Background Team Visual (extends leftward behind text with soft gradient fade) -->
       <div class="hero-wide-image-backdrop" aria-hidden="true">
         <img 
-          src="<?= \App\Core\View::asset('img/about-hero-bg.png') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/img/about-hero-bg.png') ?>" 
+          src="<?= \App\Core\View::asset('img/about/aboutbg.png') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/img/about/aboutbg.png') ?>" 
           alt="REFIXEL Professional Verified Technicians and Service Van" 
           class="hero-wide-team-img"
           loading="eager"
@@ -92,7 +92,7 @@
               More Than a Service.<br>
               <span class="text-refixel-orange">A Trusted Home Partner.</span>
             </h2>
-            <p class="text-muted" style="font-size: 15.5px; line-height: 1.75;">
+            <p class="journey-description" style="font-size: 17.5px; line-height: 1.8; color: #1e293b; font-weight: 500;">
               REFIXEL was founded with a simple idea — to make home services reliable, professional, and stress-free for every household. We bridge the gap between customers and verified service professionals, ensuring high-quality service, transparent pricing, and complete peace of mind.
             </p>
 
@@ -130,8 +130,8 @@
   <section class="meet-founder-section">
     <div class="container">
       <div class="row align-items-center">
-        <!-- Left: Founder Bio & Quote -->
-        <div class="col-lg-6 col-md-12 mb-4 mb-lg-0">
+        <!-- Left: Founder Bio & Quote (Comes second on mobile, first on desktop) -->
+        <div class="col-lg-6 col-md-12 order-2 order-lg-1 mb-4 mb-lg-0 founder-text-col">
           <span class="section-eyebrow">MEET THE FOUNDER</span>
           <h2 class="founder-title">Aakash Kumar</h2>
           <span class="founder-designation">Founder, REFIXEL</span>
@@ -168,8 +168,8 @@
           </div>
         </div>
 
-        <!-- Right: Founder Photo -->
-        <div class="col-lg-6 col-md-12">
+        <!-- Right: Founder Photo (Comes first on mobile, second on desktop) -->
+        <div class="col-lg-6 col-md-12 order-1 order-lg-2 mb-4 mb-lg-0 founder-photo-col">
           <div class="founder-photo-wrap shadow-sm" style="border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0;">
             <img 
               src="<?= \App\Core\View::asset('img/founder-aakash-kumar.jpg') ?>" 
@@ -199,66 +199,75 @@
         <div class="value-card">
           <div class="value-icon-circle"><i class="fa fa-shield"></i></div>
           <h5>Trust</h5>
-          <p>Building long-term relationships through honesty and reliability.</p>
+          <p class="card-desc-text">Building long-term relationships through honesty and reliability.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 2. Professionalism -->
         <div class="value-card">
           <div class="value-icon-circle"><i class="fa fa-user-circle-o"></i></div>
           <h5>Professionalism</h5>
-          <p>Verified and skilled professionals for every service.</p>
+          <p class="card-desc-text">Verified and skilled professionals for every service.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 3. Quality -->
         <div class="value-card">
           <div class="value-icon-circle"><i class="fa fa-cog"></i></div>
           <h5>Quality</h5>
-          <p>Consistent and high-quality service every time.</p>
+          <p class="card-desc-text">Consistent and high-quality service every time.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 4. Innovation -->
         <div class="value-card">
           <div class="value-icon-circle"><i class="fa fa-lightbulb-o"></i></div>
           <h5>Innovation</h5>
-          <p>Using modern tools and techniques for better results.</p>
+          <p class="card-desc-text">Using modern tools and techniques for better results.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 5. Customer First -->
         <div class="value-card">
           <div class="value-icon-circle"><i class="fa fa-heart"></i></div>
           <h5>Customer First</h5>
-          <p>Your satisfaction is always our priority.</p>
+          <p class="card-desc-text">Your satisfaction is always our priority.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 6. Why Choose Us Section (Dark Navy) -->
+  <!-- 6. Why Choose Us Section -->
   <section class="why-choose-section" id="whyChoose">
     <div class="container">
-      <span class="section-eyebrow" style="color: #ff7847;">WHY CHOOSE REFIXEL</span>
-      <h2 class="section-title-large text-white">Why Choose Us?</h2>
+      <span class="section-eyebrow" style="color: rgba(255, 64, 0, 1); font-size:24px;">WHY CHOOSE REFIXEL</span>
+      <h2 class="section-title-large">Why Choose Us?</h2>
 
       <div class="why-choose-grid">
         <!-- 1. Verified Professionals -->
         <div class="why-card">
           <div class="why-icon-circle"><i class="fa fa-shield"></i></div>
           <h5>Verified Professionals</h5>
-          <p>Every service partner is verified with background checks and skill certifications.</p>
+          <p class="card-desc-text">Every service partner is verified with background checks and skill certifications.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 2. Safe & Hygienic -->
         <div class="why-card">
           <div class="why-icon-circle"><i class="fa fa-leaf"></i></div>
           <h5>Safe & Hygienic</h5>
-          <p>We use safe cleaning methods and high-quality products for a healthier environment.</p>
+          <p class="card-desc-text">We use safe cleaning methods and high-quality products for a healthier environment.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 3. Advanced Equipment -->
         <div class="why-card">
           <div class="why-icon-circle"><i class="fa fa-cogs"></i></div>
           <h5>Advanced Equipment</h5>
-          <p>From deep cleaning machines to specialized equipment for efficient and professional results.</p>
+          <p class="card-desc-text">From deep cleaning machines to specialized equipment for efficient and professional results.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
         <!-- 4. Customer Trusted -->
         <div class="why-card">
           <div class="why-icon-circle"><i class="fa fa-thumbs-up"></i></div>
           <h5>Customer Trusted</h5>
-          <p>Transparent pricing, reliable service, and complete customer satisfaction.</p>
+          <p class="card-desc-text">Transparent pricing, reliable service, and complete customer satisfaction.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
       </div>
     </div>
@@ -278,7 +287,8 @@
           <div class="step-badge">01</div>
           <div class="step-icon-wrap"><i class="fa fa-clipboard"></i></div>
           <h5>Service Inspection &<br>Requirement Analysis</h5>
-          <p>We understand your requirements, inspect the area, and suggest the right cleaning or maintenance solution.</p>
+          <p class="card-desc-text">We understand your requirements, inspect the area, and suggest the right cleaning or maintenance solution.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
 
         <!-- Step 02 -->
@@ -286,7 +296,8 @@
           <div class="step-badge">02</div>
           <div class="step-icon-wrap"><i class="fa fa-wrench"></i></div>
           <h5>Professional Equipment &<br>Cleaning Preparation</h5>
-          <p>Our team prepares the space with advanced tools, safe products, and proper safety measures.</p>
+          <p class="card-desc-text">Our team prepares the space with advanced tools, safe products, and proper safety measures.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
 
         <!-- Step 03 -->
@@ -294,7 +305,8 @@
           <div class="step-badge">03</div>
           <div class="step-icon-wrap"><i class="fa fa-magic"></i></div>
           <h5>Deep Cleaning &<br>Sanitization Execution</h5>
-          <p>We perform detailed cleaning using modern techniques to remove dust, stains, bacteria, and hidden dirt.</p>
+          <p class="card-desc-text">We perform detailed cleaning using modern techniques to remove dust, stains, bacteria, and hidden dirt.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
 
         <!-- Step 04 -->
@@ -302,7 +314,8 @@
           <div class="step-badge">04</div>
           <div class="step-icon-wrap"><i class="fa fa-check-circle"></i></div>
           <h5>Final Quality Inspection<br>& Customer Satisfaction</h5>
-          <p>We conduct a final quality check to ensure everything meets our standards and guarantee your complete satisfaction.</p>
+          <p class="card-desc-text">We conduct a final quality check to ensure everything meets our standards and guarantee your complete satisfaction.</p>
+          <button type="button" class="btn-card-toggle" aria-expanded="false">View more <i class="fa fa-angle-down"></i></button>
         </div>
       </div>
     </div>
@@ -457,7 +470,7 @@
         <div>
           <span class="section-eyebrow">BEFORE / AFTER</span>
           <h2 class="section-title-large mb-1">Our Recent Work & Transformations</h2>
-          <p class="text-muted mb-0" style="font-size: 15px;">Real results from verified REFIXEL home services — see the difference our professional equipment and expert technicians deliver.</p>
+          <p class="mb-0" style="font-size: 17px; color: #1e293b; font-weight: 500; line-height: 1.65;">Real results from verified REFIXEL home services — see the difference our professional equipment and expert technicians deliver.</p>
         </div>
         <div class="mt-3 mt-md-0">
           <a href="<?= \App\Core\View::url('/gallery') ?>" class="btn-refixel-pill-outline">
@@ -466,45 +479,54 @@
         </div>
       </div>
 
-      <!-- Top Header & Controls -->
-      <div class="d-flex flex-wrap justify-content-between align-items-center mt-4 mb-3">
-        <!-- Filter Buttons for Category Highlighting -->
-        <div class="transformation-filter-nav mb-0">
-          <button type="button" class="trans-filter-btn active" data-filter="all">
-            <i class="fa fa-th-large mr-1"></i> All Showcases (8)
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="room-cleaning">
-            <i class="fa fa-sparkles mr-1"></i> Room Cleaning
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="pest-control">
-            <i class="fa fa-bug mr-1"></i> Pest Control
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="sofa-cleaning">
-            <i class="fa fa-couch mr-1"></i> Sofa Cleaning
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="room-painting">
-            <i class="fa fa-paint-brush mr-1"></i> Room Painting
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="home-renovation">
-            <i class="fa fa-wrench mr-1"></i> Home Renovation
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="electrical-repair">
-            <i class="fa fa-bolt mr-1"></i> Electrical Repairs
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="plumbing-repair">
-            <i class="fa fa-wrench mr-1"></i> Plumbing Repairs
-          </button>
-          <button type="button" class="trans-filter-btn" data-filter="ac-service">
-            <i class="fa fa-snowflake-o mr-1"></i> AC Jet Service
-          </button>
-        </div>
-
+      <!-- Top Controls Row -->
+      <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+        <span class="text-muted small font-weight-bold">
+          <i class="fa fa-sliders mr-1 text-refixel-orange"></i> Select a Service to Highlight Showcase
+        </span>
         <!-- Marquee Pause/Play Toggle Button -->
-        <div class="d-none d-md-flex align-items-center" style="gap: 8px;">
-          <span class="text-muted small"><i class="fa fa-info-circle mr-1"></i> Hover to pause scroll</span>
+        <div class="d-flex align-items-center" style="gap: 8px;">
+          <span class="text-muted small d-none d-md-inline"><i class="fa fa-info-circle mr-1"></i> Hover to pause cards</span>
           <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold px-3 py-1" id="marqueeToggleBtn" style="border-radius: 20px; font-size: 12.5px;">
             <i class="fa fa-pause mr-1" id="marqueeToggleIcon"></i> <span id="marqueeToggleText">Pause</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Service Filter Buttons Marquee Loop (Single row, loops smoothly, touch scrollable on mobile, centers on click) -->
+      <div class="trans-filter-marquee-outer">
+        <div class="trans-filter-wrapper-relative">
+          <div class="trans-filter-marquee-viewport" id="transFilterViewport" aria-label="Services filter buttons carousel">
+            <div class="transformation-filter-nav" id="transFilterTrack">
+              <button type="button" class="trans-filter-btn active" data-filter="all">
+                <i class="fa fa-th-large mr-1"></i> All Showcases (8)
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="room-cleaning">
+                <i class="fa fa-sparkles mr-1"></i> Room Cleaning
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="pest-control">
+                <i class="fa fa-bug mr-1"></i> Pest Control
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="sofa-cleaning">
+                <i class="fa fa-couch mr-1"></i> Sofa Cleaning
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="room-painting">
+                <i class="fa fa-paint-brush mr-1"></i> Room Painting
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="home-renovation">
+                <i class="fa fa-wrench mr-1"></i> Home Renovation
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="electrical-repair">
+                <i class="fa fa-bolt mr-1"></i> Electrical Repairs
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="plumbing-repair">
+                <i class="fa fa-wrench mr-1"></i> Plumbing Repairs
+              </button>
+              <button type="button" class="trans-filter-btn" data-filter="ac-service">
+                <i class="fa fa-snowflake-o mr-1"></i> AC Jet Service
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -534,7 +556,7 @@
                 <span class="badge badge-light border text-success font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;">
                   <i class="fa fa-check-circle"></i> Service Completed
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sector 54, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Laundry & Utility Room Deep Cleaning</h4>
               <p>Heavy wall dampness, stained utility sink, cluttered floor and detergent buildup completely eliminated with mechanized scrubbing and eco-friendly descaling.</p>
@@ -570,7 +592,7 @@
                 <span class="badge badge-light border text-danger font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;">
                   <i class="fa fa-shield"></i> 100% Roach-Free
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> DLF Phase 4, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Kitchen Under-Counter Pest Eradication</h4>
               <p>Severe cockroach infestation beneath kitchen cabinets eradicated using certified odorless gel-bait technology, crack sealing, and deep sanitization.</p>
@@ -678,7 +700,7 @@
                 <span class="badge badge-light border font-weight-bold" style="font-size: 11.5px; padding: 4px 8px; color: #f25b29;">
                   <i class="fa fa-home"></i> Complete Transformation
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sohna Road, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Living Room TV Feature Wall & Carpentry Renovation</h4>
               <p>Chiseled conduit brick wall and construction debris rebuilt into a contemporary luxury media center featuring vertical fluted wood slats, warm LED backlit accents, and floating storage console.</p>
@@ -714,7 +736,7 @@
                 <span class="badge badge-light border text-warning font-weight-bold" style="font-size: 11.5px; padding: 4px 8px; color: #b45309 !important;">
                   <i class="fa fa-bolt"></i> Insulated & Safe
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sector 48, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Switchboard & MCB Distribution Panel Overhaul</h4>
               <p>Dangerous loose wiring, exposed fuse boxes and chiseled conduits systematically rewired, neatly enclosed in a certified MCB panel, and fitted with sleek modular switchplates.</p>
@@ -750,7 +772,7 @@
                 <span class="badge badge-light border text-info font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;">
                   <i class="fa fa-tint"></i> 100% Leak-Proof
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Cyber City, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Kitchen Under-Sink Pipe Leak & Drainage Overhaul</h4>
               <p>Corroded leaking drain pipe and water-damaged cabinet completely fixed with brand new heavy-duty PVC P-trap pipe fitting, watertight seals, and clean sanitized dry storage.</p>
@@ -786,7 +808,7 @@
                 <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;">
                   <i class="fa fa-snowflake-o"></i> 2X Better Cooling
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sushant Lok 1, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Split AC Deep Jet Wash & Coil Cleaning</h4>
               <p>Extreme dust accumulation, blocked airflow and foul odor resolved through high-pressure antibacterial jet flush, restoring instant ice-cool airflow and pure fresh indoor air.</p>
@@ -815,7 +837,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border text-success font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;"><i class="fa fa-check-circle"></i> Service Completed</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sector 54, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Laundry & Utility Room Deep Cleaning</h4>
               <p>Heavy wall dampness, stained utility sink, cluttered floor and detergent buildup completely eliminated with mechanized scrubbing and eco-friendly descaling.</p>
@@ -837,7 +859,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border text-danger font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;"><i class="fa fa-shield"></i> 100% Roach-Free</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> DLF Phase 4, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Kitchen Under-Counter Pest Eradication</h4>
               <p>Severe cockroach infestation beneath kitchen cabinets eradicated using certified odorless gel-bait technology, crack sealing, and deep sanitization.</p>
@@ -903,7 +925,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border font-weight-bold" style="font-size: 11.5px; padding: 4px 8px; color: #f25b29;"><i class="fa fa-home"></i> Complete Transformation</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sohna Road, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Living Room TV Feature Wall & Carpentry Renovation</h4>
               <p>Chiseled conduit brick wall and construction debris rebuilt into a contemporary luxury media center featuring vertical fluted wood slats, warm LED backlit accents, and floating storage console.</p>
@@ -925,7 +947,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border text-warning font-weight-bold" style="font-size: 11.5px; padding: 4px 8px; color: #b45309 !important;"><i class="fa fa-bolt"></i> Insulated & Safe</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sector 48, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Switchboard & MCB Distribution Panel Overhaul</h4>
               <p>Dangerous loose wiring, exposed fuse boxes and chiseled conduits systematically rewired, neatly enclosed in a certified MCB panel, and fitted with sleek modular switchplates.</p>
@@ -947,7 +969,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border text-info font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;"><i class="fa fa-tint"></i> 100% Leak-Proof</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Cyber City, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Kitchen Under-Sink Pipe Leak & Drainage Overhaul</h4>
               <p>Corroded leaking drain pipe and water-damaged cabinet completely fixed with brand new heavy-duty PVC P-trap pipe fitting, watertight seals, and clean sanitized dry storage.</p>
@@ -969,7 +991,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;"><i class="fa fa-snowflake-o"></i> 2X Better Cooling</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Sushant Lok 1, Gurugram</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
               </div>
               <h4>Split AC Deep Jet Wash & Coil Cleaning</h4>
               <p>Extreme dust accumulation, blocked airflow and foul odor resolved through high-pressure antibacterial jet flush, restoring instant ice-cool airflow and pure fresh indoor air.</p>
@@ -1013,44 +1035,175 @@
       });
     }
 
-    // Category Filter Navigation
-    if (filterBtns.length && allCards.length && track) {
-      filterBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          filterBtns.forEach(function(b) { b.classList.remove('active'); });
-          this.classList.add('active');
-          var cat = this.getAttribute('data-filter');
+    // =========================================================
+    // Service Filter Pills Infinite Marquee Loop & Center Logic
+    // =========================================================
+    (function() {
+      var fViewport = document.getElementById('transFilterViewport');
+      var fTrack = document.getElementById('transFilterTrack');
+      if (!fViewport || !fTrack) return;
 
-          allCards.forEach(function(card) {
-            card.classList.remove('card-highlighted');
-          });
+      // Duplicate buttons once for seamless infinite loop wrap
+      var origBtns = Array.from(fTrack.children);
+      origBtns.forEach(function(b) {
+        var clone = b.cloneNode(true);
+        clone.setAttribute('data-clone', 'true');
+        fTrack.appendChild(clone);
+      });
 
-          if (cat === 'all') {
-            // Resume infinite marquee
-            track.classList.remove('is-paused');
-            if (toggleIcon && toggleText) {
-              toggleIcon.className = 'fa fa-pause mr-1';
-              toggleText.textContent = 'Pause';
-            }
-            isManuallyPaused = false;
-          } else {
-            // Pause marquee and highlight the matching card
-            track.classList.add('is-paused');
-            if (toggleIcon && toggleText) {
-              toggleIcon.className = 'fa fa-play mr-1';
-              toggleText.textContent = 'Resume';
-            }
-            isManuallyPaused = true;
+      var isFPaused = false;
+      var fSpeed = 0.55; // Gentle smooth px/frame
+      var fAnimId = null;
+      var resumeTimer = null;
+      var isMouseDown = false;
+      var mouseStartX = 0;
+      var scrollLeftStart = 0;
+      var hasDragged = false;
 
-            var targetCard = track.querySelector('.transformation-marquee-card[data-category="' + cat + '"]');
-            if (targetCard) {
-              targetCard.classList.add('card-highlighted');
-              targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      function getFHalfWidth() {
+        return fTrack.scrollWidth / 2;
+      }
+
+      function startFilterMarquee() {
+        function tick() {
+          if (!isFPaused) {
+            fViewport.scrollLeft += fSpeed;
+            var half = getFHalfWidth();
+            if (half > 0 && fViewport.scrollLeft >= half) {
+              fViewport.scrollLeft -= half;
             }
           }
-        });
+          fAnimId = requestAnimationFrame(tick);
+        }
+        fAnimId = requestAnimationFrame(tick);
+      }
+
+      setTimeout(startFilterMarquee, 200);
+
+      // Wrap-around guard on manual touch/mouse scroll
+      fViewport.addEventListener('scroll', function() {
+        var half = getFHalfWidth();
+        if (half > 0) {
+          if (fViewport.scrollLeft <= 0) {
+            fViewport.scrollLeft += half;
+          } else if (fViewport.scrollLeft >= half * 1.96) {
+            fViewport.scrollLeft -= half;
+          }
+        }
+      }, { passive: true });
+
+      // Touch events (Mobile manual scrolling)
+      fViewport.addEventListener('touchstart', function() {
+        isFPaused = true;
+        clearTimeout(resumeTimer);
+      }, { passive: true });
+
+      fViewport.addEventListener('touchend', function() {
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(function() {
+          isFPaused = false;
+        }, 3000);
       });
-    }
+
+      // Desktop hover pause
+      fViewport.addEventListener('mouseenter', function() {
+        if (!isMouseDown) isFPaused = true;
+      });
+      fViewport.addEventListener('mouseleave', function() {
+        if (!isMouseDown) isFPaused = false;
+      });
+
+      // Desktop mouse drag scrolling
+      fViewport.addEventListener('mousedown', function(e) {
+        isMouseDown = true;
+        isFPaused = true;
+        hasDragged = false;
+        mouseStartX = e.pageX - fViewport.offsetLeft;
+        scrollLeftStart = fViewport.scrollLeft;
+        fViewport.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mouseup', function() {
+        if (isMouseDown) {
+          isMouseDown = false;
+          fViewport.style.cursor = 'grab';
+          clearTimeout(resumeTimer);
+          resumeTimer = setTimeout(function() {
+            isFPaused = false;
+          }, 3000);
+        }
+      });
+
+      fViewport.addEventListener('mousemove', function(e) {
+        if (!isMouseDown) return;
+        var x = e.pageX - fViewport.offsetLeft;
+        var walk = x - mouseStartX;
+        if (Math.abs(walk) > 4) {
+          hasDragged = true;
+        }
+        fViewport.scrollLeft = scrollLeftStart - walk;
+      });
+
+      // Click: smoothly center clicked button & activate showcase card
+      fViewport.addEventListener('click', function(e) {
+        var btn = e.target.closest('.trans-filter-btn');
+        if (!btn || hasDragged) return;
+
+        var cat = btn.getAttribute('data-filter');
+
+        // Sync active state across original and cloned buttons
+        fViewport.querySelectorAll('.trans-filter-btn').forEach(function(b) {
+          if (b.getAttribute('data-filter') === cat) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+
+        // Smoothly center the clicked button in the viewport
+        var half = getFHalfWidth();
+        var targetScroll = btn.offsetLeft - (fViewport.clientWidth / 2) + (btn.offsetWidth / 2);
+        if (targetScroll < 0 && half > 0) targetScroll += half;
+        fViewport.scrollTo({
+          left: targetScroll,
+          behavior: 'smooth'
+        });
+
+        // Pause loop temporarily so user sees centered item
+        isFPaused = true;
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(function() {
+          isFPaused = false;
+        }, 4000);
+
+        // Highlight/filter the transformation showcase cards below
+        allCards.forEach(function(card) {
+          card.classList.remove('card-highlighted');
+        });
+
+        if (cat === 'all') {
+          track.classList.remove('is-paused');
+          if (toggleIcon && toggleText) {
+            toggleIcon.className = 'fa fa-pause mr-1';
+            toggleText.textContent = 'Pause';
+          }
+          isManuallyPaused = false;
+        } else {
+          track.classList.add('is-paused');
+          if (toggleIcon && toggleText) {
+            toggleIcon.className = 'fa fa-play mr-1';
+            toggleText.textContent = 'Resume';
+          }
+          isManuallyPaused = true;
+
+          var targetCard = track.querySelector('.transformation-marquee-card[data-category="' + cat + '"]');
+          if (targetCard) {
+            targetCard.classList.add('card-highlighted');
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }
+      });
+    })();
 
     // Reviews Infinite Carousel & Navigation Controls
     (function() {
@@ -1132,6 +1285,26 @@
         });
       }
     })();
+
+    /* ── Mobile Card 'View more' description toggle ── */
+    document.querySelectorAll('.btn-card-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var card = this.closest('.why-card, .process-step-card, .value-card');
+        if (!card) return;
+        var isExpanded = card.classList.contains('is-expanded');
+        if (isExpanded) {
+          card.classList.remove('is-expanded');
+          this.innerHTML = 'View more <i class="fa fa-angle-down"></i>';
+          this.setAttribute('aria-expanded', 'false');
+        } else {
+          card.classList.add('is-expanded');
+          this.innerHTML = 'View less <i class="fa fa-angle-up"></i>';
+          this.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
   });
   </script>
 

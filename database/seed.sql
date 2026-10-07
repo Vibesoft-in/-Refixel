@@ -20,13 +20,15 @@ INSERT INTO staff_profiles (user_id, rating_avg, rating_count, availability_note
 
 -- 4. Service Categories
 INSERT INTO categories (id, name, slug, description, icon, sort_order, is_active) VALUES
-(1, 'Cleaning', 'cleaning', 'Comprehensive deep cleaning solutions for residential and commercial spaces.', 'home_claening.webp', 1, 1),
-(2, 'Painting Services', 'painting-services', 'Professional interior and exterior painting with dust-free mechanized tools.', 'Painting-Services.png', 2, 1),
-(3, 'Pest Control', 'pest-control', 'Eco-friendly and odourless pest control solutions for cockroaches, termites, and pests.', 'Cockroach-Ant -Pest-Control -Services.webp', 3, 1),
-(4, 'Plumbers', 'plumbers', 'Expert plumbers for leak fixes, tap fittings, pipe blocks, and sanitary ware.', 'Plumber.webp', 4, 1),
-(5, 'Carpenter', 'carpenter', 'Skilled carpentry services for furniture repair, assembly, and bespoke woodwork.', 'Carpenter.webp', 5, 1),
-(6, 'AC Service & Repair', 'ac-services', 'High-pressure jet servicing, gas charging, filter sanitization, and cooling diagnostics.', 'AC-Services.webp', 6, 1),
-(7, 'Electrician', 'electrician', 'Professional electrician services for wiring, switchboards, MCBs, fans, and appliance installations.', 'repair.webp', 7, 1);
+(1, 'Cleaning', 'cleaning', 'Comprehensive deep cleaning solutions for residential and commercial spaces.', 'refixel-cleaning.jpg', 1, 1),
+(2, 'Painting Services', 'painting-services', 'Professional interior and exterior painting with dust-free mechanized tools.', 'refixel-painting.jpg', 2, 1),
+(3, 'Fall Ceiling', 'fall-ceiling-services', 'Architectural Gypsum & POP fall ceiling solutions, precision laser leveling, LED cove light troughs, and seamless crack-free finishing by Refixel specialists.', 'refixel-fall-ceiling.jpg', 3, 1),
+(4, 'Plumbers', 'plumbers', 'Expert plumbers for leak fixes, tap fittings, pipe blocks, and sanitary ware.', 'refixel-plumber.jpg', 4, 1),
+(5, 'Carpenter', 'carpenter', 'Skilled carpentry services for furniture repair, assembly, and bespoke woodwork.', 'refixel-carpenter.jpg', 5, 1),
+(6, 'AC Service & Repair', 'ac-services', 'High-pressure jet servicing, gas charging, filter sanitization, and cooling diagnostics.', 'refixel-ac-service.jpg', 6, 1),
+(7, 'Electrician', 'electrician', 'Professional electrician services for wiring, switchboards, MCBs, fans, and appliance installations.', 'refixel-electrician.jpg', 7, 1),
+(8, 'Appliance Repair', 'appliance-repair', 'Expert repair and servicing for washing machines, refrigerators, microwaves, and home appliances.', 'refixel-appliance-repair.jpg', 8, 1),
+(9, 'Pest Control', 'pest-control', 'Eco-friendly and odourless pest control solutions for cockroaches, termites, and pests.', 'service-pest-control.jpg', 9, 1);
 
 -- 5. Staff Skills
 INSERT INTO staff_skills (staff_id, category_id) VALUES
@@ -44,17 +46,19 @@ INSERT INTO staff_availability (staff_id, weekday, start_time, end_time) VALUES
 
 -- 7. Services
 INSERT INTO services (id, category_id, name, slug, description, starting_price, duration_minutes, image, is_active) VALUES
-(1, 1, 'Professional Full Home Cleaning', 'full-home-cleaning', 'Deep scrubbing, floor buffing, dust removal, kitchen degreasing, and sanitized bathrooms.', 2499.00, 240, 'Full-home-clean.jpg', 1),
-(2, 1, 'Professional Bathroom Cleaning', 'bathroom-deep-cleaning', 'Intensive tile descaling, toilet scrubbing, fittings stain removal, and sanitization.', 499.00, 60, 'bathroom_cleaning.webp', 1),
-(3, 1, 'Kitchen Deep Cleaning', 'kitchen-deep-cleaning', 'Heavy oil degreasing, chimney exterior scrubbing, tile cleaning, and cabinets wiping.', 999.00, 120, 'home_claening.webp', 1),
-(4, 1, 'Sofa & Upholstery Deep Cleaning', 'sofa-cleaning', 'Mechanized fabric shampooing, stain extraction, and high-suction vacuuming.', 799.00, 90, 'home_claening.webp', 1),
-(5, 1, 'Commercial Space & Office Cleaning', 'office-cleaning', 'Floor disinfection, workstation sanitizing, carpet cleaning, and pantry maintenance.', 3499.00, 300, 'office-building.png', 1),
+(1, 1, 'Professional Full Home Cleaning', 'full-home-cleaning', 'Deep scrubbing, floor buffing, dust removal, kitchen degreasing, and sanitized bathrooms.', 2499.00, 240, 'refixel-cleaning.jpg', 1),
+(2, 1, 'Professional Bathroom Cleaning', 'bathroom-deep-cleaning', 'Intensive tile descaling, toilet scrubbing, fittings stain removal, and sanitization.', 499.00, 60, 'refixel-bathroom-cleaning.jpg', 1),
+(3, 1, 'Kitchen Deep Cleaning', 'kitchen-deep-cleaning', 'Heavy oil degreasing, chimney exterior scrubbing, tile cleaning, and cabinets wiping.', 999.00, 120, 'refixel-kitchen-cleaning.jpg', 1),
+(4, 1, 'Sofa & Upholstery Deep Cleaning', 'sofa-cleaning', 'Mechanized fabric shampooing, stain extraction, and high-suction vacuuming.', 799.00, 90, 'refixel-sofa-cleaning.jpg', 1),
+(5, 1, 'Commercial Space & Office Cleaning', 'office-cleaning', 'Floor disinfection, workstation sanitizing, carpet cleaning, and pantry maintenance.', 3499.00, 300, 'refixel-office-cleaning.jpg', 1),
 (6, 2, 'Interior Home Painting', 'interior-painting', 'Laser measurements, automated sanding, primer coating, and premium emulsion paint application.', 4999.00, 480, 'Painting-Services.png', 1),
-(7, 3, 'Cockroach & Ant Pest Control', 'cockroach-pest-control', 'Gel baiting technology and odorless spray treatment across all corners.', 799.00, 45, 'Cockroach-Ant -Pest-Control -Services.webp', 1),
+(7, 9, 'Cockroach & Ant Pest Control', 'cockroach-pest-control', 'Gel baiting technology and odorless spray treatment across all corners.', 799.00, 45, 'Cockroach-Ant -Pest-Control -Services.webp', 1),
 (8, 4, 'Tap & Pipe Leak Repair', 'tap-leak-repair', 'Instant leak detection, washer replacement, and tight seal fittings.', 299.00, 45, 'Plumber.webp', 1),
 (9, 5, 'Furniture Assembly & Wood Repair', 'furniture-assembly', 'Expert carpenter visit for bed, table, wardrobe assembly, and hinge repairs.', 399.00, 60, 'Carpenter.webp', 1),
 (10, 6, 'AC High-Pressure Jet Service', 'ac-jet-service', 'Deep jet cleaning of indoor cooling coils and outdoor units for maximum airflow and cooling.', 599.00, 60, 'AC-Services.webp', 1),
-(11, 7, 'Fan & Switchboard Repair', 'fan-switchboard-repair', 'Fixing switches, ceiling fans, sockets, wiring faults and circuit breakers.', 199.00, 45, 'repair.webp', 1);
+(11, 7, 'Fan & Switchboard Repair', 'fan-switchboard-repair', 'Fixing switches, ceiling fans, sockets, wiring faults and circuit breakers.', 199.00, 45, 'repair.webp', 1),
+(13, 3, 'Designer Fall Ceiling & POP Installation', 'fall-ceiling-installation', 'End-to-end false ceiling design & installation with heavy GI steel channel framing, branded Saint-Gobain gypsum boards, laser alignment, concealed LED cove light provision, and crack-free joint tape plastering by Refixel interior experts.', 1499.00, 180, 'refixel-fall-ceiling.jpg', 1),
+(14, 3, 'Fall Ceiling Repair & Cove Light Modification', 'fall-ceiling-repair-modification', 'Precision repair of sagging, damp, or cracked POP/gypsum ceiling panels, joint re-taping, acoustic leveling, and cutting custom slots for profile lights and spotlights.', 699.00, 90, 'refixel-fall-ceiling.jpg', 1);
 
 -- 8. Service Checklist Items
 INSERT INTO service_checklist_items (service_id, label, is_included, sort_order) VALUES

@@ -21,7 +21,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return $this->redirectAfterLogin(Auth::role());
         }
-        return $this->render('auth.login', ['title' => 'Login | Primodomus'], 'auth');
+        return $this->render('auth.login', ['title' => 'Login | REFIXEL'], 'auth');
     }
 
     public function login(Request $request): Response
@@ -77,7 +77,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return $this->redirectAfterLogin(Auth::role());
         }
-        return $this->render('auth.signup', ['title' => 'Sign Up | Primodomus'], 'auth');
+        return $this->render('auth.signup', ['title' => 'Sign Up | REFIXEL'], 'auth');
     }
 
     public function signup(Request $request): Response
@@ -124,13 +124,13 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        View::setFlash('success', 'Account created successfully! Welcome to Primodomus.');
+        View::setFlash('success', 'Account created successfully! Welcome to REFIXEL.');
         return $this->redirect('/account');
     }
 
     public function showForgotPassword(Request $request): Response
     {
-        return $this->render('auth.forgot-password', ['title' => 'Reset Password | Primodomus'], 'auth');
+        return $this->render('auth.forgot-password', ['title' => 'Reset Password | REFIXEL'], 'auth');
     }
 
     public function forgotPassword(Request $request): Response
@@ -169,7 +169,7 @@ class AuthController extends Controller
     {
         $token = (string)$request->query('token', '');
         return $this->render('auth.reset-password', [
-            'title' => 'Choose New Password | Primodomus',
+            'title' => 'Choose New Password | REFIXEL',
             'token' => $token,
         ], 'auth');
     }
@@ -222,7 +222,7 @@ class AuthController extends Controller
             return $this->redirect('/login');
         }
         return $this->render('auth.change-password', [
-            'title' => 'Update Password | Primodomus',
+            'title' => 'Update Password | REFIXEL',
             'user'  => Auth::user(),
         ], 'auth');
     }
@@ -312,3 +312,4 @@ class AuthController extends Controller
         );
     }
 }
+

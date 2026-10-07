@@ -24,5 +24,5 @@
       <button type="submit" class="btn btn-primary-custom">Create Account</button>
     </form>
     <div class="text-center mt-4">
-      <p class="text-muted mb-0">Already have an account? <a href="<?= \App\Core\View::url('/login') ?>" style="color:#0f6e56; font-weight:600;">Sign In</a></p>
+      <p class="text-muted mb-0">Already have an account? <a href="<?= \App\Core\View::url('/login') ?>" style="color:#f25b29; font-weight:600;">Sign In</a></p>
     </div>

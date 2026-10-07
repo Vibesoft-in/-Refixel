@@ -2,13 +2,13 @@
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#0f6e56;">Home</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
       <li class="breadcrumb-item active" aria-current="page">Work Showcase & Before / After</li>
     </ol>
   </nav>
 
   <div class="page_heading text-center mb-4">
-    <h6 style="color: #0f6e56; font-weight: 600; letter-spacing: 1px;">REAL RESULTS & PROVEN QUALITY</h6>
+    <h6 style="color: #f25b29; font-weight: 600; letter-spacing: 1px;">REAL RESULTS & PROVEN QUALITY</h6>
     <h1 class="font-weight-bold" style="font-size: 36px; color: #1a1a1a;">Before & After Transformations</h1>
     <p class="text-muted" style="max-width: 720px; margin: 0 auto; font-size: 16px;">
       Explore real job completions by REFIXEL verified professionals. From mechanized deep cleaning and stubborn stain eradication to pest control and bespoke carpentry.
@@ -17,7 +17,7 @@
 
   <!-- Category Filter Pills -->
   <div class="d-flex flex-wrap justify-content-center mb-5" style="gap: 10px;">
-    <button type="button" class="btn btn-sm gallery-filter-btn active font-weight-bold px-3 py-2" data-cat="all" style="border-radius: 30px; border: 1.5px solid #0f6e56; background: #0f6e56; color: #fff;">
+    <button type="button" class="btn btn-sm gallery-filter-btn active font-weight-bold px-3 py-2" data-cat="all" style="border-radius: 30px; border: 1.5px solid #f25b29; background: #f25b29; color: #fff; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);">
       <i class="fa fa-th-large mr-1"></i> All Work (8)
     </button>
     <button type="button" class="btn btn-sm gallery-filter-btn font-weight-bold px-3 py-2" data-cat="room-cleaning" style="border-radius: 30px; border: 1.5px solid #dee2e6; background: #fff; color: #333;">
@@ -62,7 +62,7 @@
               <span class="badge badge-light border text-success font-weight-bold">
                 <i class="fa fa-check-circle"></i> Verified Job Completion
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Sector 54, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Laundry & Utility Room Deep Cleaning</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -94,7 +94,7 @@
               <span class="badge badge-light border text-danger font-weight-bold">
                 <i class="fa fa-shield"></i> 100% Roach Eradication
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> DLF Phase 4, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Kitchen Under-Counter Pest Eradication</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -126,7 +126,7 @@
               <span class="badge badge-light border text-primary font-weight-bold">
                 <i class="fa fa-sparkles"></i> Fabric Restored
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Golf Course Road, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Sectional Fabric Sofa Stain Extraction</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -158,7 +158,7 @@
               <span class="badge badge-light border text-warning font-weight-bold" style="color: #b45309 !important;">
                 <i class="fa fa-paint-brush"></i> Dustless Sanding & 2 Coats
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Nirvana Country, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Living Room Wall Painting & Refurbishment</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -190,7 +190,7 @@
               <span class="badge badge-light border font-weight-bold" style="color: #f25b29;">
                 <i class="fa fa-home"></i> Full Interior Remodel
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Sohna Road, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Living Room TV Feature Wall & Carpentry Renovation</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -222,7 +222,7 @@
               <span class="badge badge-light border text-warning font-weight-bold" style="color: #b45309 !important;">
                 <i class="fa fa-bolt"></i> Insulated & Safe
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Sector 48, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Switchboard & MCB Distribution Panel Overhaul</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -254,7 +254,7 @@
               <span class="badge badge-light border text-info font-weight-bold">
                 <i class="fa fa-tint"></i> 100% Leak-Proof
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Cyber City, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Kitchen Under-Sink Pipe Leak & Drainage Overhaul</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -286,7 +286,7 @@
               <span class="badge badge-light border text-primary font-weight-bold">
                 <i class="fa fa-snowflake-o"></i> 2X Better Cooling
               </span>
-              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Sushant Lok 1, Gurugram</small>
+              <small class="text-muted"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</small>
             </div>
             <h4 class="card-title font-weight-bold mb-2" style="font-size: 20px; color: #1e293b;">Split AC Deep Jet Wash & Coil Cleaning</h4>
             <p class="card-text text-muted" style="font-size: 14.5px; line-height: 1.6;">
@@ -305,7 +305,7 @@
   </div>
 
   <div class="text-center mt-5">
-    <a href="<?= \App\Core\View::url('/book') ?>" class="btn text-white px-5 py-3 font-weight-bold shadow-sm" style="background:#0f6e56; border-radius: 50px; font-size: 16px;">
+    <a href="<?= \App\Core\View::url('/book') ?>" class="btn text-white px-5 py-3 font-weight-bold shadow-sm" style="background:#f25b29; border-radius: 50px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);">
       Book Your Service Now &rarr;
     </a>
   </div>
@@ -326,9 +326,9 @@ document.addEventListener('DOMContentLoaded', function() {
           b.style.borderColor = '#dee2e6';
         });
         this.classList.add('active');
-        this.style.background = '#0f6e56';
+        this.style.background = '#f25b29';
         this.style.color = '#fff';
-        this.style.borderColor = '#0f6e56';
+        this.style.borderColor = '#f25b29';
         
         var cat = this.getAttribute('data-cat');
         cards.forEach(function(card) {

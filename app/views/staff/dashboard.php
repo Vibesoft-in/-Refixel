@@ -11,7 +11,7 @@ $isAvailable = !empty($profile['is_available']);
 
 <div class="staff-dashboard">
   <!-- Profile & Status Banner -->
-  <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: linear-gradient(135deg, #0f6e56 0%, #0b5240 100%); color: #fff;">
+  <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: linear-gradient(135deg, #f25b29 0%, #d44d20 100%); color: #fff;">
     <div class="card-body p-3">
       <div class="d-flex justify-content-between align-items-center">
         <div>

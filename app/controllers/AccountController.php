@@ -18,7 +18,7 @@ class AccountController extends Controller
         $recentBookings = Booking::findByCustomer($user['id']);
 
         return $this->render('customer.account.index', [
-            'title'    => 'My Account | Primodomus',
+            'title'    => 'My Account | REFIXEL',
             'user'     => $user,
             'bookings' => array_slice($recentBookings, 0, 5),
         ], $request->isAjax() ? null : 'customer_account');
@@ -28,7 +28,7 @@ class AccountController extends Controller
     {
         $bookings = Booking::findByCustomer(Auth::id());
         return $this->render('customer.account.bookings', [
-            'title'    => 'My Bookings | Primodomus',
+            'title'    => 'My Bookings | REFIXEL',
             'bookings' => $bookings,
         ], $request->isAjax() ? null : 'customer_account');
     }
@@ -58,7 +58,7 @@ class AccountController extends Controller
         $review = \App\Models\Review::findByBooking((int)$booking['id']);
 
         return $this->render('customer.account.booking-detail', [
-            'title'    => "Booking #{$booking['booking_no']} | Primodomus",
+            'title'    => "Booking #{$booking['booking_no']} | REFIXEL",
             'booking'  => $booking,
             'payments' => $payments,
             'invoices' => $invoices,
@@ -75,7 +75,7 @@ class AccountController extends Controller
         }
 
         return $this->render('customer.account.invoice-detail', [
-            'title'   => "GST Invoice #{$invoice['invoice_no']} | Primodomus",
+            'title'   => "GST Invoice #{$invoice['invoice_no']} | REFIXEL",
             'invoice' => $invoice,
         ], $request->isAjax() ? null : 'customer_account');
     }
@@ -263,7 +263,7 @@ class AccountController extends Controller
     {
         $invoices = Invoice::findByCustomer(Auth::id());
         return $this->render('customer.account.invoices', [
-            'title'    => 'My Invoices | Primodomus',
+            'title'    => 'My Invoices | REFIXEL',
             'invoices' => $invoices,
         ], $request->isAjax() ? null : 'customer_account');
     }
@@ -285,7 +285,7 @@ class AccountController extends Controller
         }
 
         return $this->render('customer.account.profile', [
-            'title'   => 'Profile Settings | Primodomus',
+            'title'   => 'Profile Settings | REFIXEL',
             'user'    => Auth::user(),
             'profile' => $customerProfile,
         ], $request->isAjax() ? null : 'customer_account');
@@ -347,7 +347,7 @@ class AccountController extends Controller
         $consents = \App\Models\Consent::getByUser($userId);
 
         return $this->render('customer.account.privacy', [
-            'title'    => 'Privacy & Data Rights | Primodomus',
+            'title'    => 'Privacy & Data Rights | REFIXEL',
             'user'     => Auth::user(),
             'consents' => $consents,
         ], $request->isAjax() ? null : 'customer_account');
@@ -372,7 +372,7 @@ class AccountController extends Controller
 
         $exportData = [
             'export_metadata' => [
-                'platform'     => 'Primodomus Service Platform',
+                'platform'     => 'REFIXEL Service Platform',
                 'compliance'   => 'Digital Personal Data Protection (DPDP) Act Foundation',
                 'generated_at' => date('c'),
                 'user_id'      => $userId,
@@ -386,7 +386,7 @@ class AccountController extends Controller
         ];
 
         $response = Response::json($exportData, 200);
-        $filename = 'primodomus_data_export_' . $userId . '_' . date('Ymd_His') . '.json';
+        $filename = 'REFIXEL_data_export_' . $userId . '_' . date('Ymd_His') . '.json';
         $response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
         return $response;
     }
@@ -418,3 +418,4 @@ class AccountController extends Controller
         return $this->redirect('/account/privacy');
     }
 }
+

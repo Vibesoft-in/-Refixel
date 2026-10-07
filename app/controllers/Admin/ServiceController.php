@@ -24,7 +24,7 @@ class ServiceController extends Controller
         $categories = Category::all('sort_order ASC');
 
         return $this->render('admin.services.index', [
-            'title'      => 'Manage Services | Primodomus Admin',
+            'title'      => 'Manage Services | REFIXEL Admin',
             'services'   => $services,
             'categories' => $categories,
         ], 'admin');
@@ -83,7 +83,7 @@ class ServiceController extends Controller
         );
 
         return $this->render('admin.services.categories', [
-            'title'      => 'Trade Categories | Primodomus Admin',
+            'title'      => 'Trade Categories | REFIXEL Admin',
             'categories' => $categories,
         ], 'admin');
     }
@@ -130,3 +130,4 @@ class ServiceController extends Controller
         return $this->redirect('/admin/services/categories');
     }
 }
+

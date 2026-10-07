@@ -7,7 +7,7 @@ $areas = $areas ?? [];
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <h4 class="font-weight-bold mb-1 text-dark">Service Areas & Target Pincodes</h4>
-      <p class="text-muted small mb-0">Locations and postal codes where Primodomus dispatches field technicians.</p>
+      <p class="text-muted small mb-0">Locations and postal codes where REFIXEL dispatches field technicians.</p>
     </div>
 
     <div>
@@ -94,3 +94,4 @@ $areas = $areas ?? [];
     </div>
   </div>
 </div>
+

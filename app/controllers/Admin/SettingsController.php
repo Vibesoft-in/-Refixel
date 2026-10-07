@@ -15,7 +15,7 @@ class SettingsController extends Controller
     {
         $settings = Setting::getAllKeyValue();
         return $this->render('admin.settings.index', [
-            'title'    => 'Business & Notification Settings | Primodomus Admin',
+            'title'    => 'Business & Notification Settings | REFIXEL Admin',
             'settings' => $settings,
         ], 'admin');
     }
@@ -30,3 +30,4 @@ class SettingsController extends Controller
         return $this->redirect('/admin/settings');
     }
 }
+

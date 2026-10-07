@@ -4,7 +4,7 @@
 
   <div class="mobile_context" id="hdrMobileStep">
     <div class="verify_mvo">
-      <img src="<?= \App\Core\View::asset('img/user-login.png') ?>" alt="Login">
+      <img src="<?= \App\Core\View::asset('img/refixel-full-logo.png') ?>" alt="REFIXEL Home Services">
     </div>
     <h2>Enter your phone number</h2>
     <p>A secure verification code will be sent to your <span>registered mobile number.</span></p>
@@ -14,14 +14,14 @@
     </div>
     <button type="button" id="hdrSendOtpBtn" class="continue_btn">Get OTP</button>
     <div class="text-center mt-2">
-      <a href="<?= \App\Core\View::url('/login') ?>" class="small font-weight-bold" style="color: #0f6e56;">Or Sign In with Password / Admin</a>
+      <a href="<?= \App\Core\View::url('/login') ?>" class="small font-weight-bold" style="color: #f25b29;">Or Sign In with Password / Admin</a>
     </div>
     <h6><i class="fa fa-lock"></i> By continuing, you agree to our <a href="<?= \App\Core\View::url('/terms') ?>" target="_blank">T&C</a> and <a href="<?= \App\Core\View::url('/privacy') ?>" target="_blank">Privacy Policy</a>.</h6>
   </div>
 
   <div class="otp_phonenumber" id="hdrOtpStep" style="display:none;">
     <div class="verify_mvo">
-      <img src="<?= \App\Core\View::asset('img/user-login.png') ?>" alt="Login">
+      <img src="<?= \App\Core\View::asset('img/refixel-full-logo.png') ?>" alt="REFIXEL Home Services">
     </div>
     <h4>Phone Number Verification</h4>
     <p>

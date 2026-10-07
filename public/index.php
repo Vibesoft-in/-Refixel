@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Primodomus Service Platform - Front Controller
+ * REFIXEL Service Platform - Front Controller
  */
 
 define('APP_START', microtime(true));
@@ -92,3 +92,4 @@ require_once ROOT_PATH . '/config/routes.php';
 $request = new \App\Core\Request();
 $response = \App\Core\Router::dispatch($request);
 $response->send();
+

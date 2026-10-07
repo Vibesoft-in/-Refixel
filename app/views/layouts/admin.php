@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= \App\Core\View::e($title ?? 'Admin Panel | Primodomus') ?></title>
+  <title><?= \App\Core\View::e($title ?? 'Admin Panel | REFIXEL') ?></title>
   <link href="<?= \App\Core\View::asset('img/favicon.png') ?>" rel="shortcut icon" type="image/x-icon" />
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
@@ -11,13 +11,13 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --primary: #0f6e56;
-      --primary-dark: #0b5240;
-      --primary-light: #e6f4f1;
-      --dark-sidebar: #0f1c18;
-      --dark-sidebar-hover: #192d27;
-      --body-bg: #f3f6f5;
-      --border-color: #e2ece7;
+      --primary: #f25b29;
+      --primary-dark: #d44d20;
+      --primary-light: #fff3ef;
+      --dark-sidebar: #1a1210;
+      --dark-sidebar-hover: #2d1f18;
+      --body-bg: #f6f4f3;
+      --border-color: #f0e8e4;
     }
     body { font-family: 'Inter Tight', sans-serif; background: var(--body-bg); min-height: 100vh; color: #1e2925; margin: 0; }
     .admin-wrapper { display: flex; min-height: 100vh; }
@@ -25,10 +25,10 @@
     .admin-sidebar .brand { padding: 18px 20px; font-weight: 700; font-size: 17px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; }
     .admin-sidebar .brand img { height: 26px; }
     .admin-nav { list-style: none; padding: 12px 0; margin: 0; flex: 1; overflow-y: auto; }
-    .admin-nav li a { display: flex; align-items: center; padding: 11px 20px; color: #9bb7af; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: all 0.15s ease; }
-    .admin-nav li a:hover, .admin-nav li.active a { color: #fff; background: var(--dark-sidebar-hover); border-left: 3px solid #10b981; }
-    .admin-nav li a i { width: 22px; font-size: 15px; margin-right: 10px; color: #7a9c92; }
-    .admin-nav li.active a i { color: #10b981; }
+    .admin-nav li a { display: flex; align-items: center; padding: 11px 20px; color: #c0a898; text-decoration: none; font-size: 13.5px; font-weight: 500; transition: all 0.15s ease; }
+    .admin-nav li a:hover, .admin-nav li.active a { color: #fff; background: var(--dark-sidebar-hover); border-left: 3px solid #f25b29; }
+    .admin-nav li a i { width: 22px; font-size: 15px; margin-right: 10px; color: #9a7a68; }
+    .admin-nav li.active a i { color: #f25b29; }
     .admin-nav .nav-heading { padding: 12px 20px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #587970; font-weight: 700; }
     .admin-content { flex: 1; display: flex; flex-direction: column; overflow-x: hidden; min-width: 0; }
     .admin-topbar { height: 60px; background: #fff; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
@@ -59,8 +59,8 @@
     <div class="admin-sidebar">
       <div class="brand">
         <a href="<?= \App\Core\View::url('/admin') ?>" class="text-white text-decoration-none d-flex align-items-center">
-          <img src="<?= \App\Core\View::asset('img/favicon.png') ?>" alt="Primodomus" style="height: 24px; margin-right: 8px;">
-          <span style="font-weight: 700; font-size: 16px; color: #fff;">Primodomus</span>
+          <img src="<?= \App\Core\View::asset('img/favicon.png') ?>" alt="REFIXEL" style="height: 24px; margin-right: 8px;">
+          <span style="font-weight: 700; font-size: 16px; color: #fff;">REFIXEL</span>
         </a>
         <span class="badge badge-success px-2" style="font-size: 10px;">HQ</span>
       </div>
@@ -127,7 +127,7 @@
     <div class="admin-content">
       <div class="admin-topbar">
         <div class="d-flex align-items-center">
-          <strong class="text-dark" style="font-size: 15px;"><i class="fa fa-shield text-success mr-2"></i>Primodomus Operations Hub</strong>
+          <strong class="text-dark" style="font-size: 15px;"><i class="fa fa-shield text-success mr-2"></i>REFIXEL Operations Hub</strong>
         </div>
         <div class="d-flex align-items-center">
           <span class="mr-3 text-muted small">
@@ -150,3 +150,4 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

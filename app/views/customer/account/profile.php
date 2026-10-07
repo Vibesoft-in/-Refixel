@@ -26,7 +26,7 @@
           <input type="email" name="email" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px; font-weight: 500;" value="<?= \App\Core\View::e($user['email'] ?? '') ?>" placeholder="name@example.com">
         </div>
 
-        <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 16px; color: #0f6e56;">Saved Address Details</h5>
+        <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 16px; color: #0a1c33;">Saved Address Details</h5>
         
         <div class="form-group mb-3">
           <label class="font-weight-500 small text-dark d-block mb-2">Address Type</label>

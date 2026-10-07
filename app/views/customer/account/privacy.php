@@ -4,7 +4,7 @@
       <i class="fa fa-shield text-success mr-2" style="opacity: 0.8;"></i> Privacy & Data Governance
     </h3>
     <p class="text-muted small mb-0" style="font-weight: 400; line-height: 1.6;">
-      In alignment with the Digital Personal Data Protection (DPDP) Act, Primodomus provides full transparency into your personal data processing, active consents, and data rights.
+      In alignment with the Digital Personal Data Protection (DPDP) Act, REFIXEL provides full transparency into your personal data processing, active consents, and data rights.
     </p>
   </div>
 
@@ -79,3 +79,4 @@
     </form>
   </div>
 </div>
+

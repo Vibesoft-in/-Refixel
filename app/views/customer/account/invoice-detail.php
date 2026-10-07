@@ -10,7 +10,7 @@ $invoice = $invoice ?? [];
       <a href="<?= View::url('/account/invoices') ?>" class="btn btn-outline-secondary font-weight-bold btn-sm">
         <i class="fa fa-arrow-left mr-1"></i> Back to Invoices
       </a>
-      <button onclick="window.print()" class="btn text-white font-weight-bold btn-sm" style="background:#0f6e56;">
+      <button onclick="window.print()" class="btn text-white font-weight-bold btn-sm" style="background:#f25b29; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);">
         <i class="fa fa-print mr-1"></i> Print Receipt
       </button>
     </div>
@@ -21,10 +21,10 @@ $invoice = $invoice ?? [];
     <!-- Invoice Header -->
     <div class="row align-items-center mb-4 pb-3 border-bottom">
       <div class="col-sm-7">
-        <h3 class="font-weight-bold mb-1" style="color: #0f6e56; font-size: 26px;">PRIMODOMUS</h3>
+        <h3 class="font-weight-bold mb-1" style="color: #f25b29; font-size: 26px;">REFIXEL</h3>
         <p class="text-muted small mb-0 font-weight-bold">Professional Home Care & Maintenance Services</p>
         <p class="text-muted small mb-0">GSTIN: <strong>07AAAAA0000A1Z5</strong> &bull; SAC Code: 9987</p>
-        <p class="text-muted small mb-0">Support: care@primodomus.com &bull; +91 99533 58855</p>
+        <p class="text-muted small mb-0">Support: care@refixel.com &bull; +91 94581 82006</p>
       </div>
       <div class="col-sm-5 text-sm-right mt-3 mt-sm-0">
         <span class="badge badge-success px-3 py-1 font-weight-bold mb-2" style="font-size: 12px; letter-spacing: 0.5px;">TAX INVOICE</span>
@@ -53,7 +53,7 @@ $invoice = $invoice ?? [];
       <div class="col-sm-6 text-sm-right">
         <span class="text-muted small text-uppercase font-weight-bold d-block mb-1">Booking Reference:</span>
         <div class="font-weight-bold text-dark mb-1" style="font-size: 16px;">
-          <a href="<?= View::url('/account/bookings/' . (int)$invoice['booking_id']) ?>" style="color: #0f6e56;">
+          <a href="<?= View::url('/account/bookings/' . (int)$invoice['booking_id']) ?>" style="color: #f25b29;">
             #<?= View::e($invoice['booking_no']) ?>
           </a>
         </div>
@@ -102,15 +102,15 @@ $invoice = $invoice ?? [];
         </div>
         <div class="d-flex justify-content-between py-2 border-top border-bottom mt-2">
           <strong class="text-dark font-weight-bold" style="font-size: 15px;">Total Paid:</strong>
-          <h5 class="font-weight-bold text-success mb-0">₹<?= number_format((float)$invoice['total'], 2) ?></h5>
+          <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$invoice['total'], 2) ?></h5>
         </div>
       </div>
     </div>
 
     <!-- Notes & Terms -->
     <div class="border-top pt-3 small text-muted text-center">
-      <p class="mb-1">This is an authentic computer-generated GST tax invoice for services fulfilled by Primodomus.</p>
-      <p class="mb-0">For warranty claims or service queries, quote your booking number #<?= View::e($invoice['booking_no']) ?> to care@primodomus.com.</p>
+      <p class="mb-1">This is an authentic computer-generated GST tax invoice for services fulfilled by REFIXEL.</p>
+      <p class="mb-0">For warranty claims or service queries, quote your booking number #<?= View::e($invoice['booking_no']) ?> to care@refixel.com.</p>
     </div>
   </div>
 </div>

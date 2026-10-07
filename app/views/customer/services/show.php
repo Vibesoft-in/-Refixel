@@ -20,9 +20,9 @@ foreach ($checklist ?? [] as $item) {
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#0f6e56;">Home</a></li>
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#0f6e56;">Services</a></li>
-      <li class="breadcrumb-item active" aria-current="page"><?= $svcName ?> in <?= $cityName ?></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#f25b29;">Services</a></li>
+      <li class="breadcrumb-item active" aria-current="page"><?= $svcName ?> - Available in your location</li>
     </ol>
   </nav>
 
@@ -37,12 +37,12 @@ foreach ($checklist ?? [] as $item) {
 
         <div class="card-body p-4 p-md-5">
           <div class="d-flex align-items-center mb-2">
-            <span class="badge badge-success mr-2" style="background:#0f6e56;">Verified Service</span>
-            <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available across <?= $cityName ?></span>
+            <span class="badge mr-2 font-weight-bold px-2.5 py-1.5" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf;">Verified Service</span>
+            <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
           </div>
 
           <h1 class="font-weight-bold mb-3" style="font-size: 32px; color: #1a1a1a;">
-            <?= $svcName ?> in <?= $cityName ?>
+            <?= $svcName ?> - Available in your location
           </h1>
 
           <p class="text-muted lead mb-4" style="font-size: 16px; line-height: 1.7;">
@@ -53,7 +53,7 @@ foreach ($checklist ?? [] as $item) {
           <div class="row py-3 mb-4 rounded bg-light border">
             <div class="col-4 text-center border-right">
               <span class="text-muted small d-block">Starting Price</span>
-              <h4 class="font-weight-bold mb-0" style="color: #0f6e56;">₹<?= $price ?></h4>
+              <h4 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= $price ?></h4>
             </div>
             <div class="col-4 text-center border-right">
               <span class="text-muted small d-block">Duration</span>
@@ -149,6 +149,11 @@ foreach ($checklist ?? [] as $item) {
               $transCategory = 'Plumbing Repairs';
               $transTitle = 'Under-Sink Pipe Leak & Sanitary Drainage Repair';
               $transDesc = 'Rusted dripping joints and stagnant mold cleared out, replaced with heavy-duty anti-leak PVC P-traps and clean under-sink organization.';
+          } elseif (str_contains($svcSlugLower, 'ceiling') || str_contains($svcSlugLower, 'pop')) {
+              $transImg = 'before-after-fall-ceiling.jpg';
+              $transCategory = 'Fall Ceiling & POP';
+              $transTitle = 'Luxury False Ceiling & Architectural Cove Light Transformation';
+              $transDesc = 'Zero-crack Saint-Gobain gypsum false ceiling installation with heavy GI steel channel framing, warm LED ambient cove troughs, and laser-aligned profile spotlight channels by Refixel interior experts.';
           } elseif (str_contains($svcSlugLower, 'ac') || str_contains($svcSlugLower, 'cool') || str_contains($svcSlugLower, 'jet') || str_contains($svcSlugLower, 'air')) {
               $transImg = 'before-after-ac-service.png';
               $transCategory = 'AC Jet Service';
@@ -159,7 +164,7 @@ foreach ($checklist ?? [] as $item) {
           <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h3 class="font-weight-bold mb-0" style="font-size: 22px;">Transformation Showcase</h3>
-              <span class="badge badge-success px-3 py-1 font-weight-bold" style="background:#0f6e56; font-size:12px;">
+              <span class="badge px-3 py-1 font-weight-bold" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf; font-size:12px;">
                 <i class="fa fa-sparkles"></i> <?= $transCategory ?> Proof
               </span>
             </div>
@@ -178,6 +183,97 @@ foreach ($checklist ?? [] as $item) {
             </div>
           </div>
 
+          <?php if (str_contains($svcSlugLower, 'ceiling') || str_contains($svcSlugLower, 'pop')): ?>
+          <!-- Refixel Signature Fall Ceiling Craftsmanship Guide -->
+          <div class="mb-5 p-4 rounded shadow-sm border" style="background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); color: #fff; border-radius: 16px;">
+            <div class="d-flex align-items-center mb-3">
+              <span class="badge mr-2 px-3 py-1 font-weight-bold" style="background: rgba(242, 91, 41, 0.25); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.5); border-radius: 20px; font-size: 12px;">
+                ✦ Refixel Master Craftsmanship
+              </span>
+              <span class="text-white-50 small">5-Year Structural Workmanship Guarantee</span>
+            </div>
+            
+            <h3 class="font-weight-bold mb-2 text-white" style="font-size: 24px;">Precision Fall Ceiling Engineering by Refixel</h3>
+            <p class="text-white-50 mb-4" style="font-size: 14.5px; line-height: 1.7;">
+              At Refixel, we treat ceilings as the "fifth wall" of modern homes. Our expert fall ceiling teams execute complete end-to-end installations designed for architectural beauty, longevity, and thermal insulation. Discover why homeowners and interior architects trust Refixel:
+            </p>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #f25b29; color: #fff; font-size: 12px; font-weight: bold;">1</span>
+                    <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15px;">360° Digital Laser Leveling</h5>
+                  </div>
+                  <p class="text-white-50 small mb-0" style="line-height: 1.6;">
+                    We map every room perimeter with precision green-beam rotary lasers to maintain true horizontal alignment, eliminating ceiling dips, uneven corners, and optical distortion.
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #f25b29; color: #fff; font-size: 12px; font-weight: bold;">2</span>
+                    <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15px;">Heavy-Gauge GI Steel Framing</h5>
+                  </div>
+                  <p class="text-white-50 small mb-0" style="line-height: 1.6;">
+                    Only commercial-grade 0.50mm+ galvanized iron (GI) channels and intermediate suspension brackets are bolted with rawl plugs to guarantee zero sagging and vibration immunity.
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #f25b29; color: #fff; font-size: 12px; font-weight: bold;">3</span>
+                    <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15px;">Saint-Gobain Gyproc & MR Boards</h5>
+                  </div>
+                  <p class="text-white-50 small mb-0" style="line-height: 1.6;">
+                    We install genuine Saint-Gobain gypsum boards. In kitchens and bathrooms, green moisture-resistant (MR) boards prevent humidity expansion, warping, and mold buildup.
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #f25b29; color: #fff; font-size: 12px; font-weight: bold;">4</span>
+                    <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15px;">Concealed LED Cove & Magnetic Tracks</h5>
+                  </div>
+                  <p class="text-white-50 small mb-0" style="line-height: 1.6;">
+                    Specially handcrafted light troughs create smooth indirect illumination without hotspot glare. Pre-cut channels accommodate modern magnetic track lights and flush spotlights.
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #f25b29; color: #fff; font-size: 12px; font-weight: bold;">5</span>
+                    <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15px;">Anti-Crack Fiberglass Jointing</h5>
+                  </div>
+                  <p class="text-white-50 small mb-0" style="line-height: 1.6;">
+                    Tapered-edge boards are reinforced with fiberglass self-adhesive mesh tape and polymer jointing compound that flexes with seasonal temperature shifts, preventing hairline cracks.
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <div class="p-3 rounded h-100" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="rounded-circle mr-2 d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: #f25b29; color: #fff; font-size: 12px; font-weight: bold;">6</span>
+                    <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15px;">Dustless Sanding & Thermal Cooling</h5>
+                  </div>
+                  <p class="text-white-50 small mb-0" style="line-height: 1.6;">
+                    Vacuum-assisted machine sanding creates a super-smooth paint-ready surface. The overhead trapped air pocket naturally insulates your room, reducing summer AC cooling load by up to 25%.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+
           <!-- Verified Customer Reviews Section -->
           <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -195,14 +291,14 @@ foreach ($checklist ?? [] as $item) {
                         <span class="text-warning font-weight-bold"><?= (int)$rev['rating'] ?>★</span>
                       </div>
                       <p class="text-muted small mb-1 fst-italic">"<?= \App\Core\View::e($rev['review_text'] ?? 'Excellent work, very professional and punctual.') ?>"</p>
-                      <small class="text-success"><i class="fa fa-check-circle"></i> Verified Booking in <?= $cityName ?></small>
+                      <small class="text-success"><i class="fa fa-check-circle"></i> Verified Booking - Available in your location</small>
                     </div>
                   </div>
                 <?php endforeach; ?>
               </div>
             <?php else: ?>
               <div class="p-4 rounded bg-light border text-center">
-                <p class="text-muted mb-0 small">Be the first to review <?= $svcName ?> in <?= $cityName ?> after your service completion!</p>
+                <p class="text-muted mb-0 small">Be the first to review <?= $svcName ?> in your location after your service completion!</p>
               </div>
             <?php endif; ?>
           </div>
@@ -210,10 +306,10 @@ foreach ($checklist ?? [] as $item) {
           <!-- Service Areas Covered in this City -->
           <div class="mb-5">
             <h3 class="font-weight-bold mb-3" style="font-size: 22px;">
-              <i class="fa fa-map-marker text-success mr-2"></i> Service Coverage Across <?= $cityName ?>
+              <i class="fa fa-map-marker mr-2" style="color:#f25b29;"></i> Service Coverage - Available in your location
             </h3>
             <div class="p-3 rounded bg-white border">
-              <p class="text-muted small mb-2">Immediate technician dispatch available across:</p>
+              <p class="text-muted small mb-2">Immediate technician dispatch - Available in your location:</p>
               <div class="d-flex flex-wrap" style="gap: 6px;">
                 <?php if (!empty($serviceAreas)): ?>
                   <?php foreach ($serviceAreas as $area): ?>
@@ -258,23 +354,23 @@ foreach ($checklist ?? [] as $item) {
     <!-- Booking Sticky Action Card -->
     <div class="col-lg-4">
       <div class="card p-4 shadow-sm border-0 sticky-top" style="top: 90px; border-radius: 16px;">
-        <span class="badge badge-light text-uppercase mb-2 font-weight-bold" style="letter-spacing: 0.5px; color:#0f6e56;">Instant Doorstep Slot</span>
+        <span class="badge mb-2 font-weight-bold" style="letter-spacing: 0.5px; color:#f25b29; background: #fff3ec; border: 1px solid #ffdacf; width: fit-content;">Instant Doorstep Slot</span>
         <h4 class="font-weight-bold mb-1" style="font-size: 22px;"><?= $svcName ?></h4>
         <p class="text-muted small mb-3">Location: <strong><?= $cityName ?></strong></p>
 
         <div class="d-flex align-items-baseline mb-3 pb-3 border-bottom">
-          <h2 class="font-weight-bold mb-0" style="color: #0f6e56;">₹<?= $price ?></h2>
+          <h2 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= $price ?></h2>
           <span class="text-muted ml-2 small">Starting price • Inclusive of GST</span>
         </div>
 
         <ul class="list-unstyled mb-4 small" style="line-height: 1.9;">
-          <li><i class="fa fa-check text-success mr-2"></i> 100% Background-verified technician</li>
-          <li><i class="fa fa-check text-success mr-2"></i> Zero advance payment needed</li>
-          <li><i class="fa fa-check text-success mr-2"></i> Cash or UPI payment on service completion</li>
-          <li><i class="fa fa-check text-success mr-2"></i> 24-Hour satisfaction re-clean guarantee</li>
+          <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> 100% Background-verified technician</li>
+          <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> Zero advance payment needed</li>
+          <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> Cash or UPI payment on service completion</li>
+          <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> 24-Hour satisfaction re-clean guarantee</li>
         </ul>
 
-        <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white py-3 font-weight-bold text-center w-100 mb-2" style="background:#0f6e56; border-radius: 8px; font-size: 16px;">
+        <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white py-3 font-weight-bold text-center w-100 mb-2" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);">
           Book Doorstep Visit
         </a>
 

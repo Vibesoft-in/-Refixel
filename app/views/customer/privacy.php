@@ -2,7 +2,7 @@
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#0f6e56;">Home</a></li>
+      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
       <li class="breadcrumb-item active" aria-current="page">Privacy Policy</li>
     </ol>
   </nav>
@@ -12,10 +12,10 @@
     <p class="text-muted small mb-4">DPDP Act (India) Compliant • Last Updated: September 30, 2026</p>
 
     <div style="font-size: 15px; line-height: 1.8; color: #444;">
-      <h4 class="font-weight-bold mt-4" style="color: #0f6e56;">1. Introduction & Scope</h4>
-      <p>Primodomus ("we", "our", "us") values your privacy and is committed to protecting your personal data in accordance with the Digital Personal Data Protection (DPDP) Act, 2023 of India and applicable telecommunications regulations.</p>
+      <h4 class="font-weight-bold mt-4" style="color: #0a1c33;">1. Introduction & Scope</h4>
+      <p>REFIXEL ("we", "our", "us") values your privacy and is committed to protecting your personal data in accordance with the Digital Personal Data Protection (DPDP) Act, 2023 of India and applicable telecommunications regulations.</p>
 
-      <h4 class="font-weight-bold mt-4" style="color: #0f6e56;">2. Information We Collect</h4>
+      <h4 class="font-weight-bold mt-4" style="color: #0a1c33;">2. Information We Collect</h4>
       <p>To schedule and fulfill service requests, we collect:</p>
       <ul>
         <li><strong>Identity & Contact:</strong> Full name, verified mobile number, email address.</li>
@@ -24,7 +24,7 @@
         <li><strong>Transactional Records:</strong> Invoices, payment gateway reference IDs (we do not store credit card/CVV numbers).</li>
       </ul>
 
-      <h4 class="font-weight-bold mt-4" style="color: #0f6e56;">3. How We Use Your Data</h4>
+      <h4 class="font-weight-bold mt-4" style="color: #0a1c33;">3. How We Use Your Data</h4>
       <p>Your data is strictly utilized to:</p>
       <ul>
         <li>Dispatch verified technicians to your address for service execution.</li>
@@ -33,11 +33,11 @@
         <li>Comply with statutory GST and accounting laws under Indian regulations.</li>
       </ul>
 
-      <h4 class="font-weight-bold mt-4" style="color: #0f6e56;">4. Data Sharing & Third Parties</h4>
+      <h4 class="font-weight-bold mt-4" style="color: #0a1c33;">4. Data Sharing & Third Parties</h4>
       <p>We do NOT sell or rent your personal information to third-party advertisers. Information is disclosed solely to the assigned service technician (limited to your address, phone, and booking requirements during the active service window) and verified payment/messaging infrastructure providers (e.g. Razorpay, MSG91).</p>
 
-      <h4 class="font-weight-bold mt-4" style="color: #0f6e56;">5. Data Retention & Your Rights</h4>
-      <p>You have the right under the DPDP Act to request access to your personal data, rectify inaccuracies, or request account erasure by emailing <a href="mailto:privacy@primodomus.com">privacy@primodomus.com</a>.</p>
+      <h4 class="font-weight-bold mt-4" style="color: #0a1c33;">5. Data Retention & Your Rights</h4>
+      <p>You have the right under the DPDP Act to request access to your personal data, rectify inaccuracies, or request account erasure by emailing <a href="mailto:privacy@refixel.com" style="color:#f25b29;">privacy@refixel.com</a>.</p>
     </div>
   </div>
 </div>

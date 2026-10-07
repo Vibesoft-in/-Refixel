@@ -289,12 +289,12 @@ document.addEventListener('DOMContentLoaded', function () {
         datasets: [{
           label: 'Revenue (₹)',
           data: <?= json_encode($chartData['data'] ?? []) ?>,
-          borderColor: '#0f6e56',
+          borderColor: '#f25b29',
           backgroundColor: 'rgba(15, 110, 86, 0.1)',
           fill: true,
           tension: 0.3,
           borderWidth: 2,
-          pointBackgroundColor: '#0f6e56',
+          pointBackgroundColor: '#f25b29',
         }]
       },
       options: {
@@ -339,3 +339,4 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
+

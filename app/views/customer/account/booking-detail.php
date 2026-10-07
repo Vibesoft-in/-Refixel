@@ -44,7 +44,7 @@ foreach ($payments as $p) {
         </div>
 
         <div class="p-3 rounded bg-light border mb-4">
-          <h6 class="font-weight-bold mb-3" style="font-size: 14px; color: #0f6e56;">Service Progress Tracking</h6>
+          <h6 class="font-weight-bold mb-3" style="font-size: 14px; color: #0a1c33;">Service Progress Tracking</h6>
           <?php if (in_array($booking['status'], ['cancelled', 'refund_requested', 'refunded'])): ?>
             <div class="alert alert-danger mb-0 small">
               <i class="fa fa-exclamation-triangle mr-1"></i>
@@ -80,7 +80,7 @@ foreach ($payments as $p) {
         </div>
 
         <!-- Service Information -->
-        <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0f6e56;">Service Information</h5>
+        <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">Service Information</h5>
         <div class="row mb-4">
           <div class="col-md-6 mb-2">
             <span class="text-muted small d-block">Service Requested:</span>
@@ -104,12 +104,12 @@ foreach ($payments as $p) {
 
         <!-- Assigned Technician (if present) -->
         <?php if (!empty($booking['staff_name'])): ?>
-          <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0f6e56;">Assigned Professional</h5>
+          <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">Assigned Professional</h5>
           <div class="p-3 rounded bg-light border d-flex align-items-center mb-4">
             <img src="<?= \App\Core\View::asset('img/account.png') ?>" alt="Technician" class="rounded-circle mr-3" style="width: 48px; height: 48px;">
             <div>
               <h6 class="font-weight-bold mb-0"><?= \App\Core\View::e($booking['staff_name']) ?></h6>
-              <small class="text-success font-weight-bold"><i class="fa fa-shield"></i> Verified Primodomus Partner</small>
+              <small class="font-weight-bold" style="color: #f25b29;"><i class="fa fa-shield"></i> Verified REFIXEL Partner</small>
             </div>
           </div>
         <?php endif; ?>
@@ -140,7 +140,7 @@ foreach ($payments as $p) {
         <!-- Customer Reviews Section (Prompt 10) -->
         <?php if (in_array($booking['status'], ['completed', 'invoiced', 'reviewed', 'closed'])): ?>
           <div class="border-top pt-4 mt-4">
-            <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0f6e56;">Service Feedback & Review</h5>
+            <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">Service Feedback & Review</h5>
             <?php if (!empty($review)): ?>
               <div class="p-3 rounded bg-light border">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -184,7 +184,7 @@ foreach ($payments as $p) {
                   <textarea name="comment" class="form-control" rows="3" placeholder="Tell us how the service went, timeliness, and technician professionalism..." required></textarea>
                 </div>
 
-                <button type="submit" class="btn text-white font-weight-bold px-4 py-2" style="background:#0f6e56; border-radius: 8px;">
+                <button type="submit" class="btn text-white font-weight-bold px-4 py-2" style="background:#f25b29; border-radius: 8px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);">
                   Submit Review
                 </button>
               </form>
@@ -196,8 +196,8 @@ foreach ($payments as $p) {
 
     <!-- Booking Summary Sidebar -->
     <div class="col-lg-4">
-      <div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px; background:#f7fbf9; border:1px solid #dcece7;">
-        <h5 class="font-weight-bold mb-3" style="font-size: 18px;">Payment & Invoices</h5>
+      <div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px; background:#fff8f5; border:1px solid #ffdacf;">
+        <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">Payment & Invoices</h5>
 
         <div class="d-flex justify-content-between mb-2 small text-muted">
           <span>Starting Base Price:</span>
@@ -213,7 +213,7 @@ foreach ($payments as $p) {
         <?php if (!empty($invoices)): ?>
           <h6 class="font-weight-bold mb-2 small text-dark">Available GST Invoices:</h6>
           <?php foreach ($invoices as $inv): ?>
-            <a href="<?= \App\Core\View::url('/account/invoices/' . (int)$inv['id']) ?>" class="btn btn-outline-success font-weight-bold btn-sm w-100 mb-2 text-left d-flex justify-content-between align-items-center">
+            <a href="<?= \App\Core\View::url('/account/invoices/' . (int)$inv['id']) ?>" class="btn font-weight-bold btn-sm w-100 mb-2 text-left d-flex justify-content-between align-items-center" style="border: 1px solid #ffdacf; background: #ffffff; color: #f25b29;">
               <span><i class="fa fa-file-text-o mr-2"></i><?= \App\Core\View::e($inv['invoice_no']) ?></span>
               <span>₹<?= number_format((float)$inv['total'], 2) ?> &rarr;</span>
             </a>
@@ -260,7 +260,7 @@ foreach ($payments as $p) {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn text-white font-weight-bold" style="background:#0f6e56;">Confirm Reschedule</button>
+          <button type="submit" class="btn text-white font-weight-bold" style="background:#f25b29; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);">Confirm Reschedule</button>
         </div>
       </form>
     </div>

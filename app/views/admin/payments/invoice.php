@@ -94,8 +94,9 @@ $invoice = $invoice ?? [];
 
     <!-- Footer Notes -->
     <div class="border-top pt-3 small text-muted text-center">
-      <p class="mb-1">This is a computer-generated tax invoice for services provided by Primodomus.</p>
-      <p class="mb-0">Thank you for trusting Primodomus for your home care needs.</p>
+      <p class="mb-1">This is a computer-generated tax invoice for services provided by REFIXEL.</p>
+      <p class="mb-0">Thank you for trusting REFIXEL for your home care needs.</p>
     </div>
   </div>
 </div>
+

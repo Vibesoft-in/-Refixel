@@ -41,7 +41,7 @@ $skillIds = array_column($skills, 'id');
     <div class="col-lg-4">
       <!-- Profile Card -->
       <div class="stat-card mb-3 text-center">
-        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3 text-primary font-weight-bold" style="width: 72px; height: 72px; font-size: 28px; border: 2.5px solid #0f6e56;">
+        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3 text-primary font-weight-bold" style="width: 72px; height: 72px; font-size: 28px; border: 2.5px solid #f25b29;">
           <?= strtoupper(substr($user['name'], 0, 1)) ?>
         </div>
         <h5 class="font-weight-bold text-dark mb-1"><?= View::e($user['name']) ?></h5>
@@ -174,3 +174,4 @@ $skillIds = array_column($skills, 'id');
     </div>
   </div>
 </div>
+

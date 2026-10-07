@@ -13,9 +13,9 @@ $afterPhotos = $afterPhotos ?? [];
     </a>
   </div>
 
-  <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: #f0fdf4; border-left: 4px solid #0f6e56 !important;">
+  <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: #fff8f5; border-left: 4px solid #f25b29 !important;">
     <div class="card-body p-3">
-      <h6 class="font-weight-bold text-success mb-1"><i class="fa fa-check-circle mr-1"></i>Finalize Service & Completion</h6>
+      <h6 class="font-weight-bold mb-1" style=\color:#f25b29;"><i class="fa fa-check-circle mr-1"></i>Finalize Service & Completion</h6>
       <p class="small text-muted mb-0">Record your work summary, customer recommendations, and upload final photos to close the job and record your payout.</p>
     </div>
   </div>
@@ -100,3 +100,4 @@ $afterPhotos = $afterPhotos ?? [];
     </form>
   </div>
 </div>
+

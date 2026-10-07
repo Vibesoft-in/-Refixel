@@ -7,7 +7,7 @@ use App\Models\Service;
 
 class Cart
 {
-    protected const SESSION_KEY = '_primodomus_cart';
+    protected const SESSION_KEY = '_REFIXEL_cart';
     protected const TAX_RATE = 0.18; // 18% GST
 
     public static function init(): void
@@ -69,7 +69,7 @@ class Cart
         }
 
         $tax = round($subtotal * self::TAX_RATE, 2);
-        $total = $subtotal; // Starting prices in Primodomus are GST-inclusive or transparently calculated
+        $total = $subtotal; // Starting prices in REFIXEL are GST-inclusive or transparently calculated
 
         return [
             'items'      => $items,
@@ -126,3 +126,4 @@ class Cart
         $_SESSION[self::SESSION_KEY] = [];
     }
 }
+

@@ -30,7 +30,7 @@ $categories = $categories ?? [];
 
         <div class="col-md-6 form-group mb-3">
           <label class="font-weight-bold small text-dark">Email Address (Optional)</label>
-          <input type="email" name="email" class="form-control" placeholder="technician@primodomus.com">
+          <input type="email" name="email" class="form-control" placeholder="technician@REFIXEL.com">
         </div>
       </div>
 
@@ -72,3 +72,4 @@ $categories = $categories ?? [];
     </form>
   </div>
 </div>
+

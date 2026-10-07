@@ -40,7 +40,7 @@ class PaymentController extends Controller
         $totalGst = (float)(Database::fetchOne("SELECT IFNULL(SUM(gst_amount), 0) as s FROM invoices")['s'] ?? 0);
 
         return $this->render('admin.payments.index', [
-            'title'          => 'Payments & Invoices | Primodomus Admin',
+            'title'          => 'Payments & Invoices | REFIXEL Admin',
             'payments'       => $payments,
             'unpaidBookings' => $unpaidBookings,
             'totalPaid'      => $totalPaid,
@@ -117,7 +117,7 @@ class PaymentController extends Controller
         }
 
         return $this->render('admin.payments.invoice', [
-            'title'   => "GST Invoice #{$invoice['invoice_no']} | Primodomus Admin",
+            'title'   => "GST Invoice #{$invoice['invoice_no']} | REFIXEL Admin",
             'invoice' => $invoice,
         ], 'admin');
     }
@@ -179,3 +179,4 @@ class PaymentController extends Controller
         return $this->redirect('/admin/payments');
     }
 }
+

@@ -14,8 +14,8 @@ $isAvailable = !empty($profile['is_available']);
 
   <!-- Profile Card -->
   <div class="job-card mb-3 text-center py-4">
-    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px; border: 2px solid #0f6e56;">
-      <i class="fa fa-user-circle-o fa-3x" style="color: #0f6e56;"></i>
+    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-2" style="width: 70px; height: 70px; border: 2px solid #f25b29;">
+      <i class="fa fa-user-circle-o fa-3x" style="color: #f25b29;"></i>
     </div>
     <h5 class="font-weight-bold text-dark mb-1"><?= View::e($user['name'] ?? 'Technician') ?></h5>
     <p class="text-muted small mb-2"><?= View::e($user['email'] ?? '') ?> &bull; <?= View::e($user['phone'] ?? '') ?></p>

@@ -13,19 +13,19 @@ class PageController extends Controller
 {
     public function about(Request $request): Response
     {
-        return $this->render('customer.about', ['title' => 'About Us | Primodomus'], 'customer');
+        return $this->render('customer.about', ['title' => 'About Us | REFIXEL'], 'customer');
     }
 
     public function faq(Request $request): Response
     {
         $faqs = Faq::getGlobal();
-        return $this->render('customer.faq', ['title' => 'FAQs | Primodomus', 'faqs' => $faqs], 'customer');
+        return $this->render('customer.faq', ['title' => 'FAQs | REFIXEL', 'faqs' => $faqs], 'customer');
     }
 
     public function gallery(Request $request): Response
     {
         $items = GalleryItem::getActive();
-        return $this->render('customer.gallery', ['title' => 'Work Showcase | Primodomus', 'items' => $items], 'customer');
+        return $this->render('customer.gallery', ['title' => 'Work Showcase | REFIXEL', 'items' => $items], 'customer');
     }
 
     public function contact(Request $request): Response
@@ -56,22 +56,22 @@ class PageController extends Controller
 
     public function terms(Request $request): Response
     {
-        return $this->render('customer.terms', ['title' => 'Terms & Conditions | Primodomus'], 'customer');
+        return $this->render('customer.terms', ['title' => 'Terms & Conditions | REFIXEL'], 'customer');
     }
 
     public function privacy(Request $request): Response
     {
-        return $this->render('customer.privacy', ['title' => 'Privacy Policy | Primodomus'], 'customer');
+        return $this->render('customer.privacy', ['title' => 'Privacy Policy | REFIXEL'], 'customer');
     }
 
     public function refund(Request $request): Response
     {
-        return $this->render('customer.refund', ['title' => 'Refund Policy | Primodomus'], 'customer');
+        return $this->render('customer.refund', ['title' => 'Refund Policy | REFIXEL'], 'customer');
     }
 
     public function blog(Request $request): Response
     {
-        return $this->render('customer.blog', ['title' => 'Blog & Home Guides | Primodomus'], 'customer');
+        return $this->render('customer.blog', ['title' => 'Blog & Home Guides | REFIXEL'], 'customer');
     }
 
     public function partner(Request $request): Response
@@ -80,7 +80,7 @@ class PageController extends Controller
         $categories = \App\Models\Category::getActive();
         
         return $this->render('customer.partner', [
-            'title' => 'Become a Service Partner | Primodomus',
+            'title' => 'Become a Service Partner | REFIXEL',
             'cities' => $cities,
             'categories' => $categories
         ], 'customer');
@@ -99,7 +99,7 @@ class PageController extends Controller
 
     public function sitemap(Request $request): Response
     {
-        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.primodomus.com'), '/');
+        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.REFIXEL.com'), '/');
         $today = date('Y-m-d');
 
         $urls = [
@@ -163,7 +163,7 @@ class PageController extends Controller
 
     public function robots(Request $request): Response
     {
-        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.primodomus.com'), '/');
+        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.REFIXEL.com'), '/');
 
         $content = "User-agent: *\n";
         $content .= "Disallow: /admin\n";
@@ -179,4 +179,5 @@ class PageController extends Controller
         return Response::plain($content);
     }
 }
+
 

@@ -102,7 +102,7 @@ $attachments = $attachments ?? [];
     <!-- Right Column: Operations (Notes, Priority, Assign Technician) -->
     <div class="col-lg-5">
       <!-- Assign Technician Form -->
-      <div class="stat-card mb-3" style="border: 2px solid #0f6e56; background: #fafdfc;">
+      <div class="stat-card mb-3" style="border: 2px solid #f25b29; background: #fff8f5;">
         <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-motorcycle text-success mr-2"></i>Assign Technician</h6>
         
         <?php if (!empty($booking['staff_name'])): ?>
@@ -167,3 +167,4 @@ $attachments = $attachments ?? [];
     </div>
   </div>
 </div>
+

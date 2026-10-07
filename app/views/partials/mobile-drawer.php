@@ -1,5 +1,38 @@
 <?php
 $user = \App\Core\Auth::user();
+
+// Determine active state for mobile drawer navigation links
+$rawUri = $_SERVER['REQUEST_URI'] ?? '/';
+$pathOnly = parse_url($rawUri, PHP_URL_PATH) ?? '/';
+
+$appUrl = rtrim((string)\App\Core\Env::get('APP_URL', ''), '/');
+$appBasePath = parse_url($appUrl, PHP_URL_PATH) ?? '';
+if (!empty($appBasePath) && $appBasePath !== '/' && str_starts_with($pathOnly, $appBasePath)) {
+    $pathOnly = substr($pathOnly, strlen($appBasePath));
+}
+
+$scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+$publicDir  = dirname($scriptName);
+$rootDir    = dirname($publicDir);
+
+if ($publicDir !== '/' && $publicDir !== '.' && !empty($publicDir) && str_starts_with($pathOnly, $publicDir)) {
+    $pathOnly = substr($pathOnly, strlen($publicDir));
+} elseif ($rootDir !== '/' && $rootDir !== '.' && !empty($rootDir) && str_starts_with($pathOnly, $rootDir)) {
+    $pathOnly = substr($pathOnly, strlen($rootDir));
+}
+
+if (str_starts_with($pathOnly, '/public')) {
+    $pathOnly = substr($pathOnly, 7);
+}
+
+$cleanPath = '/' . trim($pathOnly, '/');
+$cleanPathLower = strtolower($cleanPath);
+
+$isHome = ($cleanPathLower === '/' || $cleanPathLower === '/index.php');
+$isAbout = str_starts_with($cleanPathLower, '/about');
+$isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cleanPathLower, '-services-in-') || str_contains($cleanPathLower, '-in-'));
+$isBlogs = (str_starts_with($cleanPathLower, '/blogs') || str_starts_with($cleanPathLower, '/blog'));
+$isContact = str_starts_with($cleanPathLower, '/contact');
 ?>
 <div class="hometfn_popup">
   <div class="popup_footer">
@@ -20,11 +53,11 @@ $user = \App\Core\Auth::user();
     <?php if ($user): ?>
     <div class="bottom_option" style="padding-top: 5px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px;">
       <ul>
-        <li><a href="<?= \App\Core\View::url('/account') ?>"><span class="menu_ico"><i class="fa fa-dashboard text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Dashboard <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/bookings') ?>"><span class="menu_ico"><i class="fa fa-calendar text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> My Bookings <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/invoices') ?>"><span class="menu_ico"><i class="fa fa-file-text-o text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Invoices & Receipts <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/profile') ?>"><span class="menu_ico"><i class="fa fa-user-circle text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Profile & Address <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/privacy') ?>"><span class="menu_ico"><i class="fa fa-shield text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Privacy & Data Rights <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/account') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Dashboard <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/account/bookings') ?>"><span class="menu_ico"><i class="fa fa-calendar" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> My Bookings <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/account/invoices') ?>"><span class="menu_ico"><i class="fa fa-file-text-o" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Invoices & Receipts <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/account/profile') ?>"><span class="menu_ico"><i class="fa fa-user-circle" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Profile & Address <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/account/privacy') ?>"><span class="menu_ico"><i class="fa fa-shield" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Privacy & Data Rights <i class="fa fa-angle-right"></i></a></li>
       </ul>
     </div>
     <?php else: ?>
@@ -45,15 +78,15 @@ $user = \App\Core\Auth::user();
     <?php endif; ?>
     <div class="bottom_option">
       <ul>
-        <li><a href="<?= \App\Core\View::url('/') ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/home2.png') ?>" alt="Home"></span> Home <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/about') ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/info.png') ?>" alt="About"></span> About Us <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/services') ?>"><span class="menu_ico"><i class="fa fa-briefcase text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Services <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/blogs') ?>"><span class="menu_ico"><i class="fa fa-file-text text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Blogs <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/partner') ?>"><span class="menu_ico"><i class="fa fa-handshake-o text-success" style="font-size:18px; width:20px; text-align:center;"></i></span> Service Partner <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/') ?>" class="<?= $isHome ? 'active' : '' ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/home2.png') ?>" alt="Home"></span> Home <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/about') ?>" class="<?= $isAbout ? 'active' : '' ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/info.png') ?>" alt="About"></span> About Us <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/services') ?>" class="<?= $isServices ? 'active' : '' ?>"><span class="menu_ico"><i class="fa fa-briefcase" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Services <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/blogs') ?>" class="<?= $isBlogs ? 'active' : '' ?>"><span class="menu_ico"><i class="fa fa-file-text" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Blogs <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/partner') ?>"><span class="menu_ico"><i class="fa fa-handshake-o" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Service Partner <i class="fa fa-angle-right"></i></a></li>
         <li><a href="<?= \App\Core\View::url('/terms') ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/pages.png') ?>" alt="Terms"></span> Terms & Conditions <i class="fa fa-angle-right"></i></a></li>
         <li><a href="<?= \App\Core\View::url('/refund') ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/refund_policy.png') ?>" alt="Refund Policy"></span> Refund Policy <i class="fa fa-angle-right"></i></a></li>
         <li><a href="<?= \App\Core\View::url('/privacy') ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/privacy_policy.png') ?>" alt="Privacy Policy"></span> Privacy Policy <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/contact') ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/support.png') ?>" alt="Support"></span> Help & Support <i class="fa fa-angle-right"></i></a></li>
+        <li><a href="<?= \App\Core\View::url('/contact') ?>" class="<?= $isContact ? 'active' : '' ?>"><span class="menu_ico"><img src="<?= \App\Core\View::asset('img/support.png') ?>" alt="Support"></span> Help & Support <i class="fa fa-angle-right"></i></a></li>
       </ul>
 
       <?php if ($user): ?>

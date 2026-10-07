@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Primodomus Cron: System Maintenance & Security Cleanup
+ * REFIXEL Cron: System Maintenance & Security Cleanup
  * Purges expired password reset tokens and stale rate limiting attempt logs.
  * Usage: php cron/cleanup_tasks.php
  */
@@ -37,3 +37,4 @@ if (is_dir($cacheDir)) {
 }
 
 echo "[CRON] System cleanup finished successfully.\n";
+

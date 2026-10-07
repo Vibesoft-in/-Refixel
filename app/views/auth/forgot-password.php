@@ -11,5 +11,5 @@
 </form>
 
 <div class="text-center mt-4">
-  <a href="<?= \App\Core\View::url('/login') ?>" style="color:#0f6e56; font-size:14px; font-weight:600;">&larr; Back to Login</a>
+  <a href="<?= \App\Core\View::url('/login') ?>" style="color:#f25b29; font-size:14px; font-weight:600;">&larr; Back to Login</a>
 </div>

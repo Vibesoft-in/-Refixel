@@ -26,7 +26,7 @@ class DashboardController extends Controller
         $recentEarnings = array_slice(StaffEarning::getByStaff($staffId), 0, 3);
 
         return $this->render('staff.dashboard', [
-            'title'           => 'Technician Portal | Primodomus',
+            'title'           => 'Technician Portal | REFIXEL',
             'user'            => $user,
             'todayJobs'       => $todayJobs,
             'upcomingJobs'    => $upcomingJobs,
@@ -38,3 +38,4 @@ class DashboardController extends Controller
         ], 'staff');
     }
 }
+

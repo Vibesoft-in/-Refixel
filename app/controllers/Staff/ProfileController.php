@@ -19,7 +19,7 @@ class ProfileController extends Controller
         $skills = StaffProfile::getSkills($user['id']);
 
         return $this->render('staff.profile', [
-            'title'   => 'My Profile | Primodomus Staff',
+            'title'   => 'My Profile | REFIXEL Staff',
             'user'    => $user,
             'profile' => $profile,
             'skills'  => $skills,
@@ -42,3 +42,4 @@ class ProfileController extends Controller
         return $this->redirect('/staff/profile');
     }
 }
+
