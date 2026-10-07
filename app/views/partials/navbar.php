@@ -43,8 +43,14 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
 <nav class="navbar navbar-expand-lg navbar-light main_menu">
   <div class="container-fluid header-nav-container d-flex align-items-center justify-content-between">
     <a class="navbar-brand py-0" href="<?= \App\Core\View::url('/') ?>">
-      <img src="<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>" alt="REFIXEL" style="height: 58px; width: auto; object-fit: contain;">
+      <img src="<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>" alt="REFIXEL" class="nav-brand-logo" style="max-height: 48px; width: auto; object-fit: contain;">
     </a>
+
+    <style>
+      @media (max-width: 991px) {
+          .nav-brand-logo { max-height: 38px !important; }
+      }
+    </style>
 
     <!-- Desktop Navigation Links -->
     <div class="d-none d-lg-flex flex-grow-1 justify-content-center">
