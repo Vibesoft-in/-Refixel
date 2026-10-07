@@ -155,8 +155,8 @@ if (empty($activeCategory)) {
   max-width: 100%;
   margin-left: 0;
   margin-right: 0;
-  padding-left: 7px;
-  padding-right: clamp(16px, 4.2vw, 64px);
+  padding-left: clamp(10px, 2vw, 32px);
+  padding-right: clamp(10px, 2vw, 32px);
   padding-top: 15px;
   padding-bottom: 50px;
   box-sizing: border-box;
@@ -165,7 +165,7 @@ if (empty($activeCategory)) {
 .services-flex-layout {
   display: flex;
   align-items: flex-start;
-  gap: clamp(24px, 5.5vw, 85px);
+  gap: clamp(16px, 3vw, 48px);
   width: 100%;
   box-sizing: border-box;
 }
@@ -360,14 +360,15 @@ if (empty($activeCategory)) {
 .services-content-col {
   flex: 1 1 0;
   min-width: 0;
-  max-width: 1110px;
+  width: auto;
+  max-width: none;
   box-sizing: border-box;
 }
 
 .services-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -384,20 +385,6 @@ if (empty($activeCategory)) {
   width: 100%;
   margin-bottom: 0;
   box-sizing: border-box;
-}
-
-@media (max-width: 1150px) and (min-width: 768px) {
-  .services-cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-}
-
-@media (max-width: 767px) {
-  .services-cards-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
 }
 
 /* ── Service Card Styling with Distinct Gray Shadow ── */
@@ -549,175 +536,143 @@ if (empty($activeCategory)) {
 }
 
 /* ════════════════════════════════════════
-   MOBILE: Off-canvas sidebar overlay
+   BELOW 992px: Stack Vertically + Horizontal Scrollable Category Strip
    ════════════════════════════════════════ */
 @media (max-width: 991px) {
-  /* Full-width content — sidebar is out of flow */
   .services-flex-layout {
-    display: block;
-    gap: 0;
+    flex-direction: column !important;
+    gap: 18px !important;
   }
 
   .services-wrapper-fluid {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: clamp(10px, 2vw, 32px);
+    padding-right: clamp(10px, 2vw, 32px);
   }
 
-  /* Off-canvas panel */
+  /* The sidebar becomes full width and non-sticky */
   .services-sidebar-col {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 290px;
-    max-width: 88vw;
-    z-index: 1080;
-    transform: translateX(-110%);
-    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-    overflow-y: auto;
-    background: #fff;
-    box-shadow: 4px 0 28px rgba(0, 0, 0, 0.16);
-    border-radius: 0 20px 20px 0;
-    padding: 0;
-  }
-
-  .services-sidebar-col.is-open {
-    transform: translateX(0);
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    border-radius: 0 !important;
+    height: auto !important;
   }
 
   .services-sidebar-card {
-    position: static;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    padding: 0 14px 32px;
-    height: auto;
-    max-height: none;
-    overflow-y: visible;
-    overscroll-behavior: auto;
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
-  /* ── Sidebar close header ── */
+  .sidebar-header {
+    display: none !important;
+  }
+
   .sidebar-close-btn {
+    display: none !important;
+  }
+
+  /* The category list becomes a horizontal, scrollable strip above the grid */
+  .sidebar-categories-list {
     display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 14px 12px;
-    border-bottom: 1px solid #f1f5f9;
-    margin-bottom: 10px;
-    font-weight: 700;
-    font-size: 15px;
-    color: #1a1a1a;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    gap: 10px !important;
+    padding: 2px 2px 8px 2px !important;
+    width: 100% !important;
+    white-space: nowrap !important;
   }
 
-  .close-x {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f1f5f9;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    cursor: pointer;
-    color: #334155;
-    flex-shrink: 0;
-    line-height: 1;
+  .sidebar-categories-list::-webkit-scrollbar {
+    display: none !important;
   }
 
-  /* ── Dark backdrop ── */
-  .sidebar-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.48);
-    z-index: 1079;
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+  .cat-sidebar-link {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    margin-right: 0 !important;
+    padding: 8px 16px !important;
+    border-radius: 50px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
   }
 
-  .sidebar-backdrop.is-open {
-    display: block;
+  .cat-sidebar-link:hover {
+    transform: none !important;
   }
 
-  /* ── Floating hamburger category button (matching Add to Cart icon style) ── */
+  .cat-sidebar-link.active {
+    background: #fff5f0 !important;
+    color: #f25b29 !important;
+    font-weight: 700 !important;
+    border-color: #ffdacf !important;
+    box-shadow: 0 2px 10px rgba(242, 91, 41, 0.15) !important;
+  }
+
+  .cat-icon-wrap {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    margin-right: 8px !important;
+    padding: 2px !important;
+  }
+
+  .cat-chevron {
+    display: none !important;
+  }
+
+  /* Hide the "Need Help Choosing?" box on mobile */
+  .sidebar-support-widget {
+    display: none !important;
+  }
+
   .mobile-filter-btn {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    right: 18px;
-    bottom: 84px;
-    z-index: 1070;
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    border-radius: 50%;
-    background: #ffffff;
-    color: #f25b29;
-    border: 2px solid #ffffff;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(242, 91, 41, 0.25);
-    cursor: pointer;
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 0;
-    outline: none;
+    display: none !important;
   }
 
-  .mobile-filter-btn i {
-    font-size: 20px;
-    line-height: 1;
-    color: #f25b29;
-    transition: color 0.2s ease;
+  .sidebar-backdrop {
+    display: none !important;
   }
 
-  .mobile-filter-btn:hover {
-    background: #f25b29 !important;
-    color: #ffffff !important;
-    border-color: #f25b29 !important;
-    transform: scale(1.12);
-    box-shadow: 0 6px 20px rgba(242, 91, 41, 0.45) !important;
-  }
-
-  .mobile-filter-btn:hover i {
-    color: #ffffff !important;
-  }
-
-  .mobile-filter-btn:active {
-    transform: scale(0.94);
-  }
-
-  /* Content takes full width */
   .services-content-col {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .services-cards-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
-/* Hide mobile elements on desktop */
-@media (min-width: 992px) {
-  .mobile-filter-btn {
-    display: none !important;
-  }
-  .sidebar-backdrop {
-    display: none !important;
-  }
-  .sidebar-close-btn {
-    display: none !important;
+/* ════════════════════════════════════════
+   BELOW 576px: 1 Column Cards Grid
+   ════════════════════════════════════════ */
+@media (max-width: 575px) {
+  .services-cards-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
   }
 }
 
-@media (max-width: 580px) {
-  .services-cards-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-  }
+/* Hide mobile off-canvas and floating filter elements on all screens */
+.mobile-filter-btn,
+.sidebar-backdrop,
+.sidebar-close-btn {
+  display: none !important;
 }
 </style>
 

@@ -94,11 +94,13 @@ img {
     opacity: .45;
 }
 
-/* Mobile par bottom bar me pehle se Cart hai — do jagah dikhana
-    bekaar hai aur header bhi tang ho jata hai. */
 @media (max-width:991px) {
     .hdr-cart {
-        display: none;
+        display: inline-flex !important;
+        height: 35px;
+        padding: 0 10px;
+        font-size: 13px;
+        gap: 5px;
     }
 }
 
@@ -3017,12 +3019,13 @@ ul.navbar-nav.mr-auto {
         -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
     }
 
-    .navbar-toggler {
-        padding: 0.15rem 0.25rem;
+    .navbar-toggler,
+    .navbar-light .navbar-toggler {
+        display: none !important;
     }
 
-    .navbar-light .navbar-toggler {
-        display: none;
+    .navbar-collapse {
+        display: flex !important;
     }
 
     .our_cart {
@@ -3661,12 +3664,13 @@ ul.navbar-nav.mr-auto {
         -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
     }
 
-    .navbar-toggler {
-        padding: 0.15rem 0.25rem;
+    .navbar-toggler,
+    .navbar-light .navbar-toggler {
+        display: none !important;
     }
 
-    .navbar-light .navbar-toggler {
-        display: none;
+    .navbar-collapse {
+        display: flex !important;
     }
 
     .our_cart {

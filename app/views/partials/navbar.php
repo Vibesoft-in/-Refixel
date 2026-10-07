@@ -41,39 +41,117 @@ $isBlogs = (str_starts_with($cleanPathLower, '/blogs') || str_starts_with($clean
 $isContact = str_starts_with($cleanPathLower, '/contact');
 ?>
 <nav class="navbar navbar-expand-lg navbar-light main_menu">
-  <div class="container-fluid header-nav-container d-flex align-items-center justify-content-between">
+  <div class="container-fluid header-nav-container d-flex flex-wrap align-items-center justify-content-between">
     <a class="navbar-brand py-0" href="<?= \App\Core\View::url('/') ?>">
       <img src="<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>" alt="REFIXEL" class="nav-brand-logo" style="max-height: 48px; width: auto; object-fit: contain;">
     </a>
 
     <style>
+      /* Force collapse container to stay open: display: flex !important on .navbar-collapse */
+      .navbar-collapse,
+      .header-nav-collapse {
+        display: flex !important;
+        visibility: visible !important;
+      }
+      .navbar-toggler {
+        display: none !important;
+      }
+      @media (min-width: 992px) {
+        .header-nav-container {
+          flex-wrap: nowrap !important;
+        }
+        .header-center-nav {
+          gap: clamp(14px, 1.8vw, 28px);
+          font-weight: 600;
+          font-size: clamp(14px, 1.05vw, 16px);
+        }
+        .header-partner-wrap {
+          margin-left: clamp(14px, 1.5vw, 26px);
+        }
+      }
       @media (max-width: 991px) {
-          .nav-brand-logo { max-height: 38px !important; }
+        .nav-brand-logo { max-height: 38px !important; }
+        .header-nav-container {
+          flex-wrap: wrap !important;
+          padding: 6px 12px 8px 12px !important;
+        }
+        .header-action-btns {
+          margin-left: auto !important;
+        }
+        .header-nav-collapse {
+          flex-basis: 100% !important;
+          width: 100% !important;
+          order: 3 !important;
+          overflow-x: auto !important;
+          overflow-y: hidden !important;
+          -webkit-overflow-scrolling: touch !important;
+          white-space: nowrap !important;
+          scrollbar-width: none !important; /* Firefox */
+          -ms-overflow-style: none !important; /* IE 10+ */
+          margin-top: 6px !important;
+          padding-top: 6px !important;
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
+          justify-content: flex-start !important;
+        }
+        .header-nav-collapse::-webkit-scrollbar {
+          display: none !important; /* Safari and Chrome */
+        }
+        .header-nav-scroll-wrap {
+          display: flex !important;
+          align-items: center !important;
+          white-space: nowrap !important;
+          width: max-content !important;
+          gap: 6px !important;
+        }
+        .header-center-nav {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: 6px !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        .header-center-nav li {
+          flex: 0 0 auto !important;
+          white-space: nowrap !important;
+        }
+        .header-nav-link {
+          font-size: 14px !important;
+          padding: 5px 10px !important;
+          white-space: nowrap !important;
+          display: inline-block !important;
+          border-radius: 6px;
+        }
+        .header-nav-link.active {
+          color: #f25b29 !important;
+          background: rgba(242, 91, 41, 0.08);
+        }
+        .header-partner-wrap {
+          flex: 0 0 auto !important;
+          margin-left: 6px !important;
+          white-space: nowrap !important;
+        }
+        .header-nav-partner {
+          font-size: 13px !important;
+          padding: 5px 12px !important;
+          white-space: nowrap !important;
+        }
+        .hdr-cart {
+          display: inline-flex !important;
+          height: 35px !important;
+          padding: 0 10px !important;
+          font-size: 13px !important;
+          gap: 5px !important;
+        }
+        .nav-indicator-line {
+          display: none !important;
+        }
       }
     </style>
 
-    <!-- Desktop Navigation Links -->
-    <div class="d-none d-lg-flex flex-grow-1 justify-content-center">
-      <div class="d-flex align-items-center">
-        <!-- 5 Trackable Links with Dynamic Underline Indicator -->
-        <ul class="d-flex mb-0 pl-0 list-unstyled align-items-center header-center-nav position-relative" id="hdrTrackableNav" style="gap: clamp(14px, 1.8vw, 28px); font-weight: 600; font-size: clamp(14px, 1.05vw, 16px);">
-          <li><a href="<?= \App\Core\View::url('/') ?>" class="header-nav-link text-decoration-none <?= $isHome ? 'active' : '' ?>" data-nav="home">Home</a></li>
-          <li><a href="<?= \App\Core\View::url('/about') ?>" class="header-nav-link text-decoration-none <?= $isAbout ? 'active' : '' ?>" data-nav="about">About</a></li>
-          <li><a href="<?= \App\Core\View::url('/services') ?>" class="header-nav-link text-decoration-none <?= $isServices ? 'active' : '' ?>" data-nav="services">Services</a></li>
-          <li><a href="<?= \App\Core\View::url('/blogs') ?>" class="header-nav-link text-decoration-none <?= $isBlogs ? 'active' : '' ?>" data-nav="blogs">Blogs</a></li>
-          <li><a href="<?= \App\Core\View::url('/contact') ?>" class="header-nav-link text-decoration-none <?= $isContact ? 'active' : '' ?>" data-nav="contact">Contact Us</a></li>
-          <li class="nav-indicator-line" id="hdrNavIndicator" aria-hidden="true"></li>
-        </ul>
-
-        <!-- Separate Service Partner button (not underlined / outside tracking) -->
-        <div class="header-partner-wrap" style="margin-left: clamp(14px, 1.5vw, 26px);">
-          <a href="<?= \App\Core\View::url('/partner') ?>" class="header-nav-partner text-decoration-none px-3 py-2 rounded-pill">Service Partner</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="d-flex align-items-center header-action-btns ml-auto">
-      <div class="d-none d-lg-flex align-items-center mr-3">
+    <!-- Header Action Buttons (Cart & Login) - Desktop Order 3, Mobile Order 2 -->
+    <div class="d-flex align-items-center header-action-btns order-2 order-lg-3 ml-auto">
+      <div class="d-flex align-items-center mr-2 mr-md-3">
         <a class="hdr-cart" id="hdrCart" href="<?= \App\Core\View::url('/cart') ?>" aria-label="Cart">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
@@ -121,17 +199,28 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
           </li>
         <?php endif; ?>
       </ul>
+      </div>
     </div>
 
-    <!-- Mobile Hamburger Drawer Trigger (Header) -->
-    <button class="btn p-1 d-lg-none ml-2 border-0 open-mobile-drawer" type="button" aria-label="Toggle navigation" style="background: transparent; color: #0a1c33;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    </button>
-  </div>
+    <!-- Navigation Links: Forced open at all sizes, horizontally scrollable below 992px -->
+    <div class="collapse navbar-collapse header-nav-collapse d-flex flex-grow-1 justify-content-center order-3 order-lg-2" id="navbarMainCollapse">
+      <div class="header-nav-scroll-wrap d-flex align-items-center">
+        <!-- 5 Trackable Links with Dynamic Underline Indicator -->
+        <ul class="d-flex mb-0 pl-0 list-unstyled align-items-center header-center-nav position-relative" id="hdrTrackableNav">
+          <li><a href="<?= \App\Core\View::url('/') ?>" class="header-nav-link text-decoration-none <?= $isHome ? 'active' : '' ?>" data-nav="home">Home</a></li>
+          <li><a href="<?= \App\Core\View::url('/about') ?>" class="header-nav-link text-decoration-none <?= $isAbout ? 'active' : '' ?>" data-nav="about">About</a></li>
+          <li><a href="<?= \App\Core\View::url('/services') ?>" class="header-nav-link text-decoration-none <?= $isServices ? 'active' : '' ?>" data-nav="services">Services</a></li>
+          <li><a href="<?= \App\Core\View::url('/blogs') ?>" class="header-nav-link text-decoration-none <?= $isBlogs ? 'active' : '' ?>" data-nav="blogs">Blogs</a></li>
+          <li><a href="<?= \App\Core\View::url('/contact') ?>" class="header-nav-link text-decoration-none <?= $isContact ? 'active' : '' ?>" data-nav="contact">Contact Us</a></li>
+          <li class="nav-indicator-line" id="hdrNavIndicator" aria-hidden="true"></li>
+        </ul>
+
+        <!-- Separate Service Partner button (not underlined / outside tracking) -->
+        <div class="header-partner-wrap">
+          <a href="<?= \App\Core\View::url('/partner') ?>" class="header-nav-partner text-decoration-none px-3 py-2 rounded-pill">Service Partner</a>
+        </div>
+      </div>
+    </div>
   </div>
 </nav>
 
