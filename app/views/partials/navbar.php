@@ -39,6 +39,20 @@ $isAbout = str_starts_with($cleanPathLower, '/about');
 $isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cleanPathLower, '-services-in-') || str_contains($cleanPathLower, '-in-'));
 $isBlogs = (str_starts_with($cleanPathLower, '/blogs') || str_starts_with($cleanPathLower, '/blog'));
 $isContact = str_starts_with($cleanPathLower, '/contact');
+
+// Initial cart items for instant header badge rendering
+$initialCartRaw = class_exists('\App\Core\Cart') ? \App\Core\Cart::getRaw() : [];
+$initialCartCount = 0;
+if (!empty($initialCartRaw)) {
+    foreach ($initialCartRaw as $q) {
+        $initialCartCount += (int)$q;
+    }
+}
+$initialCartTotal = 0;
+if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
+    $cartDetails = \App\Core\Cart::getDetails();
+    $initialCartTotal = (float)($cartDetails['total'] ?? 0);
+}
 ?>
 <nav class="navbar navbar-expand-lg navbar-light main_menu">
   <div class="container-fluid header-nav-container d-flex flex-wrap align-items-center justify-content-between">
@@ -56,6 +70,46 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
       .navbar-toggler {
         display: none !important;
       }
+
+      /* Header Cart Notification Badge */
+      .hdr-cart-icon-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+      .hdr-cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -9px;
+        background: #f25b29;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        line-height: 14px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(242, 91, 41, 0.45);
+        z-index: 10;
+        pointer-events: none;
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      @keyframes cartBadgePop {
+        0% { transform: scale(0.3); opacity: 0; }
+        60% { transform: scale(1.3); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .hdr-cart-badge.badge-pop {
+        animation: cartBadgePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
       @media (min-width: 992px) {
         .header-nav-container {
           flex-wrap: nowrap !important;
@@ -70,13 +124,110 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
         }
       }
       @media (max-width: 991px) {
-        .nav-brand-logo { max-height: 38px !important; }
         .header-nav-container {
           flex-wrap: wrap !important;
-          padding: 6px 12px 8px 12px !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 8px 14px !important;
+        }
+        .navbar-brand {
+          margin: 0 !important;
+          padding: 0 !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          order: 1 !important;
+          flex: 0 0 auto !important;
+          max-width: calc(100% - 96px) !important;
+        }
+        .nav-brand-logo {
+          max-height: 38px !important;
+          height: 38px !important;
+          width: auto !important;
+          object-fit: contain !important;
         }
         .header-action-btns {
+          order: 2 !important;
           margin-left: auto !important;
+          margin-right: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          flex: 0 0 auto !important;
+        }
+        /* Mobile Cart: Sleek Circular Icon Button with Notification Pop Badge */
+        .hdr-cart {
+          display: inline-flex !important;
+          width: 38px !important;
+          height: 38px !important;
+          min-width: 38px !important;
+          max-width: 38px !important;
+          padding: 0 !important;
+          border-radius: 50% !important;
+          align-items: center !important;
+          justify-content: center !important;
+          position: relative !important;
+          margin: 0 !important;
+          gap: 0 !important;
+          border: 1.5px solid rgba(242, 91, 41, 0.35) !important;
+          background: #ffffff !important;
+          flex-shrink: 0 !important;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+        }
+        .hdr-cart svg {
+          stroke: #f25b29 !important;
+          width: 18px !important;
+          height: 18px !important;
+          margin: 0 !important;
+        }
+        .hdr-cart #hdrCartText {
+          display: none !important;
+        }
+        .hdr-cart .hdr-cart-icon-wrap {
+          position: static !important;
+        }
+        .hdr-cart .hdr-cart-badge {
+          position: absolute !important;
+          top: -4px !important;
+          right: -4px !important;
+          font-size: 10.5px !important;
+          min-width: 18px !important;
+          height: 18px !important;
+          line-height: 14px !important;
+          border: 2px solid #ffffff !important;
+          box-shadow: 0 2px 6px rgba(242, 91, 41, 0.5) !important;
+        }
+        .our_cart {
+          margin: 0 !important;
+          flex-shrink: 0 !important;
+        }
+        .our_cart ul {
+          margin: 0 !important;
+          padding: 0 !important;
+          list-style: none !important;
+          display: flex !important;
+          align-items: center !important;
+        }
+        .our_cart ul li {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        .our_cart ul li a {
+          width: 38px !important;
+          height: 38px !important;
+          min-width: 38px !important;
+          max-width: 38px !important;
+          border-radius: 50% !important;
+          background: #f25b29 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          box-shadow: 0 2px 6px rgba(242, 91, 41, 0.25) !important;
+        }
+        .our_cart ul li a strong,
+        .our_cart ul li a i.fa-angle-down {
+          display: none !important;
         }
         .header-nav-collapse {
           flex-basis: 100% !important;
@@ -88,7 +239,7 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
           white-space: nowrap !important;
           scrollbar-width: none !important; /* Firefox */
           -ms-overflow-style: none !important; /* IE 10+ */
-          margin-top: 6px !important;
+          margin-top: 8px !important;
           padding-top: 6px !important;
           border-top: 1px solid rgba(0, 0, 0, 0.06);
           justify-content: flex-start !important;
@@ -136,30 +287,28 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
           padding: 5px 12px !important;
           white-space: nowrap !important;
         }
-        .hdr-cart {
-          display: inline-flex !important;
-          height: 35px !important;
-          padding: 0 10px !important;
-          font-size: 13px !important;
-          gap: 5px !important;
-        }
         .nav-indicator-line {
           display: none !important;
         }
       }
     </style>
 
-    <!-- Header Action Buttons (Cart & Login) - Desktop Order 3, Mobile Order 2 -->
+    <!-- Header Action Buttons (Cart & Login) - Desktop Order 3, Mobile Order 2 (In front of logo on right) -->
     <div class="d-flex align-items-center header-action-btns order-2 order-lg-3 ml-auto">
-      <div class="d-flex align-items-center mr-2 mr-md-3">
-        <a class="hdr-cart" id="hdrCart" href="<?= \App\Core\View::url('/cart') ?>" aria-label="Cart">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <a class="hdr-cart mr-2 mr-lg-3" id="hdrCart" href="<?= \App\Core\View::url('/cart') ?>" aria-label="Cart">
+        <div class="hdr-cart-icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"></path>
           </svg>
-          <span id="hdrCartText" class="hc-empty">Cart</span>
-        </a>
-      </div>
+          <span class="hdr-cart-badge" id="hdrCartBadge" style="<?= $initialCartCount > 0 ? '' : 'display: none;' ?>">
+            <?= $initialCartCount > 99 ? '99+' : $initialCartCount ?>
+          </span>
+        </div>
+        <span id="hdrCartText" class="<?= $initialCartCount > 0 ? '' : 'hc-empty' ?>">
+          <?= $initialCartCount > 0 ? ($initialCartCount . ' item' . ($initialCartCount > 1 ? 's' : '') . ' · ₹' . number_format($initialCartTotal, 0)) : 'Cart' ?>
+        </span>
+      </a>
 
       <div class="our_cart">
       <ul>

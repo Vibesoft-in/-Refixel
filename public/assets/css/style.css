@@ -94,13 +94,83 @@ img {
     opacity: .45;
 }
 
+.hdr-cart-icon-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.hdr-cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -9px;
+    background: #f25b29;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    line-height: 14px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(242, 91, 41, 0.45);
+    z-index: 10;
+    pointer-events: none;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes cartBadgePop {
+    0% { transform: scale(0.3); opacity: 0; }
+    60% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.hdr-cart-badge.badge-pop {
+    animation: cartBadgePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 @media (max-width:991px) {
     .hdr-cart {
         display: inline-flex !important;
-        height: 35px;
-        padding: 0 10px;
-        font-size: 13px;
-        gap: 5px;
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        margin: 0 8px 0 0 !important;
+        gap: 0 !important;
+        border: 1.5px solid rgba(242, 91, 41, 0.35) !important;
+        background: #ffffff !important;
+        flex-shrink: 0 !important;
+    }
+
+    .hdr-cart #hdrCartText {
+        display: none !important;
+    }
+
+    .hdr-cart .hdr-cart-icon-wrap {
+        position: static !important;
+    }
+
+    .hdr-cart .hdr-cart-badge {
+        position: absolute !important;
+        top: -4px !important;
+        right: -4px !important;
+        font-size: 10.5px !important;
+        min-width: 18px !important;
+        height: 18px !important;
+        border: 2px solid #ffffff !important;
+        box-shadow: 0 2px 6px rgba(242, 91, 41, 0.5) !important;
     }
 }
 

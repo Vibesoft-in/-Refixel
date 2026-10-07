@@ -2257,6 +2257,28 @@
   box-shadow: none !important;
 }
 
+@media (max-width: 991px) {
+  .header-action-btns .hdr-cart {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    margin-right: 8px !important;
+  }
+  .header-action-btns .our_cart ul li a,
+  .header-action-btns #hdrLoginTrigger,
+  .header-action-btns .hdr-login-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+  }
+}
+
 /* ========================================================
    Card 'View more' Expand/Collapse & Compact Mobile Height
    ======================================================== */

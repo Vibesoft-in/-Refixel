@@ -199,6 +199,22 @@
 
           // Header Cart
           var hdrText = document.getElementById('hdrCartText');
+          var hdrBadge = document.getElementById('hdrCartBadge');
+
+          // Header Cart Notification Pop Badge
+          if (hdrBadge) {
+            if (count > 0) {
+              hdrBadge.textContent = count > 99 ? '99+' : count;
+              hdrBadge.style.display = 'inline-flex';
+              hdrBadge.classList.remove('badge-pop');
+              void hdrBadge.offsetWidth; // Trigger reflow for CSS pop animation
+              hdrBadge.classList.add('badge-pop');
+            } else {
+              hdrBadge.textContent = '0';
+              hdrBadge.style.display = 'none';
+            }
+          }
+
           if (hdrText) {
             if (count > 0) {
               hdrText.className = '';
