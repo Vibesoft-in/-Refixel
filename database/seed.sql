@@ -51,14 +51,16 @@ INSERT INTO services (id, category_id, name, slug, description, starting_price, 
 (3, 1, 'Kitchen Deep Cleaning', 'kitchen-deep-cleaning', 'Heavy oil degreasing, chimney exterior scrubbing, tile cleaning, and cabinets wiping.', 999.00, 120, 'refixel-kitchen-cleaning.jpg', 1),
 (4, 1, 'Sofa & Upholstery Deep Cleaning', 'sofa-cleaning', 'Mechanized fabric shampooing, stain extraction, and high-suction vacuuming.', 799.00, 90, 'refixel-sofa-cleaning.jpg', 1),
 (5, 1, 'Commercial Space & Office Cleaning', 'office-cleaning', 'Floor disinfection, workstation sanitizing, carpet cleaning, and pantry maintenance.', 3499.00, 300, 'refixel-office-cleaning.jpg', 1),
-(6, 2, 'Interior Home Painting', 'interior-painting', 'Laser measurements, automated sanding, primer coating, and premium emulsion paint application.', 4999.00, 480, 'Painting-Services.png', 1),
-(7, 9, 'Cockroach & Ant Pest Control', 'cockroach-pest-control', 'Gel baiting technology and odorless spray treatment across all corners.', 799.00, 45, 'Cockroach-Ant -Pest-Control -Services.webp', 1),
-(8, 4, 'Tap & Pipe Leak Repair', 'tap-leak-repair', 'Instant leak detection, washer replacement, and tight seal fittings.', 299.00, 45, 'Plumber.webp', 1),
-(9, 5, 'Furniture Assembly & Wood Repair', 'furniture-assembly', 'Expert carpenter visit for bed, table, wardrobe assembly, and hinge repairs.', 399.00, 60, 'Carpenter.webp', 1),
-(10, 6, 'AC High-Pressure Jet Service', 'ac-jet-service', 'Deep jet cleaning of indoor cooling coils and outdoor units for maximum airflow and cooling.', 599.00, 60, 'AC-Services.webp', 1),
-(11, 7, 'Fan & Switchboard Repair', 'fan-switchboard-repair', 'Fixing switches, ceiling fans, sockets, wiring faults and circuit breakers.', 199.00, 45, 'repair.webp', 1),
+(6, 2, 'Interior Home Painting', 'interior-painting', 'Laser measurements, automated sanding, primer coating, and premium emulsion paint application.', 4999.00, 480, 'refixel-painting.jpg', 1),
+(7, 9, 'Cockroach & Ant Pest Control', 'cockroach-pest-control', 'Gel baiting technology and odorless spray treatment across all corners.', 799.00, 45, 'service-pest-control.jpg', 1),
+(8, 4, 'Tap & Pipe Leak Repair', 'tap-leak-repair', 'Instant leak detection, washer replacement, and tight seal fittings.', 299.00, 45, 'refixel-plumber.jpg', 1),
+(9, 5, 'Furniture Assembly & Wood Repair', 'furniture-assembly', 'Expert carpenter visit for bed, table, wardrobe assembly, and hinge repairs.', 399.00, 60, 'refixel-carpenter.jpg', 1),
+(10, 6, 'AC High-Pressure Jet Service', 'ac-jet-service', 'Deep jet cleaning of indoor cooling coils and outdoor units for maximum airflow and cooling.', 599.00, 60, 'refixel-ac-service.jpg', 1),
+(11, 7, 'Fan & Switchboard Repair', 'fan-switchboard-repair', 'Fixing switches, ceiling fans, sockets, wiring faults and circuit breakers.', 199.00, 45, 'refixel-electrician.jpg', 1),
+(12, 8, 'Home Appliance Diagnostic & Repair', 'appliance-diagnostic-repair', 'Multi-brand diagnostics, motor check, PCB inspection, and genuine spare replacements.', 349.00, 60, 'refixel-appliance-repair.jpg', 1),
 (13, 3, 'Designer Fall Ceiling & POP Installation', 'fall-ceiling-installation', 'End-to-end false ceiling design & installation with heavy GI steel channel framing, branded Saint-Gobain gypsum boards, laser alignment, concealed LED cove light provision, and crack-free joint tape plastering by Refixel interior experts.', 1499.00, 180, 'refixel-fall-ceiling.jpg', 1),
-(14, 3, 'Fall Ceiling Repair & Cove Light Modification', 'fall-ceiling-repair-modification', 'Precision repair of sagging, damp, or cracked POP/gypsum ceiling panels, joint re-taping, acoustic leveling, and cutting custom slots for profile lights and spotlights.', 699.00, 90, 'refixel-fall-ceiling.jpg', 1);
+(14, 3, 'Fall Ceiling Repair & Cove Light Modification', 'fall-ceiling-repair-modification', 'Precision repair of sagging, damp, or cracked POP/gypsum ceiling panels, joint re-taping, acoustic leveling, and cutting custom slots for profile lights and spotlights.', 699.00, 90, 'refixel-fall-ceiling.jpg', 1),
+(15, 1, 'Balcony Deep Pressure Wash', 'balcony-deep-pressure-wash', 'High-pressure water jet washing for balcony tiles, railings, glass panes, and bird dropping removal.', 899.00, 60, 'Full-home-clean.jpg', 1);
 
 -- 8. Service Checklist Items
 INSERT INTO service_checklist_items (service_id, label, is_included, sort_order) VALUES

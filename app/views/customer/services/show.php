@@ -3,7 +3,7 @@ $svcName = \App\Core\View::e($service['name']);
 $cityName = \App\Core\View::e($city);
 $price = number_format((float)$service['starting_price'], 0);
 $duration = (int)($service['duration_minutes'] ?? 60);
-$imgFile = $service['image'] ?? 'Full-home-clean.jpg';
+$imgFile = !empty($service['image']) ? $service['image'] : 'Full-home-clean.jpg';
 
 // Split checklist into included and excluded
 $includedItems = [];

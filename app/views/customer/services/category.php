@@ -146,7 +146,7 @@ $refixelTrustData = [
         </div>
       </div>
       <div class="col-lg-4 text-center mt-4 mt-lg-0">
-        <img src="<?= \App\Core\View::asset('img/' . ($category['icon'] ?? 'Full-home-clean.jpg')) ?>"
+        <img src="<?= \App\Core\View::asset('img/' . (!empty($category['icon']) ? $category['icon'] : 'Full-home-clean.jpg')) ?>"
              alt="<?= $catName ?> - Available in your location"
              class="img-fluid rounded" style="max-height: 220px; object-fit: contain;"
              onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
@@ -169,7 +169,7 @@ $refixelTrustData = [
           $svcSlug = \App\Core\View::e($svc['slug']);
           $svcName = \App\Core\View::e($svc['name']);
           $svcUrl = \App\Core\View::url("/{$svcSlug}-in-{$currentCitySlug}");
-          $imgFile = $svc['image'] ?? 'Full-home-clean.jpg';
+          $imgFile = !empty($svc['image']) ? $svc['image'] : 'Full-home-clean.jpg';
         ?>
           <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 border-0 service-package-card" data-service-url="<?= $svcUrl ?>" style="border-radius: 14px; overflow:hidden; cursor:pointer; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04); border: 1px solid #e2e8f0;">

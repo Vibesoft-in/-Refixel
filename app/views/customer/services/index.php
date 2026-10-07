@@ -815,7 +815,7 @@ if (empty($activeCategory)) {
         <?php foreach ($categories ?? [] as $cat):
           $catSlug = \App\Core\View::e($cat['slug']);
           $catName = \App\Core\View::e($cat['name']);
-          $iconFile = $cat['icon'] ?? 'home_claening.webp';
+          $iconFile = !empty($cat['icon']) ? $cat['icon'] : 'home_claening.webp';
           $targetUrl = \App\Core\View::url("/{$catSlug}-services-in-{$citySlug}");
 
           $catServices = array_values(array_filter($services ?? [], fn($s) => (int)$s['category_id'] === (int)$cat['id']));
@@ -882,7 +882,7 @@ if (empty($activeCategory)) {
                   $svcName = \App\Core\View::e($svc['name']);
                   $svcPrice = number_format((float)$svc['starting_price'], 0);
                   $svcDuration = (int)($svc['duration_minutes'] ?? 60);
-                  $svcImg = $svc['image'] ?? 'Full-home-clean.jpg';
+                  $svcImg = !empty($svc['image']) ? $svc['image'] : 'Full-home-clean.jpg';
                   $svcUrl = \App\Core\View::url("/{$svcSlug}-in-{$citySlug}");
                   $bookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
                 ?>
