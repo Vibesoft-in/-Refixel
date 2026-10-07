@@ -155,10 +155,10 @@ if (empty($activeCategory)) {
   max-width: 100%;
   margin-left: 0;
   margin-right: 0;
-  padding-left: clamp(10px, 2vw, 32px);
-  padding-right: clamp(10px, 2vw, 32px);
-  padding-top: 15px;
-  padding-bottom: 50px;
+  padding-left: clamp(12px, 2.5vw, 32px);
+  padding-right: clamp(12px, 2.5vw, 32px);
+  padding-top: clamp(36px, 4.5vw, 60px);
+  padding-bottom: 60px;
   box-sizing: border-box;
 }
 
@@ -179,7 +179,7 @@ if (empty($activeCategory)) {
   flex-shrink: 0;
   position: -webkit-sticky;
   position: sticky;
-  top: 92px;
+  top: 102px;
   align-self: flex-start;
   z-index: 10;
   box-sizing: border-box;
@@ -365,10 +365,18 @@ if (empty($activeCategory)) {
   box-sizing: border-box;
 }
 
+/* ── Service Catalogue Header (Full clearance below sticky header) ── */
+#serviceCatalogueHeader {
+  margin-top: 14px;
+  margin-bottom: 34px;
+  padding-top: 10px;
+}
+
 .services-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
   width: 100%;
   box-sizing: border-box;
 }
@@ -377,13 +385,20 @@ if (empty($activeCategory)) {
 .package-card-item {
   min-width: 0;
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
 }
 
 .service-card-item > .card,
 .package-card-item > .card {
   width: 100%;
+  height: 100%;
   margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   box-sizing: border-box;
 }
 
@@ -398,6 +413,10 @@ if (empty($activeCategory)) {
   transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .service-cat-card:hover {
@@ -407,22 +426,27 @@ if (empty($activeCategory)) {
 }
 
 .service-cat-card .cat-img-wrap {
-  height: 160px;
-  max-height: 160px;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  height: auto;
+  max-height: none;
   overflow: hidden;
   background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .service-cat-card .cat-img-wrap img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
-  object-position: center top;
+  object-position: center center;
   transition: transform 0.35s ease;
+  display: block;
 }
 
 .service-cat-card:hover .cat-img-wrap img {
@@ -451,6 +475,10 @@ if (empty($activeCategory)) {
   transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .service-package-card:hover {
@@ -460,19 +488,27 @@ if (empty($activeCategory)) {
 }
 
 .package-img-wrap {
-  height: 160px;
-  max-height: 160px;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  height: auto;
+  max-height: none;
   overflow: hidden;
   background: #f1f5f9;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .package-img-wrap img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
-  object-position: center top;
+  object-position: center center;
   transition: transform 0.35s ease;
+  display: block;
 }
 
 .service-package-card:hover .package-img-wrap img {
@@ -482,6 +518,28 @@ if (empty($activeCategory)) {
 .service-package-card,
 .service-cat-card {
   cursor: pointer;
+}
+
+/* Equal height body and aligned bottom buttons */
+.service-cat-card .card-body,
+.service-package-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+}
+
+.service-cat-card .card-body p,
+.service-package-card .card-body p {
+  flex-grow: 1;
+  margin-bottom: 12px;
+}
+
+.card-btn-footer,
+.service-cat-card .card-body > .card-btn-footer,
+.service-package-card .card-body > .card-btn-footer {
+  margin-top: auto !important;
+  width: 100%;
 }
 
 .service-package-card .package-title-link:hover {
@@ -589,7 +647,7 @@ if (empty($activeCategory)) {
     max-width: 100% !important;
     padding-left: 16px !important;
     padding-right: 16px !important;
-    padding-top: 12px !important;
+    padding-top: 24px !important;
     padding-bottom: 95px !important; /* Prevents cards from hiding behind the bottom navigation bar */
     box-sizing: border-box !important;
     overflow-x: hidden !important;
@@ -736,7 +794,7 @@ if (empty($activeCategory)) {
   /* Tablet: 2 Columns Grid */
   .services-cards-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 16px !important;
+    gap: 20px !important;
     width: 100% !important;
     margin: 0 !important;
     box-sizing: border-box !important;
@@ -821,6 +879,30 @@ if (empty($activeCategory)) {
   .category-packages-view h2 {
     font-size: 19px !important;
     line-height: 1.3 !important;
+  }
+}
+
+/* ════════════════════════════════════════
+   TABLET (576px to 1199px): 2 Columns Grid
+   ════════════════════════════════════════ */
+@media (max-width: 1199px) and (min-width: 576px) {
+  .services-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 20px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ════════════════════════════════════════
+   DESKTOP (1200px and above): exactly 3 equal columns
+   ════════════════════════════════════════ */
+@media (min-width: 1200px) {
+  .services-cards-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -962,7 +1044,7 @@ if (empty($activeCategory)) {
               <div class="card-body d-flex flex-column p-3">
                 <h4 class="font-weight-bold mb-1" style="font-size: 16px; color: #1a1a1a; letter-spacing: -0.2px;"><?= $catName ?></h4>
                 <p class="text-muted small flex-grow-1 mb-2" style="font-size: 12.5px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;"><?= \App\Core\View::e($cat['description'] ?? 'Verified technicians with standardized multi-point hygiene checklists.') ?></p>
-                <div class="mt-2 pt-2 border-top" style="border-top-color: #f1f5f9 !important;">
+                <div class="mt-auto pt-2 border-top card-btn-footer" style="border-top-color: #f1f5f9 !important;">
                   <a href="<?= $targetUrl ?>" class="btn btn-sm text-white w-100 font-weight-bold btn-view-category-services text-center" data-category="<?= $catSlug ?>" style="background:#f25b29; border-radius: 7px; padding: 7px 12px; font-size: 12.5px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2);">
                     View Services &rarr;
                   </a>
@@ -1040,7 +1122,7 @@ if (empty($activeCategory)) {
                           <?php endif; ?>
                         </div>
 
-                        <div class="d-flex align-items-center mt-1" style="gap: 8px;">
+                        <div class="d-flex align-items-center mt-auto card-btn-footer" style="gap: 8px;">
                           <!-- Checklist & Details on the Left -->
                           <a href="<?= $svcUrl ?>" class="btn btn-outline-secondary btn-sm flex-grow-1 font-weight-bold text-center btn-package-details" style="border-radius: 7px; font-size: 12px; padding: 6px 10px; white-space: nowrap;">
                             <i class="fa fa-list-ul mr-1"></i> Checklist
