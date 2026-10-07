@@ -56,7 +56,7 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
     <div class="d-none d-lg-flex flex-grow-1 justify-content-center">
       <div class="d-flex align-items-center">
         <!-- 5 Trackable Links with Dynamic Underline Indicator -->
-        <ul class="d-flex mb-0 pl-0 list-unstyled align-items-center header-center-nav position-relative" id="hdrTrackableNav" style="gap: 30px; font-weight: 600; font-size: 16.5px;">
+        <ul class="d-flex mb-0 pl-0 list-unstyled align-items-center header-center-nav position-relative" id="hdrTrackableNav" style="gap: clamp(14px, 1.8vw, 28px); font-weight: 600; font-size: clamp(14px, 1.05vw, 16px);">
           <li><a href="<?= \App\Core\View::url('/') ?>" class="header-nav-link text-decoration-none <?= $isHome ? 'active' : '' ?>" data-nav="home">Home</a></li>
           <li><a href="<?= \App\Core\View::url('/about') ?>" class="header-nav-link text-decoration-none <?= $isAbout ? 'active' : '' ?>" data-nav="about">About</a></li>
           <li><a href="<?= \App\Core\View::url('/services') ?>" class="header-nav-link text-decoration-none <?= $isServices ? 'active' : '' ?>" data-nav="services">Services</a></li>
@@ -66,7 +66,7 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
         </ul>
 
         <!-- Separate Service Partner button (not underlined / outside tracking) -->
-        <div style="margin-left: 30px;">
+        <div class="header-partner-wrap" style="margin-left: clamp(14px, 1.5vw, 26px);">
           <a href="<?= \App\Core\View::url('/partner') ?>" class="header-nav-partner text-decoration-none px-3 py-2 rounded-pill">Service Partner</a>
         </div>
       </div>
@@ -122,6 +122,15 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
         <?php endif; ?>
       </ul>
     </div>
+
+    <!-- Mobile Hamburger Drawer Trigger (Header) -->
+    <button class="btn p-1 d-lg-none ml-2 border-0 open-mobile-drawer" type="button" aria-label="Toggle navigation" style="background: transparent; color: #0a1c33;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
   </div>
   </div>
 </nav>

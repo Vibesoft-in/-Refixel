@@ -97,14 +97,16 @@
     var baseUrl = '<?= rtrim(\App\Core\View::url(), '/') ?>';
 
     // 1. Mobile Drawer Toggle
-    var mobileMenuBtn = document.getElementById("mobileMenuBtn");
+    var drawerTriggers = document.querySelectorAll(".open-mobile-drawer, #mobileMenuBtn");
     var mobileDrawer = document.querySelector(".hometfn_popup");
     var closeDrawerBtn = document.querySelector(".btnclose_tfn");
 
-    if (mobileMenuBtn && mobileDrawer) {
-      mobileMenuBtn.addEventListener("click", function(e) {
-        e.preventDefault();
-        mobileDrawer.classList.add("show");
+    if (drawerTriggers.length && mobileDrawer) {
+      drawerTriggers.forEach(function(trigger) {
+        trigger.addEventListener("click", function(e) {
+          e.preventDefault();
+          mobileDrawer.classList.add("show");
+        });
       });
     }
     if (closeDrawerBtn && mobileDrawer) {
