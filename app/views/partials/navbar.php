@@ -61,14 +61,23 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
     </a>
 
     <style>
-      /* Force collapse container to stay open: display: flex !important on .navbar-collapse */
-      .navbar-collapse,
-      .header-nav-collapse {
-        display: flex !important;
-        visibility: visible !important;
-      }
       .navbar-toggler {
         display: none !important;
+      }
+      @media (min-width: 992px) {
+        .navbar-collapse,
+        .header-nav-collapse {
+          display: flex !important;
+          visibility: visible !important;
+        }
+      }
+      @media (max-width: 991px) {
+        .navbar-collapse,
+        .header-nav-collapse,
+        #navbarMainCollapse {
+          display: none !important;
+          visibility: hidden !important;
+        }
       }
 
       /* Header Cart Notification Badge */
@@ -229,65 +238,8 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
         .our_cart ul li a i.fa-angle-down {
           display: none !important;
         }
-        .header-nav-collapse {
-          flex-basis: 100% !important;
-          width: 100% !important;
-          order: 3 !important;
-          overflow-x: auto !important;
-          overflow-y: hidden !important;
-          -webkit-overflow-scrolling: touch !important;
-          white-space: nowrap !important;
-          scrollbar-width: none !important; /* Firefox */
-          -ms-overflow-style: none !important; /* IE 10+ */
-          margin-top: 8px !important;
-          padding-top: 6px !important;
-          border-top: 1px solid rgba(0, 0, 0, 0.06);
-          justify-content: flex-start !important;
-        }
-        .header-nav-collapse::-webkit-scrollbar {
-          display: none !important; /* Safari and Chrome */
-        }
-        .header-nav-scroll-wrap {
-          display: flex !important;
-          align-items: center !important;
-          white-space: nowrap !important;
-          width: max-content !important;
-          gap: 6px !important;
-        }
-        .header-center-nav {
-          display: flex !important;
-          flex-direction: row !important;
-          align-items: center !important;
-          gap: 6px !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-        .header-center-nav li {
-          flex: 0 0 auto !important;
-          white-space: nowrap !important;
-        }
-        .header-nav-link {
-          font-size: 14px !important;
-          padding: 5px 10px !important;
-          white-space: nowrap !important;
-          display: inline-block !important;
-          border-radius: 6px;
-        }
-        .header-nav-link.active {
-          color: #f25b29 !important;
-          background: rgba(242, 91, 41, 0.08);
-        }
-        .header-partner-wrap {
-          flex: 0 0 auto !important;
-          margin-left: 6px !important;
-          white-space: nowrap !important;
-        }
-        .header-nav-partner {
-          font-size: 13px !important;
-          padding: 5px 12px !important;
-          white-space: nowrap !important;
-        }
-        .nav-indicator-line {
+        .header-nav-collapse,
+        #navbarMainCollapse {
           display: none !important;
         }
       }
