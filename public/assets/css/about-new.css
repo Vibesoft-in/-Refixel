@@ -2275,7 +2275,21 @@
     min-width: 38px !important;
     max-width: 38px !important;
     padding: 0 !important;
-    border-radius: 50% !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .header-action-btns .our_cart ul li a img,
+  .header-action-btns #hdrLoginTrigger img,
+  .header-action-btns .hdr-login-btn img {
+    margin: 0 auto !important;
+    padding: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    display: block !important;
+    object-fit: contain !important;
+    transform: translateY(0.5px);
   }
 }
 

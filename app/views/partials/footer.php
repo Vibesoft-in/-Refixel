@@ -1,4 +1,18 @@
 <style>
+#footer .container {
+  max-width: 1240px;
+}
+.footer_links h4,
+.footer_links h4.footer-title,
+.footer-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  margin-bottom: 18px !important;
+  margin-top: 0 !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
+}
 .footer-nav-link {
   color: #cbd5e1 !important;
   text-decoration: none !important;
@@ -39,12 +53,139 @@
 .footer-social-btn:active {
   transform: translateY(0);
 }
+.footer-icon-box {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  color: #f25b29 !important;
+  font-size: 15px !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+.footer-contact-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+  padding: 0 !important;
+}
+.footer-contact-item:last-child {
+  margin-bottom: 0 !important;
+}
+.footer-contact-item.is-single-line {
+  align-items: center !important;
+}
+.footer-contact-item:not(.is-single-line) .footer-icon-box {
+  margin-top: 2px !important;
+}
+.footer-contact-text {
+  flex: 1 !important;
+  min-width: 0 !important;
+  font-size: 13.5px !important;
+  line-height: 1.45 !important;
+  color: #cbd5e1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+}
+.footer_links ul li a.footer-contact-link,
+.footer-contact-link {
+  color: #cbd5e1 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1.4 !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+  white-space: nowrap !important;
+  transition: color 0.2s ease !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.footer_links ul li a.footer-contact-link:hover,
+.footer-contact-link:hover {
+  color: #f25b29 !important;
+  text-decoration: none !important;
+  transform: none !important;
+}
+.footer-hours-box {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.footer-hours-box .footer-icon-box {
+  margin-top: 2px !important;
+}
+.footer-hours-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.footer-hours-days {
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  font-size: 13.5px !important;
+  line-height: 1.35 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.footer-hours-time {
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  margin-top: 3px !important;
+  padding: 0 !important;
+}
+.footer-services-section {
+  display: flex;
+  justify-content: center;
+}
+.footer-services-inner {
+  display: inline-block;
+  text-align: left;
+}
+.footer-services-title {
+  text-align: left !important;
+  margin-left: 20px !important;
+  margin-bottom: 18px !important;
+}
+.footer-services-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.footer-services-col {
+  flex: 0 0 auto;
+  text-align: left;
+}
+@media (max-width: 767.98px) {
+  .footer-services-section {
+    justify-content: flex-start;
+  }
+  .footer-services-title {
+    margin-left: 0 !important;
+  }
+}
+@media (min-width: 992px) {
+  .footer-col-brand { flex: 0 0 21%; max-width: 21%; }
+  .footer-col-quick { flex: 0 0 16%; max-width: 16%; }
+  .footer-col-services { flex: 0 0 26%; max-width: 26%; }
+  .footer-col-contact { flex: 0 0 22%; max-width: 22%; }
+  .footer-col-hours { flex: 0 0 15%; max-width: 15%; }
+}
 </style>
 <div id="footer" class="footer_main" style="background: #0a1c33; color: #cbd5e1; padding: 24px 0 30px 0; position: relative; z-index: 10;">
   <div class="container">
     <div class="row">
       <!-- Col 1: Brand & Social -->
-      <div class="col-lg-3 col-md-6 mb-4">
+      <div class="footer-col-brand col-md-6 mb-4">
         <div class="footer_links">
           <div class="mb-3">
             <a href="<?= \App\Core\View::url('/') ?>" style="display: inline-block; width: 100%; max-width: 250px; text-decoration: none;">
@@ -68,9 +209,9 @@
       </div>
 
       <!-- Col 2: Quick Links -->
-      <div class="col-lg-2 col-md-6 mb-4">
+      <div class="footer-col-quick col-md-6 mb-4">
         <div class="footer_links">
-          <h4 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 18px;">Quick Links</h4>
+          <h4 class="footer-title" style="color: #ffffff !important;">Quick Links</h4>
           <ul class="list-unstyled p-0" style="font-size: 13.5px; line-height: 2.2;">
             <li><a href="<?= \App\Core\View::url('/about') ?>" class="footer-nav-link">About Us</a></li>
             <li><a href="<?= \App\Core\View::url('/privacy') ?>" class="footer-nav-link">Privacy Policy</a></li>
@@ -83,62 +224,72 @@
       </div>
 
       <!-- Col 3: Our Services -->
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="footer_links">
-          <h4 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 18px;">Our Services</h4>
-          <div class="row">
-            <div class="col-6">
-              <ul class="list-unstyled p-0" style="font-size: 13.5px; line-height: 2.2;">
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">AC Repair</a></li>
-                <li><a href="<?= \App\Core\View::url('/electrician-services-in-kashipur') ?>" class="footer-nav-link">Electrician</a></li>
-                <li><a href="<?= \App\Core\View::url('/plumber-services-in-kashipur') ?>" class="footer-nav-link">Plumbing</a></li>
-                <li><a href="<?= \App\Core\View::url('/cleaning-services-in-kashipur') ?>" class="footer-nav-link">Cleaning</a></li>
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Laundry</a></li>
-              </ul>
-            </div>
-            <div class="col-6">
-              <ul class="list-unstyled p-0" style="font-size: 13.5px; line-height: 2.2;">
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Pest Control</a></li>
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Carpenter</a></li>
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Painting</a></li>
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Appliance Repair</a></li>
-                <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">More Services</a></li>
-              </ul>
+      <div class="footer-col-services col-md-6 mb-4">
+        <div class="footer_links footer-services-section">
+          <div class="footer-services-inner">
+            <h4 class="footer-title footer-services-title" style="color: #ffffff !important;">Our Services</h4>
+            <div class="footer-services-wrap">
+              <div class="footer-services-col">
+                <ul class="list-unstyled p-0 mb-0" style="font-size: 13.5px; line-height: 2.2;">
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">AC Repair</a></li>
+                  <li><a href="<?= \App\Core\View::url('/electrician-services-in-kashipur') ?>" class="footer-nav-link">Electrician</a></li>
+                  <li><a href="<?= \App\Core\View::url('/plumber-services-in-kashipur') ?>" class="footer-nav-link">Plumbing</a></li>
+                  <li><a href="<?= \App\Core\View::url('/cleaning-services-in-kashipur') ?>" class="footer-nav-link">Cleaning</a></li>
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Laundry</a></li>
+                </ul>
+              </div>
+              <div class="footer-services-col">
+                <ul class="list-unstyled p-0 mb-0" style="font-size: 13.5px; line-height: 2.2;">
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Pest Control</a></li>
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Carpenter</a></li>
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Painting</a></li>
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Appliance Repair</a></li>
+                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">More Services</a></li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Col 4: Contact Us -->
-      <div class="col-lg-2 col-md-6 mb-4">
+      <div class="footer-col-contact col-md-6 mb-4">
         <div class="footer_links">
-          <h4 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 18px;">Contact Us</h4>
-          <ul class="list-unstyled p-0" style="font-size: 13.5px; line-height: 1.8;">
-            <li class="mb-3 d-flex" style="gap: 10px;">
-              <i class="fa fa-map-marker text-refixel-orange mt-1"></i>
-              <span style="color: #cbd5e1;">Rajpur (sugar mill nadehi) udham Singh Nagar Uttarakhand</span>
+          <h4 class="footer-title" style="color: #ffffff !important;">Contact Us</h4>
+          <ul class="list-unstyled p-0 m-0">
+            <li class="footer-contact-item">
+              <span class="footer-icon-box">
+                <i class="fa fa-map-marker"></i>
+              </span>
+              <span class="footer-contact-text">Rajpur (Sugar Mill Nadehi), Udham Singh Nagar, Uttarakhand</span>
             </li>
-            <li class="mb-3 d-flex" style="gap: 10px;">
-              <i class="fa fa-envelope text-refixel-orange mt-1"></i>
-              <a href="mailto:heyimaakashsaini@gmail.com" class="footer-nav-link" style="color: #cbd5e1; text-decoration: none; word-break: break-all;">heyimaakashsaini@gmail.com</a>
+            <li class="footer-contact-item is-single-line">
+              <span class="footer-icon-box">
+                <i class="fa fa-envelope"></i>
+              </span>
+              <a href="mailto:wearerefixel@gmail.com" class="footer-contact-link">wearerefixel@gmail.com</a>
             </li>
-            <li class="d-flex" style="gap: 10px;">
-              <i class="fa fa-phone text-refixel-orange mt-1"></i>
-              <a href="tel:+918791154730" class="footer-nav-link" style="color: #cbd5e1; text-decoration: none;">+91 87911 54730</a>
+            <li class="footer-contact-item is-single-line">
+              <span class="footer-icon-box">
+                <i class="fa fa-phone"></i>
+              </span>
+              <a href="tel:+918791154730" class="footer-contact-link">+91 87911 54730</a>
             </li>
           </ul>
         </div>
       </div>
 
       <!-- Col 5: Working Hours -->
-      <div class="col-lg-2 col-md-6 mb-4">
+      <div class="footer-col-hours col-md-6 mb-4">
         <div class="footer_links">
-          <h4 style="font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 18px;">Working Hours</h4>
-          <div class="d-flex" style="gap: 10px; font-size: 13.5px; color: #cbd5e1;">
-            <i class="fa fa-clock-o text-refixel-orange mt-1"></i>
-            <div>
-              <div style="font-weight: 600; color: #ffffff;">Mon - Sun:</div>
-              <div style="color: #cbd5e1;">10:00 AM - 8:00 PM</div>
+          <h4 class="footer-title" style="color: #ffffff !important;">Working Hours</h4>
+          <div class="footer-hours-box">
+            <span class="footer-icon-box">
+              <i class="fa fa-clock-o"></i>
+            </span>
+            <div class="footer-hours-content">
+              <div class="footer-hours-days">Mon – Sun:</div>
+              <div class="footer-hours-time">10:00 AM – 8:00 PM</div>
             </div>
           </div>
         </div>

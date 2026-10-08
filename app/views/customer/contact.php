@@ -70,7 +70,7 @@
           </div>
           <div class="contact-item-content">
             <div class="contact-item-value">
-              <a href="mailto:heyimaakashsaini@gmail.com">heyimaakashsaini@gmail.com</a>
+              <a href="mailto:wearerefixel@gmail.com">wearerefixel@gmail.com</a>
             </div>
             <div class="contact-item-subtext">We reply within 24 hours</div>
           </div>

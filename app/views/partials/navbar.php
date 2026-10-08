@@ -220,22 +220,48 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
           margin: 0 !important;
           padding: 0 !important;
         }
+        .header-action-btns .our_cart ul li a,
+        .header-action-btns #hdrLoginTrigger,
+        .header-action-btns .hdr-login-btn,
+        #hdrLoginTrigger,
         .our_cart ul li a {
           width: 38px !important;
           height: 38px !important;
           min-width: 38px !important;
           max-width: 38px !important;
-          border-radius: 50% !important;
+          border-radius: 10px !important;
           background: #f25b29 !important;
-          display: flex !important;
+          background: linear-gradient(135deg, #f25b29 0%, #e04b1a 100%) !important;
+          display: inline-flex !important;
           align-items: center !important;
           justify-content: center !important;
           padding: 0 !important;
           margin: 0 !important;
           box-shadow: 0 2px 6px rgba(242, 91, 41, 0.25) !important;
+          box-sizing: border-box !important;
+          position: relative !important;
+          overflow: hidden !important;
+        }
+        .header-action-btns .our_cart ul li a img,
+        .header-action-btns #hdrLoginTrigger img,
+        .header-action-btns .hdr-login-btn img,
+        #hdrLoginTrigger img,
+        .our_cart ul li a img {
+          margin: 0 auto !important;
+          padding: 0 !important;
+          width: 20px !important;
+          height: 20px !important;
+          min-width: 20px !important;
+          min-height: 20px !important;
+          max-width: 20px !important;
+          max-height: 20px !important;
+          display: block !important;
+          object-fit: contain !important;
+          transform: translateY(0.5px);
         }
         .our_cart ul li a strong,
-        .our_cart ul li a i.fa-angle-down {
+        .our_cart ul li a i.fa-angle-down,
+        #hdrLoginTrigger strong {
           display: none !important;
         }
         .header-nav-collapse,

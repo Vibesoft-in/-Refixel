@@ -26,7 +26,7 @@
       'logo'     => $appUrl . '/assets/img/refixel-logo-horizontal.png',
       'image'    => $appUrl . '/assets/img/hero-banner.webp',
       'telephone'=> \App\Models\Setting::get('company_phone', '+91 99533 58855'),
-      'email'    => \App\Models\Setting::get('company_email', 'care@REFIXEL.com'),
+      'email'    => \App\Models\Setting::get('company_email', 'wearerefixel@gmail.com'),
       'priceRange'=> '₹₹',
       'address'  => [
         '@type'          => 'PostalAddress',

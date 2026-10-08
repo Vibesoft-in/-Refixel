@@ -246,7 +246,82 @@ foreach ($payments as $p) {
           <p class="small text-muted mb-3">Select a new preferred date and time slot for your service appointment.</p>
           <div class="form-group mb-3">
             <label class="small font-weight-bold">Preferred New Date <span class="text-danger">*</span></label>
-            <input type="date" name="preferred_date" class="form-control" min="<?= date('Y-m-d') ?>" value="<?= \App\Core\View::e($booking['preferred_date']) ?>" required>
+            <div class="position-relative" id="reschedDatePickerContainer">
+              <input type="hidden" name="preferred_date" id="reschedPreferredDateInput" value="<?= \App\Core\View::e($booking['preferred_date'] ?: date('Y-m-d')) ?>" required>
+              
+              <div class="cal-input-trigger" id="reschedDateInputTrigger" role="button" tabindex="0">
+                <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
+                  <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
+                    <i class="fa fa-calendar"></i>
+                  </div>
+                  <input type="text" id="reschedDisplayDateInput" class="cal-custom-input" readonly value="<?= date('d M Y', strtotime($booking['preferred_date'] ?: 'now')) ?>" placeholder="Click to select date...">
+                </div>
+                <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="reschedCalChevronIcon"></i>
+              </div>
+
+              <!-- Dropdown / Popover Calendar -->
+              <div id="reschedCalendarDropdown" class="calendar-dropdown-popover" style="position: absolute; top: calc(100% + 6px); left: 0; z-index: 1060;">
+                <div class="refixel-calendar-card">
+                  <!-- Top Header: Day Number, Month Name & Navigation -->
+                  <div class="cal-top-header">
+                    <div class="cal-title-wrap">
+                      <div id="reschedCalDayNumber" class="cal-day-num"><?= date('j', strtotime($booking['preferred_date'] ?: 'now')) ?></div>
+                      <div id="reschedCalMonthName" class="cal-month-name"><?= date('F', strtotime($booking['preferred_date'] ?: 'now')) ?></div>
+                    </div>
+                    <div class="cal-nav-wrap d-flex align-items-center" style="gap: 6px;">
+                      <button type="button" id="reschedCalPrevMonthBtn" class="cal-nav-btn" title="Previous Month" aria-label="Previous Month">
+                        <i class="fa fa-chevron-left" style="font-size: 11px;"></i>
+                      </button>
+                      <div class="cal-icon-badge" title="Calendar">
+                        <div class="cal-badge-bar"></div>
+                        <div class="cal-badge-dots">
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot red"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                          <span class="cal-badge-dot"></span>
+                        </div>
+                      </div>
+                      <button type="button" id="reschedCalNextMonthBtn" class="cal-nav-btn" title="Next Month" aria-label="Next Month">
+                        <i class="fa fa-chevron-right" style="font-size: 11px;"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 3-Segment Accent Bar -->
+                  <div class="cal-accent-divider">
+                    <span class="bar-segment" style="flex: 1.2;"></span>
+                    <span class="bar-segment" style="flex: 1.8;"></span>
+                    <span class="bar-segment muted" style="flex: 2.2;"></span>
+                  </div>
+
+                  <!-- Weekday Headers (M T W T F S S) -->
+                  <div class="cal-weekdays">
+                    <span class="cal-weekday">M</span>
+                    <span class="cal-weekday">T</span>
+                    <span class="cal-weekday">W</span>
+                    <span class="cal-weekday">T</span>
+                    <span class="cal-weekday">F</span>
+                    <span class="cal-weekday">S</span>
+                    <span class="cal-weekday">S</span>
+                  </div>
+
+                  <!-- Monthly Days Grid -->
+                  <div id="reschedCalDaysGrid" class="cal-days-grid">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="form-group mb-3">
             <label class="small font-weight-bold">Preferred Time Slot <span class="text-danger">*</span></label>
@@ -326,3 +401,174 @@ foreach ($payments as $p) {
   </div>
 </div>
 <?php endif; ?>
+
+<style>
+#rescheduleModal .modal-content,
+#rescheduleModal .modal-body {
+  overflow: visible !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var datePickerContainer = document.getElementById('reschedDatePickerContainer');
+  var dateInputTrigger = document.getElementById('reschedDateInputTrigger');
+  var displayDateInput = document.getElementById('reschedDisplayDateInput');
+  var calendarDropdown = document.getElementById('reschedCalendarDropdown');
+  var preferredDateInput = document.getElementById('reschedPreferredDateInput');
+  var calDayNumber = document.getElementById('reschedCalDayNumber');
+  var calMonthName = document.getElementById('reschedCalMonthName');
+  var calDaysGrid = document.getElementById('reschedCalDaysGrid');
+  var calPrevMonthBtn = document.getElementById('reschedCalPrevMonthBtn');
+  var calNextMonthBtn = document.getElementById('reschedCalNextMonthBtn');
+
+  if (calDaysGrid && preferredDateInput && dateInputTrigger && calendarDropdown) {
+    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    var initVal = preferredDateInput.value;
+    var selectedDate = initVal ? new Date(initVal) : new Date(today.getTime());
+    if (isNaN(selectedDate.getTime())) selectedDate = new Date(today.getTime());
+    selectedDate.setHours(0, 0, 0, 0);
+
+    var viewYear = selectedDate.getFullYear();
+    var viewMonth = selectedDate.getMonth();
+
+    function formatYYYYMMDD(d) {
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function formatInputDate(d) {
+      var day = String(d.getDate()).padStart(2, '0');
+      var m = monthNames[d.getMonth()].substring(0, 3);
+      return day + ' ' + m + ' ' + d.getFullYear();
+    }
+
+    function toggleDropdown(show) {
+      if (typeof show === 'boolean') {
+        if (show) {
+          calendarDropdown.classList.add('show');
+          dateInputTrigger.classList.add('active');
+        } else {
+          calendarDropdown.classList.remove('show');
+          dateInputTrigger.classList.remove('active');
+        }
+      } else {
+        var isOpen = calendarDropdown.classList.contains('show');
+        if (isOpen) {
+          calendarDropdown.classList.remove('show');
+          dateInputTrigger.classList.remove('active');
+        } else {
+          calendarDropdown.classList.add('show');
+          dateInputTrigger.classList.add('active');
+        }
+      }
+    }
+
+    dateInputTrigger.addEventListener('click', function() {
+      toggleDropdown();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (datePickerContainer && !datePickerContainer.contains(e.target)) {
+        toggleDropdown(false);
+      }
+    });
+
+    function renderCalendar() {
+      calDaysGrid.innerHTML = '';
+
+      calDayNumber.textContent = selectedDate.getDate();
+      calMonthName.textContent = monthNames[viewMonth];
+
+      var isCurrentMonth = (viewYear === today.getFullYear() && viewMonth === today.getMonth());
+      calPrevMonthBtn.disabled = isCurrentMonth;
+
+      var firstDayOfMonth = new Date(viewYear, viewMonth, 1);
+      var startDayIndex = (firstDayOfMonth.getDay() + 6) % 7;
+      var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+      for (var b = 0; b < startDayIndex; b++) {
+        var blank = document.createElement('div');
+        blank.className = 'cal-day-cell empty';
+        calDaysGrid.appendChild(blank);
+      }
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var cellDate = new Date(viewYear, viewMonth, d);
+        cellDate.setHours(0, 0, 0, 0);
+
+        var cell = document.createElement('div');
+        cell.className = 'cal-day-cell';
+        cell.textContent = d;
+
+        var isPast = cellDate.getTime() < today.getTime();
+        var isToday = cellDate.getTime() === today.getTime();
+        var isSelected = (
+          cellDate.getFullYear() === selectedDate.getFullYear() &&
+          cellDate.getMonth() === selectedDate.getMonth() &&
+          cellDate.getDate() === selectedDate.getDate()
+        );
+
+        if (isPast) {
+          cell.classList.add('disabled');
+        } else {
+          if (isToday) cell.classList.add('today');
+          if (isSelected) cell.classList.add('selected');
+
+          (function(cDate, dayNum) {
+            cell.addEventListener('click', function(ev) {
+              ev.stopPropagation();
+              selectedDate = new Date(cDate.getTime());
+              preferredDateInput.value = formatYYYYMMDD(selectedDate);
+              displayDateInput.value = formatInputDate(selectedDate);
+              calDayNumber.textContent = dayNum;
+              calMonthName.textContent = monthNames[selectedDate.getMonth()];
+              renderCalendar();
+              toggleDropdown(false);
+            });
+          })(cellDate, d);
+        }
+
+        calDaysGrid.appendChild(cell);
+      }
+    }
+
+    if (calNextMonthBtn) {
+      calNextMonthBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        viewMonth++;
+        if (viewMonth > 11) {
+          viewMonth = 0;
+          viewYear++;
+        }
+        renderCalendar();
+      });
+    }
+
+    if (calPrevMonthBtn) {
+      calPrevMonthBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isCurrentMonth = (viewYear === today.getFullYear() && viewMonth === today.getMonth());
+        if (isCurrentMonth) return;
+        viewMonth--;
+        if (viewMonth < 0) {
+          viewMonth = 11;
+          viewYear--;
+        }
+        renderCalendar();
+      });
+    }
+
+    preferredDateInput.value = formatYYYYMMDD(selectedDate);
+    displayDateInput.value = formatInputDate(selectedDate);
+    renderCalendar();
+  }
+});
+</script>

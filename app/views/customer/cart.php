@@ -156,7 +156,85 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
             <div class="form-row">
               <div class="col-md-6 form-group">
                 <label class="font-weight-bold small">Preferred Service Date <span class="text-danger">*</span></label>
-                <input type="date" name="preferred_date" class="form-control" min="<?= date('Y-m-d') ?>" value="<?= date('Y-m-d') ?>" required>
+                <div class="position-relative" id="cartDatePickerContainer">
+                  <!-- Hidden input for form submission -->
+                  <input type="hidden" name="preferred_date" id="cartPreferredDateInput" value="<?= date('Y-m-d') ?>" required>
+                  
+                  <!-- Clickable Date Trigger -->
+                  <div class="cal-input-trigger" id="cartDateInputTrigger" role="button" tabindex="0">
+                    <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
+                      <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
+                        <i class="fa fa-calendar"></i>
+                      </div>
+                      <input type="text" id="cartDisplayDateInput" class="cal-custom-input" readonly value="<?= date('d M Y') ?>" placeholder="Click to select date...">
+                    </div>
+                    <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="cartCalChevronIcon"></i>
+                  </div>
+
+                  <!-- Dropdown / Popover Calendar -->
+                  <div id="cartCalendarDropdown" class="calendar-dropdown-popover">
+                    <div class="refixel-calendar-card">
+                      <!-- Top Header: Day Number, Month Name & Navigation -->
+                      <div class="cal-top-header">
+                        <div class="cal-title-wrap">
+                          <div id="cartCalDayNumber" class="cal-day-num"><?= date('j') ?></div>
+                          <div id="cartCalMonthName" class="cal-month-name"><?= date('F') ?></div>
+                        </div>
+                        <div class="cal-nav-wrap d-flex align-items-center" style="gap: 6px;">
+                          <button type="button" id="cartCalPrevMonthBtn" class="cal-nav-btn" title="Previous Month" aria-label="Previous Month">
+                            <i class="fa fa-chevron-left" style="font-size: 11px;"></i>
+                          </button>
+                          <!-- Mini 3D Calendar Icon Badge -->
+                          <div class="cal-icon-badge" title="Calendar">
+                            <div class="cal-badge-bar"></div>
+                            <div class="cal-badge-dots">
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot red"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                              <span class="cal-badge-dot"></span>
+                            </div>
+                          </div>
+                          <button type="button" id="cartCalNextMonthBtn" class="cal-nav-btn" title="Next Month" aria-label="Next Month">
+                            <i class="fa fa-chevron-right" style="font-size: 11px;"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- 3-Segment Accent Bar -->
+                      <div class="cal-accent-divider">
+                        <span class="bar-segment" style="flex: 1.2;"></span>
+                        <span class="bar-segment" style="flex: 1.8;"></span>
+                        <span class="bar-segment muted" style="flex: 2.2;"></span>
+                      </div>
+
+                      <!-- Weekday Headers (M T W T F S S) -->
+                      <div class="cal-weekdays">
+                        <span class="cal-weekday">M</span>
+                        <span class="cal-weekday">T</span>
+                        <span class="cal-weekday">W</span>
+                        <span class="cal-weekday">T</span>
+                        <span class="cal-weekday">F</span>
+                        <span class="cal-weekday">S</span>
+                        <span class="cal-weekday">S</span>
+                      </div>
+
+                      <!-- Monthly Days Grid -->
+                      <div id="cartCalDaysGrid" class="cal-days-grid">
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="col-md-6 form-group">
                 <label class="font-weight-bold small">Preferred Time Slot <span class="text-danger">*</span></label>
@@ -274,6 +352,163 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then(function() { window.location.reload(); });
       }
     });
+  }
+
+  // Interactive Calendar Popover for Cart
+  var datePickerContainer = document.getElementById('cartDatePickerContainer');
+  var dateInputTrigger = document.getElementById('cartDateInputTrigger');
+  var displayDateInput = document.getElementById('cartDisplayDateInput');
+  var calendarDropdown = document.getElementById('cartCalendarDropdown');
+  var preferredDateInput = document.getElementById('cartPreferredDateInput');
+  var calDayNumber = document.getElementById('cartCalDayNumber');
+  var calMonthName = document.getElementById('cartCalMonthName');
+  var calDaysGrid = document.getElementById('cartCalDaysGrid');
+  var calPrevMonthBtn = document.getElementById('cartCalPrevMonthBtn');
+  var calNextMonthBtn = document.getElementById('cartCalNextMonthBtn');
+
+  if (calDaysGrid && preferredDateInput && dateInputTrigger && calendarDropdown) {
+    var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    var selectedDate = new Date(today.getTime());
+    var viewYear = selectedDate.getFullYear();
+    var viewMonth = selectedDate.getMonth();
+
+    function formatYYYYMMDD(d) {
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function formatInputDate(d) {
+      var day = String(d.getDate()).padStart(2, '0');
+      var m = monthNames[d.getMonth()].substring(0, 3);
+      return day + ' ' + m + ' ' + d.getFullYear();
+    }
+
+    function toggleDropdown(show) {
+      if (typeof show === 'boolean') {
+        if (show) {
+          calendarDropdown.classList.add('show');
+          dateInputTrigger.classList.add('active');
+        } else {
+          calendarDropdown.classList.remove('show');
+          dateInputTrigger.classList.remove('active');
+        }
+      } else {
+        var isOpen = calendarDropdown.classList.contains('show');
+        if (isOpen) {
+          calendarDropdown.classList.remove('show');
+          dateInputTrigger.classList.remove('active');
+        } else {
+          calendarDropdown.classList.add('show');
+          dateInputTrigger.classList.add('active');
+        }
+      }
+    }
+
+    dateInputTrigger.addEventListener('click', function() {
+      toggleDropdown();
+    });
+
+    document.addEventListener('click', function(e) {
+      if (datePickerContainer && !datePickerContainer.contains(e.target)) {
+        toggleDropdown(false);
+      }
+    });
+
+    function renderCalendar() {
+      calDaysGrid.innerHTML = '';
+
+      calDayNumber.textContent = selectedDate.getDate();
+      calMonthName.textContent = monthNames[viewMonth];
+
+      var isCurrentMonth = (viewYear === today.getFullYear() && viewMonth === today.getMonth());
+      calPrevMonthBtn.disabled = isCurrentMonth;
+
+      var firstDayOfMonth = new Date(viewYear, viewMonth, 1);
+      var startDayIndex = (firstDayOfMonth.getDay() + 6) % 7;
+      var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+      for (var b = 0; b < startDayIndex; b++) {
+        var blank = document.createElement('div');
+        blank.className = 'cal-day-cell empty';
+        calDaysGrid.appendChild(blank);
+      }
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var cellDate = new Date(viewYear, viewMonth, d);
+        cellDate.setHours(0, 0, 0, 0);
+
+        var cell = document.createElement('div');
+        cell.className = 'cal-day-cell';
+        cell.textContent = d;
+
+        var isPast = cellDate.getTime() < today.getTime();
+        var isToday = cellDate.getTime() === today.getTime();
+        var isSelected = (
+          cellDate.getFullYear() === selectedDate.getFullYear() &&
+          cellDate.getMonth() === selectedDate.getMonth() &&
+          cellDate.getDate() === selectedDate.getDate()
+        );
+
+        if (isPast) {
+          cell.classList.add('disabled');
+        } else {
+          if (isToday) cell.classList.add('today');
+          if (isSelected) cell.classList.add('selected');
+
+          (function(cDate, dayNum) {
+            cell.addEventListener('click', function(ev) {
+              ev.stopPropagation();
+              selectedDate = new Date(cDate.getTime());
+              preferredDateInput.value = formatYYYYMMDD(selectedDate);
+              displayDateInput.value = formatInputDate(selectedDate);
+              calDayNumber.textContent = dayNum;
+              calMonthName.textContent = monthNames[selectedDate.getMonth()];
+              renderCalendar();
+              toggleDropdown(false);
+            });
+          })(cellDate, d);
+        }
+
+        calDaysGrid.appendChild(cell);
+      }
+    }
+
+    if (calNextMonthBtn) {
+      calNextMonthBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        viewMonth++;
+        if (viewMonth > 11) {
+          viewMonth = 0;
+          viewYear++;
+        }
+        renderCalendar();
+      });
+    }
+
+    if (calPrevMonthBtn) {
+      calPrevMonthBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isCurrentMonth = (viewYear === today.getFullYear() && viewMonth === today.getMonth());
+        if (isCurrentMonth) return;
+        viewMonth--;
+        if (viewMonth < 0) {
+          viewMonth = 11;
+          viewYear--;
+        }
+        renderCalendar();
+      });
+    }
+
+    preferredDateInput.value = formatYYYYMMDD(selectedDate);
+    displayDateInput.value = formatInputDate(selectedDate);
+    renderCalendar();
   }
 });
 </script>

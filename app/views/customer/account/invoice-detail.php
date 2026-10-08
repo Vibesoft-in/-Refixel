@@ -24,7 +24,7 @@ $invoice = $invoice ?? [];
         <h3 class="font-weight-bold mb-1" style="color: #f25b29; font-size: 26px;">REFIXEL</h3>
         <p class="text-muted small mb-0 font-weight-bold">Professional Home Care & Maintenance Services</p>
         <p class="text-muted small mb-0">GSTIN: <strong>07AAAAA0000A1Z5</strong> &bull; SAC Code: 9987</p>
-        <p class="text-muted small mb-0">Support: care@refixel.com &bull; +91 94581 82006</p>
+        <p class="text-muted small mb-0">Support: wearerefixel@gmail.com &bull; +91 94581 82006</p>
       </div>
       <div class="col-sm-5 text-sm-right mt-3 mt-sm-0">
         <span class="badge badge-success px-3 py-1 font-weight-bold mb-2" style="font-size: 12px; letter-spacing: 0.5px;">TAX INVOICE</span>
@@ -110,7 +110,7 @@ $invoice = $invoice ?? [];
     <!-- Notes & Terms -->
     <div class="border-top pt-3 small text-muted text-center">
       <p class="mb-1">This is an authentic computer-generated GST tax invoice for services fulfilled by REFIXEL.</p>
-      <p class="mb-0">For warranty claims or service queries, quote your booking number #<?= View::e($invoice['booking_no']) ?> to care@refixel.com.</p>
+      <p class="mb-0">For warranty claims or service queries, quote your booking number #<?= View::e($invoice['booking_no']) ?> to wearerefixel@gmail.com.</p>
     </div>
   </div>
 </div>
