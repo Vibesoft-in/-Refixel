@@ -139,11 +139,31 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
             <div class="form-row">
               <div class="col-md-6 form-group">
                 <label class="font-weight-bold small">House / Flat / Office No. <span class="text-danger">*</span></label>
-                <input type="text" name="house_no" id="cartInputHouseNo" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604" required>
+                <input type="text" name="house_no" id="cartInputHouseNo" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604 / House No." required>
               </div>
               <div class="col-md-6 form-group">
                 <label class="font-weight-bold small">Street / Society / Area <span class="text-danger">*</span></label>
-                <input type="text" name="street" id="cartInputStreet" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Palm Springs" required>
+                <input type="text" name="street" id="cartInputStreet" list="cartColonyDatalist" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Colony, Street, Apartment" required autocomplete="off">
+                <datalist id="cartColonyDatalist">
+                  <option value="Awas Vikas Colony">
+                  <option value="Ramnagar Road">
+                  <option value="Aliganj Road">
+                  <option value="Kundeshwari">
+                  <option value="Giri Taal">
+                  <option value="Vaishali Colony">
+                  <option value="Shiv Vihar">
+                  <option value="Station Road / Railway Colony">
+                  <option value="Kharagpura / Devipura">
+                  <option value="Chaiti Chauraha">
+                  <option value="Mata Mandir Road">
+                  <option value="Pawan Vihar">
+                  <option value="Bazpur Road">
+                  <option value="Moradabad Road">
+                  <option value="Patel Nagar / Main Market">
+                  <option value="Mohalla Qila">
+                  <option value="Prakash City">
+                  <option value="Nadehi Sugar Mill">
+                </datalist>
               </div>
             </div>
 
@@ -700,41 +720,33 @@ document.addEventListener('DOMContentLoaded', function() {
     el.style.borderColor = '#86efac';
     setTimeout(function() {
       el.style.backgroundColor = '';
-      el.style.borderColor = '';
-    }, 2800);
-  }
-
-  function applyLocationData(loc, sourceBadge) {
-    if (!loc) return;
-    var filledCount = 0;
-
-    if (inputCity && loc.city) {
-      inputCity.value = loc.city;
-      flashHighlight(inputCity);
-      filledCount++;
-    }
-    if (inputState && loc.state) {
+      el.style.    if (inputState && loc.state) {
       inputState.value = loc.state;
       flashHighlight(inputState);
       filledCount++;
     }
-    if (inputStreet && (loc.street || loc.area || loc.fullAddress)) {
-      var s = loc.street || loc.area || (loc.fullAddress ? loc.fullAddress.split(',')[0].trim() : '');
-      if (s) {
-        inputStreet.value = s;
+    if (inputStreet) {
+      var currentVal = inputStreet.value.trim();
+      var isDefault = (!currentVal || currentVal === 'Palm Springs' || currentVal === 'e.g. Palm Springs');
+      var isFakeRamnagar = (loc.street === 'Ramnagar Road' && !loc.userExplicit);
+      if (loc.street && !isFakeRamnagar && loc.street.toLowerCase() !== (loc.city || '').toLowerCase()) {
+        inputStreet.value = loc.street;
         flashHighlight(inputStreet);
         filledCount++;
+      } else if (isDefault) {
+        inputStreet.value = '';
+        inputStreet.placeholder = 'e.g. Colony, Street, Apartment (Please specify)';
+        setTimeout(function() { inputStreet.focus(); }, 120);
       }
     }
     if (inputHouseNo) {
-      if (loc.houseNo) {
+      if (loc.houseNo && loc.houseNo !== 'Doorstep Visit') {
         inputHouseNo.value = loc.houseNo;
         flashHighlight(inputHouseNo);
         filledCount++;
       } else if (!inputHouseNo.value.trim() || inputHouseNo.value === 'Flat 604') {
-        inputHouseNo.value = 'Doorstep Visit';
-        flashHighlight(inputHouseNo);
-        filledCount++;
+        inputHouseNo.value = '';
+        inputHouseNo.placeholder = 'e.g. Flat 604 / House No.';
       }
     }
     if (inputPincode && loc.pincode && /^[0-9]{6}$/.test(loc.pincode)) {
@@ -742,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
       flashHighlight(inputPincode);
       filledCount++;
     }
-    if (inputAddress && loc.fullAddress) {
+    if (inputAddress && loc.fullAddress && loc.fullAddress.toLowerCase() !== (loc.city || '').toLowerCase()) {
       inputAddress.value = loc.fullAddress;
       flashHighlight(inputAddress);
       filledCount++;
@@ -750,18 +762,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (filledCount > 0) {
       if (bookingAutoFillBadge) {
-        bookingAutoFillBadge.innerHTML = '<i class="fa fa-check-circle mr-1"></i> ' + (sourceBadge || 'Auto-filled from location');
+        bookingAutoFillBadge.innerHTML = '<i class="fa fa-check-circle mr-1"></i> ' + (sourceBadge || 'Location Detected');
         bookingAutoFillBadge.style.display = 'inline-block';
       }
       if (btnUseCurrentLoc) {
-        btnUseCurrentLoc.innerHTML = '<i class="fa fa-check text-success"></i> <span>Location Applied</span>';
+        btnUseCurrentLoc.innerHTML = '<i class="fa fa-check text-success"></i> <span>City & Pincode Set</span>';
         btnUseCurrentLoc.style.background = '#ecfdf5';
         btnUseCurrentLoc.style.borderColor = '#a7f3d0';
         btnUseCurrentLoc.style.color = '#059669';
       }
       if (bookingLocStatus) {
         bookingLocStatus.style.display = 'block';
-        bookingLocStatus.innerHTML = '<span style="color: #059669;"><i class="fa fa-map-marker text-success mr-1"></i> Location auto-filled: <strong>' + (loc.city || loc.fullAddress || 'Selected Location') + '</strong></span>';
+        bookingLocStatus.innerHTML = '<span style="color: #059669;"><i class="fa fa-map-marker text-success mr-1"></i> Detected: <strong>' + (loc.city || 'Kashipur') + ' (' + (loc.pincode || '244713') + ')</strong>. Please specify your exact Colony & House No.</span>';
       }
     }
   }
@@ -771,6 +783,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var rawLoc = localStorage.getItem('refixel_user_location');
     if (rawLoc) {
       var savedLoc = JSON.parse(rawLoc);
+      // Purge any stale Ramnagar Road that was automatically guessed previously
+      if (savedLoc && savedLoc.street === 'Ramnagar Road' && !savedLoc.userExplicit) {
+        savedLoc.street = '';
+        localStorage.setItem('refixel_user_location', JSON.stringify(savedLoc));
+      }
       if (savedLoc && (savedLoc.fullAddress || savedLoc.city)) {
         var streetEmpty = (!inputStreet || !inputStreet.value.trim() || inputStreet.value === 'Palm Springs');
         if (streetEmpty) {
@@ -802,17 +819,22 @@ document.addEventListener('DOMContentLoaded', function() {
             var city = (data.cityName || '').trim();
             var region = (data.regionName || '').trim();
             var zip = (data.zipCode || '').trim();
+            if (city.toLowerCase().indexOf('kashipur') !== -1 || region.toLowerCase().indexOf('uttarakhand') !== -1) {
+              city = 'Kashipur';
+              region = 'Uttarakhand';
+              zip = '244713';
+            }
             if (city) {
               var locObj = {
-                houseNo: 'Doorstep Visit',
-                street: city + ' Main Area',
+                houseNo: '',
+                street: '',
                 city: city,
-                state: region || 'Haryana',
-                pincode: /^[0-9]{6}$/.test(zip) ? zip : '',
+                state: region || 'Uttarakhand',
+                pincode: /^[0-9]{6}$/.test(zip) ? zip : '244713',
                 fullAddress: city + (region ? ', ' + region : '')
               };
               localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
-              applyLocationData(locObj, 'Filled via Network IP');
+              applyLocationData(locObj, 'Filled via Network IP (' + city + ')');
             } else {
               throw new Error('No city from IP');
             }
@@ -837,7 +859,7 @@ document.addEventListener('DOMContentLoaded', function() {
           var lon = pos.coords.longitude;
 
           if (bookingLocStatus) {
-            bookingLocStatus.innerHTML = '<span class="text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Reverse-geocoding street address...</span>';
+            bookingLocStatus.innerHTML = '<span class="text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Identifying City & Pincode...</span>';
           }
 
           var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
@@ -849,20 +871,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(function(data) {
               var addr = (data && data.address) || {};
-              var houseNo = addr.house_number || addr.building || addr.flat || addr.house_name || '';
-              var road = addr.road || addr.street || addr.pedestrian || addr.footway || '';
-              var subLocality = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.city_district || '';
-              var locality = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || '';
-              var district = addr.state_district || addr.district || '';
-              var state = addr.state || '';
-              var postcode = addr.postcode || '';
-
-              var street = '';
-              if (road && subLocality) {
-                street = road + ', ' + subLocality;
-              } else {
-                street = road || subLocality || (data.name !== locality ? data.name : '');
-              }
+              var houseNo = addr.house_number || addr.building || addr.flat || '';
+              var road = addr.road || addr.street || addr.pedestrian || '';
+              var subLocality = addr.suburb || addr.neighbourhood || addr.residential || '';
+              var locality = addr.city || addr.town || addr.village || addr.municipality || 'Kashipur';
+              var district = addr.state_district || addr.district || 'Udham Singh Nagar';
+              var state = addr.state || 'Uttarakhand';
+              var postcode = /^[0-9]{6}$/.test(addr.postcode) ? addr.postcode : '244713';
 
               // Distance check to Kashipur center
               var dLat = (lat - 29.215) * Math.PI / 180;
@@ -874,43 +889,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 locality = 'Kashipur';
                 state = 'Uttarakhand';
                 postcode = '244713';
-                if (!street || street.toLowerCase() === 'kashipur' || street.toLowerCase() === 'kashipur area') {
-                  var kashipurColonies = [
-                    { name: 'Awas Vikas Colony', lat: 29.2173, lon: 78.9645 },
-                    { name: 'Ramnagar Road', lat: 29.2225, lon: 78.9660 },
-                    { name: 'Aliganj Road', lat: 29.2080, lon: 78.9510 },
-                    { name: 'Station Road', lat: 29.2130, lon: 78.9560 },
-                    { name: 'Kundeshwari', lat: 29.2430, lon: 78.9480 },
-                    { name: 'Giri Taal', lat: 29.2250, lon: 78.9570 },
-                    { name: 'Vaishali Colony', lat: 29.2190, lon: 78.9615 },
-                    { name: 'Shiv Vihar', lat: 29.2165, lon: 78.9590 },
-                    { name: 'Chaiti Chauraha', lat: 29.2310, lon: 78.9710 },
-                    { name: 'Mata Mandir Road', lat: 29.2115, lon: 78.9610 },
-                    { name: 'Kharagpura / Devipura', lat: 29.2110, lon: 78.9665 },
-                    { name: 'Pawan Vihar', lat: 29.2140, lon: 78.9720 },
-                    { name: 'Bazpur Road', lat: 29.2105, lon: 78.9800 }
-                  ];
-                  var nearestCol = kashipurColonies[0];
-                  var minD = Infinity;
-                  for (var k = 0; k < kashipurColonies.length; k++) {
-                    var curD = Math.hypot(lat - kashipurColonies[k].lat, lon - kashipurColonies[k].lon);
-                    if (curD < minD) { minD = curD; nearestCol = kashipurColonies[k]; }
-                  }
-                  street = nearestCol.name;
-                }
+              }
+
+              // Only use street if genuine street from GPS exists and is not just the city name
+              var street = '';
+              if (road && road.toLowerCase() !== locality.toLowerCase()) {
+                street = road;
+              } else if (subLocality && subLocality.toLowerCase() !== locality.toLowerCase() && subLocality.toLowerCase() !== 'kashipur') {
+                street = subLocality;
               }
 
               var locObj = {
-                houseNo: houseNo || 'Doorstep Visit',
-                street: street || (locality ? locality + ' Main' : ''),
-                city: locality || district || 'Kashipur',
-                state: state || 'Uttarakhand',
-                pincode: /^[0-9]{6}$/.test(postcode) ? postcode : '244713',
-                fullAddress: data.display_name || (street + ', ' + (locality || district))
+                houseNo: houseNo,
+                street: street, // Real street or blank for user to select from datalist!
+                city: locality,
+                state: state,
+                pincode: postcode,
+                fullAddress: [locality, state, postcode].filter(Boolean).join(', ')
               };
 
               localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
-              applyLocationData(locObj, 'Filled via GPS (' + (street || locality) + ')');
+              applyLocationData(locObj, 'Filled via GPS (' + locality + ')');
             })
             .catch(function(geoErr) {
               console.warn('Nominatim failed, falling back to BigDataCloud:', geoErr);
@@ -918,16 +917,17 @@ document.addEventListener('DOMContentLoaded', function() {
               fetch(bdcUrl)
                 .then(function(r) { return r.json(); })
                 .then(function(bdc) {
+                  var city = bdc.city || bdc.locality || 'Kashipur';
                   var locObj = {
-                    houseNo: 'Doorstep Visit',
-                    street: bdc.locality || '',
-                    city: bdc.city || bdc.locality || '',
-                    state: bdc.principalSubdivision || '',
-                    pincode: /^[0-9]{6}$/.test(bdc.postcode) ? bdc.postcode : '',
-                    fullAddress: [bdc.locality, bdc.city, bdc.principalSubdivision].filter(Boolean).join(', ')
+                    houseNo: '',
+                    street: '',
+                    city: city,
+                    state: bdc.principalSubdivision || 'Uttarakhand',
+                    pincode: /^[0-9]{6}$/.test(bdc.postcode) ? bdc.postcode : '244713',
+                    fullAddress: [city, bdc.principalSubdivision].filter(Boolean).join(', ')
                   };
                   localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
-                  applyLocationData(locObj, 'Filled via GPS');
+                  applyLocationData(locObj, 'Filled via GPS (' + city + ')');
                 })
                 .catch(function() {
                   tryIpFallback('Reverse geocode failed');

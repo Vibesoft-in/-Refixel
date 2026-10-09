@@ -4698,24 +4698,24 @@ document.addEventListener('DOMContentLoaded', function () {
           var defaultColony = KASHIPUR_LOCALITIES[0]; // Awas Vikas Colony
 
           if (city.toLowerCase().indexOf('kashipur') !== -1 || region.toLowerCase().indexOf('uttarakhand') !== -1) {
-            fillLocation(defaultColony.locality, defaultColony.lat, defaultColony.lon, {
-              houseNo: 'Doorstep Visit',
-              street: defaultColony.name,
+            fillLocation('Kashipur, Udham Singh Nagar, Uttarakhand', data.latitude, data.longitude, {
+              houseNo: '',
+              street: '',
               city: 'Kashipur',
               state: 'Uttarakhand',
               pincode: '244713',
-              lat: defaultColony.lat,
-              lng: defaultColony.lon,
-              fullAddress: defaultColony.locality
+              lat: data.latitude,
+              lng: data.longitude,
+              fullAddress: 'Kashipur, Udham Singh Nagar, Uttarakhand'
             });
             if (statusText) {
-              statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> In Kashipur: Pinned to <strong>' + defaultColony.name + '</strong>. Tap chips above to change colony.';
+              statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Detected: <strong>Kashipur</strong>. Tap your exact colony from the chips above to pinpoint.';
             }
           } else {
             var resolved = city && region ? city + ', ' + region : city || region || 'Kashipur, Uttarakhand';
             fillLocation(resolved, data.latitude, data.longitude, {
-              houseNo: 'Doorstep Visit',
-              street: resolved,
+              houseNo: '',
+              street: '',
               city: city || 'Kashipur',
               state: region || 'Uttarakhand',
               pincode: data.zipCode || '244713',
@@ -4767,32 +4767,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
           // If browser returned coarse Wi-Fi/IP location with no specific street in Kashipur:
           if (isKashipurArea && (!specificStreet || specificStreet.toLowerCase() === 'kashipur' || accuracy > 150)) {
-            var bestColony = nearKashipur.colony;
-            var chosenLoc = bestColony.locality;
+            var chosenLoc = 'Kashipur, Udham Singh Nagar, Uttarakhand';
             var structured = {
-              houseNo: 'Doorstep Visit',
-              street: bestColony.name,
-              area: bestColony.name,
+              houseNo: '',
+              street: '',
+              area: '',
               city: 'Kashipur',
               state: 'Uttarakhand',
               pincode: '244713',
-              lat: bestColony.lat,
-              lng: bestColony.lon,
+              lat: lat,
+              lng: lon,
               fullAddress: chosenLoc
             };
-            fillLocation(chosenLoc, bestColony.lat, bestColony.lon, structured);
+            fillLocation(chosenLoc, lat, lon, structured);
 
-            // Highlight corresponding quick chip if present
-            quickMapChips.forEach(function (c) {
-              if (c.textContent.trim().toLowerCase().indexOf(bestColony.name.toLowerCase().substring(0, 5)) !== -1) {
-                c.classList.add('active');
-              } else {
-                c.classList.remove('active');
-              }
-            });
+            quickMapChips.forEach(function (c) { c.classList.remove('active'); });
 
             if (statusText) {
-              statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Pinned near <strong>' + bestColony.name + '</strong>, Kashipur. Tap chips above to change colony.';
+              statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Detected: <strong>Kashipur</strong>. Tap your exact colony from the chips above to pinpoint.';
             }
           } else {
             // Fine-accuracy satellite GPS fix: use detailed reverse geocoded street
@@ -4802,16 +4794,15 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }).catch(function () {
           if (isKashipurArea) {
-            var bestColony = nearKashipur.colony;
-            fillLocation(bestColony.locality, bestColony.lat, bestColony.lon, {
-              houseNo: 'Doorstep Visit',
-              street: bestColony.name,
+            fillLocation('Kashipur, Udham Singh Nagar, Uttarakhand', lat, lon, {
+              houseNo: '',
+              street: '',
               city: 'Kashipur',
               state: 'Uttarakhand',
               pincode: '244713',
-              lat: bestColony.lat,
-              lng: bestColony.lon,
-              fullAddress: bestColony.locality
+              lat: lat,
+              lng: lon,
+              fullAddress: 'Kashipur, Udham Singh Nagar, Uttarakhand'
             });
           } else {
             var coordsStr = lat.toFixed(5) + ', ' + lon.toFixed(5);
