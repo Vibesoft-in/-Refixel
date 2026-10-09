@@ -3,7 +3,7 @@ $svcName = \App\Core\View::e($service['name']);
 $cityName = \App\Core\View::e($city);
 $price = number_format((float)$service['starting_price'], 0);
 $duration = (int)($service['duration_minutes'] ?? 60);
-$imgFile = !empty($service['image']) ? $service['image'] : 'Full-home-clean.jpg';
+$imgFile = \App\Models\Service::resolveImage($service['slug'] ?? '', $service['image'] ?? null);
 
 // Split checklist into included and excluded
 $includedItems = [];
@@ -31,10 +31,10 @@ foreach ($checklist ?? [] as $item) {
     <div class="col-lg-8">
       <div class="card border-0 shadow-sm mb-4 service-detail-hero-card" style="border-radius: 16px; overflow:hidden;">
         <div class="service-hero-img-wrap">
-          <img src="<?= \App\Core\View::asset('img/' . $imgFile) ?>"
+          <img src="<?= \App\Core\View::asset('img/' . $imgFile) ?>?v=20261009"
                alt="<?= $svcName ?>"
                class="service-detail-hero-img"
-               onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
+               onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
         </div>
 
         <div class="card-body p-4 p-md-5">

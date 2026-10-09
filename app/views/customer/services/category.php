@@ -169,15 +169,15 @@ $refixelTrustData = [
           $svcSlug = \App\Core\View::e($svc['slug']);
           $svcName = \App\Core\View::e($svc['name']);
           $svcUrl = \App\Core\View::url("/{$svcSlug}-in-{$currentCitySlug}");
-          $imgFile = !empty($svc['image']) ? $svc['image'] : 'Full-home-clean.jpg';
+          $imgFile = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
         ?>
           <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 border-0 service-package-card" data-service-url="<?= $svcUrl ?>" style="border-radius: 14px; overflow:hidden; cursor:pointer; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04); border: 1px solid #e2e8f0;">
               <div class="position-relative" style="aspect-ratio: 16 / 10; height: auto; max-height: 200px; overflow: hidden; background: #f1f5f9;">
-                <img src="<?= \App\Core\View::asset('img/' . $imgFile) ?>"
+                <img src="<?= \App\Core\View::asset('img/' . $imgFile) ?>?v=20261009"
                      alt="<?= $svcName ?>"
                      style="height: 100%; width: 100%; object-fit: cover; object-position: center top !important;"
-                     onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
+                     onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
                 <button type="button" 
                         class="btn-add-to-cart card-img-cart-btn" 
                         data-service-id="<?= (int)$svc['id'] ?>" 

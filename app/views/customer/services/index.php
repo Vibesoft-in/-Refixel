@@ -1083,18 +1083,18 @@ if (empty($activeCategory)) {
                   $svcName = \App\Core\View::e($svc['name']);
                   $svcPrice = number_format((float)$svc['starting_price'], 0);
                   $svcDuration = (int)($svc['duration_minutes'] ?? 60);
-                  $svcImg = !empty($svc['image']) ? $svc['image'] : 'Full-home-clean.jpg';
+                  $svcImg = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
                   $svcUrl = \App\Core\View::url("/{$svcSlug}-in-{$citySlug}");
                   $bookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
                 ?>
                   <div class="package-card-item">
                     <div class="card h-100 shadow-sm border-0 service-package-card" data-service-url="<?= $svcUrl ?>">
                       <div class="package-img-wrap">
-                        <img src="<?= \App\Core\View::asset('img/' . $svcImg) ?>"
+                        <img src="<?= \App\Core\View::asset('img/' . $svcImg) ?>?v=20261009"
                              alt="<?= $svcName ?>"
                              loading="lazy"
                              decoding="async"
-                             onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
+                             onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
                         <!-- Floating Add to Cart Icon Button on Image (Right Corner) -->
                         <button type="button" 
                                 class="btn-add-to-cart card-img-cart-btn" 
