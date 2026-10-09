@@ -117,8 +117,8 @@ $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $curren
 }
 .solutions_grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   max-width: 1240px;
   margin: 0 auto;
 }
@@ -154,7 +154,7 @@ a.solution_card:active,
 .solution_media_wrapper {
   position: relative;
   width: 100%;
-  height: 172px;
+  height: 178px;
   overflow: hidden;
   background: #f1f5f9;
 }
@@ -181,23 +181,31 @@ a.solution_card:active,
   top: 14px;
   left: 14px;
   z-index: 4;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f25b29 0%, #ff7040 100%);
-  color: #ffffff;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1.5px solid #edf2f7;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  padding: 4px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
   margin: 0;
-  border: 2.5px solid #ffffff;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  overflow: hidden;
+}
+.solution_icon_wrap img.solution_custom_icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
 }
 .solution_card:hover .solution_icon_wrap {
-  transform: scale(1.1);
-  box-shadow: 0 6px 18px rgba(242, 91, 41, 0.45);
+  transform: scale(1.1) rotate(-2deg);
+  box-shadow: 0 10px 24px rgba(242, 91, 41, 0.28);
+  border-color: #ffdacf !important;
 }
 .solution_title {
   font-size: 19px;
@@ -240,10 +248,10 @@ a.solution_card:active,
 @media (min-width: 992px) and (max-width: 1199px) {
   .solutions_grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    gap: 20px;
   }
   .solution_body {
-    padding: 8px 18px 18px 18px;
+    padding: 16px;
   }
   .solution_title {
     font-size: 18px;
@@ -262,7 +270,7 @@ a.solution_card:active,
   .solutions_grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
-    max-width: 720px;
+    max-width: 760px;
   }
 }
 @media (max-width: 767px) {
@@ -270,7 +278,7 @@ a.solution_card:active,
     padding: 35px 0 30px 0;
   }
   .solutions_header {
-    margin-bottom: 25px;
+    margin-bottom: 22px;
   }
   .solutions_header h2 {
     font-size: 26px;
@@ -284,8 +292,8 @@ a.solution_card:active,
     gap: 14px;
     max-width: 520px;
   }
-  .solution_media_wrapper  { height: 130px; }
-  .solution_icon_wrap      { width: 36px; height: 36px; font-size: 14px; top: 10px; left: 10px; margin: 0; }
+  .solution_media_wrapper  { height: 135px; }
+  .solution_icon_wrap      { width: 40px; height: 40px; border-radius: 10px; top: 10px; left: 10px; padding: 3px; }
   .solution_title          { font-size: 15px; margin-bottom: 4px; }
   .solution_desc           { font-size: 11.5px; line-height: 1.45; margin-bottom: 10px; }
   .solution_body           { padding: 12px 13px 14px 13px; }
@@ -293,12 +301,13 @@ a.solution_card:active,
 @media (max-width: 480px) {
   .solutions_grid {
     grid-template-columns: 1fr;
-    max-width: 340px;
+    max-width: 360px;
     gap: 14px;
   }
-  .solution_media_wrapper { height: 155px; }
-  .solution_icon_wrap     { width: 40px; height: 40px; font-size: 16px; top: 12px; left: 12px; margin: 0; }
+  .solution_media_wrapper { height: 160px; }
+  .solution_icon_wrap     { width: 44px; height: 44px; top: 12px; left: 12px; }
 }
+
 </style>
 
 <!-- Hero & Search Banner -->
@@ -425,60 +434,76 @@ a.solution_card:active,
 <?php
 $solutionCards = [
   [
-    'title' => 'Cleaning',
-    'desc'  => 'Home, Office, Deep Cleaning Sofa, Carpet, Kitchen, Bathroom',
-    'image' => 'refixel-cleaning.jpg',
-    'icon'  => 'fa fa-paint-brush',
-    'url'   => \App\Core\View::url("/cleaning-services-in-{$currentCitySlug}"),
+    'slug'      => 'cleaning',
+    'title'     => 'Cleaning',
+    'desc'      => 'Home, Office, Deep Cleaning Sofa, Carpet, Kitchen, Bathroom',
+    'image'     => 'refixel-cleaning.jpg',
+    'icon_img'  => 'icons/cleaning icon.png',
+    'url'       => \App\Core\View::url("/cleaning-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'Electrician',
-    'desc'  => 'Wiring, Switch, Fan, Light, Inverter, LED, Electrical Repairs',
-    'image' => 'refixel-electrician.jpg',
-    'icon'  => 'fa fa-bolt',
-    'url'   => \App\Core\View::url("/electrician-services-in-{$currentCitySlug}"),
+    'slug'      => 'painting-services',
+    'title'     => 'Painting Services',
+    'desc'      => 'Interior & Exterior Wall Painting, Waterproofing, Texture & Stencil',
+    'image'     => 'refixel-painting.jpg',
+    'icon_img'  => 'icons/painting icon.png',
+    'url'       => \App\Core\View::url("/painting-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'Appliance Repair',
-    'desc'  => 'TV, Fridge, Washing Machine, Microwave, Mixer & Home Appliances',
-    'image' => 'refixel-appliance-repair.jpg',
-    'icon'  => 'fa fa-cog',
-    'url'   => \App\Core\View::url("/appliance-repair-services-in-{$currentCitySlug}"),
+    'slug'      => 'fall-ceiling',
+    'title'     => 'Fall Ceiling',
+    'desc'      => 'POP Ceiling, Gypsum Board, Cove Lighting & False Ceiling Design',
+    'image'     => 'refixel-fall-ceiling.jpg',
+    'icon_img'  => 'icons/fall ceiling icon.png',
+    'url'       => \App\Core\View::url("/fall-ceiling-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'Plumber',
-    'desc'  => 'Leak Repair, Pipe Fitting, Taps, Flush, Drainage Bathroom & Kitchen Plumbing',
-    'image' => 'refixel-plumber.jpg',
-    'icon'  => 'fa fa-wrench',
-    'url'   => \App\Core\View::url("/plumber-services-in-{$currentCitySlug}"),
+    'slug'      => 'plumbers',
+    'title'     => 'Plumbers',
+    'desc'      => 'Leak Repair, Pipe Fitting, Taps, Flush, Drainage Bathroom & Kitchen Plumbing',
+    'image'     => 'refixel-plumber.jpg',
+    'icon_img'  => 'icons/plumber icon.png',
+    'url'       => \App\Core\View::url("/plumber-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'AC Service & Repair',
-    'desc'  => 'AC Installation, Uninstallation, Deep Jet Cleaning & Gas Refilling',
-    'image' => 'refixel-ac-service.jpg',
-    'icon'  => 'fa fa-snowflake-o',
-    'url'   => \App\Core\View::url("/ac-services-in-{$currentCitySlug}"),
+    'slug'      => 'carpenter',
+    'title'     => 'Carpenter',
+    'desc'      => 'Furniture Repair, Door Lock, Hinges, Modular Kitchen & Woodwork',
+    'image'     => 'refixel-carpenter.jpg',
+    'icon_img'  => 'icons/carpenter icon.png',
+    'url'       => \App\Core\View::url("/carpenter-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'Painting Services',
-    'desc'  => 'Interior & Exterior Wall Painting, Waterproofing, Texture & Stencil',
-    'image' => 'refixel-painting.jpg',
-    'icon'  => 'fa fa-paint-brush',
-    'url'   => \App\Core\View::url("/painting-services-in-{$currentCitySlug}"),
+    'slug'      => 'ac-services',
+    'title'     => 'AC Service & Repair',
+    'desc'      => 'AC Installation, Uninstallation, Deep Jet Cleaning & Gas Refilling',
+    'image'     => 'refixel-ac-service.jpg',
+    'icon_img'  => 'icons/ac repair icon.png',
+    'url'       => \App\Core\View::url("/ac-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'Carpenter',
-    'desc'  => 'Furniture Repair, Door Lock, Hinges, Modular Kitchen & Woodwork',
-    'image' => 'refixel-carpenter.jpg',
-    'icon'  => 'fa fa-gavel',
-    'url'   => \App\Core\View::url("/carpenter-services-in-{$currentCitySlug}"),
+    'slug'      => 'electrician',
+    'title'     => 'Electrician',
+    'desc'      => 'Wiring, Switch, Fan, Light, Inverter, LED, Electrical Repairs',
+    'image'     => 'refixel-electrician.jpg',
+    'icon_img'  => 'icons/electrician icon.png',
+    'url'       => \App\Core\View::url("/electrician-services-in-{$currentCitySlug}"),
   ],
   [
-    'title' => 'Fall Ceiling',
-    'desc'  => 'POP Ceiling, Gypsum Board, Cove Lighting & False Ceiling Design',
-    'image' => 'refixel-fall-ceiling.jpg',
-    'icon'  => 'fa fa-th-large',
-    'url'   => \App\Core\View::url("/fall-ceiling-services-in-{$currentCitySlug}"),
+    'slug'      => 'appliance-repair',
+    'title'     => 'Appliance Repair',
+    'desc'      => 'TV, Fridge, Washing Machine, Microwave, Mixer & Home Appliances',
+    'image'     => 'refixel-appliance-repair.jpg',
+    'icon_img'  => 'icons/appliance repair icon.png',
+    'url'       => \App\Core\View::url("/appliance-repair-services-in-{$currentCitySlug}"),
+  ],
+  [
+    'slug'      => 'pest-control',
+    'title'     => 'Pest Control',
+    'desc'      => 'Cockroach, Termite, Bed Bug, Ant & Rodent Treatment with Odourless Spray',
+    'image'     => 'refixel-pest-control.jpg',
+    'icon_img'  => 'icons/pest control icon.png',
+    'url'       => \App\Core\View::url("/pest-control-services-in-{$currentCitySlug}"),
   ],
 ];
 ?>
@@ -493,21 +518,24 @@ $solutionCards = [
             <span class="eyebrow_dash"></span>
           </div>
           <h2>Complete Home Solutions</h2>
-          <p>From cleaning to repairs, we provide end-to-end home services with skilled professionals.</p>
+          <p>From cleaning to repairs, we provide end-to-end home services with verified professionals.</p>
         </div>
       </div>
     </div>
 
-    <div class="solutions_grid">
+    <div class="solutions_grid" id="solutionsGrid">
       <?php foreach ($solutionCards as $card): ?>
-        <a href="<?= $card['url'] ?>" class="solution_card" title="<?= \App\Core\View::e($card['title']) ?>">
+        <a href="<?= $card['url'] ?>" class="solution_card" data-category="<?= $card['slug'] ?>" title="<?= \App\Core\View::e($card['title']) ?>">
           <div class="solution_media_wrapper">
             <img src="<?= \App\Core\View::asset('img/' . $card['image']) ?>"
                  alt="<?= \App\Core\View::e($card['title']) ?>"
-                 width="280" height="172" loading="lazy"
-                 onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
-            <div class="solution_icon_wrap">
-              <i class="<?= $card['icon'] ?>" aria-hidden="true"></i>
+                 width="380" height="178" loading="lazy"
+                 onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/service-pest-control.jpg') ?>';">
+            <div class="solution_icon_wrap" title="<?= \App\Core\View::e($card['title']) ?>">
+              <img src="<?= \App\Core\View::asset($card['icon_img']) ?>"
+                   alt="<?= \App\Core\View::e($card['title']) ?> icon"
+                   class="solution_custom_icon"
+                   onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('icons/more services icon.png') ?>';">
             </div>
           </div>
           <div class="solution_body">
@@ -524,6 +552,8 @@ $solutionCards = [
     </div>
   </div>
 </section>
+
+
 
 
 <!-- Modern About REFIXEL Section -->
@@ -1677,7 +1707,8 @@ $solutionCards = [
   background: #0a1c33;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y;
+  touch-action: none;
+  cursor: ew-resize;
   --pos: 50%;
 }
 .ba_img_base {
@@ -1782,36 +1813,39 @@ $solutionCards = [
   top: 0;
   bottom: 0;
   left: var(--pos, 50%);
-  width: 2px;
+  width: 3px;
   background: #ffffff;
   transform: translateX(-50%);
   z-index: 6;
   pointer-events: none;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 .ba_slider_button {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: #ffffff;
   color: #0a1c33;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(242, 91, 41, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(242, 91, 41, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  font-size: 9.5px;
-  transition: transform 0.2s ease;
+  gap: 3px;
+  font-size: 10px;
+  pointer-events: none;
+  transition: transform 0.15s ease;
 }
 .ba_slider_button i {
   color: #f25b29;
 }
-.ba_compare_viewer:hover .ba_slider_button {
-  transform: translate(-50%, -50%) scale(1.1);
+.ba_compare_viewer:hover .ba_slider_button,
+.ba_compare_viewer.is-dragging .ba_slider_button {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 6px 18px rgba(242, 91, 41, 0.5), 0 0 0 3px #f25b29;
 }
 
 /* Invisible Range Input */
@@ -1819,27 +1853,12 @@ $solutionCards = [
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
+  width: 1px;
+  height: 1px;
   opacity: 0;
-  cursor: ew-resize;
-  z-index: 10;
-  -webkit-appearance: none;
-  appearance: none;
+  pointer-events: none;
 }
-.ba_range_input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 36px;
-  height: 100%;
-  cursor: ew-resize;
-}
-.ba_range_input::-moz-range-thumb {
-  width: 36px;
-  height: 100%;
-  cursor: ew-resize;
-}
+
 
 /* Compact Card Body */
 .ba_card_details {
@@ -2237,21 +2256,105 @@ document.addEventListener('DOMContentLoaded', function () {
     var range = viewer.querySelector('.ba_range_input');
     var card = viewer.closest('.ba_compare_card');
     var quickBtns = card ? card.querySelectorAll('.ba_quick_btn') : [];
+    var isDragging = false;
 
     function updatePosition(val) {
-      viewer.style.setProperty('--pos', val + '%');
+      var numVal = Math.max(0, Math.min(100, Math.round(Number(val))));
+      viewer.style.setProperty('--pos', numVal + '%');
       if (range) {
-        range.value = val;
+        range.value = numVal;
       }
       if (quickBtns.length > 0) {
         quickBtns.forEach(function (btn) {
-          if (btn.getAttribute('data-set-pos') === String(val)) {
+          if (btn.getAttribute('data-set-pos') === String(numVal)) {
             btn.classList.add('active');
           } else {
             btn.classList.remove('active');
           }
         });
       }
+    }
+
+    function calcPercent(clientX) {
+      var rect = viewer.getBoundingClientRect();
+      if (!rect.width) return 50;
+      var offsetX = clientX - rect.left;
+      var percent = (offsetX / rect.width) * 100;
+      return Math.max(0, Math.min(100, percent));
+    }
+
+    function onPointerDown(e) {
+      isDragging = true;
+      viewer.classList.add('is-dragging');
+      if (viewer.setPointerCapture && e.pointerId) {
+        try {
+          viewer.setPointerCapture(e.pointerId);
+        } catch (err) {}
+      }
+      updatePosition(calcPercent(e.clientX));
+      if (e.cancelable) e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      updatePosition(calcPercent(e.clientX));
+      if (e.cancelable) e.preventDefault();
+    }
+
+    function onPointerUp(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      viewer.classList.remove('is-dragging');
+      if (viewer.releasePointerCapture && e.pointerId) {
+        try {
+          viewer.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+      }
+    }
+
+    // Modern Pointer Events (supports mouse, touch, and stylus)
+    if (window.PointerEvent) {
+      viewer.addEventListener('pointerdown', onPointerDown);
+      viewer.addEventListener('pointermove', onPointerMove);
+      viewer.addEventListener('pointerup', onPointerUp);
+      viewer.addEventListener('pointercancel', onPointerUp);
+    } else {
+      // Mouse fallback
+      viewer.addEventListener('mousedown', function (e) {
+        isDragging = true;
+        viewer.classList.add('is-dragging');
+        updatePosition(calcPercent(e.clientX));
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (isDragging) {
+          updatePosition(calcPercent(e.clientX));
+        }
+      });
+      window.addEventListener('mouseup', function () {
+        if (isDragging) {
+          isDragging = false;
+          viewer.classList.remove('is-dragging');
+        }
+      });
+
+      // Touch fallback
+      viewer.addEventListener('touchstart', function (e) {
+        if (e.touches && e.touches.length > 0) {
+          isDragging = true;
+          viewer.classList.add('is-dragging');
+          updatePosition(calcPercent(e.touches[0].clientX));
+        }
+      }, { passive: false });
+      viewer.addEventListener('touchmove', function (e) {
+        if (isDragging && e.touches && e.touches.length > 0) {
+          updatePosition(calcPercent(e.touches[0].clientX));
+          if (e.cancelable) e.preventDefault();
+        }
+      }, { passive: false });
+      viewer.addEventListener('touchend', function () {
+        isDragging = false;
+        viewer.classList.remove('is-dragging');
+      });
     }
 
     if (range) {
@@ -2265,13 +2368,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (quickBtns.length > 0) {
       quickBtns.forEach(function (btn) {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
           var targetVal = this.getAttribute('data-set-pos');
           updatePosition(targetVal);
         });
       });
     }
   });
+});
 </script>
 
 <!-- ==========================================================================
@@ -3023,47 +3128,109 @@ document.addEventListener('DOMContentLoaded', function () {
   background: #e8edf2;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
 }
-.map_canvas_svg {
+.google_map_frame {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  border: 0;
+  z-index: 1;
 }
 .map_center_pin {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
+  transform: translate(-50%, -100%);
+  z-index: 10;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.pin_pulse_ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: rgba(242, 91, 41, 0.35);
-  animation: pinPulse 2s infinite ease-out;
+.map_center_pin.pin-dropped {
+  animation: mapPinDropBounce 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-@keyframes pinPulse {
-  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.95; }
-  100% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+@keyframes mapPinDropBounce {
+  0% { transform: translate(-50%, -200%) scale(0.5); opacity: 0; }
+  55% { transform: translate(-50%, -90%) scale(1.12); opacity: 1; }
+  75% { transform: translate(-50%, -108%) scale(0.96); }
+  100% { transform: translate(-50%, -100%) scale(1); }
 }
+
+.map_pin_callout {
+  background: #0a1c33;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 18px rgba(10, 28, 51, 0.45), 0 0 0 1.5px rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  transition: all 0.25s ease;
+}
+.map_pin_callout .pin_callout_icon {
+  color: #f25b29;
+  font-size: 12px;
+}
+
+.pin_marker_wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .pin_icon_circle {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: #f25b29;
+  background: linear-gradient(135deg, #f25b29 0%, #e04815 100%);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 6px 20px rgba(242, 91, 41, 0.5), 0 0 0 3px #ffffff;
+  font-size: 20px;
+  box-shadow: 0 6px 20px rgba(242, 91, 41, 0.55), 0 0 0 3px #ffffff;
+  z-index: 2;
+}
+
+.pin_needle_point {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 10px solid #e04815;
+  margin-top: -2px;
+  z-index: 1;
+}
+
+.pin_pulse_ring {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(242, 91, 41, 0.65) 0%, rgba(242, 91, 41, 0) 75%);
+  animation: pinPulseGround 2.2s infinite ease-out;
+  pointer-events: none;
+}
+@keyframes pinPulseGround {
+  0% { transform: translateX(-50%) scale(0.6); opacity: 0.95; }
+  100% { transform: translateX(-50%) scale(2.8); opacity: 0; }
 }
 
 .map_status_pill {
@@ -3861,62 +4028,49 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
         <div class="location_header_actions">
           <button type="button" class="btn_use_location" id="btnDetectLocation">
-            <i class="fa fa-plus"></i> Use My Location
+            <i class="fa fa-crosshairs"></i> Use My Location
           </button>
-          <a href="https://maps.google.com/?q=Uttarakhand,India" target="_blank" rel="noopener noreferrer" class="btn_open_maps">
+          <a href="https://maps.google.com/?q=Uttarakhand,India" target="_blank" rel="noopener noreferrer" class="btn_open_maps" id="btnOpenGoogleMaps">
             Open in Google Maps <i class="fa fa-external-link"></i>
           </a>
         </div>
       </div>
 
-      <!-- Stylized Interactive Map Container -->
+      <!-- Interactive Google Maps Container -->
       <div class="location_map_box" id="locationMapBox">
-        <!-- SVG Architectural Road Network Map (matching reference screenshot) -->
-        <svg class="map_canvas_svg" viewBox="0 0 1000 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bgGrad" x1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#e9edf2"/>
-              <stop offset="50%" stop-color="#e3e8ef"/>
-              <stop offset="100%" stop-color="#dde3ea"/>
-            </linearGradient>
-            <filter id="roadShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0a1c33" flood-opacity="0.08"/>
-            </filter>
-          </defs>
-          <rect width="1000" height="400" fill="url(#bgGrad)" />
+        <!-- Live Embedded Google Map -->
+        <iframe id="googleMapIframe" class="google_map_frame"
+          src="https://maps.google.com/maps?q=Kashipur,Uttarakhand,India&t=&z=14&ie=UTF8&iwloc=&output=embed"
+          loading="lazy" allowfullscreen="" frameborder="0" scrolling="no" aria-label="Interactive Google Map">
+        </iframe>
 
-          <!-- Diagonal Primary Road 1 (Top-Left to Bottom-Right) -->
-          <line x1="-50" y1="-20" x2="1050" y2="420" stroke="#ffffff" stroke-width="64" stroke-linecap="round" filter="url(#roadShadow)"/>
-          <line x1="-50" y1="-20" x2="1050" y2="420" stroke="#f1f5f9" stroke-width="50" />
-          <line x1="-50" y1="-20" x2="1050" y2="420" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="14 10"/>
-
-          <!-- Diagonal Primary Road 2 (Top-Right to Bottom-Left) -->
-          <line x1="1050" y1="-20" x2="-50" y2="420" stroke="#ffffff" stroke-width="64" stroke-linecap="round" filter="url(#roadShadow)"/>
-          <line x1="1050" y1="-20" x2="-50" y2="420" stroke="#f1f5f9" stroke-width="50" />
-          <line x1="1050" y1="-20" x2="-50" y2="420" stroke="#cbd5e1" stroke-width="2.5" stroke-dasharray="14 10"/>
-
-          <!-- Secondary connector street -->
-          <line x1="500" y1="0" x2="500" y2="400" stroke="#ffffff" stroke-width="32" filter="url(#roadShadow)"/>
-          <line x1="500" y1="0" x2="500" y2="400" stroke="#f8fafc" stroke-width="24"/>
-        </svg>
-
-        <!-- Central Glowing Orange Location Marker Pin -->
-        <div class="map_center_pin">
+        <!-- Central Exact Location Marker Pin -->
+        <div class="map_center_pin pin-dropped" id="mapCenterPin">
+          <!-- Floating Location Callout Tooltip -->
+          <div class="map_pin_callout" id="mapPinCallout">
+            <span class="pin_callout_icon"><i class="fa fa-map-marker"></i></span>
+            <span id="mapPinCalloutText">Service Location</span>
+          </div>
+          <!-- Radar Pulse Effect on Ground -->
           <div class="pin_pulse_ring"></div>
-          <div class="pin_icon_circle">
-            <i class="fa fa-map-marker"></i>
+          <!-- Custom Marker Needle/Circle Pin -->
+          <div class="pin_marker_wrapper">
+            <div class="pin_icon_circle">
+              <i class="fa fa-home"></i>
+            </div>
+            <div class="pin_needle_point"></div>
           </div>
         </div>
 
         <!-- Bottom Float Status Bar -->
         <div class="map_status_pill" id="locationStatusPill">
-          <i class="fa fa-compass" style="color: #f25b29;"></i>
+          <i class="fa fa-map-marker" style="color: #f25b29;"></i>
           <span id="locationStatusText">No location selected yet.</span>
         </div>
 
         <!-- Bottom Right Quick Button -->
         <button type="button" class="map_corner_btn" id="btnCornerLocation">
-          Use My Location
+          <i class="fa fa-crosshairs"></i> Use My Location
         </button>
       </div>
     </div>
@@ -3933,15 +4087,137 @@ document.addEventListener('DOMContentLoaded', function () {
   var btnDetect = document.getElementById('btnDetectLocation');
   var btnCorner = document.getElementById('btnCornerLocation');
   var openVideoBtn = document.getElementById('openPromoVideo');
+  var googleMapIframe = document.getElementById('googleMapIframe');
+  var btnOpenGoogleMaps = document.getElementById('btnOpenGoogleMaps');
 
   var defaultPlaceholder = locInput ? locInput.placeholder : 'Enter or detect your location...';
+  var mapDebounceTimer = null;
 
-  function fillLocation(locValue) {
+  function updateGoogleMap(queryOrCoords, lat, lon) {
+    var query = '';
+    var zoom = 15;
+
+    if (lat && lon) {
+      query = lat + ',' + lon;
+      zoom = 17; // Detailed street & building level
+    } else if (queryOrCoords) {
+      query = encodeURIComponent(queryOrCoords);
+    }
+
+    if (googleMapIframe && query) {
+      googleMapIframe.src = 'https://maps.google.com/maps?q=' + query + '&t=&z=' + zoom + '&ie=UTF8&iwloc=&output=embed';
+    }
+
+    if (btnOpenGoogleMaps && query) {
+      btnOpenGoogleMaps.href = 'https://www.google.com/maps?q=' + query;
+    }
+  }
+
+  function formatDetailedPlaceAddress(data, lat, lon) {
+    if (!data) return lat.toFixed(5) + ', ' + lon.toFixed(5);
+
+    var addr = data.address || {};
+    var parts = [];
+
+    // 1. Building / Shop / Apartment / Amenity / Landmark / House
+    var placeName = data.name || addr.amenity || addr.building || addr.shop || addr.house_name || addr.office || '';
+    if (placeName && placeName !== addr.road && placeName !== addr.suburb && placeName !== addr.city && placeName !== addr.town) {
+      parts.push(placeName);
+    }
+
+    // 2. Road / Street
+    var road = addr.road || addr.street || addr.pedestrian || addr.footway || '';
+    if (road && parts.indexOf(road) === -1) {
+      parts.push(road);
+    }
+
+    // 3. Suburb / Colony / Mohalla / Sector / Neighbourhood / Area
+    var subLocality = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.city_district || '';
+    if (subLocality && parts.indexOf(subLocality) === -1) {
+      parts.push(subLocality);
+    }
+
+    // 4. Locality / City / Town / Village
+    var locality = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || '';
+    if (locality && parts.indexOf(locality) === -1) {
+      parts.push(locality);
+    }
+
+    // 5. District (if distinct from town/city)
+    var district = addr.state_district || addr.district || '';
+    if (district && district.toLowerCase() !== (locality || '').toLowerCase() && parts.indexOf(district) === -1) {
+      parts.push(district);
+    }
+
+    // 6. State & Pincode
+    var state = addr.state || '';
+    var postcode = addr.postcode || '';
+
+    if (state && parts.indexOf(state) === -1) {
+      parts.push(state);
+    }
+    if (postcode) {
+      if (parts.length > 0 && parts[parts.length - 1] === state) {
+        parts[parts.length - 1] = state + ' - ' + postcode;
+      } else {
+        parts.push(postcode);
+      }
+    }
+
+    // If multi-part address was built, return it
+    if (parts.length >= 2) {
+      return parts.join(', ');
+    }
+
+    // Fallback: Clean up full display_name (omit trailing 'India')
+    if (data.display_name) {
+      var raw = data.display_name.split(',').map(function (s) { return s.trim(); });
+      if (raw.length > 3 && raw[raw.length - 1].toLowerCase() === 'india') {
+        raw.pop();
+      }
+      return raw.slice(0, 4).join(', ');
+    }
+
+    return locality || (lat.toFixed(5) + ', ' + lon.toFixed(5));
+  }
+
+  function parseStructuredAddress(data, lat, lon) {
+    if (!data) return null;
+    var addr = data.address || {};
+    var houseNo = addr.house_number || addr.building || addr.flat || addr.house_name || '';
+    var road = addr.road || addr.street || addr.pedestrian || addr.footway || '';
+    var subLocality = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.city_district || '';
+    var locality = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || '';
+    var district = addr.state_district || addr.district || '';
+    var state = addr.state || '';
+    var postcode = addr.postcode || '';
+
+    var street = '';
+    if (road && subLocality) {
+      street = road + ', ' + subLocality;
+    } else {
+      street = road || subLocality || (data.name !== locality ? data.name : '');
+    }
+
+    return {
+      houseNo: houseNo,
+      street: street,
+      area: subLocality || road,
+      city: locality || district,
+      state: state,
+      pincode: postcode,
+      district: district,
+      lat: lat,
+      lng: lon,
+      fullAddress: data.display_name || ''
+    };
+  }
+
+  function fillLocation(locValue, lat, lon, structuredData) {
     if (locInput) {
       locInput.value = locValue;
       locInput.placeholder = defaultPlaceholder;
       locInput.classList.add('is-valid');
-      // Dispatch input event so any existing listeners or validation notice the change
       locInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
     if (hiddenLoc) {
@@ -3955,6 +4231,73 @@ document.addEventListener('DOMContentLoaded', function () {
       btnInputDetect.classList.add('is_detected');
       btnInputDetect.innerHTML = '<i class="fa fa-check"></i> <span>Detected</span>';
     }
+
+    // Save to localStorage so Booking Form automatically pre-fills
+    try {
+      var toStore = structuredData ? Object.assign({}, structuredData) : {};
+      toStore.fullAddress = toStore.fullAddress || locValue;
+      if (lat && lon) {
+        toStore.lat = lat;
+        toStore.lng = lon;
+      }
+      if (!toStore.city) {
+        var lower = (locValue || '').toLowerCase();
+        if (lower.indexOf('gurugram') !== -1 || lower.indexOf('gurgaon') !== -1) {
+          toStore.city = 'Gurugram';
+          toStore.state = 'Haryana';
+        } else if (lower.indexOf('delhi') !== -1) {
+          toStore.city = 'Delhi';
+          toStore.state = 'Delhi';
+        } else if (lower.indexOf('noida') !== -1) {
+          toStore.city = 'Noida';
+          toStore.state = 'Uttar Pradesh';
+        } else if (lower.indexOf('kashipur') !== -1) {
+          toStore.city = 'Kashipur';
+          toStore.state = 'Uttarakhand';
+        } else if (lower.indexOf('nadehi') !== -1) {
+          toStore.city = 'Nadehi';
+          toStore.state = 'Uttarakhand';
+        } else if (lower.indexOf('jaspur') !== -1) {
+          toStore.city = 'Jaspur';
+          toStore.state = 'Uttarakhand';
+        } else if (lower.indexOf('rudrapur') !== -1) {
+          toStore.city = 'Rudrapur';
+          toStore.state = 'Uttarakhand';
+        } else if (lower.indexOf('haldwani') !== -1) {
+          toStore.city = 'Haldwani';
+          toStore.state = 'Uttarakhand';
+        } else if (lower.indexOf('dehradun') !== -1) {
+          toStore.city = 'Dehradun';
+          toStore.state = 'Uttarakhand';
+        } else {
+          var splitParts = (locValue || '').split(',');
+          toStore.city = splitParts[0].trim();
+          if (splitParts.length > 1) toStore.state = splitParts[splitParts.length - 1].trim();
+        }
+      }
+      if (!toStore.street && toStore.fullAddress) {
+        toStore.street = toStore.fullAddress.split(',')[0].trim();
+      }
+      toStore.timestamp = Date.now();
+      localStorage.setItem('refixel_user_location', JSON.stringify(toStore));
+    } catch (err) {
+      console.warn('Could not cache location in localStorage:', err);
+    }
+
+    // Update floating pin callout label and trigger bounce animation
+    var calloutText = document.getElementById('mapPinCalloutText');
+    if (calloutText) {
+      calloutText.textContent = locValue.length > 34 ? locValue.substring(0, 34) + '...' : locValue;
+      calloutText.title = locValue;
+    }
+    var pin = document.getElementById('mapCenterPin');
+    if (pin) {
+      pin.classList.remove('pin-dropped');
+      void pin.offsetWidth; // Force reflow to re-trigger bounce
+      pin.classList.add('pin-dropped');
+    }
+
+    updateGoogleMap(locValue, lat, lon);
   }
 
   function resetDetectButton() {
@@ -3972,17 +4315,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function handleLocationDetect() {
-    // 1. Check geolocation in navigator and window.isSecureContext
-    if (!('geolocation' in navigator)) {
-      alert('Geolocation is not supported by your browser. Please type your location or pick a Quick Area.');
-      return;
-    }
-    if (!window.isSecureContext) {
-      alert('Location access requires a secure connection (HTTPS or localhost). Please type your location or pick a Quick Area.');
-      return;
-    }
-
-    // 5. Disable the button while detecting
     if (btnInputDetect) {
       btnInputDetect.disabled = true;
       btnInputDetect.classList.remove('is_detected');
@@ -3992,18 +4324,108 @@ document.addEventListener('DOMContentLoaded', function () {
       locInput.placeholder = 'Detecting exact GPS location...';
     }
     if (statusText) {
-      statusText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Detecting exact GPS location...';
+      statusText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Finding your exact GPS location on Google Maps...';
     }
 
-    // 2. Call navigator.geolocation.getCurrentPosition with required parameters
+    function tryIpFallback(reasonMsg) {
+      if (statusText) {
+        statusText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Detecting location via network IP...';
+      }
+      fetch('https://freeipapi.com/api/json')
+        .then(function (res) {
+          if (!res.ok) throw new Error('freeipapi HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          var city = (data.cityName || '').trim();
+          var region = (data.regionName || '').trim();
+          var quickAreas = ['Nadehi', 'Kashipur', 'Jaspur', 'Rudrapur', 'Haldwani', 'Dehradun'];
+          var matched = '';
+          for (var i = 0; i < quickAreas.length; i++) {
+            if (city.toLowerCase().indexOf(quickAreas[i].toLowerCase()) !== -1 || region.toLowerCase().indexOf(quickAreas[i].toLowerCase()) !== -1) {
+              matched = quickAreas[i];
+              break;
+            }
+          }
+          var resolved = matched || (city && region ? city + ', ' + region : city || region);
+          if (resolved) {
+            var structured = {
+              houseNo: '',
+              street: resolved,
+              city: city || resolved,
+              state: region || 'Uttarakhand',
+              pincode: data.zipCode || '',
+              lat: data.latitude,
+              lng: data.longitude,
+              fullAddress: resolved
+            };
+            fillLocation(resolved, data.latitude, data.longitude, structured);
+          } else {
+            throw new Error('No location identified from IP');
+          }
+        })
+        .catch(function () {
+          return fetch('https://ipwho.is/')
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+              if (data && data.success) {
+                var city = (data.city || '').trim();
+                var region = (data.region || '').trim();
+                var quickAreas = ['Nadehi', 'Kashipur', 'Jaspur', 'Rudrapur', 'Haldwani', 'Dehradun'];
+                var matched = '';
+                for (var i = 0; i < quickAreas.length; i++) {
+                  if (city.toLowerCase().indexOf(quickAreas[i].toLowerCase()) !== -1 || region.toLowerCase().indexOf(quickAreas[i].toLowerCase()) !== -1) {
+                    matched = quickAreas[i];
+                    break;
+                  }
+                }
+                var resolved = matched || (city && region ? city + ', ' + region : city || region);
+                if (resolved) {
+                  var structured = {
+                    houseNo: '',
+                    street: resolved,
+                    city: city || resolved,
+                    state: region || 'Uttarakhand',
+                    pincode: data.postal || '',
+                    lat: data.latitude,
+                    lng: data.longitude,
+                    fullAddress: resolved
+                  };
+                  fillLocation(resolved, data.latitude, data.longitude, structured);
+                  return;
+                }
+              }
+              throw new Error('ipwho.is unable to determine location');
+            });
+        })
+        .catch(function (fallbackErr) {
+          console.warn('IP location detection failed:', fallbackErr);
+          resetDetectButton();
+          if (statusText) {
+            statusText.innerHTML = '<span style="color: #ef4444;"><i class="fa fa-exclamation-circle"></i></span> Could not auto-detect location. Please pick a Quick Area below or type your area.';
+          }
+          if (locInput) {
+            locInput.focus();
+          }
+        });
+    }
+
+    if (!('geolocation' in navigator)) {
+      tryIpFallback('Geolocation not supported by browser');
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       function (pos) {
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
-        var fallbackCoords = lat.toFixed(4) + ', ' + lon.toFixed(4);
+        var fallbackCoords = lat.toFixed(5) + ', ' + lon.toFixed(5);
 
-        // 3. Convert coordinates to area name using reverse geocoding
-        var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=14&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+        // Center Google Map on exact coordinates right away
+        updateGoogleMap(null, lat, lon);
+
+        // Reverse geocoding at zoom 18 for building/street-level exact place name
+        var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
 
         fetch(nominatimUrl)
           .then(function (res) {
@@ -4013,98 +4435,80 @@ document.addEventListener('DOMContentLoaded', function () {
             return res.json();
           })
           .then(function (data) {
-            var quickAreas = ['Nadehi', 'Kashipur', 'Jaspur', 'Rudrapur', 'Haldwani', 'Dehradun'];
-            var fullSearchText = (data.display_name || '') + ' ' + JSON.stringify(data.address || {});
-            var matchedQuickArea = '';
-
-            for (var i = 0; i < quickAreas.length; i++) {
-              var areaName = quickAreas[i];
-              var regex = new RegExp('\\b' + areaName + '\\b', 'i');
-              if (regex.test(fullSearchText)) {
-                matchedQuickArea = areaName;
-                break;
-              }
-            }
-
-            if (matchedQuickArea) {
-              // Fill exactly that name if matched
-              fillLocation(matchedQuickArea);
-            } else {
-              // Otherwise fill "suburb/village/town/city, district"
-              var addr = data.address || {};
-              var locality = addr.suburb || addr.village || addr.town || addr.city || addr.neighbourhood || addr.hamlet || '';
-              var district = addr.state_district || addr.district || addr.county || '';
-
-              var resolvedName = '';
-              if (locality && district && locality.toLowerCase() !== district.toLowerCase()) {
-                resolvedName = locality + ', ' + district;
-              } else if (locality) {
-                resolvedName = locality;
-              } else if (district) {
-                resolvedName = district;
-              } else if (data.name) {
-                resolvedName = data.name;
-              } else {
-                resolvedName = fallbackCoords;
-              }
-
-              fillLocation(resolvedName);
-            }
+            var exactPlace = formatDetailedPlaceAddress(data, lat, lon);
+            var structured = parseStructuredAddress(data, lat, lon);
+            fillLocation(exactPlace, lat, lon, structured);
           })
           .catch(function (geoErr) {
-            console.error('Reverse geocoding error:', geoErr);
-            // If the geocoding request fails, fill "LAT, LON" (4 decimals) so the form can still be submitted
-            fillLocation(fallbackCoords);
+            console.warn('Nominatim error, falling back to BigDataCloud:', geoErr);
+            var bdcUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lon) + '&localityLanguage=en';
+            fetch(bdcUrl)
+              .then(function (r) { return r.json(); })
+              .then(function (bdcData) {
+                var parts = [];
+                if (bdcData.locality) parts.push(bdcData.locality);
+                if (bdcData.city && parts.indexOf(bdcData.city) === -1) parts.push(bdcData.city);
+                if (bdcData.principalSubdivision && parts.indexOf(bdcData.principalSubdivision) === -1) parts.push(bdcData.principalSubdivision);
+                if (bdcData.postcode) parts.push(bdcData.postcode);
+                var locName = parts.length > 0 ? parts.join(', ') : fallbackCoords;
+                var structured = {
+                  houseNo: '',
+                  street: bdcData.locality || '',
+                  city: bdcData.city || bdcData.locality || '',
+                  state: bdcData.principalSubdivision || '',
+                  pincode: bdcData.postcode || '',
+                  lat: lat,
+                  lng: lon,
+                  fullAddress: locName
+                };
+                fillLocation(locName, lat, lon, structured);
+              })
+              .catch(function () {
+                fillLocation(fallbackCoords, lat, lon, {
+                  houseNo: '',
+                  street: fallbackCoords,
+                  city: 'Gurugram',
+                  state: 'Haryana',
+                  pincode: '',
+                  lat: lat,
+                  lng: lon,
+                  fullAddress: fallbackCoords
+                });
+              });
           });
       },
       function (err) {
-        // 7. Log the error object with console.error so user can debug it
-        console.error('Geolocation error:', err);
-
-        // 4 & 5. Reset button, placeholder, and re-enable button
-        resetDetectButton();
-
-        // 4. Specific message by error code
-        var errorMsg = 'Location request failed. Please try again, or pick a Quick Area.';
-        if (err && err.code === 1) {
-          errorMsg = 'Location permission is blocked. Click the lock icon next to the URL, set Location to Allow, then reload. Or pick a Quick Area.';
-        } else if (err && err.code === 2) {
-          errorMsg = 'Your device could not find its location. Turn on Location services, or pick a Quick Area.';
-        } else if (err && err.code === 3) {
-          errorMsg = 'Location request timed out. Please try again, or pick a Quick Area.';
-        }
-        alert(errorMsg);
+        console.warn('Geolocation GPS error (code ' + (err ? err.code : 'unknown') + '), attempting IP fallback...', err);
+        tryIpFallback('GPS permission denied or unavailable');
       },
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
   }
 
-  // 6. Quick Area buttons must keep working exactly as they do now
+  // Quick Area buttons
   document.querySelectorAll('.loc_chip').forEach(function (chip) {
     chip.addEventListener('click', function () {
       var chosenArea = this.getAttribute('data-loc');
+      var areaState = 'Uttarakhand';
+      if (chosenArea.toLowerCase() === 'gurugram' || chosenArea.toLowerCase() === 'gurgaon') areaState = 'Haryana';
+      if (chosenArea.toLowerCase() === 'delhi' || chosenArea.toLowerCase() === 'south delhi') areaState = 'Delhi';
+      var structured = {
+        houseNo: '',
+        street: chosenArea + ' Main Road / Sector',
+        area: chosenArea,
+        city: chosenArea,
+        state: areaState,
+        pincode: '',
+        fullAddress: chosenArea + ', ' + areaState
+      };
+      fillLocation(chosenArea, null, null, structured);
       if (locInput) {
-        locInput.value = chosenArea;
-        locInput.placeholder = defaultPlaceholder;
-        locInput.classList.add('is-valid');
-        locInput.dispatchEvent(new Event('input', { bubbles: true }));
         locInput.focus();
-      }
-      if (hiddenLoc) {
-        hiddenLoc.value = chosenArea;
-      }
-      if (statusText) {
-        statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Set: ' + chosenArea;
-      }
-      if (btnInputDetect) {
-        btnInputDetect.disabled = false;
-        btnInputDetect.classList.remove('is_detected');
-        btnInputDetect.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Auto-Detect</span>';
       }
     });
   });
 
-  // Two-way sync: If user manually changes the input, update map status in real-time
+  // Two-way sync: If user manually changes the input, update map status and Google Maps in real-time
   if (locInput) {
     locInput.addEventListener('input', function () {
       var val = this.value.trim();
@@ -4117,6 +4521,26 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       if (hiddenLoc) {
         hiddenLoc.value = val;
+      }
+      clearTimeout(mapDebounceTimer);
+      if (val && val.length >= 3) {
+        mapDebounceTimer = setTimeout(function () {
+          updateGoogleMap(val);
+          try {
+            var parts = val.split(',');
+            var typedCity = parts[0].trim();
+            var typedState = parts.length > 1 ? parts[parts.length - 1].trim() : 'Haryana';
+            localStorage.setItem('refixel_user_location', JSON.stringify({
+              houseNo: 'Doorstep Visit',
+              street: val,
+              city: typedCity,
+              state: typedState,
+              pincode: '',
+              fullAddress: val,
+              timestamp: Date.now()
+            }));
+          } catch (e) {}
+        }, 700);
       }
     });
   }

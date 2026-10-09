@@ -31,7 +31,14 @@ class Service extends Model
 
     public static function findBySlug(string $slug): ?array
     {
-        return Database::fetchOne("SELECT * FROM services WHERE slug = :slug AND is_active = 1 LIMIT 1", ['slug' => $slug]);
+        return Database::fetchOne(
+            "SELECT s.*, c.name as category_name, c.slug as category_slug 
+             FROM services s 
+             LEFT JOIN categories c ON s.category_id = c.id 
+             WHERE s.slug = :slug AND s.is_active = 1 
+             LIMIT 1",
+            ['slug' => $slug]
+        );
     }
 
     public static function search(string $query, ?int $limit = 10): array

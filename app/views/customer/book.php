@@ -60,7 +60,18 @@ $selectedServiceId = $service['id'] ?? 0;
           </div>
 
           <!-- Address & City -->
-          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">2. Service Address</h5>
+          <div class="d-flex justify-content-between align-items-center flex-wrap mt-4 mb-3" style="gap: 10px;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+              <h5 class="font-weight-bold mb-0" style="font-size: 18px; color: #0a1c33;">2. Service Address</h5>
+              <span id="bookingAutoFillBadge" class="badge" style="display: none; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px;">
+                <i class="fa fa-check-circle mr-1"></i> Auto-filled from Home Page
+              </span>
+            </div>
+            <button type="button" id="btnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc" style="background: #fff3ec; color: #f25b29; border: 1.5px solid #ffdacf; font-weight: 600; border-radius: 8px; padding: 7px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(242, 91, 41, 0.08); cursor: pointer;">
+              <i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>
+            </button>
+          </div>
+          <div id="bookingLocStatus" class="small mb-3" style="display: none;"></div>
           
           <div class="form-group mb-3">
             <label class="font-weight-bold small d-block mb-2">Address Type</label>
@@ -81,31 +92,31 @@ $selectedServiceId = $service['id'] ?? 0;
           <div class="form-row">
             <div class="col-md-6 form-group">
               <label class="font-weight-bold small">House / Flat / Office No. <span class="text-danger">*</span></label>
-              <input type="text" name="house_no" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604" required>
+              <input type="text" name="house_no" id="inputHouseNo" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604" required>
             </div>
             <div class="col-md-6 form-group">
               <label class="font-weight-bold small">Street / Society / Area <span class="text-danger">*</span></label>
-              <input type="text" name="street" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Palm Springs" required>
+              <input type="text" name="street" id="inputStreet" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Palm Springs" required>
             </div>
           </div>
 
           <div class="form-row">
             <div class="col-md-4 form-group">
               <label class="font-weight-bold small">City <span class="text-danger">*</span></label>
-              <input type="text" name="city" class="form-control" value="<?= \App\Core\View::e($customerProfile['city'] ?? $currentCity) ?>" required>
+              <input type="text" name="city" id="inputCity" class="form-control" value="<?= \App\Core\View::e($customerProfile['city'] ?? $currentCity) ?>" required>
             </div>
             <div class="col-md-4 form-group">
               <label class="font-weight-bold small">State <span class="text-danger">*</span></label>
-              <input type="text" name="state" class="form-control" value="<?= \App\Core\View::e($customerProfile['state'] ?? 'Haryana') ?>" required>
+              <input type="text" name="state" id="inputState" class="form-control" value="<?= \App\Core\View::e($customerProfile['state'] ?? 'Haryana') ?>" required>
             </div>
             <div class="col-md-4 form-group">
               <label class="font-weight-bold small">Pincode <span class="text-danger">*</span></label>
-              <input type="text" name="pincode" class="form-control" placeholder="6 digits" pattern="[0-9]{6}" value="<?= \App\Core\View::e($customerProfile['pincode'] ?? '') ?>" required>
+              <input type="text" name="pincode" id="inputPincode" class="form-control" placeholder="6 digits" pattern="[0-9]{6}" value="<?= \App\Core\View::e($customerProfile['pincode'] ?? '') ?>" required>
             </div>
           </div>
           <div class="form-group">
             <label class="font-weight-bold small">Complete Address / Landmark (Optional)</label>
-            <textarea name="address" rows="2" class="form-control" placeholder="Any extra landmark details"><?= \App\Core\View::e($customerProfile['address'] ?? '') ?></textarea>
+            <textarea name="address" id="inputAddress" rows="2" class="form-control" placeholder="Any extra landmark details"><?= \App\Core\View::e($customerProfile['address'] ?? '') ?></textarea>
           </div>
 
           <!-- Preferred Slot -->
@@ -201,34 +212,84 @@ $selectedServiceId = $service['id'] ?? 0;
               </div>
             </div>
 
-            <!-- Time Slots & Live Confirmation Card -->
-            <div class="col-lg-6 col-md-12 d-flex flex-column justify-content-between">
-              <div>
-                <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" style="letter-spacing: 0.5px; font-size: 12px;">
-                  Select Time Slot <span class="text-danger">*</span>
-                </label>
-                <div class="time-slots-grid" id="timeSlotsGroup">
-                  <button type="button" class="slot-pill-btn" data-slot="09:00 - 11:00 AM">
-                    <div class="slot-time font-weight-bold">09:00 - 11:00 AM</div>
-                    <div class="slot-tag">Morning Slot</div>
-                  </button>
-                  <button type="button" class="slot-pill-btn" data-slot="11:00 AM - 01:00 PM">
-                    <div class="slot-time font-weight-bold">11:00 AM - 01:00 PM</div>
-                    <div class="slot-tag">Noon Slot</div>
-                  </button>
-                  <button type="button" class="slot-pill-btn active" data-slot="02:00 - 04:00 PM">
-                    <div class="slot-time font-weight-bold">02:00 - 04:00 PM</div>
-                    <div class="slot-tag">Afternoon Slot</div>
-                  </button>
-                  <button type="button" class="slot-pill-btn" data-slot="04:00 - 06:00 PM">
-                    <div class="slot-time font-weight-bold">04:00 - 06:00 PM</div>
-                    <div class="slot-tag">Evening Slot</div>
-                  </button>
+            <!-- Time Slot Dropdown Selection -->
+            <div class="col-lg-6 col-md-12">
+              <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" style="letter-spacing: 0.5px; font-size: 12px;">
+                Select Time Slot <span class="text-danger">*</span>
+              </label>
+
+              <div class="position-relative" id="timePickerContainer">
+                <!-- Clickable Time Input Trigger -->
+                <div class="cal-input-trigger" id="timeInputTrigger" role="button" tabindex="0">
+                  <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
+                    <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
+                      <i class="fa fa-clock-o"></i>
+                    </div>
+                    <input type="text" id="displayTimeInput" class="cal-custom-input" readonly value="02:00 - 04:00 PM" placeholder="Click to select time slot...">
+                  </div>
+                  <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="timeChevronIcon"></i>
+                </div>
+
+                <!-- Dropdown / Popover Time Slot List -->
+                <div id="timeDropdown" class="time-dropdown-popover">
+                  <div class="time-dropdown-menu-card">
+                    <div class="time-dropdown-header pb-2 mb-2 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f1f5f9; padding: 4px 6px;">
+                      <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: #64748b;">Available Arrival Slots</span>
+                      <span class="badge" style="background: #fff3ec; color: #ff5238; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">Doorstep Visit</span>
+                    </div>
+                    <div class="time-options-list" id="timeSlotsGroup">
+                      <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM">
+                        <div class="d-flex align-items-center" style="gap: 12px;">
+                          <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
+                          <div>
+                            <div class="time-opt-title font-weight-bold">09:00 - 11:00 AM</div>
+                            <div class="time-opt-sub">Morning Slot</div>
+                          </div>
+                        </div>
+                        <i class="fa fa-check time-opt-check"></i>
+                      </div>
+
+                      <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM">
+                        <div class="d-flex align-items-center" style="gap: 12px;">
+                          <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
+                          <div>
+                            <div class="time-opt-title font-weight-bold">11:00 AM - 01:00 PM</div>
+                            <div class="time-opt-sub">Noon Slot</div>
+                          </div>
+                        </div>
+                        <i class="fa fa-check time-opt-check"></i>
+                      </div>
+
+                      <div class="time-option-item active" role="button" tabindex="0" data-slot="02:00 - 04:00 PM">
+                        <div class="d-flex align-items-center" style="gap: 12px;">
+                          <div class="time-opt-icon"><i class="fa fa-cloud"></i></div>
+                          <div>
+                            <div class="time-opt-title font-weight-bold">02:00 - 04:00 PM</div>
+                            <div class="time-opt-sub">Afternoon Slot</div>
+                          </div>
+                        </div>
+                        <i class="fa fa-check time-opt-check"></i>
+                      </div>
+
+                      <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM">
+                        <div class="d-flex align-items-center" style="gap: 12px;">
+                          <div class="time-opt-icon"><i class="fa fa-moon-o"></i></div>
+                          <div>
+                            <div class="time-opt-title font-weight-bold">04:00 - 06:00 PM</div>
+                            <div class="time-opt-sub">Evening Slot</div>
+                          </div>
+                        </div>
+                        <i class="fa fa-check time-opt-check"></i>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Scheduled Slot Badge -->
-              <div class="schedule-summary-box mt-3 p-3 rounded-lg" style="background: #fff8f5; border: 1.5px dashed #ffdacf; border-radius: 14px;">
+            <!-- Scheduled Slot Badge (Full width below both dropdowns) -->
+            <div class="col-12 mt-3">
+              <div class="schedule-summary-box p-3 rounded-lg" style="background: #fff8f5; border: 1.5px dashed #ffdacf; border-radius: 14px;">
                 <div class="d-flex align-items-center">
                   <div class="schedule-summary-icon mr-3" style="width: 40px; height: 40px; border-radius: 12px; background: #ff5238; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(255, 82, 56, 0.3);">
                     <i class="fa fa-calendar-check-o"></i>
@@ -519,51 +580,94 @@ $selectedServiceId = $service['id'] ?? 0;
   }
 }
 
-/* Time Slot Pills */
-.time-slots-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* Time Dropdown Popover */
+.time-dropdown-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  display: none;
+  filter: drop-shadow(0 14px 30px rgba(15, 23, 42, 0.15));
 }
-.slot-pill-btn {
+.time-dropdown-popover.show {
+  display: block;
+  animation: calDropdownFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.time-dropdown-menu-card {
   background: #ffffff;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px 14px;
-  text-align: left;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid #f1f5f9;
+  padding: 12px;
+}
+.time-option-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  width: 100%;
+  transition: all 0.15s ease;
+  margin-bottom: 6px;
+  border: 1.5px solid transparent;
+  user-select: none;
 }
-.slot-pill-btn:hover {
-  border-color: #ff5238;
-  background: #fffaf8;
+.time-option-item:last-child {
+  margin-bottom: 0;
 }
-.slot-pill-btn.active {
-  border-color: #ff5238;
+.time-option-item:hover {
+  background: #fff8f5;
+  border-color: #ffe3d9;
+}
+.time-option-item.active {
   background: #fff5f2;
-  box-shadow: 0 2px 8px rgba(255, 82, 56, 0.15);
+  border-color: #ffdacf;
+  box-shadow: 0 2px 6px rgba(255, 82, 56, 0.1);
 }
-.slot-pill-btn .slot-time {
+.time-opt-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 13px;
-  color: #1e293b;
-  margin-bottom: 2px;
+  transition: all 0.2s ease;
 }
-.slot-pill-btn.active .slot-time {
+.time-option-item:hover .time-opt-icon {
+  background: #fff0eb;
   color: #ff5238;
 }
-.slot-pill-btn .slot-tag {
+.time-option-item.active .time-opt-icon {
+  background: #ff5238;
+  color: #ffffff;
+}
+.time-opt-title {
+  font-size: 13.5px;
+  color: #1e293b;
+  line-height: 1.2;
+}
+.time-option-item.active .time-opt-title {
+  color: #e0452d;
+}
+.time-opt-sub {
   font-size: 11px;
   color: #64748b;
 }
-.slot-pill-btn.active .slot-tag {
+.time-option-item.active .time-opt-sub {
   color: #e0452d;
   font-weight: 600;
 }
-@media (max-width: 576px) {
-  .time-slots-grid {
-    grid-template-columns: 1fr;
-  }
+.time-opt-check {
+  color: #ff5238;
+  font-size: 13px;
+  display: none;
+}
+.time-option-item.active .time-opt-check {
+  display: block;
 }
 </style>
 
@@ -596,7 +700,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var calPrevMonthBtn = document.getElementById('calPrevMonthBtn');
   var calNextMonthBtn = document.getElementById('calNextMonthBtn');
   var calSummaryDisplay = document.getElementById('calSummaryDisplay');
-  var slotButtons = document.querySelectorAll('.slot-pill-btn');
+  var timePickerContainer = document.getElementById('timePickerContainer');
+  var timeInputTrigger = document.getElementById('timeInputTrigger');
+  var displayTimeInput = document.getElementById('displayTimeInput');
+  var timeDropdown = document.getElementById('timeDropdown');
+  var timeOptionItems = document.querySelectorAll('.time-option-item');
 
   if (calDaysGrid && preferredDateInput && dateInputTrigger && calendarDropdown) {
     var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -635,11 +743,32 @@ document.addEventListener('DOMContentLoaded', function() {
       calSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (' + timeSlot + ')';
     }
 
+    function toggleTimeDropdown(show) {
+      if (!timeDropdown || !timeInputTrigger) return;
+      if (typeof show === 'boolean') {
+        if (show) {
+          timeDropdown.classList.add('show');
+          timeInputTrigger.classList.add('active');
+          if (calendarDropdown && dateInputTrigger) {
+            calendarDropdown.classList.remove('show');
+            dateInputTrigger.classList.remove('active');
+          }
+        } else {
+          timeDropdown.classList.remove('show');
+          timeInputTrigger.classList.remove('active');
+        }
+      } else {
+        var isOpen = timeDropdown.classList.contains('show');
+        toggleTimeDropdown(!isOpen);
+      }
+    }
+
     function toggleDropdown(show) {
       if (typeof show === 'boolean') {
         if (show) {
           calendarDropdown.classList.add('show');
           dateInputTrigger.classList.add('active');
+          toggleTimeDropdown(false);
         } else {
           calendarDropdown.classList.remove('show');
           dateInputTrigger.classList.remove('active');
@@ -652,19 +781,32 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           calendarDropdown.classList.add('show');
           dateInputTrigger.classList.add('active');
+          toggleTimeDropdown(false);
         }
       }
     }
 
-    // Trigger open/close when clicking input box
+    // Trigger open/close when clicking date input box
     dateInputTrigger.addEventListener('click', function(e) {
+      e.stopPropagation();
       toggleDropdown();
     });
+
+    // Trigger open/close when clicking time input box
+    if (timeInputTrigger) {
+      timeInputTrigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleTimeDropdown();
+      });
+    }
 
     // Close when clicking outside
     document.addEventListener('click', function(e) {
       if (datePickerContainer && !datePickerContainer.contains(e.target)) {
         toggleDropdown(false);
+      }
+      if (timePickerContainer && !timePickerContainer.contains(e.target)) {
+        toggleTimeDropdown(false);
       }
     });
 
@@ -758,22 +900,258 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Time Slot pill clicks
-    slotButtons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        slotButtons.forEach(function(b) { b.classList.remove('active'); });
+    // Time Slot dropdown option clicks
+    timeOptionItems.forEach(function(opt) {
+      opt.addEventListener('click', function(e) {
+        e.stopPropagation();
+        timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
         this.classList.add('active');
         var slot = this.getAttribute('data-slot');
+        if (displayTimeInput) displayTimeInput.value = slot;
         if (preferredTimeInput) preferredTimeInput.value = slot;
         updateSummary();
+        toggleTimeDropdown(false);
       });
     });
 
     // Initial setup
     preferredDateInput.value = formatYYYYMMDD(selectedDate);
     displayDateInput.value = formatInputDate(selectedDate);
+    if (preferredTimeInput && displayTimeInput) {
+      displayTimeInput.value = preferredTimeInput.value || '02:00 - 04:00 PM';
+    }
     renderCalendar();
     updateSummary();
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     AUTO-FILL & "USE MY CURRENT LOCATION" LOGIC
+     ══════════════════════════════════════════════════════════════════ */
+  var btnUseCurrentLoc     = document.getElementById('btnUseCurrentLocation');
+  var bookingLocStatus     = document.getElementById('bookingLocStatus');
+  var bookingAutoFillBadge = document.getElementById('bookingAutoFillBadge');
+
+  var inputHouseNo = document.getElementById('inputHouseNo');
+  var inputStreet  = document.getElementById('inputStreet');
+  var inputCity    = document.getElementById('inputCity');
+  var inputState   = document.getElementById('inputState');
+  var inputPincode = document.getElementById('inputPincode');
+  var inputAddress = document.getElementById('inputAddress');
+
+  function flashHighlight(el) {
+    if (!el) return;
+    el.classList.add('is-valid');
+    el.style.transition = 'background-color 0.4s ease, border-color 0.4s ease';
+    el.style.backgroundColor = '#f0fdf4';
+    el.style.borderColor = '#86efac';
+    setTimeout(function() {
+      el.style.backgroundColor = '';
+      el.style.borderColor = '';
+    }, 2800);
+  }
+
+  function applyLocationData(loc, sourceBadge) {
+    if (!loc) return;
+    var filledCount = 0;
+
+    if (inputCity && loc.city) {
+      inputCity.value = loc.city;
+      flashHighlight(inputCity);
+      filledCount++;
+    }
+    if (inputState && loc.state) {
+      inputState.value = loc.state;
+      flashHighlight(inputState);
+      filledCount++;
+    }
+    if (inputStreet && (loc.street || loc.area || loc.fullAddress)) {
+      var s = loc.street || loc.area || (loc.fullAddress ? loc.fullAddress.split(',')[0].trim() : '');
+      if (s) {
+        inputStreet.value = s;
+        flashHighlight(inputStreet);
+        filledCount++;
+      }
+    }
+    if (inputHouseNo) {
+      if (loc.houseNo) {
+        inputHouseNo.value = loc.houseNo;
+        flashHighlight(inputHouseNo);
+        filledCount++;
+      } else if (!inputHouseNo.value.trim() || inputHouseNo.value === 'Flat 604') {
+        inputHouseNo.value = 'Doorstep Visit';
+        flashHighlight(inputHouseNo);
+        filledCount++;
+      }
+    }
+    if (inputPincode && loc.pincode && /^[0-9]{6}$/.test(loc.pincode)) {
+      inputPincode.value = loc.pincode;
+      flashHighlight(inputPincode);
+      filledCount++;
+    }
+    if (inputAddress && loc.fullAddress) {
+      inputAddress.value = loc.fullAddress;
+      flashHighlight(inputAddress);
+      filledCount++;
+    }
+
+    if (filledCount > 0) {
+      if (bookingAutoFillBadge) {
+        bookingAutoFillBadge.innerHTML = '<i class="fa fa-check-circle mr-1"></i> ' + (sourceBadge || 'Auto-filled from location');
+        bookingAutoFillBadge.style.display = 'inline-block';
+      }
+      if (btnUseCurrentLoc) {
+        btnUseCurrentLoc.innerHTML = '<i class="fa fa-check text-success"></i> <span>Location Applied</span>';
+        btnUseCurrentLoc.style.background = '#ecfdf5';
+        btnUseCurrentLoc.style.borderColor = '#a7f3d0';
+        btnUseCurrentLoc.style.color = '#059669';
+      }
+      if (bookingLocStatus) {
+        bookingLocStatus.style.display = 'block';
+        bookingLocStatus.innerHTML = '<span style="color: #059669;"><i class="fa fa-map-marker text-success mr-1"></i> Location auto-filled: <strong>' + (loc.city || loc.fullAddress || 'Selected Location') + '</strong></span>';
+      }
+    }
+  }
+
+  // 1. AUTO-FILL ON PAGE LOAD if user already selected/detected location from home page
+  try {
+    var rawLoc = localStorage.getItem('refixel_user_location');
+    if (rawLoc) {
+      var savedLoc = JSON.parse(rawLoc);
+      if (savedLoc && (savedLoc.fullAddress || savedLoc.city)) {
+        // Only pre-fill if the user hasn't already filled custom values
+        var streetEmpty = (!inputStreet || !inputStreet.value.trim() || inputStreet.value === 'Palm Springs');
+        if (streetEmpty) {
+          applyLocationData(savedLoc, 'Auto-filled from Home Page');
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Error reading saved location:', e);
+  }
+
+  // 2. "Use My Current Location" button click handler
+  if (btnUseCurrentLoc) {
+    btnUseCurrentLoc.addEventListener('click', function() {
+      btnUseCurrentLoc.disabled = true;
+      btnUseCurrentLoc.innerHTML = '<i class="fa fa-spinner fa-spin"></i> <span>Detecting GPS Location...</span>';
+      if (bookingLocStatus) {
+        bookingLocStatus.style.display = 'block';
+        bookingLocStatus.innerHTML = '<span class="text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Requesting GPS coordinates...</span>';
+      }
+
+      function tryIpFallback(reasonMsg) {
+        if (bookingLocStatus) {
+          bookingLocStatus.innerHTML = '<span class="text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Detecting location via network IP...</span>';
+        }
+        fetch('https://freeipapi.com/api/json')
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            var city = (data.cityName || '').trim();
+            var region = (data.regionName || '').trim();
+            var zip = (data.zipCode || '').trim();
+            if (city) {
+              var locObj = {
+                houseNo: 'Doorstep Visit',
+                street: city + ' Main Area',
+                city: city,
+                state: region || 'Haryana',
+                pincode: /^[0-9]{6}$/.test(zip) ? zip : '',
+                fullAddress: city + (region ? ', ' + region : '')
+              };
+              localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
+              applyLocationData(locObj, 'Filled via Network IP');
+            } else {
+              throw new Error('No city from IP');
+            }
+          })
+          .catch(function() {
+            btnUseCurrentLoc.disabled = false;
+            btnUseCurrentLoc.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>';
+            if (bookingLocStatus) {
+              bookingLocStatus.innerHTML = '<span class="text-danger"><i class="fa fa-exclamation-circle mr-1"></i> Could not detect location automatically. Please enter your address manually.</span>';
+            }
+          });
+      }
+
+      if (!('geolocation' in navigator)) {
+        tryIpFallback('Geolocation not supported');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          var lat = pos.coords.latitude;
+          var lon = pos.coords.longitude;
+
+          if (bookingLocStatus) {
+            bookingLocStatus.innerHTML = '<span class="text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Reverse-geocoding street address...</span>';
+          }
+
+          var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+
+          fetch(nominatimUrl)
+            .then(function(res) {
+              if (!res.ok) throw new Error('Nominatim HTTP ' + res.status);
+              return res.json();
+            })
+            .then(function(data) {
+              var addr = (data && data.address) || {};
+              var houseNo = addr.house_number || addr.building || addr.flat || addr.house_name || '';
+              var road = addr.road || addr.street || addr.pedestrian || addr.footway || '';
+              var subLocality = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.city_district || '';
+              var locality = addr.city || addr.town || addr.village || addr.municipality || addr.hamlet || '';
+              var district = addr.state_district || addr.district || '';
+              var state = addr.state || '';
+              var postcode = addr.postcode || '';
+
+              var street = '';
+              if (road && subLocality) {
+                street = road + ', ' + subLocality;
+              } else {
+                street = road || subLocality || (data.name !== locality ? data.name : '');
+              }
+
+              var locObj = {
+                houseNo: houseNo || 'Doorstep Visit',
+                street: street || (locality ? locality + ' Area' : ''),
+                city: locality || district || 'Gurugram',
+                state: state || 'Haryana',
+                pincode: /^[0-9]{6}$/.test(postcode) ? postcode : '',
+                fullAddress: data.display_name || (street + ', ' + (locality || district))
+              };
+
+              localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
+              applyLocationData(locObj, 'Filled via GPS');
+            })
+            .catch(function(geoErr) {
+              console.warn('Nominatim failed, falling back to BigDataCloud:', geoErr);
+              var bdcUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lon) + '&localityLanguage=en';
+              fetch(bdcUrl)
+                .then(function(r) { return r.json(); })
+                .then(function(bdc) {
+                  var locObj = {
+                    houseNo: 'Doorstep Visit',
+                    street: bdc.locality || '',
+                    city: bdc.city || bdc.locality || '',
+                    state: bdc.principalSubdivision || '',
+                    pincode: /^[0-9]{6}$/.test(bdc.postcode) ? bdc.postcode : '',
+                    fullAddress: [bdc.locality, bdc.city, bdc.principalSubdivision].filter(Boolean).join(', ')
+                  };
+                  localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
+                  applyLocationData(locObj, 'Filled via GPS');
+                })
+                .catch(function() {
+                  tryIpFallback('Reverse geocode failed');
+                });
+            });
+        },
+        function(err) {
+          console.warn('GPS error, using IP fallback:', err);
+          tryIpFallback('GPS permission denied or timeout');
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    });
   }
 });
 </script>

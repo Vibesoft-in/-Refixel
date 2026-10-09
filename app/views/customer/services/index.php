@@ -506,7 +506,7 @@ if (empty($activeCategory)) {
   height: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
-  object-position: center center;
+  object-position: center top !important;
   transition: transform 0.35s ease;
   display: block;
 }

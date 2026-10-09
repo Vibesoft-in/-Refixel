@@ -60,7 +60,7 @@ INSERT INTO services (id, category_id, name, slug, description, starting_price, 
 (12, 8, 'Home Appliance Diagnostic & Repair', 'appliance-diagnostic-repair', 'Multi-brand diagnostics, motor check, PCB inspection, and genuine spare replacements.', 349.00, 60, 'refixel-appliance-repair.jpg', 1),
 (13, 3, 'Designer Fall Ceiling & POP Installation', 'fall-ceiling-installation', 'End-to-end false ceiling design & installation with heavy GI steel channel framing, branded Saint-Gobain gypsum boards, laser alignment, concealed LED cove light provision, and crack-free joint tape plastering by Refixel interior experts.', 1499.00, 180, 'refixel-fall-ceiling.jpg', 1),
 (14, 3, 'Fall Ceiling Repair & Cove Light Modification', 'fall-ceiling-repair-modification', 'Precision repair of sagging, damp, or cracked POP/gypsum ceiling panels, joint re-taping, acoustic leveling, and cutting custom slots for profile lights and spotlights.', 699.00, 90, 'refixel-fall-ceiling.jpg', 1),
-(15, 1, 'Balcony Deep Pressure Wash', 'balcony-deep-pressure-wash', 'High-pressure water jet washing for balcony tiles, railings, glass panes, and bird dropping removal.', 899.00, 60, 'Full-home-clean.jpg', 1);
+(15, 1, 'Balcony Deep Pressure Wash', 'balcony-deep-pressure-wash', 'High-pressure water jet washing for balcony tiles, railings, glass panes, and bird dropping removal.', 899.00, 60, 'refixel-balcony-pressure-wash.png', 1);
 
 -- 8. Service Checklist Items
 INSERT INTO service_checklist_items (service_id, label, is_included, sort_order) VALUES

@@ -54,11 +54,11 @@ class Response
             'X-Content-Type-Options' => 'nosniff',
             'X-XSS-Protection'       => '1; mode=block',
             'Referrer-Policy'        => 'strict-origin-when-cross-origin',
-            'Permissions-Policy'     => 'geolocation=(), microphone=(), camera=()',
+            'Permissions-Policy'     => 'geolocation=(self), microphone=(), camera=()',
         ];
 
         if (!isset($this->headers['Content-Security-Policy'])) {
-            $defaultHeaders['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' https: data:; frame-ancestors 'self';";
+            $defaultHeaders['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' https: data:; frame-src 'self' https://maps.google.com https://www.google.com https://*.google.com https:; frame-ancestors 'self';";
         }
 
         $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')

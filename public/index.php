@@ -73,8 +73,8 @@ if (!headers_sent()) {
     header('X-Content-Type-Options: nosniff');
     header('X-XSS-Protection: 1; mode=block');
     header('Referrer-Policy: strict-origin-when-cross-origin');
-    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
-    header("Content-Security-Policy: default-src 'self' 'unsafe-inline' https: data:; frame-ancestors 'self';");
+    header('Permissions-Policy: geolocation=(self), microphone=(), camera=()');
+    header("Content-Security-Policy: default-src 'self' 'unsafe-inline' https: data:; frame-src 'self' https://maps.google.com https://www.google.com https://*.google.com https:; frame-ancestors 'self';");
     $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
         || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
     if ($isHttps) {
