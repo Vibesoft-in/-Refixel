@@ -58,15 +58,15 @@
         <div class="form-row mb-3">
           <div class="col-md-4 form-group">
             <label class="font-weight-500 small text-dark">City</label>
-            <input type="text" name="city" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px;" value="<?= \App\Core\View::e($profile['city'] ?? '') ?>" placeholder="e.g. Gurugram">
+            <input type="text" name="city" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px;" value="<?= \App\Core\View::e($profile['city'] ?? '') ?>" placeholder="e.g. City / Town">
           </div>
           <div class="col-md-4 form-group">
-            <label class="font-weight-500 small text-dark">State</label>
-            <input type="text" name="state" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px;" value="<?= \App\Core\View::e($profile['state'] ?? 'Haryana') ?>" placeholder="e.g. Haryana">
+            <label class="font-weight-500 small text-dark">State / Province</label>
+            <input type="text" name="state" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px;" value="<?= \App\Core\View::e($profile['state'] ?? '') ?>" placeholder="e.g. State / Province / Region">
           </div>
           <div class="col-md-4 form-group">
-            <label class="font-weight-500 small text-dark">Pincode</label>
-            <input type="text" name="pincode" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px;" value="<?= \App\Core\View::e($profile['pincode'] ?? '') ?>" placeholder="6-digit pincode" pattern="[0-9]{6}">
+            <label class="font-weight-500 small text-dark">Postal Code / PIN</label>
+            <input type="text" name="pincode" class="form-control bg-light border-0 px-3 py-2" style="border-radius: 8px;" value="<?= \App\Core\View::e($profile['pincode'] ?? '') ?>" placeholder="Postal code">
           </div>
         </div>
         

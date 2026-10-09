@@ -4079,65 +4079,12 @@ document.addEventListener('DOMContentLoaded', function () {
                   <div class="form_field_group">
                     <label class="form_field_label">CHOOSE LOCATION</label>
                     <div class="ref_location_input_wrap position-relative">
-                      <input type="text" name="location" id="homeContactLocationInput" list="refixelLocationSuggestions" class="ref_contact_input has_loc_btn" placeholder="Enter colony, street or detect location..." required autocomplete="off">
+                      <input type="text" name="location" id="homeContactLocationInput" class="ref_contact_input has_loc_btn" placeholder="Enter street, city or tap Auto-Detect..." required autocomplete="off">
                       <button type="button" class="btn_input_detect_loc" id="btnInputDetectLoc" title="Detect Exact GPS Location" aria-label="Auto-Detect Location">
                         <i class="fa fa-crosshairs"></i>
                         <span>Auto-Detect</span>
                       </button>
                       <div id="contactLocationAutocompleteBox" class="refixel_loc_suggestions_box" style="display: none;"></div>
-                    </div>
-
-                    <!-- Datalist suggestions with all Kashipur colonies & regional hubs -->
-                    <datalist id="refixelLocationSuggestions">
-                      <option value="Awas Vikas Colony, Kashipur">
-                      <option value="Ramnagar Road, Kashipur">
-                      <option value="Aliganj Road, Kashipur">
-                      <option value="Station Road, Railway Colony, Kashipur">
-                      <option value="Kundeshwari Road, Kashipur">
-                      <option value="Giri Taal / Sarovar, Kashipur">
-                      <option value="Chaiti Chauraha, Kashipur">
-                      <option value="Vaishali Colony, Kashipur">
-                      <option value="Shiv Vihar, Kashipur">
-                      <option value="Mata Mandir Road, Kashipur">
-                      <option value="Kharagpura / Devipura, Kashipur">
-                      <option value="Pawan Vihar, Kashipur">
-                      <option value="Bazpur Road, Kashipur">
-                      <option value="Moradabad Road, Kashipur">
-                      <option value="Patel Nagar, Main Market, Kashipur">
-                      <option value="Mohalla Qila (Kila Street), Kashipur">
-                      <option value="Court / Kachahari Area, Kashipur">
-                      <option value="Surya Roshni / Industrial Area, Kashipur">
-                      <option value="Prakash City, Kashipur">
-                      <option value="Pakka Bagh / Ujjain, Kashipur">
-                      <option value="Phasiyapura / Dhakia, Kashipur">
-                      <option value="Nadehi (Sugar Mill), Udham Singh Nagar">
-                      <option value="Jaspur, Udham Singh Nagar">
-                      <option value="Rudrapur, Udham Singh Nagar">
-                      <option value="Haldwani, Nainital">
-                      <option value="Ramnagar, Nainital">
-                      <option value="Dehradun, Uttarakhand">
-                      <option value="Haridwar, Uttarakhand">
-                      <option value="Roorkee, Haridwar">
-                      <option value="Rishikesh, Dehradun">
-                      <option value="Pantnagar, Udham Singh Nagar">
-                      <option value="Bazpur, Udham Singh Nagar">
-                      <option value="Kichha, Udham Singh Nagar">
-                      <option value="Khatima, Udham Singh Nagar">
-                      <option value="DLF Cyber City, Gurugram, Haryana">
-                      <option value="Connaught Place, New Delhi">
-                    </datalist>
-
-                    <!-- Quick Location Chips for 1-Tap Selection -->
-                    <div class="quick_loc_chips mt-2">
-                      <span>Quick Colony:</span>
-                      <button type="button" class="loc_chip" data-loc="Awas Vikas Colony, Kashipur">Awas Vikas</button>
-                      <button type="button" class="loc_chip" data-loc="Ramnagar Road, Kashipur">Ramnagar Rd</button>
-                      <button type="button" class="loc_chip" data-loc="Aliganj Road, Kashipur">Aliganj Rd</button>
-                      <button type="button" class="loc_chip" data-loc="Kundeshwari, Kashipur">Kundeshwari</button>
-                      <button type="button" class="loc_chip" data-loc="Vaishali Colony, Kashipur">Vaishali</button>
-                      <button type="button" class="loc_chip" data-loc="Giri Taal, Kashipur">Giri Taal</button>
-                      <button type="button" class="loc_chip" data-loc="Nadehi (Sugar Mill), Udham Singh Nagar">Nadehi</button>
-                      <button type="button" class="loc_chip" data-loc="Rudrapur, Udham Singh Nagar">Rudrapur</button>
                     </div>
                   </div>
                 </div>
@@ -4175,7 +4122,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <button type="button" class="btn_use_location" id="btnDetectLocation">
             <i class="fa fa-crosshairs"></i> Use My Location
           </button>
-          <a href="https://maps.google.com/?q=Uttarakhand,India" target="_blank" rel="noopener noreferrer" class="btn_open_maps" id="btnOpenGoogleMaps">
+          <a href="https://maps.google.com/?q=Service+Location" target="_blank" rel="noopener noreferrer" class="btn_open_maps" id="btnOpenGoogleMaps">
             Open in Google Maps <i class="fa fa-external-link"></i>
           </a>
         </div>
@@ -4187,7 +4134,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <div class="location_map_box" id="locationMapBox">
         <!-- Live Embedded Google Map -->
         <iframe id="googleMapIframe" class="google_map_frame"
-          src="https://maps.google.com/maps?q=Kashipur,Uttarakhand,India&t=&z=14&ie=UTF8&iwloc=&output=embed"
+          src="https://maps.google.com/maps?q=Service+Location&t=&z=5&ie=UTF8&iwloc=&output=embed"
           loading="lazy" allowfullscreen="" frameborder="0" scrolling="no" aria-label="Interactive Google Map">
         </iframe>
 
@@ -4243,70 +4190,14 @@ document.addEventListener('DOMContentLoaded', function () {
   var mapAutocompleteBox = document.getElementById('mapSearchAutocompleteBox');
   var contactAutocompleteBox = document.getElementById('contactLocationAutocompleteBox');
 
-  var defaultPlaceholder = locInput ? locInput.placeholder : 'Enter colony, street or detect location...';
+  var defaultPlaceholder = locInput ? locInput.placeholder : 'Enter street, city or detect location...';
   var mapDebounceTimer = null;
-
-  // Rich database of all major Kashipur colonies, sectors, roads & regional hubs with exact coordinates
-  var KASHIPUR_LOCALITIES = [
-    { name: 'Awas Vikas Colony', locality: 'Awas Vikas Colony, Kashipur, Uttarakhand', lat: 29.2173, lon: 78.9645, landmark: 'Near Police Line / Awas Vikas Park', badge: 'Kashipur' },
-    { name: 'Ramnagar Road', locality: 'Ramnagar Road, Kashipur, Uttarakhand', lat: 29.2225, lon: 78.9660, landmark: 'Ramnagar Chauraha / Highway', badge: 'Kashipur' },
-    { name: 'Aliganj Road', locality: 'Aliganj Road, Kashipur, Uttarakhand', lat: 29.2080, lon: 78.9510, landmark: 'Near Aliganj Chauraha', badge: 'Kashipur' },
-    { name: 'Station Road', locality: 'Station Road, Railway Colony, Kashipur, Uttarakhand', lat: 29.2130, lon: 78.9560, landmark: 'Kashipur Junction Station', badge: 'Kashipur' },
-    { name: 'Kundeshwari', locality: 'Kundeshwari, Kashipur, Uttarakhand', lat: 29.2430, lon: 78.9480, landmark: 'Kundeshwari Temple / IIM Road', badge: 'Kashipur' },
-    { name: 'Giri Taal / Sarovar', locality: 'Giri Taal, Kashipur, Uttarakhand', lat: 29.2250, lon: 78.9570, landmark: 'Giri Sarovar Complex', badge: 'Kashipur' },
-    { name: 'Vaishali Colony', locality: 'Vaishali Colony, Kashipur, Uttarakhand', lat: 29.2190, lon: 78.9615, landmark: 'The Manor Hotel / Satyam Pal Area', badge: 'Kashipur' },
-    { name: 'Shiv Vihar', locality: 'Shiv Vihar, Kashipur, Uttarakhand', lat: 29.2165, lon: 78.9590, landmark: 'Shiv Vihar Main Gali', badge: 'Kashipur' },
-    { name: 'Chaiti Chauraha', locality: 'Chaiti Chauraha, Kashipur, Uttarakhand', lat: 29.2310, lon: 78.9710, landmark: 'Maa Balasundari Mandir Road', badge: 'Kashipur' },
-    { name: 'Mata Mandir Road', locality: 'Mata Mandir Road, Kashipur, Uttarakhand', lat: 29.2115, lon: 78.9610, landmark: 'Near Chamunda Mandir', badge: 'Kashipur' },
-    { name: 'Kharagpura / Devipura', locality: 'Kharagpura, Devipura, Kashipur, Uttarakhand', lat: 29.2110, lon: 78.9665, landmark: 'Gautami Heights / Devipura', badge: 'Kashipur' },
-    { name: 'Pawan Vihar', locality: 'Pawan Vihar, Kashipur, Uttarakhand', lat: 29.2140, lon: 78.9720, landmark: 'Near Bazpur Highway', badge: 'Kashipur' },
-    { name: 'Bazpur Road', locality: 'Bazpur Road, Kashipur, Uttarakhand', lat: 29.2105, lon: 78.9800, landmark: 'Main Highway Road', badge: 'Kashipur' },
-    { name: 'Moradabad Road', locality: 'Moradabad Road, Kashipur, Uttarakhand', lat: 29.1990, lon: 78.9500, landmark: 'Southern Bypass', badge: 'Kashipur' },
-    { name: 'Patel Nagar / Main Market', locality: 'Patel Nagar, Main Market, Kashipur, Uttarakhand', lat: 29.2100, lon: 78.9580, landmark: 'Main Bazaar', badge: 'Kashipur' },
-    { name: 'Mohalla Qila', locality: 'Mohalla Qila, Kashipur, Uttarakhand', lat: 29.2120, lon: 78.9540, landmark: 'Historic Fort Area', badge: 'Kashipur' },
-    { name: 'Galla Mandi (Grain Market)', locality: 'Galla Mandi, Kashipur, Uttarakhand', lat: 29.2060, lon: 78.9575, landmark: 'Kashipur Mandi Samiti', badge: 'Kashipur' },
-    { name: 'Court / Kachahari Area', locality: 'Court Road, Kachahari, Kashipur, Uttarakhand', lat: 29.2150, lon: 78.9680, landmark: 'Civil Court Kashipur', badge: 'Kashipur' },
-    { name: 'Surya Roshni / Industrial Area', locality: 'Industrial Area, Surya Roshni, Kashipur, Uttarakhand', lat: 29.1950, lon: 78.9750, landmark: 'Moradabad Highway / Surya Area', badge: 'Kashipur' },
-    { name: 'Prakash City', locality: 'Prakash City, Kashipur, Uttarakhand', lat: 29.2085, lon: 78.9650, landmark: 'Prakash City Colony', badge: 'Kashipur' },
-    { name: 'Pakka Bagh / Ujjain', locality: 'Pakka Bagh, Ujjain, Kashipur, Uttarakhand', lat: 29.2070, lon: 78.9560, landmark: 'Pakka Bagh Mohalla', badge: 'Kashipur' },
-    { name: 'Phasiyapura / Dhakia', locality: 'Phasiyapura, Dhakia Road, Kashipur, Uttarakhand', lat: 29.2150, lon: 78.9420, landmark: 'Dhakia Mod', badge: 'Kashipur' },
-    { name: 'Nadehi Sugar Mill', locality: 'Nadehi Sugar Mill, Udham Singh Nagar, Uttarakhand', lat: 29.2550, lon: 78.8500, landmark: 'Sugar Mill Gate', badge: 'Nadehi' },
-    { name: 'Jaspur Town', locality: 'Jaspur, Udham Singh Nagar, Uttarakhand', lat: 29.2840, lon: 78.8230, landmark: 'Subhash Chowk', badge: 'Jaspur' },
-    { name: 'Rudrapur', locality: 'Rudrapur, Udham Singh Nagar, Uttarakhand', lat: 28.9800, lon: 79.4000, landmark: 'Civil Lines / Awas Vikas', badge: 'Rudrapur' },
-    { name: 'Haldwani', locality: 'Haldwani, Nainital, Uttarakhand', lat: 29.2183, lon: 79.5130, landmark: 'Kaladhungi Road', badge: 'Haldwani' },
-    { name: 'DLF Cyber City, Gurugram', locality: 'DLF Cyber City, Gurugram, Haryana', lat: 28.4900, lon: 77.0880, landmark: 'Cyber Hub Phase 2', badge: 'Gurugram' },
-    { name: 'Connaught Place, New Delhi', locality: 'Connaught Place, New Delhi', lat: 28.6304, lon: 77.2177, landmark: 'Inner Circle', badge: 'Delhi' }
-  ];
-
-  function calcDistKm(lat1, lon1, lat2, lon2) {
-    var R = 6371;
-    var dLat = (lat2 - lat1) * Math.PI / 180;
-    var dLon = (lon2 - lon1) * Math.PI / 180;
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  function getNearestKashipurColony(lat, lon) {
-    var nearest = null;
-    var minDis = Infinity;
-    for (var i = 0; i < KASHIPUR_LOCALITIES.length; i++) {
-      var d = calcDistKm(lat, lon, KASHIPUR_LOCALITIES[i].lat, KASHIPUR_LOCALITIES[i].lon);
-      if (d < minDis) {
-        minDis = d;
-        nearest = KASHIPUR_LOCALITIES[i];
-      }
-    }
-    return { colony: nearest, distKm: minDis };
-  }
 
   function updateGoogleMap(queryOrCoords, lat, lon) {
     var query = '';
-    var zoom = 17;
+    var zoom = 16;
 
     if (lat && lon) {
-      // Use clean numeric coords for pinpoint marker, no postal code overlay!
       query = lat + ',' + lon;
       zoom = 17;
     } else if (queryOrCoords && typeof queryOrCoords === 'string' && queryOrCoords.trim()) {
@@ -4315,11 +4206,8 @@ document.addEventListener('DOMContentLoaded', function () {
         query = clean.replace(/\s+/g, '');
         zoom = 17;
       } else {
-        // Strip 6-digit postal code numbers like "- 244713" or ", 244713" from query!
-        // When Google Maps receives a postal code, it defaults to drawing the postal boundary polygon.
-        var stripped = clean.replace(/-\s*\d{6}/g, '').replace(/,\s*\d{6}/g, '').replace(/\b\d{6}\b/g, '').replace(/\s+,/g, ',').trim();
-        query = encodeURIComponent(stripped);
-        zoom = 17;
+        query = encodeURIComponent(clean);
+        zoom = 16;
       }
     }
 
@@ -4406,13 +4294,15 @@ document.addEventListener('DOMContentLoaded', function () {
       street = extraLandmark || road || subLocality || (data.name !== locality ? data.name : '');
     }
 
+    var country = addr.country || '';
     return {
-      houseNo: houseNo || 'Doorstep Visit',
-      street: street || (locality ? locality + ' Main' : ''),
-      area: subLocality || road || extraLandmark,
-      city: locality || district || 'Kashipur',
-      state: state || 'Uttarakhand',
-      pincode: postcode || '244713',
+      houseNo: houseNo || '',
+      street: street || '',
+      area: subLocality || road || extraLandmark || '',
+      city: locality || district || subLocality || '',
+      state: state || district || '',
+      country: country,
+      pincode: postcode || '',
       district: district,
       lat: lat,
       lng: lon,
@@ -4451,22 +4341,17 @@ document.addEventListener('DOMContentLoaded', function () {
         toStore.lat = lat;
         toStore.lng = lon;
       }
-      if (!toStore.city) {
-        var lower = (locValue || '').toLowerCase();
-        if (lower.indexOf('gurugram') !== -1 || lower.indexOf('gurgaon') !== -1) {
-          toStore.city = 'Gurugram';
-          toStore.state = 'Haryana';
-        } else if (lower.indexOf('delhi') !== -1) {
-          toStore.city = 'Delhi';
-          toStore.state = 'Delhi';
-        } else if (lower.indexOf('kashipur') !== -1) {
-          toStore.city = 'Kashipur';
-          toStore.state = 'Uttarakhand';
-          toStore.pincode = toStore.pincode || '244713';
-        } else {
-          var splitParts = (locValue || '').split(',');
-          toStore.city = splitParts[0].trim();
-          if (splitParts.length > 1) toStore.state = splitParts[splitParts.length - 1].trim();
+      if (!toStore.city && locValue) {
+        var splitParts = (locValue || '').split(',').map(function (s) { return s.trim(); });
+        if (splitParts.length === 1) {
+          toStore.city = splitParts[0];
+        } else if (splitParts.length === 2) {
+          toStore.city = splitParts[0];
+          toStore.state = splitParts[1];
+        } else if (splitParts.length >= 3) {
+          toStore.city = splitParts[0];
+          toStore.state = splitParts[splitParts.length - 2];
+          toStore.country = splitParts[splitParts.length - 1];
         }
       }
       if (!toStore.street && toStore.fullAddress) {
@@ -4511,16 +4396,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var searchTimer = null;
 
-    function renderSuggestions(items, isOnlineSearch) {
+    function renderSuggestions(items) {
       if (!items || items.length === 0) {
         boxElem.style.display = 'none';
         return;
       }
-      var html = '<div class="refixel_sug_section_title">' + (isOnlineSearch ? 'Online Matches' : 'Popular Kashipur Colonies') + '</div>';
+      var html = '<div class="refixel_sug_section_title">Suggested Locations</div>';
       items.forEach(function (it) {
         var main = it.name || it.locality || '';
-        var sub = it.landmark || it.sub || it.locality || '';
-        var badge = it.badge || 'Kashipur';
+        var sub = it.sub || it.locality || '';
+        var badge = it.badge || 'Location';
         html += '<div class="refixel_sug_item" data-main="' + encodeURIComponent(main) + '" data-loc="' + encodeURIComponent(it.locality || main) + '" data-lat="' + (it.lat || '') + '" data-lon="' + (it.lon || '') + '">';
         html += '  <div class="refixel_sug_item_left">';
         html += '    <div class="refixel_sug_icon"><i class="fa fa-map-marker"></i></div>';
@@ -4529,7 +4414,7 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '      <div class="refixel_sug_sub">' + sub + '</div>';
         html += '    </div>';
         html += '  </div>';
-        html += '  <span class="refixel_sug_badge badge-kashipur">' + badge + '</span>';
+        html += '  <span class="refixel_sug_badge">' + badge + '</span>';
         html += '</div>';
       });
       boxElem.innerHTML = html;
@@ -4544,12 +4429,15 @@ document.addEventListener('DOMContentLoaded', function () {
           var lat = latStr ? parseFloat(latStr) : null;
           var lon = lonStr ? parseFloat(lonStr) : null;
 
+          var parts = locStr.split(',').map(function (s) { return s.trim(); });
           var structured = {
-            houseNo: 'Doorstep Visit',
-            street: mainStr,
-            city: 'Kashipur',
-            state: 'Uttarakhand',
-            pincode: '244713',
+            houseNo: '',
+            street: mainStr || (parts[0] || ''),
+            area: parts[0] || '',
+            city: parts.length > 2 ? parts[parts.length - 2] : (parts[1] || parts[0] || ''),
+            state: parts.length > 1 ? parts[parts.length - 1] : '',
+            country: parts.length > 0 ? parts[parts.length - 1] : '',
+            pincode: '',
             lat: lat,
             lng: lon,
             fullAddress: locStr
@@ -4561,60 +4449,41 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    inputElem.addEventListener('focus', function () {
-      var val = (this.value || '').trim().toLowerCase();
-      if (!val) {
-        renderSuggestions(KASHIPUR_LOCALITIES.slice(0, 8), false);
-      }
-    });
-
     inputElem.addEventListener('input', function () {
-      var q = (this.value || '').trim().toLowerCase();
+      var q = (this.value || '').trim();
       clearTimeout(searchTimer);
 
-      if (!q) {
-        renderSuggestions(KASHIPUR_LOCALITIES.slice(0, 8), false);
+      if (!q || q.length < 2) {
+        boxElem.style.display = 'none';
         return;
       }
 
-      // 1. Instant local matching
-      var matches = KASHIPUR_LOCALITIES.filter(function (loc) {
-        return loc.name.toLowerCase().indexOf(q) !== -1 ||
-               loc.locality.toLowerCase().indexOf(q) !== -1 ||
-               (loc.landmark && loc.landmark.toLowerCase().indexOf(q) !== -1);
-      });
-
-      if (matches.length > 0) {
-        renderSuggestions(matches, false);
-      } else if (q.length >= 3) {
-        // 2. Debounced online Nominatim query
-        searchTimer = setTimeout(function () {
-          fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=' + encodeURIComponent(q + ', India'))
-            .then(function (r) { return r.json(); })
-            .then(function (list) {
-              if (list && list.length > 0) {
-                var mapped = list.map(function (item) {
-                  return {
-                    name: item.name || item.display_name.split(',')[0],
-                    locality: item.display_name,
-                    sub: item.display_name,
-                    lat: parseFloat(item.lat),
-                    lon: parseFloat(item.lon),
-                    badge: 'India'
-                  };
-                });
-                renderSuggestions(mapped, true);
-              } else {
-                boxElem.style.display = 'none';
-              }
-            })
-            .catch(function () {
+      // Debounced global search via OpenStreetMap Nominatim
+      searchTimer = setTimeout(function () {
+        fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=6&q=' + encodeURIComponent(q))
+          .then(function (r) { return r.json(); })
+          .then(function (list) {
+            if (list && list.length > 0) {
+              var mapped = list.map(function (item) {
+                var cBadge = (item.address && (item.address.country_code ? item.address.country_code.toUpperCase() : item.address.country)) || 'Global';
+                return {
+                  name: item.name || item.display_name.split(',')[0],
+                  locality: item.display_name,
+                  sub: item.display_name,
+                  lat: parseFloat(item.lat),
+                  lon: parseFloat(item.lon),
+                  badge: cBadge
+                };
+              });
+              renderSuggestions(mapped);
+            } else {
               boxElem.style.display = 'none';
-            });
-        }, 350);
-      } else {
-        boxElem.style.display = 'none';
-      }
+            }
+          })
+          .catch(function () {
+            boxElem.style.display = 'none';
+          });
+      }, 300);
     });
 
     document.addEventListener('click', function (e) {
@@ -4653,40 +4522,29 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function (data) {
           var city = (data.cityName || '').trim();
           var region = (data.regionName || '').trim();
-          var defaultColony = KASHIPUR_LOCALITIES[0]; // Awas Vikas Colony
+          var country = (data.countryName || '').trim();
+          var zip = (data.zipCode || '').trim();
+          var resolved = [city, region, country].filter(Boolean).join(', ') || 'Current Location';
 
-          if (city.toLowerCase().indexOf('kashipur') !== -1 || region.toLowerCase().indexOf('uttarakhand') !== -1) {
-            fillLocation('Kashipur, Udham Singh Nagar, Uttarakhand', data.latitude, data.longitude, {
-              houseNo: '',
-              street: '',
-              city: 'Kashipur',
-              state: 'Uttarakhand',
-              pincode: '244713',
-              lat: data.latitude,
-              lng: data.longitude,
-              fullAddress: 'Kashipur, Udham Singh Nagar, Uttarakhand'
-            });
-            if (statusText) {
-              statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Detected: <strong>Kashipur</strong>. Tap your exact colony from the chips above to pinpoint.';
-            }
-          } else {
-            var resolved = city && region ? city + ', ' + region : city || region || 'Kashipur, Uttarakhand';
-            fillLocation(resolved, data.latitude, data.longitude, {
-              houseNo: '',
-              street: '',
-              city: city || 'Kashipur',
-              state: region || 'Uttarakhand',
-              pincode: data.zipCode || '244713',
-              lat: data.latitude,
-              lng: data.longitude,
-              fullAddress: resolved
-            });
+          fillLocation(resolved, data.latitude, data.longitude, {
+            houseNo: '',
+            street: '',
+            city: city,
+            state: region,
+            country: country,
+            pincode: zip,
+            lat: data.latitude,
+            lng: data.longitude,
+            fullAddress: resolved
+          });
+          if (statusText) {
+            statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Detected: <strong>' + resolved + '</strong>';
           }
         })
         .catch(function () {
           resetDetectButton();
           if (statusText) {
-            statusText.innerHTML = '<span style="color: #ef4444;"><i class="fa fa-exclamation-circle"></i></span> Could not auto-detect location. Please pick your colony from the chips above.';
+            statusText.innerHTML = '<span style="color: #ef4444;"><i class="fa fa-exclamation-circle"></i></span> Could not auto-detect location. Please type your location manually.';
           }
         });
     }
@@ -4700,11 +4558,6 @@ document.addEventListener('DOMContentLoaded', function () {
       function (pos) {
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
-        var accuracy = pos.coords.accuracy;
-
-        // Check if detected coords are in or near Kashipur (within 15km)
-        var nearKashipur = getNearestKashipurColony(lat, lon);
-        var isKashipurArea = nearKashipur.distKm < 15;
 
         // Query reverse geocoders in parallel
         var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
@@ -4720,52 +4573,21 @@ document.addEventListener('DOMContentLoaded', function () {
           var phoProps = (phoData && phoData.features && phoData.features[0] && phoData.features[0].properties) || {};
           var localLandmark = phoProps.name || phoProps.street || '';
 
-          var addr = (nomData && nomData.address) || {};
-          var specificStreet = addr.road || addr.suburb || addr.neighbourhood || localLandmark || '';
-
-          // If browser returned coarse Wi-Fi/IP location with no specific street in Kashipur:
-          if (isKashipurArea && (!specificStreet || specificStreet.toLowerCase() === 'kashipur' || accuracy > 150)) {
-            var chosenLoc = 'Kashipur, Udham Singh Nagar, Uttarakhand';
-            var structured = {
-              houseNo: '',
-              street: '',
-              area: '',
-              city: 'Kashipur',
-              state: 'Uttarakhand',
-              pincode: '244713',
-              lat: lat,
-              lng: lon,
-              fullAddress: chosenLoc
-            };
-            fillLocation(chosenLoc, lat, lon, structured);
-
-            quickMapChips.forEach(function (c) { c.classList.remove('active'); });
-
-            if (statusText) {
-              statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Detected: <strong>Kashipur</strong>. Tap your exact colony from the chips above to pinpoint.';
-            }
-          } else {
-            // Fine-accuracy satellite GPS fix: use detailed reverse geocoded street
-            var exactPlace = formatDetailedPlaceAddress(nomData, lat, lon, localLandmark);
-            var structured = parseStructuredAddress(nomData, lat, lon, localLandmark);
-            fillLocation(exactPlace, lat, lon, structured);
-          }
+          var exactPlace = formatDetailedPlaceAddress(nomData, lat, lon, localLandmark);
+          var structured = parseStructuredAddress(nomData, lat, lon, localLandmark);
+          fillLocation(exactPlace, lat, lon, structured);
         }).catch(function () {
-          if (isKashipurArea) {
-            fillLocation('Kashipur, Udham Singh Nagar, Uttarakhand', lat, lon, {
-              houseNo: '',
-              street: '',
-              city: 'Kashipur',
-              state: 'Uttarakhand',
-              pincode: '244713',
-              lat: lat,
-              lng: lon,
-              fullAddress: 'Kashipur, Udham Singh Nagar, Uttarakhand'
-            });
-          } else {
-            var coordsStr = lat.toFixed(5) + ', ' + lon.toFixed(5);
-            fillLocation(coordsStr, lat, lon, null);
-          }
+          var coordsStr = lat.toFixed(5) + ', ' + lon.toFixed(5);
+          fillLocation(coordsStr, lat, lon, {
+            houseNo: '',
+            street: '',
+            city: '',
+            state: '',
+            pincode: '',
+            lat: lat,
+            lng: lon,
+            fullAddress: coordsStr
+          });
         });
       },
       function (err) {
@@ -4782,12 +4604,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var q = queryStr.trim();
 
     if (optLat && optLon) {
+      var parts = q.split(',').map(function (s) { return s.trim(); });
       var structured = {
         houseNo: 'Doorstep Visit',
-        street: q.split(',')[0].trim(),
-        city: 'Kashipur',
-        state: 'Uttarakhand',
-        pincode: '244713',
+        street: parts[0] || '',
+        city: parts.length > 2 ? parts[parts.length - 2] : (parts[1] || parts[0] || ''),
+        state: parts.length > 1 ? parts[parts.length - 1] : '',
+        country: parts.length > 0 ? parts[parts.length - 1] : '',
+        pincode: '',
         lat: optLat,
         lng: optLon,
         fullAddress: q
@@ -4800,27 +4624,8 @@ document.addEventListener('DOMContentLoaded', function () {
       statusText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Searching location "' + q + '"...';
     }
 
-    // Check local dataset first
-    var lowerQ = q.toLowerCase();
-    for (var i = 0; i < KASHIPUR_LOCALITIES.length; i++) {
-      var it = KASHIPUR_LOCALITIES[i];
-      if (it.name.toLowerCase().indexOf(lowerQ) !== -1 || lowerQ.indexOf(it.name.toLowerCase()) !== -1) {
-        fillLocation(it.locality, it.lat, it.lon, {
-          houseNo: 'Doorstep Visit',
-          street: it.name,
-          city: 'Kashipur',
-          state: 'Uttarakhand',
-          pincode: '244713',
-          lat: it.lat,
-          lng: it.lon,
-          fullAddress: it.locality
-        });
-        return;
-      }
-    }
-
-    // Geocode via Nominatim
-    var searchUrl = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(q + ', India');
+    // Geocode via Nominatim worldwide
+    var searchUrl = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(q);
 
     fetch(searchUrl)
       .then(function (res) { return res.json(); })
@@ -4833,12 +4638,14 @@ document.addEventListener('DOMContentLoaded', function () {
           var placeName = formatDetailedPlaceAddress(item, lat, lon);
           fillLocation(placeName || item.display_name, lat, lon, structured);
         } else {
+          var parts = q.split(',').map(function (s) { return s.trim(); });
           fillLocation(q, null, null, {
-            houseNo: 'Doorstep Visit',
+            houseNo: '',
             street: q,
-            city: q.split(',')[0].trim(),
-            state: 'Uttarakhand',
-            pincode: '244713',
+            city: parts[0] || '',
+            state: parts.length > 1 ? parts[1] : '',
+            country: parts.length > 2 ? parts[parts.length - 1] : '',
+            pincode: '',
             fullAddress: q
           });
         }
@@ -4883,59 +4690,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Quick Map Chips (1-Tap Pinning on Map)
-  quickMapChips.forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      quickMapChips.forEach(function (c) { c.classList.remove('active'); });
-      this.classList.add('active');
-      var target = this.getAttribute('data-query');
-      var latStr = this.getAttribute('data-lat');
-      var lonStr = this.getAttribute('data-lon');
-      var lat = latStr ? parseFloat(latStr) : null;
-      var lon = lonStr ? parseFloat(lonStr) : null;
-
-      if (mapSearchInput) {
-        mapSearchInput.value = target;
-        if (btnClearMapSearch) btnClearMapSearch.style.display = 'block';
-      }
-      executeMapSearch(target, lat, lon);
-    });
-  });
-
-  // Quick Colony buttons in Contact Form
-  document.querySelectorAll('.loc_chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      var chosenLoc = this.getAttribute('data-loc');
-      var colonyName = this.textContent.trim();
-      var lat = null;
-      var lon = null;
-
-      for (var i = 0; i < KASHIPUR_LOCALITIES.length; i++) {
-        if (KASHIPUR_LOCALITIES[i].locality === chosenLoc || KASHIPUR_LOCALITIES[i].name.toLowerCase().indexOf(colonyName.toLowerCase()) !== -1) {
-          lat = KASHIPUR_LOCALITIES[i].lat;
-          lon = KASHIPUR_LOCALITIES[i].lon;
-          break;
-        }
-      }
-
-      var structured = {
-        houseNo: 'Doorstep Visit',
-        street: colonyName,
-        area: colonyName,
-        city: 'Kashipur',
-        state: 'Uttarakhand',
-        pincode: '244713',
-        lat: lat,
-        lng: lon,
-        fullAddress: chosenLoc
-      };
-      fillLocation(chosenLoc, lat, lon, structured);
-      if (locInput) {
-        locInput.focus();
-      }
-    });
-  });
-
   // Two-way sync: If user manually changes the input, update map status and Google Maps in real-time
   if (locInput) {
     locInput.addEventListener('input', function () {
@@ -4957,13 +4711,13 @@ document.addEventListener('DOMContentLoaded', function () {
           try {
             var parts = val.split(',');
             var typedCity = parts[0].trim();
-            var typedState = parts.length > 1 ? parts[parts.length - 1].trim() : 'Uttarakhand';
+            var typedState = parts.length > 1 ? parts[parts.length - 1].trim() : '';
             localStorage.setItem('refixel_user_location', JSON.stringify({
               houseNo: 'Doorstep Visit',
               street: val,
               city: typedCity,
               state: typedState,
-              pincode: '244713',
+              pincode: '',
               fullAddress: val,
               timestamp: Date.now()
             }));
