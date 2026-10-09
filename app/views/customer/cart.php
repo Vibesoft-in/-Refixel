@@ -864,17 +864,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 street = road || subLocality || (data.name !== locality ? data.name : '');
               }
 
+              // Distance check to Kashipur center
+              var dLat = (lat - 29.215) * Math.PI / 180;
+              var dLon = (lon - 78.955) * Math.PI / 180;
+              var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(29.215*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+              var distToKashipurKm = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+              if (distToKashipurKm < 15 || (locality && locality.toLowerCase().indexOf('kashipur') !== -1) || (district && district.toLowerCase().indexOf('udham singh nagar') !== -1)) {
+                locality = 'Kashipur';
+                state = 'Uttarakhand';
+                postcode = '244713';
+                if (!street || street.toLowerCase() === 'kashipur' || street.toLowerCase() === 'kashipur area') {
+                  var kashipurColonies = [
+                    { name: 'Awas Vikas Colony', lat: 29.2173, lon: 78.9645 },
+                    { name: 'Ramnagar Road', lat: 29.2225, lon: 78.9660 },
+                    { name: 'Aliganj Road', lat: 29.2080, lon: 78.9510 },
+                    { name: 'Station Road', lat: 29.2130, lon: 78.9560 },
+                    { name: 'Kundeshwari', lat: 29.2430, lon: 78.9480 },
+                    { name: 'Giri Taal', lat: 29.2250, lon: 78.9570 },
+                    { name: 'Vaishali Colony', lat: 29.2190, lon: 78.9615 },
+                    { name: 'Shiv Vihar', lat: 29.2165, lon: 78.9590 },
+                    { name: 'Chaiti Chauraha', lat: 29.2310, lon: 78.9710 },
+                    { name: 'Mata Mandir Road', lat: 29.2115, lon: 78.9610 },
+                    { name: 'Kharagpura / Devipura', lat: 29.2110, lon: 78.9665 },
+                    { name: 'Pawan Vihar', lat: 29.2140, lon: 78.9720 },
+                    { name: 'Bazpur Road', lat: 29.2105, lon: 78.9800 }
+                  ];
+                  var nearestCol = kashipurColonies[0];
+                  var minD = Infinity;
+                  for (var k = 0; k < kashipurColonies.length; k++) {
+                    var curD = Math.hypot(lat - kashipurColonies[k].lat, lon - kashipurColonies[k].lon);
+                    if (curD < minD) { minD = curD; nearestCol = kashipurColonies[k]; }
+                  }
+                  street = nearestCol.name;
+                }
+              }
+
               var locObj = {
                 houseNo: houseNo || 'Doorstep Visit',
-                street: street || (locality ? locality + ' Area' : ''),
-                city: locality || district || 'Gurugram',
-                state: state || 'Haryana',
-                pincode: /^[0-9]{6}$/.test(postcode) ? postcode : '',
+                street: street || (locality ? locality + ' Main' : ''),
+                city: locality || district || 'Kashipur',
+                state: state || 'Uttarakhand',
+                pincode: /^[0-9]{6}$/.test(postcode) ? postcode : '244713',
                 fullAddress: data.display_name || (street + ', ' + (locality || district))
               };
 
               localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
-              applyLocationData(locObj, 'Filled via GPS');
+              applyLocationData(locObj, 'Filled via GPS (' + (street || locality) + ')');
             })
             .catch(function(geoErr) {
               console.warn('Nominatim failed, falling back to BigDataCloud:', geoErr);
