@@ -719,17 +719,35 @@ document.addEventListener('DOMContentLoaded', function() {
       filledCount++;
     }
     if (inputStreet) {
-      var currentVal = inputStreet.value.trim();
-      var isDefault = (!currentVal || currentVal === 'Palm Springs' || currentVal === 'e.g. Palm Springs');
-      var isFakeRamnagar = (loc.street === 'Ramnagar Road' && !loc.userExplicit);
-      if (loc.street && !isFakeRamnagar && loc.street.toLowerCase() !== (loc.city || '').toLowerCase()) {
-        inputStreet.value = loc.street;
+      var resolvedStreet = (loc.street || '').trim();
+      var cityName = (loc.city || '').trim().toLowerCase();
+
+      // If no street or street equals city, fallback to area, district, or address tokens
+      if (!resolvedStreet || resolvedStreet.toLowerCase() === cityName) {
+        if (loc.area && loc.area.toLowerCase() !== cityName) {
+          resolvedStreet = loc.area.trim();
+        } else if (loc.district && loc.district.toLowerCase() !== cityName) {
+          resolvedStreet = loc.district.trim() + ' Area';
+        } else if (loc.fullAddress) {
+          var parts = loc.fullAddress.split(',').map(function(s) { return s.trim(); });
+          for (var p = 0; p < parts.length; p++) {
+            var pt = parts[p].toLowerCase();
+            if (pt && pt !== cityName && pt !== (loc.state || '').toLowerCase() && pt !== (loc.country || '').toLowerCase() && !/^\d+$/.test(pt)) {
+              resolvedStreet = parts[p];
+              break;
+            }
+          }
+        }
+      }
+
+      if (!resolvedStreet || resolvedStreet.toLowerCase() === cityName) {
+        resolvedStreet = loc.city ? (loc.city.trim() + ' Area') : 'Doorstep Service Area';
+      }
+
+      if (resolvedStreet) {
+        inputStreet.value = resolvedStreet;
         flashHighlight(inputStreet);
         filledCount++;
-      } else if (isDefault) {
-        inputStreet.value = '';
-        inputStreet.placeholder = 'e.g. Colony, Street, Apartment (Please specify)';
-        setTimeout(function() { inputStreet.focus(); }, 120);
       }
     }
     if (inputHouseNo) {
@@ -812,7 +830,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (city || region || country) {
               var locObj = {
                 houseNo: '',
-                street: '',
+                street: city ? (city + ' Area') : 'Doorstep Service Area',
+                area: city,
                 city: city,
                 state: region,
                 country: country,
@@ -866,13 +885,14 @@ document.addEventListener('DOMContentLoaded', function() {
               var country = addr.country || '';
               var postcode = (addr.postcode || '').trim();
 
-              var street = road || subLocality || '';
+              var street = road || subLocality || (district && district !== locality ? district + ' Area' : (locality ? locality + ' Area' : ''));
               var cityVal = locality || district || subLocality || '';
               var stateVal = state || district || '';
 
               var locObj = {
                 houseNo: houseNo,
                 street: street,
+                area: subLocality || district || '',
                 city: cityVal,
                 state: stateVal,
                 country: country,
@@ -895,7 +915,8 @@ document.addEventListener('DOMContentLoaded', function() {
                   var zip = (bdc.postcode || '').trim();
                   var locObj = {
                     houseNo: '',
-                    street: bdc.locality && bdc.locality !== city ? bdc.locality : '',
+                    street: bdc.locality && bdc.locality !== city ? bdc.locality : (city ? city + ' Area' : 'Doorstep Service Area'),
+                    area: bdc.locality || city,
                     city: city || state,
                     state: state,
                     country: country,

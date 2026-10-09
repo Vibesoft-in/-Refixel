@@ -57,7 +57,8 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
 <nav class="navbar navbar-expand-lg navbar-light main_menu">
   <div class="container-fluid header-nav-container d-flex flex-wrap align-items-center justify-content-between">
     <a class="navbar-brand py-0" href="<?= \App\Core\View::url('/') ?>">
-      <img src="<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>" alt="REFIXEL" class="nav-brand-logo" style="max-height: 48px; width: auto; object-fit: contain;">
+      <?php $siteLogo = \App\Models\Setting::get('site_logo', 'img/refixel-logo-horizontal.png'); ?>
+      <img src="<?= \App\Core\View::asset($siteLogo) ?>" alt="REFIXEL" class="nav-brand-logo" style="max-height: 48px; width: auto; object-fit: contain;">
     </a>
 
     <style>

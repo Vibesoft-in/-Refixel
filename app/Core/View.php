@@ -79,8 +79,15 @@ class View
 
     public static function asset(string $path): string
     {
-        $cleanPath = 'assets/' . ltrim($path, '/');
-        return self::url($cleanPath);
+        $path = trim($path);
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+        $path = ltrim($path, '/');
+        if (str_starts_with($path, 'assets/') || str_starts_with($path, 'uploads/')) {
+            return self::url($path);
+        }
+        return self::url('assets/' . $path);
     }
 
     public static function csrfField(): string

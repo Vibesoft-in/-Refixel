@@ -137,9 +137,13 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     // Services & Categories
     Router::get('/admin/services', 'Admin\\ServiceController@index');
     Router::post('/admin/services', 'Admin\\ServiceController@storeService', ['VerifyCsrf']);
+    Router::post('/admin/services/{id}/update', 'Admin\\ServiceController@updateService', ['VerifyCsrf']);
+    Router::post('/admin/services/{id}/delete', 'Admin\\ServiceController@deleteService', ['VerifyCsrf']);
     Router::post('/admin/services/{id}/toggle-status', 'Admin\\ServiceController@toggleServiceStatus', ['VerifyCsrf']);
     Router::get('/admin/services/categories', 'Admin\\ServiceController@categories');
     Router::post('/admin/services/categories', 'Admin\\ServiceController@storeCategory', ['VerifyCsrf']);
+    Router::post('/admin/services/categories/{id}/update', 'Admin\\ServiceController@updateCategory', ['VerifyCsrf']);
+    Router::post('/admin/services/categories/{id}/delete', 'Admin\\ServiceController@deleteCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/toggle-status', 'Admin\\ServiceController@toggleCategoryStatus', ['VerifyCsrf']);
 
     // Payments & Invoices
@@ -158,6 +162,8 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
 
     Router::get('/admin/content/gallery', 'Admin\\ContentController@gallery');
     Router::post('/admin/content/gallery', 'Admin\\ContentController@storeGallery', ['VerifyCsrf']);
+    Router::post('/admin/content/gallery/{id}/update', 'Admin\\ContentController@updateGallery', ['VerifyCsrf']);
+    Router::post('/admin/content/gallery/{id}/delete', 'Admin\\ContentController@deleteGallery', ['VerifyCsrf']);
     Router::post('/admin/content/gallery/{id}/toggle', 'Admin\\ContentController@toggleGallery', ['VerifyCsrf']);
 
     Router::get('/admin/content/reviews', 'Admin\\ContentController@reviews');
@@ -166,6 +172,8 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
 
     Router::get('/admin/content/areas', 'Admin\\ContentController@areas');
     Router::post('/admin/content/areas', 'Admin\\ContentController@storeArea', ['VerifyCsrf']);
+    Router::post('/admin/content/areas/{id}/update', 'Admin\\ContentController@updateArea', ['VerifyCsrf']);
+    Router::post('/admin/content/areas/{id}/delete', 'Admin\\ContentController@deleteArea', ['VerifyCsrf']);
     Router::post('/admin/content/areas/{id}/toggle', 'Admin\\ContentController@toggleArea', ['VerifyCsrf']);
 
     Router::get('/admin/content/steps', 'Admin\\ContentController@steps');

@@ -3,39 +3,44 @@ use App\Core\View;
 $settings = $settings ?? [];
 ?>
 
-<div class="admin-settings-page" style="max-width: 850px;">
+<div class="admin-settings-page" style="max-width: 900px;">
   <div class="mb-4">
-    <h4 class="font-weight-bold mb-1 text-dark">Business & Notification Settings</h4>
-    <p class="text-muted small mb-0">Configure company metadata, tax identification, notification channels, and operational preferences.</p>
+    <h4 class="font-weight-bold mb-1 text-dark">Business, Media & Notification Settings</h4>
+    <p class="text-muted small mb-0">Control company address, Google Maps location pin, website banners, media images, and notification channels.</p>
   </div>
 
-  <form method="POST" action="<?= View::url('/admin/settings') ?>">
+  <form method="POST" action="<?= View::url('/admin/settings') ?>" enctype="multipart/form-data">
     <?= View::csrfField() ?>
 
     <!-- Navigation Tabs -->
-    <ul class="nav nav-tabs mb-3" role="tablist">
+    <ul class="nav nav-tabs mb-4" role="tablist">
       <li class="nav-item">
         <a class="nav-link active font-weight-bold" data-toggle="tab" href="#tab-business">
-          <i class="fa fa-building-o mr-1"></i>Business Profile
+          <i class="fa fa-building-o mr-1"></i>Business & Location
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link font-weight-bold" data-toggle="tab" href="#tab-media">
+          <i class="fa fa-picture-o mr-1"></i>Website Media & Banners
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link font-weight-bold" data-toggle="tab" href="#tab-notifications">
-          <i class="fa fa-bell-o mr-1"></i>Notifications & Dispatch Alerts
+          <i class="fa fa-bell-o mr-1"></i>Notifications & Alerts
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link font-weight-bold" data-toggle="tab" href="#tab-social">
-          <i class="fa fa-globe mr-1"></i>Contact & Social Channels
+          <i class="fa fa-globe mr-1"></i>Social & Channels
         </a>
       </li>
     </ul>
 
-    <div class="tab-content">
-      <!-- Tab 1: Business Profile -->
+    <div class="tab-content mb-4">
+      <!-- Tab 1: Business Profile & Office Location -->
       <div class="tab-pane fade show active" id="tab-business">
-        <div class="stat-card">
-          <h6 class="font-weight-bold text-dark mb-3">Company Information</h6>
+        <div class="stat-card p-4 border rounded shadow-sm bg-white mb-3">
+          <h6 class="font-weight-bold text-dark mb-3 border-bottom pb-2">Company & Head Office Information</h6>
 
           <div class="form-row">
             <div class="col-md-6 form-group mb-3">
@@ -51,19 +56,34 @@ $settings = $settings ?? [];
 
           <div class="form-row">
             <div class="col-md-6 form-group mb-3">
-              <label class="font-weight-bold small text-dark">Customer Support Helpline</label>
-              <input type="text" name="support_phone" class="form-control" value="<?= View::e($settings['support_phone'] ?? '+91 98765 43210') ?>">
+              <label class="font-weight-bold small text-dark">Customer Support Helpline Phone</label>
+              <input type="text" name="support_phone" class="form-control" value="<?= View::e($settings['support_phone'] ?? '+91 94581 82006') ?>">
+              <small class="form-text text-muted">Displayed on Header, Contact Us, and Footer.</small>
             </div>
 
             <div class="col-md-6 form-group mb-3">
               <label class="font-weight-bold small text-dark">Official Support Email</label>
-              <input type="email" name="support_email" class="form-control" value="<?= View::e($settings['support_email'] ?? 'care@REFIXEL.com') ?>">
+              <input type="email" name="support_email" class="form-control" value="<?= View::e($settings['support_email'] ?? 'wearerefixel@gmail.com') ?>">
+              <small class="form-text text-muted">Displayed on Contact Us and customer communications.</small>
             </div>
           </div>
 
           <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark">Registered Head Office Address</label>
-            <textarea name="business_address" class="form-control" rows="2"><?= View::e($settings['business_address'] ?? 'DLF Cyber City, Tower B, Sector 24, Gurugram, Haryana - 122002') ?></textarea>
+            <label class="font-weight-bold small text-dark">Public Office Address (Displayed on Contact Us & Footer)</label>
+            <textarea name="office_address" class="form-control" rows="2"><?= View::e($settings['office_address'] ?? 'Jaspur - Kashipur Road, in front of BSV Girls Degree College, Jaspur, Uttarakhand (PIN: 244712)') ?></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="col-md-6 form-group mb-3">
+              <label class="font-weight-bold small text-dark">Office Landmark / Area Subtitle</label>
+              <input type="text" name="office_landmark" class="form-control" value="<?= View::e($settings['office_landmark'] ?? 'In front of BSV Girls Degree College, Jaspur') ?>">
+            </div>
+
+            <div class="col-md-6 form-group mb-3">
+              <label class="font-weight-bold small text-dark">Google Maps Pin Query / Location</label>
+              <input type="text" name="office_map_query" class="form-control" value="<?= View::e($settings['office_map_query'] ?? 'BSV Girls Degree College, Kashipur Road, Jaspur, Uttarakhand') ?>">
+              <small class="form-text text-muted">Used to pin the live Google Map on the Contact page.</small>
+            </div>
           </div>
 
           <div class="form-row">
@@ -80,14 +100,106 @@ $settings = $settings ?? [];
         </div>
       </div>
 
-      <!-- Tab 2: Notification & Dispatch Alerts -->
+      <!-- Tab 2: Website Media & Banners -->
+      <div class="tab-pane fade" id="tab-media">
+        <div class="stat-card p-4 border rounded shadow-sm bg-white mb-3">
+          <h6 class="font-weight-bold text-dark mb-3 border-bottom pb-2">Website Images, Logos & Banners</h6>
+
+          <!-- 1. Site Logo -->
+          <div class="form-group mb-4 pb-3 border-bottom">
+            <label class="font-weight-bold small text-dark d-block">Website Logo</label>
+            <div class="row align-items-center">
+              <div class="col-sm-3 mb-2 mb-sm-0">
+                <div class="border rounded p-2 text-center bg-light" style="max-height: 80px;">
+                  <?php $logoUrl = !empty($settings['site_logo']) ? View::asset($settings['site_logo']) : View::asset('img/logo.png'); ?>
+                  <img src="<?= $logoUrl ?>" alt="Logo" style="max-height: 60px; max-width: 100%; object-fit: contain;">
+                </div>
+              </div>
+              <div class="col-sm-9">
+                <input type="file" name="site_logo" accept="image/*" class="form-control-file mb-1">
+                <div class="small text-muted">Or image path/URL:</div>
+                <input type="text" name="site_logo" class="form-control form-control-sm" value="<?= View::e($settings['site_logo'] ?? 'img/logo.png') ?>">
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Hero Headline & Subtitle -->
+          <div class="form-group mb-4 pb-3 border-bottom">
+            <h6 class="font-weight-bold text-dark mb-2">Homepage Hero Banner Text</h6>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold small text-dark">Hero Tagline / Promo Ribbon Text</label>
+              <input type="text" name="hero_tagline" class="form-control" value="<?= View::e($settings['hero_tagline'] ?? 'Starting at ₹999 • Save up to 25% on your first booking') ?>">
+            </div>
+            <div class="form-group mb-0">
+              <label class="font-weight-bold small text-dark">Hero Main Headline</label>
+              <input type="text" name="hero_title" class="form-control" value="<?= View::e($settings['hero_title'] ?? 'Get Your Home Spotless & Germ-Free with Expert Deep Cleaning') ?>">
+            </div>
+          </div>
+
+          <!-- 3. Hero Background Image / Poster -->
+          <div class="form-group mb-4 pb-3 border-bottom">
+            <label class="font-weight-bold small text-dark d-block">Hero Background Banner Image (Or Video Poster)</label>
+            <div class="row align-items-center">
+              <div class="col-sm-3 mb-2 mb-sm-0">
+                <div class="border rounded p-1 text-center bg-light" style="height: 90px; overflow: hidden;">
+                  <?php $heroImg = !empty($settings['hero_banner_image']) ? View::asset($settings['hero_banner_image']) : View::asset('img/banner-1.jpg'); ?>
+                  <img src="<?= $heroImg ?>" alt="Hero Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+              </div>
+              <div class="col-sm-9">
+                <input type="file" name="hero_banner_image" accept="image/*" class="form-control-file mb-1">
+                <div class="small text-muted">Or image path/URL:</div>
+                <input type="text" name="hero_banner_image" class="form-control form-control-sm" value="<?= View::e($settings['hero_banner_image'] ?? 'img/banner-1.jpg') ?>">
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Promo Banner Image -->
+          <div class="form-group mb-4 pb-3 border-bottom">
+            <label class="font-weight-bold small text-dark d-block">Promotional Card / Seasonal Offer Image</label>
+            <div class="row align-items-center">
+              <div class="col-sm-3 mb-2 mb-sm-0">
+                <div class="border rounded p-1 text-center bg-light" style="height: 90px; overflow: hidden;">
+                  <?php $promoImg = !empty($settings['promo_banner_image']) ? View::asset($settings['promo_banner_image']) : View::asset('img/promo-banner.jpg'); ?>
+                  <img src="<?= $promoImg ?>" alt="Promo Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+              </div>
+              <div class="col-sm-9">
+                <input type="file" name="promo_banner_image" accept="image/*" class="form-control-file mb-1">
+                <div class="small text-muted">Or image path/URL:</div>
+                <input type="text" name="promo_banner_image" class="form-control form-control-sm" value="<?= View::e($settings['promo_banner_image'] ?? 'img/promo-banner.jpg') ?>">
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. About Us Showcase Image -->
+          <div class="form-group mb-2">
+            <label class="font-weight-bold small text-dark d-block">About Us Story Showcase Image</label>
+            <div class="row align-items-center">
+              <div class="col-sm-3 mb-2 mb-sm-0">
+                <div class="border rounded p-1 text-center bg-light" style="height: 90px; overflow: hidden;">
+                  <?php $aboutImg = !empty($settings['about_image']) ? View::asset($settings['about_image']) : View::asset('img/about-story.jpg'); ?>
+                  <img src="<?= $aboutImg ?>" alt="About Story" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+              </div>
+              <div class="col-sm-9">
+                <input type="file" name="about_image" accept="image/*" class="form-control-file mb-1">
+                <div class="small text-muted">Or image path/URL:</div>
+                <input type="text" name="about_image" class="form-control form-control-sm" value="<?= View::e($settings['about_image'] ?? 'img/about-story.jpg') ?>">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Notification & Dispatch Alerts -->
       <div class="tab-pane fade" id="tab-notifications">
-        <div class="stat-card">
-          <h6 class="font-weight-bold text-dark mb-3">Automated Communications & Dispatch</h6>
+        <div class="stat-card p-4 border rounded shadow-sm bg-white mb-3">
+          <h6 class="font-weight-bold text-dark mb-3 border-bottom pb-2">Automated Communications & Dispatch</h6>
 
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">Admin Alert Notification Email</label>
-            <input type="email" name="admin_notification_email" class="form-control" value="<?= View::e($settings['admin_notification_email'] ?? 'admin@REFIXEL.com') ?>">
+            <input type="email" name="admin_notification_email" class="form-control" value="<?= View::e($settings['admin_notification_email'] ?? 'wearerefixel@gmail.com') ?>">
             <small class="form-text text-muted">Receives instant notifications whenever a new booking or enquiry is placed.</small>
           </div>
 
@@ -117,15 +229,15 @@ $settings = $settings ?? [];
         </div>
       </div>
 
-      <!-- Tab 3: Social & External Channels -->
+      <!-- Tab 4: Social & External Channels -->
       <div class="tab-pane fade" id="tab-social">
-        <div class="stat-card">
-          <h6 class="font-weight-bold text-dark mb-3">Social & Live Chat Links</h6>
+        <div class="stat-card p-4 border rounded shadow-sm bg-white mb-3">
+          <h6 class="font-weight-bold text-dark mb-3 border-bottom pb-2">Social & Live Chat Links</h6>
 
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">Live WhatsApp Chat Number</label>
-            <input type="text" name="whatsapp_number" class="form-control" value="<?= View::e($settings['whatsapp_number'] ?? '919876543210') ?>">
-            <small class="form-text text-muted">Used for the floating WhatsApp button on the public website (Format: 919876543210).</small>
+            <input type="text" name="whatsapp_number" class="form-control" value="<?= View::e($settings['whatsapp_number'] ?? '919458182006') ?>">
+            <small class="form-text text-muted">Used for the floating WhatsApp button on the public website (Format: 919458182006).</small>
           </div>
 
           <div class="form-group mb-3">
@@ -163,4 +275,3 @@ $settings = $settings ?? [];
     </div>
   </form>
 </div>
-

@@ -177,22 +177,34 @@ class BookingController extends Controller
 
         // Guest Checkout: check if user exists, else create new account
         if (!$customerId) {
-            $identifier = $emailInput ?: $phoneInput;
-            $existingUser = \App\Models\User::findByEmailOrPhone($identifier);
+            $existingUser = null;
+            if (!empty($emailInput)) {
+                $existingUser = \App\Models\User::findBy('email', $emailInput);
+            }
+            if (!$existingUser && !empty($phoneInput)) {
+                $existingUser = \App\Models\User::findBy('phone', $phoneInput);
+            }
             
             if ($existingUser) {
-                $customerId = $existingUser['id'];
+                $customerId = (int)$existingUser['id'];
             } else {
                 $generatedPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$"), 0, 8);
                 $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
-                $customerId = \App\Core\Database::execute(
-                    "INSERT INTO users (name, phone, email, password, role) VALUES (?, ?, ?, ?, 'customer')",
-                    [$nameInput, $phoneInput, $emailInput, $hashedPassword],
+                $customerId = (int)\App\Core\Database::execute(
+                    "INSERT INTO users (name, phone, email, password_hash, role) VALUES (?, ?, ?, ?, 'customer')",
+                    [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword],
                     true // Return last insert ID
                 );
                 $_SESSION['guest_account_created'] = true;
                 $_SESSION['guest_account_password'] = $generatedPassword;
                 $_SESSION['guest_account_identifier'] = $emailInput ?: $phoneInput;
+            }
+
+            if ($customerId) {
+                $userObj = \App\Models\User::find($customerId);
+                if ($userObj) {
+                    \App\Core\Auth::login($userObj);
+                }
             }
         }
 

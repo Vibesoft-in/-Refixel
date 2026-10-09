@@ -333,8 +333,8 @@ a.solution_card:active,
       <div class="col-lg-12">
         <div class="search_service">
           <div class="looking_ser">
-            <h3>Starting at ₹999 • Save up to 25% on your first booking</h3>
-            <h1>Get Your Home Spotless & Germ-Free with Expert Deep Cleaning</h1>
+            <h3><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', 'Starting at ₹999 • Save up to 25% on your first booking')) ?></h3>
+            <h1><?= \App\Core\View::e(\App\Models\Setting::get('hero_title', 'Get Your Home Spotless & Germ-Free with Expert Deep Cleaning')) ?></h1>
             <a href="<?= \App\Core\View::url('/services') ?>" class="btn_cleaned_today d-inline-block text-decoration-none">
               Get Your Home Cleaned Today
             </a>
@@ -4354,8 +4354,8 @@ document.addEventListener('DOMContentLoaded', function () {
           toStore.country = splitParts[splitParts.length - 1];
         }
       }
-      if (!toStore.street && toStore.fullAddress) {
-        toStore.street = toStore.fullAddress.split(',')[0].trim();
+      if (!toStore.street || toStore.street.toLowerCase() === (toStore.city || '').toLowerCase()) {
+        toStore.street = toStore.area || (toStore.city ? toStore.city + ' Area' : (toStore.fullAddress ? toStore.fullAddress.split(',')[0].trim() : ''));
       }
       toStore.timestamp = Date.now();
       localStorage.setItem('refixel_user_location', JSON.stringify(toStore));

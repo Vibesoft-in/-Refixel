@@ -256,24 +256,31 @@
       <div class="footer-col-contact col-md-6 mb-4">
         <div class="footer_links">
           <h4 class="footer-title" style="color: #ffffff !important;">Contact Us</h4>
+          <?php
+            $fAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand');
+            $fEmail = \App\Models\Setting::get('support_email', 'wearerefixel@gmail.com');
+            $fPhone = \App\Models\Setting::get('support_phone', '+91 94581 82006');
+            $fCleanPhone = preg_replace('/[^0-9+]/', '', $fPhone);
+            $fHours = \App\Models\Setting::get('operating_hours', 'Mon - Sun: 08:00 AM - 09:00 PM');
+          ?>
           <ul class="list-unstyled p-0 m-0">
             <li class="footer-contact-item">
               <span class="footer-icon-box">
                 <i class="fa fa-map-marker"></i>
               </span>
-              <span class="footer-contact-text">Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand</span>
+              <span class="footer-contact-text"><?= \App\Core\View::e($fAddress) ?></span>
             </li>
             <li class="footer-contact-item is-single-line">
               <span class="footer-icon-box">
                 <i class="fa fa-envelope"></i>
               </span>
-              <a href="mailto:wearerefixel@gmail.com" class="footer-contact-link">wearerefixel@gmail.com</a>
+              <a href="mailto:<?= \App\Core\View::e($fEmail) ?>" class="footer-contact-link"><?= \App\Core\View::e($fEmail) ?></a>
             </li>
             <li class="footer-contact-item is-single-line">
               <span class="footer-icon-box">
                 <i class="fa fa-phone"></i>
               </span>
-              <a href="tel:+918791154730" class="footer-contact-link">+91 87911 54730</a>
+              <a href="tel:<?= \App\Core\View::e($fCleanPhone) ?>" class="footer-contact-link"><?= \App\Core\View::e($fPhone) ?></a>
             </li>
           </ul>
         </div>
@@ -288,8 +295,7 @@
               <i class="fa fa-clock-o"></i>
             </span>
             <div class="footer-hours-content">
-              <div class="footer-hours-days">Mon – Sun:</div>
-              <div class="footer-hours-time">10:00 AM – 8:00 PM</div>
+              <div class="footer-hours-days"><?= \App\Core\View::e($fHours) ?></div>
             </div>
           </div>
         </div>

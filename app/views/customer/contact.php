@@ -50,6 +50,15 @@
     <div class="container">
       <!-- 3 Horizontally Aligned Items with Vertical Separators -->
       <div class="contact-items-row">
+        <?php
+          $contactPhone = \App\Models\Setting::get('support_phone', '+91 94581 82006');
+          $contactCleanPhone = preg_replace('/[^0-9+]/', '', $contactPhone);
+          $contactEmail = \App\Models\Setting::get('support_email', 'wearerefixel@gmail.com');
+          $contactLandmark = \App\Models\Setting::get('office_landmark', 'Jaspur - Kashipur Road');
+          $contactSubtext = \App\Models\Setting::get('office_subtext', 'In front of BSV Girls Degree College, Jaspur');
+          $contactAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road, in front of BSV Girls Degree College, Jaspur, Uttarakhand (PIN: 244712)');
+          $contactMapQuery = \App\Models\Setting::get('office_map_query', 'BSV Girls Degree College, Kashipur Road, Jaspur, Uttarakhand');
+        ?>
         <!-- Item 1: Phone -->
         <div class="contact-item-col">
           <div class="contact-item-icon-box">
@@ -57,7 +66,7 @@
           </div>
           <div class="contact-item-content">
             <div class="contact-item-value">
-              <a href="tel:+919458182006">+91 94581 82006</a>
+              <a href="tel:<?= \App\Core\View::e($contactCleanPhone) ?>"><?= \App\Core\View::e($contactPhone) ?></a>
             </div>
             <div class="contact-item-subtext">Mon - Sat, 9AM - 6PM</div>
           </div>
@@ -70,7 +79,7 @@
           </div>
           <div class="contact-item-content">
             <div class="contact-item-value">
-              <a href="mailto:wearerefixel@gmail.com">wearerefixel@gmail.com</a>
+              <a href="mailto:<?= \App\Core\View::e($contactEmail) ?>"><?= \App\Core\View::e($contactEmail) ?></a>
             </div>
             <div class="contact-item-subtext">We reply within 24 hours</div>
           </div>
@@ -82,8 +91,8 @@
             <i class="fa fa-map-marker"></i>
           </div>
           <div class="contact-item-content">
-            <div class="contact-item-value">Jaspur - Kashipur Road</div>
-            <div class="contact-item-subtext">In front of BSV Girls Degree College, Jaspur</div>
+            <div class="contact-item-value"><?= \App\Core\View::e($contactLandmark) ?></div>
+            <div class="contact-item-subtext"><?= \App\Core\View::e($contactSubtext) ?></div>
           </div>
         </div>
       </div>
@@ -175,14 +184,14 @@
             <p class="location-desc">
               Visit our office or get in touch online. We'd love to hear from you and discuss how we can support you.<br>
               <span class="d-inline-block mt-2 font-weight-bold" style="color: var(--ref-navy-dark);">
-                <i class="fa fa-map-marker text-danger mr-1"></i> Office Address: Jaspur - Kashipur Road, in front of BSV Girls Degree College, Jaspur, Uttarakhand (PIN: 244712)
+                <i class="fa fa-map-marker text-danger mr-1"></i> Office Address: <?= \App\Core\View::e($contactAddress) ?>
               </span>
             </p>
 
             <!-- Interactive Map Card with Google Maps & Floating Info Card -->
             <div class="demo-map-card">
               <iframe
-                src="https://maps.google.com/maps?q=BSV+Girls+Degree+College,+Kashipur+Road,+Jaspur,+Uttarakhand&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+                src="https://maps.google.com/maps?q=<?= urlencode($contactMapQuery) ?>&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
                 width="100%"
                 height="100%"
                 style="border:0; width:100%; height:100%; min-height:380px; display:block;"
@@ -199,10 +208,10 @@
                 </div>
                 <div class="map-badge-info">
                   <h6>Refixel Home Services</h6>
-                  <p>In front of BSV Girls Degree College, Jaspur - Kashipur Rd</p>
+                  <p><?= \App\Core\View::e($contactLandmark) ?></p>
                   <div class="map-badge-rating d-flex align-items-center justify-content-between">
                     <span>★★★★★ <strong>4.8</strong></span>
-                    <a href="https://www.google.com/maps/search/?api=1&amp;query=BSV+Girls+Degree+College,+Kashipur+Road,+Jaspur,+Uttarakhand" target="_blank" rel="noopener noreferrer" class="map-directions-link ml-2" title="Open in Google Maps">
+                    <a href="https://www.google.com/maps/search/?api=1&amp;query=<?= urlencode($contactMapQuery) ?>" target="_blank" rel="noopener noreferrer" class="map-directions-link ml-2" title="Open in Google Maps">
                       <i class="fa fa-external-link"></i> Map
                     </a>
                   </div>

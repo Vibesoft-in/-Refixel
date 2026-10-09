@@ -24,7 +24,14 @@ class PageController extends Controller
 
     public function gallery(Request $request): Response
     {
-        $items = GalleryItem::getActive();
+        $items = \App\Core\Database::fetchAll(
+            "SELECT g.*, s.name as service_name, s.slug as service_slug, c.name as category_name, c.slug as category_slug
+             FROM gallery_items g
+             LEFT JOIN services s ON g.service_id = s.id
+             LEFT JOIN categories c ON s.category_id = c.id
+             WHERE g.is_active = 1
+             ORDER BY g.sort_order ASC, g.id DESC"
+        );
         return $this->render('customer.gallery', ['title' => 'Work Showcase | REFIXEL', 'items' => $items], 'customer');
     }
 

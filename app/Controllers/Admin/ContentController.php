@@ -124,6 +124,60 @@ class ContentController extends Controller
         return $this->redirect('/admin/content/gallery');
     }
 
+    public function updateGallery(Request $request, string $id): Response
+    {
+        $item = GalleryItem::find((int)$id);
+        if (!$item) {
+            View::setFlash('error', 'Showcase item not found.');
+            return $this->redirect('/admin/content/gallery');
+        }
+
+        $title = trim((string)$request->input('title'));
+        $serviceId = (int)$request->input('service_id', 0);
+        $sortOrder = (int)$request->input('sort_order', 0);
+
+        $updateData = [
+            'title'      => !empty($title) ? $title : $item['title'],
+            'service_id' => $serviceId > 0 ? $serviceId : null,
+            'sort_order' => $sortOrder,
+        ];
+
+        $fileBefore = $request->file('before_image');
+        if ($fileBefore && ($fileBefore['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            try {
+                $updateData['before_image'] = Upload::process($fileBefore, 'gallery');
+            } catch (\Throwable $e) {}
+        } elseif ($request->has('before_image_path')) {
+            $pathVal = trim((string)$request->input('before_image_path'));
+            if (!empty($pathVal)) {
+                $updateData['before_image'] = $pathVal;
+            }
+        }
+
+        $fileAfter = $request->file('after_image');
+        if ($fileAfter && ($fileAfter['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            try {
+                $updateData['after_image'] = Upload::process($fileAfter, 'gallery');
+            } catch (\Throwable $e) {}
+        } elseif ($request->has('after_image_path')) {
+            $pathVal = trim((string)$request->input('after_image_path'));
+            if (!empty($pathVal)) {
+                $updateData['after_image'] = $pathVal;
+            }
+        }
+
+        GalleryItem::update((int)$id, $updateData);
+        View::setFlash('success', 'Gallery showcase updated successfully.');
+        return $this->redirect('/admin/content/gallery');
+    }
+
+    public function deleteGallery(Request $request, string $id): Response
+    {
+        GalleryItem::delete((int)$id);
+        View::setFlash('success', 'Gallery showcase item deleted.');
+        return $this->redirect('/admin/content/gallery');
+    }
+
     public function toggleGallery(Request $request, string $id): Response
     {
         $item = GalleryItem::find((int)$id);
@@ -201,6 +255,40 @@ class ContentController extends Controller
         ]);
 
         View::setFlash('success', "Service area {$city} ({$pincode}) added.");
+        return $this->redirect('/admin/content/areas');
+    }
+
+    public function updateArea(Request $request, string $id): Response
+    {
+        $area = ServiceArea::find((int)$id);
+        if (!$area) {
+            View::setFlash('error', 'Service area not found.');
+            return $this->redirect('/admin/content/areas');
+        }
+
+        $city = trim((string)$request->input('city'));
+        $pincode = trim((string)$request->input('pincode'));
+        $name = trim((string)$request->input('name'));
+
+        if (empty($city) || empty($pincode)) {
+            View::setFlash('error', 'City and pincode are required.');
+            return $this->redirect('/admin/content/areas');
+        }
+
+        ServiceArea::update((int)$id, [
+            'city'      => $city,
+            'pincode'   => $pincode,
+            'area_name' => !empty($name) ? $name : "{$city} - {$pincode}",
+        ]);
+
+        View::setFlash('success', "Service area updated.");
+        return $this->redirect('/admin/content/areas');
+    }
+
+    public function deleteArea(Request $request, string $id): Response
+    {
+        ServiceArea::delete((int)$id);
+        View::setFlash('success', 'Service area deleted.');
         return $this->redirect('/admin/content/areas');
     }
 
