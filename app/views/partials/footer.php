@@ -261,7 +261,7 @@
               <span class="footer-icon-box">
                 <i class="fa fa-map-marker"></i>
               </span>
-              <span class="footer-contact-text">Rajpur (Sugar Mill Nadehi), Udham Singh Nagar, Uttarakhand</span>
+              <span class="footer-contact-text">Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand</span>
             </li>
             <li class="footer-contact-item is-single-line">
               <span class="footer-icon-box">

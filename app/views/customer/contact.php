@@ -82,8 +82,8 @@
             <i class="fa fa-map-marker"></i>
           </div>
           <div class="contact-item-content">
-            <div class="contact-item-value">Uttarakhand, India</div>
-            <div class="contact-item-subtext">Rajpur (sugar mill nadehi)</div>
+            <div class="contact-item-value">Jaspur - Kashipur Road</div>
+            <div class="contact-item-subtext">In front of BSV Girls Degree College, Jaspur</div>
           </div>
         </div>
       </div>
@@ -173,16 +173,25 @@
           <div class="contact-location-wrap">
             <h3 class="location-title">Our Location</h3>
             <p class="location-desc">
-              Visit our office or get in touch online. We'd love to hear from you and discuss how we can support you.
+              Visit our office or get in touch online. We'd love to hear from you and discuss how we can support you.<br>
+              <span class="d-inline-block mt-2 font-weight-bold" style="color: var(--ref-navy-dark);">
+                <i class="fa fa-map-marker text-danger mr-1"></i> Office Address: Jaspur - Kashipur Road, in front of BSV Girls Degree College, Jaspur, Uttarakhand (PIN: 244712)
+              </span>
             </p>
 
-            <!-- Demo Map Card with Realistic Map & Floating Info Card -->
+            <!-- Interactive Map Card with Google Maps & Floating Info Card -->
             <div class="demo-map-card">
-              <img 
-                src="<?= \App\Core\View::asset('img/contact-location-map.jpg') ?>" 
-                alt="Refixel Location Map" 
+              <iframe
+                src="https://maps.google.com/maps?q=BSV+Girls+Degree+College,+Kashipur+Road,+Jaspur,+Uttarakhand&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+                width="100%"
+                height="100%"
+                style="border:0; width:100%; height:100%; min-height:380px; display:block;"
+                allowfullscreen=""
                 loading="lazy"
-              >
+                referrerpolicy="no-referrer-when-downgrade"
+                aria-label="Refixel Office Location Map"
+              ></iframe>
+
               <!-- Floating Map Badge -->
               <div class="map-floating-badge">
                 <div class="map-pin-icon">
@@ -190,9 +199,12 @@
                 </div>
                 <div class="map-badge-info">
                   <h6>Refixel Home Services</h6>
-                  <p>Uttarakhand, India</p>
-                  <div class="map-badge-rating">
-                    ★★★★★ <span>4.8</span>
+                  <p>In front of BSV Girls Degree College, Jaspur - Kashipur Rd</p>
+                  <div class="map-badge-rating d-flex align-items-center justify-content-between">
+                    <span>★★★★★ <strong>4.8</strong></span>
+                    <a href="https://www.google.com/maps/search/?api=1&amp;query=BSV+Girls+Degree+College,+Kashipur+Road,+Jaspur,+Uttarakhand" target="_blank" rel="noopener noreferrer" class="map-directions-link ml-2" title="Open in Google Maps">
+                      <i class="fa fa-external-link"></i> Map
+                    </a>
                   </div>
                 </div>
               </div>

@@ -566,11 +566,13 @@
   margin-bottom: 20px;
 }
 
-.demo-map-card img {
+.demo-map-card img,
+.demo-map-card iframe {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
   object-position: center center !important;
+  border: 0;
   display: block !important;
 }
 
@@ -589,7 +591,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 290px;
+  max-width: 330px;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .map-pin-icon {
@@ -626,10 +630,29 @@
   font-weight: 600;
 }
 
-.map-badge-rating span {
+.map-badge-rating span,
+.map-badge-rating strong {
   color: var(--ref-navy-dark);
   margin-left: 3px;
   font-weight: 700;
+}
+
+.map-directions-link {
+  font-size: 11px;
+  color: var(--ref-orange);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(255, 120, 0, 0.12);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.map-directions-link:hover {
+  background: var(--ref-orange);
+  color: #fff;
+  text-decoration: none;
 }
 
 /* Social Media Section */
@@ -1201,8 +1224,17 @@
   }
 
   .demo-map-card {
-    height: 240px;
-    min-height: 240px;
+    height: 320px;
+    min-height: 320px;
+  }
+
+  .map-floating-badge {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: calc(100% - 20px);
+    padding: 10px 12px;
+    gap: 10px;
   }
 
   .contact-partner-card {
