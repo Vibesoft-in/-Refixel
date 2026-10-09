@@ -720,7 +720,20 @@ document.addEventListener('DOMContentLoaded', function() {
     el.style.borderColor = '#86efac';
     setTimeout(function() {
       el.style.backgroundColor = '';
-      el.style.    if (inputState && loc.state) {
+      el.style.borderColor = '';
+    }, 1500);
+  }
+
+  function applyLocationData(loc, sourceBadge) {
+    if (!loc) return;
+    var filledCount = 0;
+
+    if (inputCity && loc.city) {
+      inputCity.value = loc.city;
+      flashHighlight(inputCity);
+      filledCount++;
+    }
+    if (inputState && loc.state) {
       inputState.value = loc.state;
       flashHighlight(inputState);
       filledCount++;
