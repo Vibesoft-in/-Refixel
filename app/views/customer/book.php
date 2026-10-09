@@ -967,18 +967,31 @@ document.addEventListener('DOMContentLoaded', function() {
     if (inputStreet) {
       var resolvedStreet = (loc.street || '').trim();
       var cityName = (loc.city || '').trim().toLowerCase();
+      var districtName = (loc.district || '').trim().toLowerCase();
+      var stateName = (loc.state || '').trim().toLowerCase();
+      var countryName = (loc.country || '').trim().toLowerCase();
 
-      // If no street or street equals city, fallback to area, district, or address tokens
-      if (!resolvedStreet || resolvedStreet.toLowerCase() === cityName) {
-        if (loc.area && loc.area.toLowerCase() !== cityName) {
+      function isInvalidStreet(str) {
+        if (!str) return true;
+        var s = str.trim().toLowerCase();
+        if (s === cityName || s === districtName || s === stateName || s === countryName) return true;
+        if (districtName && (s === districtName + ' area' || s.indexOf(districtName) !== -1)) return true;
+        if (s === 'doorstep service area' || s === 'india' || /^\d+$/.test(s)) return true;
+        return false;
+      }
+
+      if (isInvalidStreet(resolvedStreet)) {
+        resolvedStreet = '';
+      }
+
+      // If no valid street, fallback to area or fullAddress tokens (excluding district and invalid strings)
+      if (!resolvedStreet) {
+        if (loc.area && !isInvalidStreet(loc.area)) {
           resolvedStreet = loc.area.trim();
-        } else if (loc.district && loc.district.toLowerCase() !== cityName) {
-          resolvedStreet = loc.district.trim() + ' Area';
         } else if (loc.fullAddress) {
           var parts = loc.fullAddress.split(',').map(function(s) { return s.trim(); });
           for (var p = 0; p < parts.length; p++) {
-            var pt = parts[p].toLowerCase();
-            if (pt && pt !== cityName && pt !== (loc.state || '').toLowerCase() && pt !== (loc.country || '').toLowerCase() && !/^\d+$/.test(pt)) {
+            if (!isInvalidStreet(parts[p])) {
               resolvedStreet = parts[p];
               break;
             }
@@ -986,14 +999,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
 
-      if (!resolvedStreet || resolvedStreet.toLowerCase() === cityName) {
-        resolvedStreet = loc.city ? (loc.city.trim() + ' Area') : 'Doorstep Service Area';
-      }
-
       if (resolvedStreet) {
         inputStreet.value = resolvedStreet;
         flashHighlight(inputStreet);
         filledCount++;
+      } else {
+        if (isInvalidStreet(inputStreet.value)) {
+          inputStreet.value = '';
+          inputStreet.placeholder = 'e.g. Colony, Street, Apartment';
+        }
       }
     }
     if (inputHouseNo) {
@@ -1076,8 +1090,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (city || region || country) {
               var locObj = {
                 houseNo: '',
-                street: city ? (city + ' Area') : 'Doorstep Service Area',
-                area: city,
+                street: '',
+                area: '',
                 city: city,
                 state: region,
                 country: country,
@@ -1114,68 +1128,112 @@ document.addEventListener('DOMContentLoaded', function() {
           }
 
           var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+          var photonUrl = 'https://photon.komoot.io/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
 
-          fetch(nominatimUrl)
-            .then(function(res) {
-              if (!res.ok) throw new Error('Nominatim HTTP ' + res.status);
-              return res.json();
-            })
-            .then(function(data) {
-              var addr = (data && data.address) || {};
-              var houseNo = addr.house_number || addr.building || addr.flat || '';
-              var road = addr.road || addr.street || addr.pedestrian || addr.footway || '';
-              var subLocality = addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || '';
-              var locality = addr.city || addr.town || addr.village || addr.municipality || addr.city_district || addr.county || '';
-              var district = addr.state_district || addr.district || '';
-              var state = addr.state || addr.region || addr.province || '';
-              var country = addr.country || '';
-              var postcode = (addr.postcode || '').trim();
+          Promise.allSettled([
+            fetch(nominatimUrl).then(function(res) { return res.ok ? res.json() : null; }),
+            fetch(photonUrl).then(function(res) { return res.ok ? res.json() : null; })
+          ]).then(function(results) {
+            var data = (results[0].status === 'fulfilled') ? results[0].value : null;
+            var phoData = (results[1].status === 'fulfilled') ? results[1].value : null;
 
-              var street = road || subLocality || (district && district !== locality ? district + ' Area' : (locality ? locality + ' Area' : ''));
-              var cityVal = locality || district || subLocality || '';
-              var stateVal = state || district || '';
+            if (!data && !phoData) {
+              throw new Error('Both reverse geocoders failed');
+            }
 
-              var locObj = {
-                houseNo: houseNo,
-                street: street,
-                area: subLocality || district || '',
-                city: cityVal,
-                state: stateVal,
-                country: country,
-                pincode: postcode,
-                fullAddress: data.display_name || [street, cityVal, stateVal, country].filter(Boolean).join(', ')
-              };
+            var addr = (data && data.address) || {};
+            var phoProps = (phoData && phoData.features && phoData.features[0] && phoData.features[0].properties) || {};
 
-              localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
-              applyLocationData(locObj, 'Filled via GPS (' + (cityVal || country || 'Live') + ')');
-            })
-            .catch(function(geoErr) {
-              console.warn('Nominatim failed, falling back to BigDataCloud:', geoErr);
-              var bdcUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lon) + '&localityLanguage=en';
-              fetch(bdcUrl)
-                .then(function(r) { return r.json(); })
-                .then(function(bdc) {
-                  var city = (bdc.city || bdc.locality || '').trim();
-                  var state = (bdc.principalSubdivision || '').trim();
-                  var country = (bdc.countryName || '').trim();
-                  var zip = (bdc.postcode || '').trim();
-                  var locObj = {
-                    houseNo: '',
-                    street: bdc.locality && bdc.locality !== city ? bdc.locality : (city ? city + ' Area' : 'Doorstep Service Area'),
-                    area: bdc.locality || city,
-                    city: city || state,
-                    state: state,
-                    country: country,
-                    pincode: zip,
-                    fullAddress: [city, state, country].filter(Boolean).join(', ')
-                  };
-                  localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
-                  applyLocationData(locObj, 'Filled via GPS (' + (city || country || 'Live') + ')');
-                })
-                .catch(function() {
-                  tryIpFallback('Reverse geocode failed');
-                });
-            });
+            var houseNo = addr.house_number || addr.building || addr.flat || addr.house_name || phoProps.housenumber || '';
+            var locality = addr.city || addr.town || addr.village || addr.municipality || addr.city_district || phoProps.city || '';
+            var district = addr.state_district || addr.district || '';
+            var state = addr.state || addr.region || addr.province || phoProps.state || '';
+            var country = addr.country || phoProps.country || '';
+            var postcode = (addr.postcode || phoProps.postcode || '').trim();
+
+            // Extract POI (shop, amenity, landmark)
+            var poi = (addr.shop || addr.amenity || addr.office || addr.commercial || addr.building || addr.tourism || addr.leisure || (data && data.name) || phoProps.name || '').trim();
+            if (poi && (poi.toLowerCase() === (locality || '').toLowerCase() || poi.toLowerCase() === (district || '').toLowerCase() || poi.toLowerCase() === (state || '').toLowerCase())) {
+              poi = '';
+            }
+
+            // Extract Road
+            var road = (addr.road || addr.street || addr.pedestrian || addr.footway || addr.path || phoProps.street || '').trim();
+            if (road && (road.toLowerCase() === (locality || '').toLowerCase() || road.toLowerCase() === (district || '').toLowerCase())) {
+              road = '';
+            }
+
+            // Extract SubLocality / Colony / Neighbourhood
+            var subLocality = (addr.suburb || addr.neighbourhood || addr.residential || addr.subdistrict || addr.quarter || addr.hamlet || (phoProps.district && phoProps.district !== district ? phoProps.district : '') || '').trim();
+            if (subLocality && (subLocality.toLowerCase() === (locality || '').toLowerCase() || subLocality.toLowerCase() === (district || '').toLowerCase())) {
+              subLocality = '';
+            }
+
+            var street = '';
+            if (poi && road) {
+              street = poi + ', ' + road;
+            } else if (poi && subLocality) {
+              street = poi + ', ' + subLocality;
+            } else if (poi) {
+              street = poi;
+            } else if (road && subLocality) {
+              street = road + ', ' + subLocality;
+            } else if (road) {
+              street = road;
+            } else if (subLocality) {
+              street = subLocality;
+            } else {
+              street = '';
+            }
+
+            var cityVal = locality || district || subLocality || '';
+            var stateVal = state || '';
+
+            var fullAddr = (data && data.display_name) || [street, cityVal, stateVal, country].filter(Boolean).join(', ');
+
+            var locObj = {
+              houseNo: houseNo,
+              street: street,
+              area: subLocality || poi || road || '',
+              district: district,
+              city: cityVal,
+              state: stateVal,
+              country: country,
+              pincode: postcode,
+              fullAddress: fullAddr
+            };
+
+            localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
+            applyLocationData(locObj, 'Filled via GPS (' + (cityVal || country || 'Live') + ')');
+          })
+          .catch(function(geoErr) {
+            console.warn('Primary geocoders failed, falling back to BigDataCloud:', geoErr);
+            var bdcUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lon) + '&localityLanguage=en';
+            fetch(bdcUrl)
+              .then(function(r) { return r.json(); })
+              .then(function(bdc) {
+                var city = (bdc.city || bdc.locality || '').trim();
+                var state = (bdc.principalSubdivision || '').trim();
+                var country = (bdc.countryName || '').trim();
+                var zip = (bdc.postcode || '').trim();
+                var streetVal = (bdc.locality && bdc.locality !== city) ? bdc.locality : '';
+                var locObj = {
+                  houseNo: '',
+                  street: streetVal,
+                  area: streetVal || city,
+                  city: city || state,
+                  state: state,
+                  country: country,
+                  pincode: zip,
+                  fullAddress: [city, state, country].filter(Boolean).join(', ')
+                };
+                localStorage.setItem('refixel_user_location', JSON.stringify(locObj));
+                applyLocationData(locObj, 'Filled via GPS (' + (city || country || 'Live') + ')');
+              })
+              .catch(function() {
+                tryIpFallback('Reverse geocode failed');
+              });
+          });
         },
         function(err) {
           console.warn('GPS error, using IP fallback:', err);

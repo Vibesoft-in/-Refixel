@@ -4285,20 +4285,31 @@ document.addEventListener('DOMContentLoaded', function () {
     var state = addr.state || '';
     var postcode = addr.postcode || '';
 
+    var poi = (addr.shop || addr.amenity || addr.office || addr.commercial || addr.building || (data.name !== locality && data.name !== district ? data.name : '') || extraLandmark || '').trim();
+    if (poi && (poi.toLowerCase() === locality.toLowerCase() || poi.toLowerCase() === district.toLowerCase() || poi.toLowerCase() === state.toLowerCase())) {
+      poi = '';
+    }
+    if (road && (road.toLowerCase() === locality.toLowerCase() || road.toLowerCase() === district.toLowerCase())) {
+      road = '';
+    }
+    if (subLocality && (subLocality.toLowerCase() === locality.toLowerCase() || subLocality.toLowerCase() === district.toLowerCase())) {
+      subLocality = '';
+    }
+
     var street = '';
-    if (extraLandmark && (road || subLocality)) {
-      street = extraLandmark + ', ' + (road || subLocality);
+    if (poi && (road || subLocality)) {
+      street = poi + ', ' + (road || subLocality);
     } else if (road && subLocality) {
       street = road + ', ' + subLocality;
     } else {
-      street = extraLandmark || road || subLocality || (data.name !== locality ? data.name : '');
+      street = poi || road || subLocality || '';
     }
 
     var country = addr.country || '';
     return {
       houseNo: houseNo || '',
       street: street || '',
-      area: subLocality || road || extraLandmark || '',
+      area: subLocality || poi || road || '',
       city: locality || district || subLocality || '',
       state: state || district || '',
       country: country,
@@ -4354,8 +4365,10 @@ document.addEventListener('DOMContentLoaded', function () {
           toStore.country = splitParts[splitParts.length - 1];
         }
       }
-      if (!toStore.street || toStore.street.toLowerCase() === (toStore.city || '').toLowerCase()) {
-        toStore.street = toStore.area || (toStore.city ? toStore.city + ' Area' : (toStore.fullAddress ? toStore.fullAddress.split(',')[0].trim() : ''));
+      var distStr = (toStore.district || '').toLowerCase();
+      var cityStr = (toStore.city || '').toLowerCase();
+      if (!toStore.street || toStore.street.toLowerCase() === cityStr || toStore.street.toLowerCase() === distStr || (distStr && toStore.street.toLowerCase() === distStr + ' area')) {
+        toStore.street = (toStore.area && toStore.area.toLowerCase() !== distStr && toStore.area.toLowerCase() !== cityStr) ? toStore.area : '';
       }
       toStore.timestamp = Date.now();
       localStorage.setItem('refixel_user_location', JSON.stringify(toStore));
