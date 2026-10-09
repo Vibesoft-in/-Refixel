@@ -3118,6 +3118,37 @@ document.addEventListener('DOMContentLoaded', function () {
   background: #f8fafc;
 }
 
+/* Direct Map Search Bar & Quick Chips */
+.map_search_bar_wrap {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.btn_map_quick_chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.btn_map_quick_chip:hover {
+  background: #fff3ec;
+  border-color: #ffdacf;
+  color: #f25b29;
+  transform: translateY(-1px);
+}
+.btn_map_quick_chip.active {
+  background: #f25b29;
+  border-color: #f25b29;
+  color: #ffffff;
+}
+
 /* Stylized Modern Map Canvas */
 .location_map_box {
   position: relative;
@@ -4036,6 +4067,35 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>
 
+      <!-- Direct Map Search & Instant Locality Selector Bar -->
+      <div class="map_search_bar_wrap mb-3">
+        <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+          <div class="position-relative flex-grow-1" style="min-width: 260px;">
+            <i class="fa fa-search position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none;"></i>
+            <input type="text" id="mapSectionSearchInput" class="form-control" style="padding-left: 38px; padding-right: 32px; border-radius: 12px; height: 46px; font-size: 13.5px; border: 1.5px solid #cbd5e1; box-shadow: 0 2px 6px rgba(10, 28, 51, 0.04);" placeholder="Search exact colony, street, society or landmark (e.g. Awas Vikas, Ramnagar Rd, Vaishali, Nadehi, Gurugram...)" autocomplete="off">
+            <button type="button" id="btnClearMapSearch" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 4px;" title="Clear search">&times;</button>
+          </div>
+          <button type="button" id="btnMapSectionSearchGo" class="btn" style="background: #0a1c33; color: #ffffff; font-weight: 700; border-radius: 12px; height: 46px; padding: 0 22px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(10, 28, 51, 0.2); cursor: pointer;">
+            <i class="fa fa-map-pin" style="color: #f25b29;"></i> <span>Pin on Map</span>
+          </button>
+        </div>
+
+        <!-- Quick Locality Suggestions for 1-Tap Pinning -->
+        <div class="d-flex align-items-center flex-wrap mt-2" style="gap: 6px;">
+          <span class="small font-weight-bold text-muted mr-1" style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">Quick Pin:</span>
+          <button type="button" class="btn_map_quick_chip" data-query="Kashipur Main, Udham Singh Nagar">Kashipur Main</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Ramnagar Road, Kashipur, Uttarakhand">Ramnagar Road</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Awas Vikas Colony, Kashipur, Uttarakhand">Awas Vikas</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Kundeshwari, Kashipur, Uttarakhand">Kundeshwari</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Nadehi, Udham Singh Nagar, Uttarakhand">Nadehi</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Jaspur, Udham Singh Nagar, Uttarakhand">Jaspur</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Rudrapur, Udham Singh Nagar, Uttarakhand">Rudrapur</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Haldwani, Nainital, Uttarakhand">Haldwani</button>
+          <button type="button" class="btn_map_quick_chip" data-query="DLF Cyber City, Gurugram, Haryana">Gurugram</button>
+          <button type="button" class="btn_map_quick_chip" data-query="Connaught Place, New Delhi">Delhi</button>
+        </div>
+      </div>
+
       <!-- Interactive Google Maps Container -->
       <div class="location_map_box" id="locationMapBox">
         <!-- Live Embedded Google Map -->
@@ -4089,39 +4149,58 @@ document.addEventListener('DOMContentLoaded', function () {
   var openVideoBtn = document.getElementById('openPromoVideo');
   var googleMapIframe = document.getElementById('googleMapIframe');
   var btnOpenGoogleMaps = document.getElementById('btnOpenGoogleMaps');
+  var mapSearchInput = document.getElementById('mapSectionSearchInput');
+  var btnMapSearchGo = document.getElementById('btnMapSectionSearchGo');
+  var btnClearMapSearch = document.getElementById('btnClearMapSearch');
+  var quickMapChips = document.querySelectorAll('.btn_map_quick_chip');
 
   var defaultPlaceholder = locInput ? locInput.placeholder : 'Enter or detect your location...';
   var mapDebounceTimer = null;
 
   function updateGoogleMap(queryOrCoords, lat, lon) {
     var query = '';
-    var zoom = 15;
+    var zoom = 16;
 
-    if (lat && lon) {
-      query = lat + ',' + lon;
-      zoom = 17; // Detailed street & building level
-    } else if (queryOrCoords) {
-      query = encodeURIComponent(queryOrCoords);
+    if (queryOrCoords && typeof queryOrCoords === 'string' && queryOrCoords.trim()) {
+      var clean = queryOrCoords.trim();
+      if (/^-?\d+\.\d+,\s*-?\d+\.\d+$/.test(clean)) {
+        query = 'loc:' + clean.replace(/\s+/g, '');
+        zoom = 17;
+      } else {
+        query = encodeURIComponent(clean);
+        zoom = 16;
+      }
+    } else if (lat && lon) {
+      query = 'loc:' + encodeURIComponent(lat + '+' + lon);
+      zoom = 17;
     }
 
     if (googleMapIframe && query) {
       googleMapIframe.src = 'https://maps.google.com/maps?q=' + query + '&t=&z=' + zoom + '&ie=UTF8&iwloc=&output=embed';
     }
 
-    if (btnOpenGoogleMaps && query) {
-      btnOpenGoogleMaps.href = 'https://www.google.com/maps?q=' + query;
+    if (btnOpenGoogleMaps) {
+      if (lat && lon) {
+        btnOpenGoogleMaps.href = 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lon;
+      } else if (query) {
+        btnOpenGoogleMaps.href = 'https://www.google.com/maps/search/?api=1&query=' + query;
+      }
     }
   }
 
-  function formatDetailedPlaceAddress(data, lat, lon) {
-    if (!data) return lat.toFixed(5) + ', ' + lon.toFixed(5);
+  function formatDetailedPlaceAddress(data, lat, lon, extraLandmark) {
+    if (!data) return (extraLandmark ? extraLandmark + ', ' : '') + (lat && lon ? lat.toFixed(5) + ', ' + lon.toFixed(5) : '');
 
     var addr = data.address || {};
     var parts = [];
 
+    if (extraLandmark && parts.indexOf(extraLandmark) === -1) {
+      parts.push(extraLandmark);
+    }
+
     // 1. Building / Shop / Apartment / Amenity / Landmark / House
     var placeName = data.name || addr.amenity || addr.building || addr.shop || addr.house_name || addr.office || '';
-    if (placeName && placeName !== addr.road && placeName !== addr.suburb && placeName !== addr.city && placeName !== addr.town) {
+    if (placeName && placeName !== addr.road && placeName !== addr.suburb && placeName !== addr.city && placeName !== addr.town && parts.indexOf(placeName) === -1) {
       parts.push(placeName);
     }
 
@@ -4178,10 +4257,10 @@ document.addEventListener('DOMContentLoaded', function () {
       return raw.slice(0, 4).join(', ');
     }
 
-    return locality || (lat.toFixed(5) + ', ' + lon.toFixed(5));
+    return locality || (lat && lon ? (lat.toFixed(5) + ', ' + lon.toFixed(5)) : '');
   }
 
-  function parseStructuredAddress(data, lat, lon) {
+  function parseStructuredAddress(data, lat, lon, extraLandmark) {
     if (!data) return null;
     var addr = data.address || {};
     var houseNo = addr.house_number || addr.building || addr.flat || addr.house_name || '';
@@ -4193,16 +4272,18 @@ document.addEventListener('DOMContentLoaded', function () {
     var postcode = addr.postcode || '';
 
     var street = '';
-    if (road && subLocality) {
+    if (extraLandmark && (road || subLocality)) {
+      street = extraLandmark + ', ' + (road || subLocality);
+    } else if (road && subLocality) {
       street = road + ', ' + subLocality;
     } else {
-      street = road || subLocality || (data.name !== locality ? data.name : '');
+      street = extraLandmark || road || subLocality || (data.name !== locality ? data.name : '');
     }
 
     return {
       houseNo: houseNo,
       street: street,
-      area: subLocality || road,
+      area: subLocality || road || extraLandmark,
       city: locality || district,
       state: state,
       pincode: postcode,
@@ -4222,6 +4303,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (hiddenLoc) {
       hiddenLoc.value = locValue;
+    }
+    if (mapSearchInput) {
+      mapSearchInput.value = locValue;
+      if (btnClearMapSearch) btnClearMapSearch.style.display = 'block';
     }
     if (statusText) {
       statusText.innerHTML = '<span style="color: #10b981;"><i class="fa fa-check-circle"></i></span> Location Set: ' + locValue;
@@ -4419,71 +4504,146 @@ document.addEventListener('DOMContentLoaded', function () {
       function (pos) {
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
+        var accuracy = pos.coords.accuracy;
         var fallbackCoords = lat.toFixed(5) + ', ' + lon.toFixed(5);
 
-        // Center Google Map on exact coordinates right away
+        // Center Google Map on exact coordinates right away using loc:lat+lon
         updateGoogleMap(null, lat, lon);
 
-        // Reverse geocoding at zoom 18 for building/street-level exact place name
+        // Parallel reverse geocode with Nominatim and Photon to get actual landmark / colony name
         var nominatimUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
+        var photonUrl = 'https://photon.komoot.io/reverse?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
 
-        fetch(nominatimUrl)
-          .then(function (res) {
-            if (!res.ok) {
-              throw new Error('Reverse geocoding network response failed: ' + res.status);
-            }
-            return res.json();
-          })
-          .then(function (data) {
-            var exactPlace = formatDetailedPlaceAddress(data, lat, lon);
-            var structured = parseStructuredAddress(data, lat, lon);
-            fillLocation(exactPlace, lat, lon, structured);
-          })
-          .catch(function (geoErr) {
-            console.warn('Nominatim error, falling back to BigDataCloud:', geoErr);
-            var bdcUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lon) + '&localityLanguage=en';
-            fetch(bdcUrl)
-              .then(function (r) { return r.json(); })
-              .then(function (bdcData) {
-                var parts = [];
-                if (bdcData.locality) parts.push(bdcData.locality);
-                if (bdcData.city && parts.indexOf(bdcData.city) === -1) parts.push(bdcData.city);
-                if (bdcData.principalSubdivision && parts.indexOf(bdcData.principalSubdivision) === -1) parts.push(bdcData.principalSubdivision);
-                if (bdcData.postcode) parts.push(bdcData.postcode);
-                var locName = parts.length > 0 ? parts.join(', ') : fallbackCoords;
-                var structured = {
-                  houseNo: '',
-                  street: bdcData.locality || '',
-                  city: bdcData.city || bdcData.locality || '',
-                  state: bdcData.principalSubdivision || '',
-                  pincode: bdcData.postcode || '',
-                  lat: lat,
-                  lng: lon,
-                  fullAddress: locName
-                };
-                fillLocation(locName, lat, lon, structured);
-              })
-              .catch(function () {
-                fillLocation(fallbackCoords, lat, lon, {
-                  houseNo: '',
-                  street: fallbackCoords,
-                  city: 'Gurugram',
-                  state: 'Haryana',
-                  pincode: '',
-                  lat: lat,
-                  lng: lon,
-                  fullAddress: fallbackCoords
-                });
-              });
+        Promise.allSettled([
+          fetch(nominatimUrl).then(function (res) { return res.ok ? res.json() : null; }),
+          fetch(photonUrl).then(function (res) { return res.ok ? res.json() : null; })
+        ]).then(function (results) {
+          var nomData = (results[0].status === 'fulfilled') ? results[0].value : null;
+          var phoData = (results[1].status === 'fulfilled') ? results[1].value : null;
+
+          var phoProps = (phoData && phoData.features && phoData.features[0] && phoData.features[0].properties) || {};
+          var localLandmark = phoProps.name || phoProps.street || '';
+
+          var exactPlace = formatDetailedPlaceAddress(nomData, lat, lon, localLandmark);
+          var structured = parseStructuredAddress(nomData, lat, lon, localLandmark);
+          fillLocation(exactPlace, lat, lon, structured);
+
+          if (accuracy && accuracy > 1200 && statusText) {
+            statusText.innerHTML += ' <span style="font-size: 11px; color: #64748b;">(Wi-Fi/IP estimate. You can pin your exact colony above)</span>';
+          }
+        }).catch(function (geoErr) {
+          console.warn('Reverse geocode error, falling back:', geoErr);
+          fillLocation(fallbackCoords, lat, lon, {
+            houseNo: '',
+            street: fallbackCoords,
+            city: 'Kashipur',
+            state: 'Uttarakhand',
+            pincode: '',
+            lat: lat,
+            lng: lon,
+            fullAddress: fallbackCoords
           });
+        });
       },
       function (err) {
         console.warn('Geolocation GPS error (code ' + (err ? err.code : 'unknown') + '), attempting IP fallback...', err);
         tryIpFallback('GPS permission denied or unavailable');
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   }
+
+  // Interactive Map Search Bar Handler
+  function executeMapSearch(queryStr) {
+    if (!queryStr || !queryStr.trim()) return;
+    var q = queryStr.trim();
+
+    if (statusText) {
+      statusText.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Searching location "' + q + '" on Google Maps...';
+    }
+
+    var searchUrl = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(q + ', India');
+
+    fetch(searchUrl)
+      .then(function (res) {
+        if (!res.ok) throw new Error('Search HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.length > 0) {
+          var item = data[0];
+          var lat = parseFloat(item.lat);
+          var lon = parseFloat(item.lon);
+          var structured = parseStructuredAddress(item, lat, lon);
+          var placeName = formatDetailedPlaceAddress(item, lat, lon);
+          fillLocation(placeName || item.display_name, lat, lon, structured);
+        } else {
+          // If geocoder has no exact match, pass query directly to Google Maps
+          var structuredFallback = {
+            houseNo: '',
+            street: q,
+            city: q.split(',')[0].trim(),
+            state: q.indexOf('Uttarakhand') !== -1 ? 'Uttarakhand' : (q.indexOf('Haryana') !== -1 ? 'Haryana' : 'Delhi'),
+            pincode: '',
+            fullAddress: q
+          };
+          fillLocation(q, null, null, structuredFallback);
+        }
+      })
+      .catch(function () {
+        fillLocation(q, null, null, {
+          houseNo: '',
+          street: q,
+          city: q.split(',')[0].trim(),
+          state: 'Uttarakhand',
+          pincode: '',
+          fullAddress: q
+        });
+      });
+  }
+
+  if (mapSearchInput) {
+    mapSearchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeMapSearch(this.value);
+      }
+    });
+    mapSearchInput.addEventListener('input', function () {
+      if (btnClearMapSearch) {
+        btnClearMapSearch.style.display = this.value ? 'block' : 'none';
+      }
+    });
+  }
+
+  if (btnMapSearchGo) {
+    btnMapSearchGo.addEventListener('click', function () {
+      if (mapSearchInput) executeMapSearch(mapSearchInput.value);
+    });
+  }
+
+  if (btnClearMapSearch) {
+    btnClearMapSearch.addEventListener('click', function () {
+      if (mapSearchInput) {
+        mapSearchInput.value = '';
+        this.style.display = 'none';
+        mapSearchInput.focus();
+      }
+    });
+  }
+
+  quickMapChips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      quickMapChips.forEach(function (c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var target = this.getAttribute('data-query');
+      if (mapSearchInput) {
+        mapSearchInput.value = target;
+        if (btnClearMapSearch) btnClearMapSearch.style.display = 'block';
+      }
+      executeMapSearch(target);
+    });
+  });
 
   // Quick Area buttons
   document.querySelectorAll('.loc_chip').forEach(function (chip) {
