@@ -4181,49 +4181,7 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
       </div>
 
-      <!-- Direct Map Search & Instant Locality Selector Bar -->
-      <div class="map_search_bar_wrap mb-3">
-        <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-          <div class="position-relative flex-grow-1" style="min-width: 260px;">
-            <i class="fa fa-search position-absolute text-muted" style="left: 14px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none;"></i>
-            <input type="text" id="mapSectionSearchInput" class="form-control" style="padding-left: 38px; padding-right: 32px; border-radius: 12px; height: 46px; font-size: 13.5px; border: 1.5px solid #cbd5e1; box-shadow: 0 2px 6px rgba(10, 28, 51, 0.04);" placeholder="Search exact colony, street, society or landmark in Kashipur (e.g. Awas Vikas, Ramnagar Rd...)" autocomplete="off">
-            <button type="button" id="btnClearMapSearch" style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 4px;" title="Clear search">&times;</button>
-            <div id="mapSearchAutocompleteBox" class="refixel_loc_suggestions_box" style="display: none;"></div>
-          </div>
-          <button type="button" id="btnMapSectionSearchGo" class="btn" style="background: #0a1c33; color: #ffffff; font-weight: 700; border-radius: 12px; height: 46px; padding: 0 22px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(10, 28, 51, 0.2); cursor: pointer;">
-            <i class="fa fa-map-pin" style="color: #f25b29;"></i> <span>Pin on Map</span>
-          </button>
-        </div>
 
-        <!-- Quick Locality Suggestions for 1-Tap Pinning -->
-        <div class="mt-2.5">
-          <div class="d-flex align-items-center justify-content-between mb-1">
-            <span class="small font-weight-bold text-muted" style="font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;">
-              <i class="fa fa-map-marker" style="color: #f25b29;"></i> 1-Tap Pin Kashipur Colonies:
-            </span>
-          </div>
-          <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
-            <button type="button" class="btn_map_quick_chip active" data-query="Awas Vikas Colony, Kashipur" data-lat="29.2173" data-lon="78.9645">Awas Vikas</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Ramnagar Road, Kashipur" data-lat="29.2225" data-lon="78.9660">Ramnagar Road</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Aliganj Road, Kashipur" data-lat="29.2080" data-lon="78.9510">Aliganj Road</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Kundeshwari, Kashipur" data-lat="29.2430" data-lon="78.9480">Kundeshwari</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Giri Taal, Kashipur" data-lat="29.2250" data-lon="78.9570">Giri Taal</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Vaishali Colony, Kashipur" data-lat="29.2190" data-lon="78.9615">Vaishali</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Shiv Vihar, Kashipur" data-lat="29.2165" data-lon="78.9590">Shiv Vihar</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Station Road, Railway Colony, Kashipur" data-lat="29.2130" data-lon="78.9560">Station Road</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Kharagpura, Devipura, Kashipur" data-lat="29.2110" data-lon="78.9665">Kharagpura</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Chaiti Chauraha, Kashipur" data-lat="29.2310" data-lon="78.9710">Chaiti Chauraha</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Mata Mandir Road, Kashipur" data-lat="29.2115" data-lon="78.9610">Mata Mandir</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Pawan Vihar, Kashipur" data-lat="29.2140" data-lon="78.9720">Pawan Vihar</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Bazpur Road, Kashipur" data-lat="29.2105" data-lon="78.9800">Bazpur Road</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Nadehi Sugar Mill, Udham Singh Nagar" data-lat="29.2550" data-lon="78.8500">Nadehi</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Jaspur, Udham Singh Nagar" data-lat="29.2840" data-lon="78.8230">Jaspur</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Rudrapur, Udham Singh Nagar" data-lat="28.9800" data-lon="79.4000">Rudrapur</button>
-            <button type="button" class="btn_map_quick_chip" data-query="Haldwani, Nainital" data-lat="29.2183" data-lon="79.5130">Haldwani</button>
-            <button type="button" class="btn_map_quick_chip" data-query="DLF Cyber City, Gurugram, Haryana" data-lat="28.4900" data-lon="77.0880">Gurugram</button>
-          </div>
-        </div>
-      </div>
 
       <!-- Interactive Google Maps Container -->
       <div class="location_map_box" id="locationMapBox">
