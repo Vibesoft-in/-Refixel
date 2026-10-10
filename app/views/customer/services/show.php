@@ -36,8 +36,8 @@ foreach ($checklist ?? [] as $item) {
             <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
           </div>
 
-          <h1 class="font-weight-bold mb-3" style="font-size: 32px; color: #1a1a1a;">
-            <?= $svcName ?> - Available in your location
+          <h1 class="font-weight-bold mb-2 service-detail-title">
+            <?= $svcName ?>
           </h1>
 
           <p class="text-muted lead mb-4" style="font-size: 16px; line-height: 1.7;">
@@ -114,189 +114,313 @@ foreach ($checklist ?? [] as $item) {
           $catNameLower = strtolower($service['category_name'] ?? '');
           $checkText    = ' ' . $svcSlugLower . ' ' . $svcNameLower . ' ' . $catSlugLower . ' ' . $catNameLower . ' ';
 
-          // Default: Laundry / Room Deep Cleaning
-          $beforeImg = 'transformations/laundry-before.jpg';
-          $afterImg  = 'transformations/laundry-after.jpg';
-          $transCategory = 'Deep Cleaning';
-          $transBadge = '100% Sanitized';
-          $transPill = 'ROOM CLEANING';
-          $transTitle = 'Laundry & Room Deep Cleaning Transformation';
-          $transDesc = 'Real results achieved by REFIXEL mechanized deep scrubbing, wall degreasing, and sanitized tile restoration.';
+          $allShowcasePool = [
+              'balcony' => [
+                  'key'      => 'balcony',
+                  'before'   => 'transformations/balcony-before.jpg',
+                  'after'    => 'transformations/balcony-after.jpg',
+                  'category' => 'Balcony Jet Wash',
+                  'badge'    => '100% Moss Eradicated',
+                  'pill'     => 'BALCONY RESTORATION',
+                  'title'    => 'Balcony Deep Pressure Washing & Railing Restoration',
+                  'desc'     => 'Outdoor algae, bird droppings, and weather grime removed with 160-bar pressure jet and glass descaling.',
+              ],
+              'homeclean' => [
+                  'key'      => 'homeclean',
+                  'before'   => 'transformations/homeclean-before.jpg',
+                  'after'    => 'transformations/homeclean-after.jpg',
+                  'category' => 'Full Home Clean',
+                  'badge'    => 'Mirror Polish Finish',
+                  'pill'     => 'FULL HOME CARE',
+                  'title'    => 'Professional Full Home Deep Scrubbing & Buffing',
+                  'desc'     => 'Single-disc floor buffing, stubborn grime removal, and hospital-grade multi-room sanitization.',
+              ],
+              'kitchen' => [
+                  'key'      => 'kitchen',
+                  'before'   => 'transformations/kitchen-before.jpg',
+                  'after'    => 'transformations/kitchen-after.jpg',
+                  'category' => 'Kitchen Deep Clean',
+                  'badge'    => 'Zero Burnt Grease',
+                  'pill'     => 'KITCHEN RESTORATION',
+                  'title'    => 'Kitchen Stove, Chimney & Counter Degreasing',
+                  'desc'     => 'Heavy cooking grease, sticky oil crusts, and stained tile grout stripped with eco-degreasers.',
+              ],
+              'bathroom' => [
+                  'key'      => 'bathroom',
+                  'before'   => 'transformations/bathroom-before.jpg',
+                  'after'    => 'transformations/bathroom-after.jpg',
+                  'category' => 'Bathroom Deep Clean',
+                  'badge'    => 'Crystal Clear Glass',
+                  'pill'     => 'BATHROOM HYGIENE',
+                  'title'    => 'Shower Glass & Hard-Water Calcium Descaling',
+                  'desc'     => 'Tough white water stains, limescale, and soap scum dissolved back to pristine crystal transparency.',
+              ],
+              'sofa' => [
+                  'key'      => 'sofa',
+                  'before'   => 'transformations/sofa-before.jpg',
+                  'after'    => 'transformations/sofa-after.jpg',
+                  'category' => 'Sofa Shampooing',
+                  'badge'    => '100% Stains Extracted',
+                  'pill'     => 'SOFA RESTORATION',
+                  'title'    => 'Fabric Sofa Deep Shampoo & Extraction',
+                  'desc'     => 'Deep foam injection extracting dark drink spills, sweat stains, and dust mites from fabric upholstery.',
+              ],
+              'office' => [
+                  'key'      => 'office',
+                  'before'   => 'transformations/office-before.jpg',
+                  'after'    => 'transformations/office-after.jpg',
+                  'category' => 'Office Sanitization',
+                  'badge'    => '100% Sanitized & Buffed',
+                  'pill'     => 'COMMERCIAL SPACE',
+                  'title'    => 'Corporate Office Space Deep Sanitization',
+                  'desc'     => 'Deep scrubbing of workstations, polished anti-static flooring, and streak-free partition glass.',
+              ],
+              'ac' => [
+                  'key'      => 'ac',
+                  'before'   => 'transformations/ac-before.jpg',
+                  'after'    => 'transformations/ac-after.jpg',
+                  'category' => 'AC Jet Service',
+                  'badge'    => '2x Airflow Boosted',
+                  'pill'     => 'AC RESTORATION',
+                  'title'    => 'Split AC Deep High-Pressure Jet Wash',
+                  'desc'     => 'Cooling coil mould, fine dust, and foul smell eradicated with antimicrobial pressure wash.',
+              ],
+              'painting' => [
+                  'key'      => 'painting',
+                  'before'   => 'transformations/painting-before.jpg',
+                  'after'    => 'transformations/painting-after.jpg',
+                  'category' => 'Interior Painting',
+                  'badge'    => 'Royal Smooth Finish',
+                  'pill'     => 'WALL MAKEOVER',
+                  'title'    => 'Wall Seepage Waterproofing & Royal Emulsion',
+                  'desc'     => 'Damp wall treatment, dustless wall leveling, and 3 coats of washable royal emulsion paint.',
+              ],
+              'pest' => [
+                  'key'      => 'pest',
+                  'before'   => 'transformations/pest-before.jpg',
+                  'after'    => 'transformations/pest-after.jpg',
+                  'category' => 'Pest Eradication',
+                  'badge'    => '100% Nest Eradication',
+                  'pill'     => 'PEST CONTROL',
+                  'title'    => 'Kitchen Under-Counter Cockroach Nest Eradication',
+                  'desc'     => '100% nest elimination under kitchen cabinets with certified odorless gel-baiting technology.',
+              ],
+              'plumbing' => [
+                  'key'      => 'plumbing',
+                  'before'   => 'transformations/plumbing-before.jpg',
+                  'after'    => 'transformations/plumbing-after.jpg',
+                  'category' => 'Plumbing Repair',
+                  'badge'    => '100% Leak-Proof',
+                  'pill'     => 'PLUMBING CARE',
+                  'title'    => 'Under-Sink Pipe Leak & Drainage Replacement',
+                  'desc'     => 'Dripping joint repair, new heavy-duty anti-drip P-trap installation, and under-sink organization.',
+              ],
+              'carpenter' => [
+                  'key'      => 'carpenter',
+                  'before'   => 'transformations/carpenter-before.jpg',
+                  'after'    => 'transformations/carpenter-after.jpg',
+                  'category' => 'Furniture Assembly',
+                  'badge'    => 'Precision Alignment',
+                  'pill'     => 'CARPENTRY CARE',
+                  'title'    => 'Flatpack Wardrobe Assembly & Hinge Overhaul',
+                  'desc'     => 'Laser alignment, soft-close hydraulic hinge installation, and scratch restoration on furniture.',
+              ],
+              'electrical' => [
+                  'key'      => 'electrical',
+                  'before'   => 'transformations/electrical-before.jpg',
+                  'after'    => 'transformations/electrical-after.jpg',
+                  'category' => 'Electrical Overhaul',
+                  'badge'    => 'Certified Safe & Tested',
+                  'pill'     => 'ELECTRICAL SAFETY',
+                  'title'    => 'MCB Distribution Board & Switchboard Overhaul',
+                  'desc'     => 'Tangled risky conduits replaced with modular switchboards and certified overload trip breakers.',
+              ],
+              'appliance' => [
+                  'key'      => 'appliance',
+                  'before'   => 'transformations/appliance-before.jpg',
+                  'after'    => 'transformations/appliance-after.jpg',
+                  'category' => 'Appliance Repair',
+                  'badge'    => '100% Repaired & Tested',
+                  'pill'     => 'APPLIANCE FIX',
+                  'title'    => 'Washing Machine & Appliance Diagnostic Repair',
+                  'desc'     => 'Motor drive belt repair, circuit board error clearance, drainage pump sealing, and live cycle testing.',
+              ],
+              'ceiling' => [
+                  'key'      => 'ceiling',
+                  'before'   => 'transformations/ceiling-before.jpg',
+                  'after'    => 'transformations/ceiling-after.jpg',
+                  'category' => 'Fall Ceiling Design',
+                  'badge'    => '5-Yr Workmanship Guarantee',
+                  'pill'     => 'CEILING ARCHITECTURE',
+                  'title'    => 'Designer POP False Ceiling & Ambient Cove Lights',
+                  'desc'     => 'Saint-Gobain gypsum channel framing with warm concealed LED ambient cove light troughs.',
+              ],
+              'ceilingrepair' => [
+                  'key'      => 'ceilingrepair',
+                  'before'   => 'transformations/ceilingrepair-before.jpg',
+                  'after'    => 'transformations/ceilingrepair-after.jpg',
+                  'category' => 'Ceiling Restoration',
+                  'badge'    => 'Crack-Free & Seamless',
+                  'pill'     => 'CEILING REPAIR',
+                  'title'    => 'POP Gypsum Ceiling Damp Crack Restoration',
+                  'desc'     => 'Sagging damp ceiling panel re-framing, seamless crack taping, and spot profile light trough cutting.',
+              ],
+          ];
 
-          if (str_contains($svcSlugLower, 'office-cleaning') || preg_match('/\b(office|commercial|workplace)\b/i', $checkText)) {
-              $beforeImg = 'transformations/office-before.jpg';
-              $afterImg  = 'transformations/office-after.jpg';
-              $transCategory = 'Office Deep Clean';
-              $transBadge = '100% Sanitized & Floor Buffed';
-              $transPill = 'COMMERCIAL SPACE';
-              $transTitle = 'Commercial Space & Corporate Office Deep Cleaning Transformation';
-              $transDesc = 'Deep scrubbing of workstations, polished anti-static vinyl flooring, streak-free glass cabin partitions, and sanitized pantry areas.';
-          } elseif (str_contains($svcSlugLower, 'full-home') || preg_match('/\b(full home|full-home|whole home|house clean)\b/i', $checkText)) {
-              $beforeImg = 'transformations/homeclean-before.jpg';
-              $afterImg  = 'transformations/homeclean-after.jpg';
-              $transCategory = 'Full Home Clean';
-              $transBadge = 'Mirror Polish Finish';
-              $transPill = 'WHOLE HOME CARE';
-              $transTitle = 'Professional Full Home Mechanized Deep Scrubbing Transformation';
-              $transDesc = 'Single-disc floor buffing, stubborn grime removal, dustless wall cobweb clearing, window glass restoration, and hospital-grade sanitization.';
-          } elseif (str_contains($svcSlugLower, 'repair-modification') || preg_match('/\b(cove light|repair-modification|ceiling repair)\b/i', $checkText)) {
-              $beforeImg = 'transformations/ceilingrepair-before.jpg';
-              $afterImg  = 'transformations/ceilingrepair-after.jpg';
-              $transCategory = 'Ceiling & Cove Repair';
-              $transBadge = 'Crack-Free & Ambient Glow';
-              $transPill = 'COVE LIGHT MODIFICATION';
-              $transTitle = 'POP Fall Ceiling Damp Crack Repair & Ambient Cove Light Modification';
-              $transDesc = 'Sagging water-damp gypsum board re-framing, seamless joint plastering, and custom laser-aligned warm LED cove light trough installation.';
-          } elseif (preg_match('/\b(ceiling|pop|gypsum|false-ceiling|cove)\b/i', $checkText)) {
-              $beforeImg = 'transformations/ceiling-before.jpg';
-              $afterImg  = 'transformations/ceiling-after.jpg';
-              $transCategory = 'Fall Ceiling & POP';
-              $transBadge = '5-Yr Workmanship Guarantee';
-              $transPill = 'CEILING ARCHITECTURE';
-              $transTitle = 'Luxury False Ceiling & Architectural Cove Light Transformation';
-              $transDesc = 'Zero-crack Saint-Gobain gypsum false ceiling installation with heavy GI steel channel framing, warm LED ambient cove troughs, and laser-aligned profile spotlight channels.';
-          } elseif (preg_match('/\b(appliance|washing machine|refrigerator|fridge|microwave)\b/i', $checkText)) {
-              $beforeImg = 'transformations/appliance-before.jpg';
-              $afterImg  = 'transformations/appliance-after.jpg';
-              $transCategory = 'Appliance Repair';
-              $transBadge = '100% Repaired & Tested';
-              $transPill = 'APPLIANCE RESTORATION';
-              $transTitle = 'Washing Machine Leak Diagnostic & Utility Nook Restoration';
-              $transDesc = 'Motor drive belt replacement, diagnostic circuit board error code clearing, drainage pump leak sealing, and clean machine testing.';
-          } elseif (preg_match('/\b(paint|painting|painter|whitewash|wall-painting|wall makeover|primer|distemper)\b/i', $checkText)) {
-              $beforeImg = 'transformations/painting-before.jpg';
-              $afterImg  = 'transformations/painting-after.jpg';
-              $transCategory = 'Interior Painting';
-              $transBadge = 'Royal Smooth Finish';
-              $transPill = 'WALL MAKEOVER';
-              $transTitle = 'Living Room Wall Plaster Seepage Repair & Emulsion Painting Transformation';
-              $transDesc = 'Waterproofing seepage treatment, mechanized dustless sanding, putty leveling, and 3-coat washable royal emulsion paint with ambient warm lighting.';
-          } elseif (preg_match('/\b(carpent|carpenter|carpentry|furniture|wood|cabinet|door|wardrobe|assembly)\b/i', $checkText)) {
-              $beforeImg = 'transformations/carpenter-before.jpg';
-              $afterImg  = 'transformations/carpenter-after.jpg';
-              $transCategory = 'Carpentry & Furniture';
-              $transBadge = 'Precision Assembly Guaranteed';
-              $transPill = 'FURNITURE ASSEMBLY';
-              $transTitle = 'Flatpack Furniture Assembly & Hinge Restoration Transformation';
-              $transDesc = 'Flatpack wardrobe and bed assembly with laser leveling, heavy-duty soft-close hydraulic hinges, and wooden furniture scratch restoration.';
-          } elseif (preg_match('/\b(pest|cockroach|termite|bedbug|bed-bug|rodent|fumigation)\b/i', $checkText)) {
-              $beforeImg = 'transformations/pest-before.jpg';
-              $afterImg  = 'transformations/pest-after.jpg';
-              $transCategory = 'Pest Control';
-              $transBadge = '100% Nest Eradication';
-              $transPill = 'PEST CONTROL';
-              $transTitle = 'Kitchen Under-Counter Pest Eradication Transformation';
-              $transDesc = '100% German cockroach nest eradication under kitchen cabinets using certified odorless gel-baiting and deep sanitization.';
-          } elseif (preg_match('/\b(ac|air conditioner|air-conditioner|air conditioning|split ac|window ac|hvac|compressor)\b/i', $checkText) || str_contains($checkText, 'ac-jet') || str_contains($checkText, 'ac jet')) {
-              $beforeImg = 'transformations/ac-before.jpg';
-              $afterImg  = 'transformations/ac-after.jpg';
-              $transCategory = 'AC Jet Service';
-              $transBadge = '2x Airflow Boost';
-              $transPill = 'AC SERVICE';
-              $transTitle = 'Split AC Deep Foam Jet Wash & Cooling Coil Decontamination';
-              $transDesc = 'Clogged dust, mold, and odor eradicated with high-pressure water jet and antimicrobial foam wash, restoring instant ice-cold airflow.';
-          } elseif (preg_match('/\b(plumb|plumbing|plumber|leak|pipe|tap|drain|sink|basin|faucet|cistern|flush)\b/i', $checkText)) {
-              $beforeImg = 'transformations/plumbing-before.jpg';
-              $afterImg  = 'transformations/plumbing-after.jpg';
-              $transCategory = 'Plumbing Repairs';
-              $transBadge = '100% Leak-Proof';
-              $transPill = 'PLUMBING CARE';
-              $transTitle = 'Under-Sink Pipe Leak & Sanitary Drainage Repair';
-              $transDesc = 'Rusted dripping joints and stagnant mold cleared out, replaced with heavy-duty anti-leak PVC P-traps and clean under-sink organization.';
-          } elseif (preg_match('/\b(electric|electrical|electrician|switch|switchboard|mcb|fan|wiring|fuse|socket|light|inverter)\b/i', $checkText)) {
-              $beforeImg = 'transformations/electrical-before.jpg';
-              $afterImg  = 'transformations/electrical-after.jpg';
-              $transCategory = 'Electrical Repairs';
-              $transBadge = 'Certified Safe';
-              $transPill = 'ELECTRICAL CARE';
-              $transTitle = 'MCB Distribution Board & Concealed Switchboard Overhaul';
-              $transDesc = 'Exposed tangled conduits and hazardous live wiring replaced with flush-mount modular switchplates and safety-certified MCBs.';
-          } elseif (preg_match('/\b(sofa|upholstery|carpet|couch|mattress|cushion)\b/i', $checkText)) {
-              $beforeImg = 'transformations/sofa-before.jpg';
-              $afterImg  = 'transformations/sofa-after.jpg';
-              $transCategory = 'Sofa Cleaning';
-              $transBadge = '100% Stains Lifted';
-              $transPill = 'SOFA CARE';
-              $transTitle = 'Fabric Sofa Stain Extraction Transformation';
-              $transDesc = 'Deep fiber shampooing extracting dark stains, sweat marks, and allergens, restoring original soft texture and brightness.';
+          // Determine primary showcase key based on service keywords
+          $primaryKey = 'homeclean';
+          if (preg_match('/\b(balcony|terrace|patio)\b/i', $checkText)) {
+              $primaryKey = 'balcony';
+          } elseif (str_contains($svcSlugLower, 'office-cleaning') || preg_match('/\b(office|commercial|workplace)\b/i', $checkText)) {
+              $primaryKey = 'office';
           } elseif (preg_match('/\b(kitchen|stove|chimney|hob|degrease|cooktop)\b/i', $checkText)) {
-              $beforeImg = 'transformations/kitchen-before.jpg';
-              $afterImg  = 'transformations/kitchen-after.jpg';
-              $transCategory = 'Kitchen Clean';
-              $transBadge = 'Zero Grease';
-              $transPill = 'KITCHEN CLEAN';
-              $transTitle = 'Stove, Tiles & Countertop Deep Degreasing';
-              $transDesc = 'Burnt grease and oil crust stripped with eco-degreaser & high-pressure steam flush.';
-          } elseif (preg_match('/\b(balcony|terrace|patio)\b/i', $checkText)) {
-              $beforeImg = 'transformations/balcony-before.jpg';
-              $afterImg  = 'transformations/balcony-after.jpg';
-              $transCategory = 'Balcony Jet Wash';
-              $transBadge = '100% Moss & Grime Eradicated';
-              $transPill = 'BALCONY RESTORATION';
-              $transTitle = 'Balcony Deep Pressure Washing & Glass Railing Restoration';
-              $transDesc = 'Stubborn outdoor algae, bird droppings, and weather grime removed with 160-bar high-pressure water jet and glass descaling treatment.';
+              $primaryKey = 'kitchen';
           } elseif (preg_match('/\b(bath|bathroom|toilet|shower|washroom|descale|commode)\b/i', $checkText)) {
-              $beforeImg = 'transformations/bathroom-before.jpg';
-              $afterImg  = 'transformations/bathroom-after.jpg';
-              $transCategory = 'Bathroom Care';
-              $transBadge = 'Crystal Clear Glass';
-              $transPill = 'BATHROOM CARE';
-              $transTitle = 'Shower Glass & Hard-Water Descaling';
-              $transDesc = 'Hard-water calcium & soap scum dissolved to crystal transparency.';
+              $primaryKey = 'bathroom';
+          } elseif (preg_match('/\b(sofa|upholstery|carpet|couch|mattress|cushion)\b/i', $checkText)) {
+              $primaryKey = 'sofa';
+          } elseif (str_contains($svcSlugLower, 'repair-modification') || preg_match('/\b(cove light|repair-modification|ceiling repair)\b/i', $checkText)) {
+              $primaryKey = 'ceilingrepair';
+          } elseif (preg_match('/\b(ceiling|pop|gypsum|false-ceiling|cove)\b/i', $checkText)) {
+              $primaryKey = 'ceiling';
+          } elseif (preg_match('/\b(paint|painting|painter|whitewash|wall-painting|wall makeover)\b/i', $checkText)) {
+              $primaryKey = 'painting';
+          } elseif (preg_match('/\b(pest|cockroach|termite|bedbug|bed-bug|rodent|fumigation)\b/i', $checkText)) {
+              $primaryKey = 'pest';
+          } elseif (preg_match('/\b(plumb|plumbing|plumber|leak|pipe|tap|drain|sink|basin)\b/i', $checkText)) {
+              $primaryKey = 'plumbing';
+          } elseif (preg_match('/\b(carpent|carpenter|carpentry|furniture|wood|cabinet|door|wardrobe)\b/i', $checkText)) {
+              $primaryKey = 'carpenter';
+          } elseif (preg_match('/\b(ac|air conditioner|air-conditioner|air conditioning|split ac|hvac)\b/i', $checkText) || str_contains($checkText, 'ac-jet')) {
+              $primaryKey = 'ac';
+          } elseif (preg_match('/\b(electric|electrical|electrician|switch|switchboard|mcb|fan|wiring)\b/i', $checkText)) {
+              $primaryKey = 'electrical';
+          } elseif (preg_match('/\b(appliance|washing machine|refrigerator|fridge|microwave)\b/i', $checkText)) {
+              $primaryKey = 'appliance';
+          }
+
+          // Related showcase sequences
+          $relatedMap = [
+              'balcony'       => ['homeclean', 'kitchen', 'bathroom'],
+              'office'        => ['homeclean', 'balcony', 'sofa'],
+              'homeclean'     => ['kitchen', 'bathroom', 'balcony'],
+              'kitchen'       => ['homeclean', 'bathroom', 'pest'],
+              'bathroom'      => ['homeclean', 'kitchen', 'balcony'],
+              'sofa'          => ['homeclean', 'office', 'balcony'],
+              'ceiling'       => ['ceilingrepair', 'painting', 'electrical'],
+              'ceilingrepair' => ['ceiling', 'painting', 'electrical'],
+              'painting'      => ['ceiling', 'carpenter', 'homeclean'],
+              'pest'          => ['kitchen', 'homeclean', 'bathroom'],
+              'plumbing'      => ['bathroom', 'kitchen', 'appliance'],
+              'carpenter'     => ['painting', 'ceiling', 'homeclean'],
+              'ac'            => ['electrical', 'appliance', 'homeclean'],
+              'electrical'    => ['ac', 'appliance', 'ceiling'],
+              'appliance'     => ['electrical', 'plumbing', 'ac'],
+          ];
+
+          $showcaseOrder = array_merge([$primaryKey], $relatedMap[$primaryKey] ?? ['homeclean', 'kitchen', 'bathroom']);
+          $showcaseSlides = [];
+          foreach ($showcaseOrder as $k) {
+              if (isset($allShowcasePool[$k])) {
+                  $showcaseSlides[] = $allShowcasePool[$k];
+              }
           }
           ?>
           <div class="mb-5">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h3 class="font-weight-bold mb-0" style="font-size: 22px;">Transformation Showcase</h3>
               <span class="badge px-3 py-1 font-weight-bold" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf; font-size:12px;">
-                <i class="fa fa-sparkles"></i> <?= $transCategory ?> Proof
+                <i class="fa fa-sparkles mr-1"></i> Verified Results
               </span>
             </div>
-            <p class="text-muted small mb-3"><?= $transDesc ?></p>
+            <p class="text-muted small mb-3">Slide to inspect real Before &amp; After transformations completed by Refixel verified specialists.</p>
 
-            <div class="ba_service_showcase_wrap border rounded overflow-hidden shadow-sm" style="border-radius: 14px; background: #fff;">
-              <!-- Interactive Slideable Viewer -->
-              <div class="ba_compare_viewer" style="--pos: 50%; aspect-ratio: 16 / 9; border-radius: 14px 14px 0 0;">
-                <!-- Base Image: After -->
-                <img src="<?= \App\Core\View::asset('img/' . $afterImg) ?>" alt="<?= $transTitle ?> After" class="ba_img_base" loading="lazy">
-                <span class="ba_badge_pill ba_badge_after">AFTER</span>
+            <!-- Multi-Transformation Carousel Wrapper with Next/Prev & Auto-Scroll -->
+            <div class="ba_carousel_wrapper" id="baTransformationsCarousel">
+              <div class="ba_carousel_slides">
+                <?php foreach ($showcaseSlides as $sIdx => $slide): ?>
+                  <div class="ba_carousel_slide <?= $sIdx === 0 ? 'active' : '' ?>" data-slide-index="<?= $sIdx ?>">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <h4 class="font-weight-bold mb-0 text-truncate mr-2" style="font-size: 16.5px; color: #0b1a2d; max-width: 65%;">
+                        <?= \App\Core\View::e($slide['title']) ?>
+                      </h4>
+                      <span class="badge px-2.5 py-1 font-weight-bold" style="background:#f1f5f9; color:#334155; border: 1px solid #cbd5e1; font-size:11px; white-space:nowrap;">
+                        <?= \App\Core\View::e($slide['pill']) ?>
+                      </span>
+                    </div>
+                    <p class="text-muted small mb-2" style="font-size: 13px; line-height: 1.5;"><?= \App\Core\View::e($slide['desc']) ?></p>
 
-                <!-- Clipped Overlay: Before -->
-                <div class="ba_layer_before">
-                  <img src="<?= \App\Core\View::asset('img/' . $beforeImg) ?>" alt="<?= $transTitle ?> Before" class="ba_img_clip" loading="lazy">
-                  <span class="ba_badge_pill ba_badge_before">BEFORE</span>
-                </div>
+                    <div class="ba_service_showcase_wrap border rounded overflow-hidden shadow-sm" style="border-radius: 14px; background: #fff;">
+                      <div class="position-relative">
+                        <!-- Interactive Slideable Viewer -->
+                        <div class="ba_compare_viewer" style="--pos: 50%; aspect-ratio: 16 / 9; border-radius: 14px 14px 0 0;">
+                          <!-- Base Image: After -->
+                          <img src="<?= \App\Core\View::asset('img/' . $slide['after']) ?>" alt="<?= \App\Core\View::e($slide['title']) ?> After" class="ba_img_base" loading="lazy">
+                          <span class="ba_badge_pill ba_badge_after">AFTER</span>
 
-                <!-- Divider Line and Draggable Knob -->
-                <div class="ba_slider_handle">
-                  <div class="ba_slider_button">
-                    <i class="fa fa-chevron-left"></i>
-                    <i class="fa fa-chevron-right"></i>
+                          <!-- Clipped Overlay: Before -->
+                          <div class="ba_layer_before">
+                            <img src="<?= \App\Core\View::asset('img/' . $slide['before']) ?>" alt="<?= \App\Core\View::e($slide['title']) ?> Before" class="ba_img_clip" loading="lazy">
+                            <span class="ba_badge_pill ba_badge_before">BEFORE</span>
+                          </div>
+
+                          <!-- Divider Line and Draggable Knob -->
+                          <div class="ba_slider_handle">
+                            <div class="ba_slider_button">
+                              <i class="fa fa-chevron-left"></i>
+                              <i class="fa fa-chevron-right"></i>
+                            </div>
+                          </div>
+
+                          <!-- Service & Hint Badges -->
+                          <span class="ba_service_pill"><?= \App\Core\View::e($slide['pill']) ?></span>
+                          <span class="ba_hint_pill"><i class="fa fa-arrows-h"></i> Slide</span>
+
+                          <input type="range" min="0" max="100" value="50" class="ba_range_input" aria-label="Slide to compare before and after">
+                        </div>
+
+                        <!-- Left & Right Carousel Slide Buttons -->
+                        <button type="button" class="ba_carousel_nav_btn ba_carousel_prev" aria-label="Previous transformation">
+                          <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <button type="button" class="ba_carousel_nav_btn ba_carousel_next" aria-label="Next transformation">
+                          <i class="fa fa-chevron-right"></i>
+                        </button>
+                      </div>
+
+                      <!-- Quick Snap Controls & Bottom Info (100% Mobile Responsive) -->
+                      <div class="p-2 p-md-3 bg-light border-top ba_bottom_controls">
+                        <div class="ba_controls_row d-flex justify-content-between align-items-center w-100">
+                          <div class="ba_quick_controls m-0">
+                            <button type="button" class="ba_quick_btn" data-set-pos="100">Before</button>
+                            <button type="button" class="ba_quick_btn active" data-set-pos="50">Split</button>
+                            <button type="button" class="ba_quick_btn" data-set-pos="0">After</button>
+                          </div>
+                          <span class="badge badge-success ba_verified_badge font-weight-bold">
+                            <i class="fa fa-check-circle mr-1"></i> <?= \App\Core\View::e($slide['badge']) ?>
+                          </span>
+                        </div>
+                        <div class="ba_gallery_link_row w-100 text-center text-md-right mt-2 mt-md-0">
+                          <a href="<?= \App\Core\View::url('/gallery?category=' . urlencode($category['slug'] ?? 'cleaning') . '&service=' . urlencode($service['slug'] ?? '')) ?>" class="btn btn-sm btn-outline-dark font-weight-bold ba_gallery_btn">
+                            View Full Gallery &rarr;
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <!-- Service & Hint Badges -->
-                <span class="ba_service_pill"><?= $transPill ?></span>
-                <span class="ba_hint_pill"><i class="fa fa-arrows-h"></i> Slide</span>
-
-                <input type="range" min="0" max="100" value="50" class="ba_range_input" aria-label="Slide to compare before and after">
+                <?php endforeach; ?>
               </div>
 
-              <!-- Quick Snap Controls & Bottom Info -->
-              <div class="p-3 bg-light d-flex flex-wrap justify-content-between align-items-center gap-2 border-top">
-                <div class="ba_quick_controls m-0" style="min-width: 200px;">
-                  <button type="button" class="ba_quick_btn" data-set-pos="100">Before</button>
-                  <button type="button" class="ba_quick_btn active" data-set-pos="50">Split</button>
-                  <button type="button" class="ba_quick_btn" data-set-pos="0">After</button>
+              <!-- Carousel Indicators (Dots & Slide Count) -->
+              <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                <div class="ba_carousel_dots d-flex align-items-center" style="gap: 6px;">
+                  <?php foreach ($showcaseSlides as $sIdx => $slide): ?>
+                    <button type="button" class="ba_carousel_dot <?= $sIdx === 0 ? 'active' : '' ?>" data-to-slide="<?= $sIdx ?>" aria-label="Go to slide <?= $sIdx + 1 ?>"></button>
+                  <?php endforeach; ?>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge badge-success px-3 py-2 font-weight-bold" style="background: #10b981; color: #fff; font-size: 11.5px; border-radius: 20px;">
-                    <i class="fa fa-check-circle mr-1"></i> <?= $transBadge ?>
-                  </span>
-                  <a href="<?= \App\Core\View::url('/gallery?category=' . urlencode($category['slug'] ?? 'cleaning') . '&service=' . urlencode($service['slug'] ?? '')) ?>" class="btn btn-sm btn-outline-dark font-weight-bold ml-2">
-                    View Full Gallery &rarr;
-                  </a>
-                </div>
+                <span class="text-muted small ba_slide_counter" style="font-size: 11.5px; font-weight: 600;">
+                  <span class="ba_current_slide_num">1</span> / <?= count($showcaseSlides) ?> Transformations
+                </span>
               </div>
             </div>
           </div>
@@ -500,6 +624,234 @@ foreach ($checklist ?? [] as $item) {
   </div>
 </div>
 
+<!-- Mobile Fixed Quick Book Taskbar (Sticky right above bottom navigation bar on mobile) -->
+<div class="service-mobile-book-bar d-lg-none">
+  <div class="container d-flex align-items-center justify-content-between px-3">
+    <div class="d-flex flex-column">
+      <span class="smb-label">Starting Price</span>
+      <span class="smb-price">₹<?= $price ?></span>
+    </div>
+    <div class="d-flex align-items-center" style="gap: 8px;">
+      <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success smb-wa-btn" aria-label="Book on WhatsApp" title="WhatsApp Enquiry">
+        <i class="fa fa-whatsapp"></i>
+      </a>
+      <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn">
+        Book Now &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Service Detail Title Responsive Typography (Fits in max 2 lines on phone view) */
+.service-detail-title {
+  font-size: 28px;
+  color: #0b1a2d;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+}
+@media (max-width: 576px) {
+  .service-detail-title {
+    font-size: 20px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 6px !important;
+  }
+  .service-detail-hero-card .lead {
+    font-size: 13.5px !important;
+    line-height: 1.5 !important;
+    margin-bottom: 14px !important;
+  }
+  .service-detail-hero-card .card-body {
+    padding: 16px !important;
+  }
+}
+
+/* Mobile Sticky Action Bar (Sits immediately above .bottomBarNavbar on phone view) */
+.service-mobile-book-bar {
+  display: none;
+}
+@media (max-width: 991px) {
+  .service-mobile-book-bar {
+    display: flex;
+    position: fixed;
+    bottom: 60px; /* Sits right above .bottomBarNavbar (height: 60px) */
+    left: 0;
+    right: 0;
+    z-index: 1045;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08);
+    padding: 8px 0;
+  }
+  .smb-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .smb-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f25b29;
+    line-height: 1.1;
+  }
+  .smb-wa-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #25d366;
+    border-color: #25d366;
+    font-size: 18px;
+  }
+  .smb-wa-btn:hover {
+    background: #25d366;
+    color: #fff;
+  }
+  .smb-book-btn {
+    background: #f25b29;
+    border-radius: 24px;
+    padding: 8px 22px;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(242, 91, 41, 0.35);
+  }
+  /* Extra bottom padding on main container so sticky bar doesn't obstruct content */
+  .container.py-5.my-3 {
+    padding-bottom: 130px !important;
+  }
+}
+
+/* Multi-Transformation Carousel & Responsive Controls */
+.ba_carousel_wrapper {
+  position: relative;
+}
+.ba_carousel_slide {
+  display: none;
+}
+.ba_carousel_slide.active {
+  display: block;
+  animation: baFadeSlide 0.3s ease;
+}
+@keyframes baFadeSlide {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ba_carousel_nav_btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0,0,0,0.12);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  color: #0b1a2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 25;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+.ba_carousel_nav_btn:hover {
+  background: #f25b29;
+  color: #fff;
+  transform: translateY(-50%) scale(1.08);
+}
+.ba_carousel_prev {
+  left: 12px;
+}
+.ba_carousel_next {
+  right: 12px;
+}
+.ba_carousel_dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.ba_carousel_dot.active {
+  width: 24px;
+  border-radius: 10px;
+  background: #f25b29;
+}
+.ba_bottom_controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+.ba_verified_badge {
+  background: #10b981 !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+  border-radius: 20px !important;
+  white-space: nowrap !important;
+}
+.ba_gallery_btn {
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .ba_carousel_nav_btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  .ba_carousel_prev {
+    left: 8px;
+  }
+  .ba_carousel_next {
+    right: 8px;
+  }
+  .ba_bottom_controls {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 10px !important;
+  }
+  .ba_controls_row {
+    margin-bottom: 8px;
+  }
+  .ba_quick_controls {
+    min-width: unset !important;
+  }
+  .ba_quick_btn {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+  }
+  .ba_verified_badge {
+    font-size: 9.5px !important;
+    padding: 3px 7px !important;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ba_gallery_link_row {
+    width: 100%;
+  }
+  .ba_gallery_btn {
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   var viewers = document.querySelectorAll('.ba_compare_viewer');
@@ -622,5 +974,96 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
   });
+
+  // Multi-Transformation Carousel Controller
+  var carouselWrap = document.getElementById('baTransformationsCarousel');
+  if (carouselWrap) {
+    var slides = carouselWrap.querySelectorAll('.ba_carousel_slide');
+    var dots = carouselWrap.querySelectorAll('.ba_carousel_dot');
+    var currentNumEl = carouselWrap.querySelector('.ba_current_slide_num');
+    var totalSlides = slides.length;
+    var currentSlideIdx = 0;
+    var autoPlayTimer = null;
+    var isUserInteracting = false;
+
+    function goToSlide(idx) {
+      if (totalSlides <= 1) return;
+      currentSlideIdx = (idx + totalSlides) % totalSlides;
+
+      slides.forEach(function (slide, sIndex) {
+        if (sIndex === currentSlideIdx) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      dots.forEach(function (dot, dIndex) {
+        if (dIndex === currentSlideIdx) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+
+      if (currentNumEl) {
+        currentNumEl.textContent = String(currentSlideIdx + 1);
+      }
+    }
+
+    function startAutoPlay() {
+      stopAutoPlay();
+      if (totalSlides > 1) {
+        autoPlayTimer = setInterval(function () {
+          if (!isUserInteracting) {
+            goToSlide(currentSlideIdx + 1);
+          }
+        }, 6000);
+      }
+    }
+
+    function stopAutoPlay() {
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+      }
+    }
+
+    carouselWrap.querySelectorAll('.ba_carousel_prev').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        isUserInteracting = true;
+        goToSlide(currentSlideIdx - 1);
+        setTimeout(function () { isUserInteracting = false; }, 4000);
+      });
+    });
+
+    carouselWrap.querySelectorAll('.ba_carousel_next').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        isUserInteracting = true;
+        goToSlide(currentSlideIdx + 1);
+        setTimeout(function () { isUserInteracting = false; }, 4000);
+      });
+    });
+
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        var to = parseInt(this.getAttribute('data-to-slide'), 10);
+        isUserInteracting = true;
+        goToSlide(to);
+        setTimeout(function () { isUserInteracting = false; }, 4000);
+      });
+    });
+
+    carouselWrap.addEventListener('mouseenter', function () { isUserInteracting = true; });
+    carouselWrap.addEventListener('mouseleave', function () { isUserInteracting = false; });
+    carouselWrap.addEventListener('touchstart', function () { isUserInteracting = true; }, { passive: true });
+    carouselWrap.addEventListener('touchend', function () {
+      setTimeout(function () { isUserInteracting = false; }, 4000);
+    });
+
+    startAutoPlay();
+  }
 });
 </script>

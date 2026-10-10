@@ -49,11 +49,13 @@
     <?= json_encode($activeSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
   </script>
 
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>" rel="shortcut icon" type="image/x-icon" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="shortcut icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="apple-touch-icon" />
 
   <!-- Fonts & Libraries -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -61,12 +63,67 @@
   <!-- REFIXEL Live Visual Stylesheets -->
   <link rel="stylesheet" href="<?= \App\Core\View::asset('css/style.css') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/css/style.css') ?>" />
   <link rel="stylesheet" href="<?= \App\Core\View::asset('css/page-style.css') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/css/page-style.css') ?>" />
+
+  <style>
+  .top_offer_bar {
+    background-color: #0a1c33;
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
+  .top_offer_btn {
+    background: rgba(242,91,41,0.95);
+    padding: 2.5px 11px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+  }
+  .top_offer_btn:hover {
+    opacity: 0.9;
+    color: #fff !important;
+  }
+  @media (max-width: 576px) {
+    .top_offer_bar {
+      font-size: 11px !important;
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+      letter-spacing: -0.2px !important;
+    }
+    .top_offer_text {
+      font-size: 10.5px !important;
+      white-space: nowrap !important;
+    }
+    .top_offer_btn {
+      font-size: 10px !important;
+      padding: 1.5px 7px !important;
+    }
+  }
+  @media (max-width: 380px) {
+    .top_offer_bar {
+      font-size: 9.5px !important;
+    }
+    .top_offer_text {
+      font-size: 9.5px !important;
+    }
+    .top_offer_btn {
+      font-size: 9px !important;
+      padding: 1px 5px !important;
+    }
+  }
+  </style>
 </head>
 <body>
-  <!-- Promo Announcement Strip -->
-  <div class="top_offer_bar py-2 text-center text-white" style="background-color: #0a1c33; font-size: 13.5px; font-weight: 500; letter-spacing: 0.2px;">
-    <?= \App\Core\View::e(\App\Models\Setting::get('promo_strip_text', 'Exclusive Special : Flat 20% Off on all deep-cleaning services.')) ?> 
-    <a href="<?= \App\Core\View::url('/services') ?>" class="text-white font-weight-bold ml-1 text-decoration-none" style="background: rgba(242,91,41,0.9); padding: 2px 10px; border-radius: 4px; font-size: 12px;">Book Now <i class="fa fa-arrow-right ml-1"></i></a>
+  <!-- Promo Announcement Strip (Responsive Single Line on Mobile) -->
+  <div class="top_offer_bar py-1 py-md-2 text-white">
+    <div class="container d-flex align-items-center justify-content-center flex-nowrap" style="gap: 8px;">
+      <span class="top_offer_text text-truncate">
+        <?= \App\Core\View::e(\App\Models\Setting::get('promo_strip_text', 'Exclusive Special : Flat 20% Off on all deep-cleaning services.')) ?>
+      </span>
+      <a href="<?= \App\Core\View::url('/services') ?>" class="top_offer_btn text-white font-weight-bold text-decoration-none flex-shrink-0">
+        Book Now <i class="fa fa-arrow-right ml-1"></i>
+      </a>
+    </div>
   </div>
 
   <!-- Header Navigation -->
