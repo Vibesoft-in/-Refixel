@@ -111,14 +111,14 @@ $settings = $settings ?? [];
             <div class="row align-items-center">
               <div class="col-sm-3 mb-2 mb-sm-0">
                 <div class="border rounded p-2 text-center bg-light" style="max-height: 80px;">
-                  <?php $logoUrl = !empty($settings['site_logo']) ? View::asset($settings['site_logo']) : View::asset('img/logo.png'); ?>
+                  <?php $logoUrl = !empty($settings['site_logo']) && $settings['site_logo'] !== 'img/logo.png' ? View::asset($settings['site_logo']) : View::asset('img/refixel-logo-horizontal.png'); ?>
                   <img src="<?= $logoUrl ?>" alt="Logo" style="max-height: 60px; max-width: 100%; object-fit: contain;">
                 </div>
               </div>
               <div class="col-sm-9">
                 <input type="file" name="site_logo" accept="image/*" class="form-control-file mb-1">
                 <div class="small text-muted">Or image path/URL:</div>
-                <input type="text" name="site_logo" class="form-control form-control-sm" value="<?= View::e($settings['site_logo'] ?? 'img/logo.png') ?>">
+                <input type="text" name="site_logo" class="form-control form-control-sm" value="<?= View::e(!empty($settings['site_logo']) && $settings['site_logo'] !== 'img/logo.png' ? $settings['site_logo'] : 'img/refixel-logo-horizontal.png') ?>">
               </div>
             </div>
           </div>

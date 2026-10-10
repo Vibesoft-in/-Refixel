@@ -14,7 +14,11 @@ class Setting extends Model
     public static function get(string $key, mixed $default = null): mixed
     {
         $all = self::getAllKeyValue();
-        return $all[$key] ?? $default;
+        $val = $all[$key] ?? $default;
+        if ($key === 'site_logo' && ($val === 'img/logo.png' || $val === 'logo.png' || empty($val))) {
+            return 'img/refixel-logo-horizontal.png';
+        }
+        return $val;
     }
 
     public static function set(string $key, string $value): void
