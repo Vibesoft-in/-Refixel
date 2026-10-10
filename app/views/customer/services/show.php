@@ -631,10 +631,7 @@ foreach ($checklist ?? [] as $item) {
       <span class="smb-label">Starting Price</span>
       <span class="smb-price">₹<?= $price ?></span>
     </div>
-    <div class="d-flex align-items-center" style="gap: 8px;">
-      <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success smb-wa-btn" aria-label="Book on WhatsApp" title="WhatsApp Enquiry">
-        <i class="fa fa-whatsapp"></i>
-      </a>
+    <div>
       <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn">
         Book Now &rarr;
       </a>
@@ -695,22 +692,6 @@ foreach ($checklist ?? [] as $item) {
     font-weight: 800;
     color: #f25b29;
     line-height: 1.1;
-  }
-  .smb-wa-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    color: #25d366;
-    border-color: #25d366;
-    font-size: 18px;
-  }
-  .smb-wa-btn:hover {
-    background: #25d366;
-    color: #fff;
   }
   .smb-book-btn {
     background: #f25b29;
