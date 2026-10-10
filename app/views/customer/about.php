@@ -566,7 +566,7 @@
                 <span class="text-warning font-weight-bold">★ 4.9</span>
                 <span class="text-muted small ml-1">(1,200+ Homes Cleaned)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/cleaning-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/cleaning-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Room Cleaning <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -602,7 +602,7 @@
                 <span class="text-warning font-weight-bold">★ 5.0</span>
                 <span class="text-muted small ml-1">(90-Day Warranty)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/pest-control-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/pest-control-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Pest Control <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -674,7 +674,7 @@
                 <span class="text-warning font-weight-bold">★ 4.8</span>
                 <span class="text-muted small ml-1">(Laser Measurement)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/painting-services-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/painting-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Painting <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -710,7 +710,7 @@
                 <span class="text-warning font-weight-bold">★ 5.0</span>
                 <span class="text-muted small ml-1">(Bespoke Woodwork)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/carpenter-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/carpenter-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Carpentry & Renovation <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -844,7 +844,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 4.9</span> <span class="text-muted small ml-1">(1,200+ Homes Cleaned)</span></div>
-              <a href="<?= \App\Core\View::url('/cleaning-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Room Cleaning <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/cleaning-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Room Cleaning <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>
@@ -866,7 +866,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 5.0</span> <span class="text-muted small ml-1">(90-Day Warranty)</span></div>
-              <a href="<?= \App\Core\View::url('/pest-control-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Pest Control <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/pest-control-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Pest Control <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>
@@ -888,7 +888,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 4.9</span> <span class="text-muted small ml-1">(Quick Dry in 2-3 Hrs)</span></div>
-              <a href="<?= \App\Core\View::url('/sofa-cleaning-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Sofa Cleaning <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/sofa-cleaning') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Sofa Cleaning <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>
@@ -910,7 +910,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 4.8</span> <span class="text-muted small ml-1">(Laser Measurement)</span></div>
-              <a href="<?= \App\Core\View::url('/painting-services-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Painting <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/painting-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Painting <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>
@@ -932,7 +932,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 5.0</span> <span class="text-muted small ml-1">(Bespoke Woodwork)</span></div>
-              <a href="<?= \App\Core\View::url('/carpenter-services-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Carpentry & Renovation <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/carpenter-services') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Carpentry & Renovation <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>

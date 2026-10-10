@@ -21,15 +21,84 @@ class ServiceController extends Controller
         $allServices = Service::getActive();
         $cities = ServiceArea::getActiveCities();
         $activeCat = (string)($request->query('category') ?? $request->query('cat') ?? 'all');
+        $searchQuery = trim((string)($request->query('q') ?? $request->query('search') ?? ''));
+
+        if (!empty($searchQuery)) {
+            $matchedServices = Service::search($searchQuery, 30);
+            if (!empty($matchedServices)) {
+                $allServices = $matchedServices;
+                $catIds = array_values(array_unique(array_column($matchedServices, 'category_id')));
+                if (count($catIds) === 1) {
+                    foreach ($categories as $cat) {
+                        if ((int)$cat['id'] === (int)$catIds[0]) {
+                            $activeCat = $cat['slug'];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         return $this->render('customer.services.index', [
-            'title'          => 'All Home & Commercial Services | REFIXEL',
+            'title'          => !empty($searchQuery) ? 'Search: ' . htmlspecialchars($searchQuery) . ' | REFIXEL' : 'All Home & Commercial Services | REFIXEL',
             'description'    => 'Explore professional home cleaning, painting, pest control, plumbing, carpentry, and AC services across Indian metro cities.',
             'categories'     => $categories,
             'services'       => $allServices,
             'cities'         => $cities,
             'activeCategory' => $activeCat,
+            'searchQuery'    => $searchQuery,
         ], 'customer');
+    }
+
+    public function apiSearch(Request $request): Response
+    {
+        $q = trim((string)$request->query('q', ''));
+        if (strlen($q) < 2) {
+            return Response::json(['services' => []]);
+        }
+
+        $results = Service::search($q, 15);
+        $mapped = [];
+        foreach ($results as $row) {
+            $mapped[] = [
+                'id'             => (int)$row['id'],
+                'name'           => $row['name'],
+                'slug'           => $row['slug'],
+                'starting_price' => number_format((float)($row['starting_price'] ?? 0), 0),
+                'category_name'  => $row['category_name'] ?? 'Home Service',
+                'category_slug'  => $row['category_slug'] ?? 'cleaning',
+                'image'          => $row['image'] ?? 'refixel-cleaning.jpg',
+            ];
+        }
+
+        return Response::json(['services' => $mapped]);
+    }
+
+    public function categoryClean(Request $request, string $category): Response
+    {
+        $city = $_SESSION['selected_city'] ?? 'Gurugram';
+        return $this->categoryInCity($request, $category, $city);
+    }
+
+    public function serviceClean(Request $request, string $service): Response
+    {
+        $city = $_SESSION['selected_city'] ?? 'Gurugram';
+        $cityName = $this->formatCityName($city);
+
+        // 1. Try resolving as Category
+        $cat = $this->resolveCategory($service);
+        if ($cat) {
+            return $this->renderCategoryPage($cat, $cityName, $city);
+        }
+
+        // 2. Try resolving as Service
+        $svc = $this->resolveService($service);
+        if ($svc) {
+            return $this->renderServicePage($svc, $cityName, $city);
+        }
+
+        return $this->render('partials.404', ['title' => 'Page Not Found'], 'customer')
+            ->setStatusCode(404);
     }
 
     public function categoryInCity(Request $request, string $category, string $city): Response
@@ -84,7 +153,8 @@ class ServiceController extends Controller
 
         $title = "Available {$cat['name']} Packages - Available in your location | REFIXEL";
         $description = "Looking for verified {$cat['name']} - Available in your location? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
-        $canonicalUrl = View::url("/{$cat['slug']}-services-in-{$cleanCitySlug}");
+        $cleanCatSlug = str_ends_with($cat['slug'], '-services') ? $cat['slug'] : "{$cat['slug']}-services";
+        $canonicalUrl = View::url("/{$cleanCatSlug}");
 
         // Build Schema.org Structured Data
         $schemaData = [
@@ -162,7 +232,7 @@ class ServiceController extends Controller
         $price = number_format((float)$svc['starting_price'], 0);
         $title = "{$svc['name']} - Available in your location | REFIXEL";
         $description = "Book {$svc['name']} - Available in your location starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee.";
-        $canonicalUrl = View::url("/{$svc['slug']}-in-{$cleanCitySlug}");
+        $canonicalUrl = View::url("/{$svc['slug']}");
 
         // Build Schema.org Structured Data
         $schemaData = [

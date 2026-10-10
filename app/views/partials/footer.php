@@ -232,9 +232,9 @@
               <div class="footer-services-col">
                 <ul class="list-unstyled p-0 mb-0" style="font-size: 13.5px; line-height: 2.2;">
                   <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">AC Repair</a></li>
-                  <li><a href="<?= \App\Core\View::url('/electrician-services-in-kashipur') ?>" class="footer-nav-link">Electrician</a></li>
-                  <li><a href="<?= \App\Core\View::url('/plumber-services-in-kashipur') ?>" class="footer-nav-link">Plumbing</a></li>
-                  <li><a href="<?= \App\Core\View::url('/cleaning-services-in-kashipur') ?>" class="footer-nav-link">Cleaning</a></li>
+                  <li><a href="<?= \App\Core\View::url('/electrician-services') ?>" class="footer-nav-link">Electrician</a></li>
+                  <li><a href="<?= \App\Core\View::url('/plumber-services') ?>" class="footer-nav-link">Plumbing</a></li>
+                  <li><a href="<?= \App\Core\View::url('/cleaning-services') ?>" class="footer-nav-link">Cleaning</a></li>
                   <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Laundry</a></li>
                 </ul>
               </div>

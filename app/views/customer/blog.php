@@ -1,11 +1,5 @@
 <div class="container py-5 my-3">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Blog & Home Maintenance Guides</li>
-    </ol>
-  </nav>
+
 
   <div class="page_heading text-center mb-5">
     <h6 style="color: #f25b29; font-weight: 600; letter-spacing: 1px;">EXPERT ADVICE</h6>

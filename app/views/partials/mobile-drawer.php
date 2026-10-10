@@ -30,7 +30,7 @@ $cleanPathLower = strtolower($cleanPath);
 
 $isHome = ($cleanPathLower === '/' || $cleanPathLower === '/index.php');
 $isAbout = str_starts_with($cleanPathLower, '/about');
-$isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cleanPathLower, '-services-in-') || str_contains($cleanPathLower, '-in-'));
+$isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cleanPathLower, '-services-in-') || str_contains($cleanPathLower, '-in-') || str_ends_with($cleanPathLower, '-services'));
 $isBlogs = (str_starts_with($cleanPathLower, '/blogs') || str_starts_with($cleanPathLower, '/blog'));
 $isContact = str_starts_with($cleanPathLower, '/contact');
 ?>

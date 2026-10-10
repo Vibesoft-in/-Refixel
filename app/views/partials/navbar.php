@@ -36,7 +36,7 @@ $isHome = ($cleanPathLower === '/' || $cleanPathLower === '/index.php');
 
 // Starts-with matching for other links so child/nested pages keep their parent link active
 $isAbout = str_starts_with($cleanPathLower, '/about');
-$isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cleanPathLower, '-services-in-') || str_contains($cleanPathLower, '-in-'));
+$isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cleanPathLower, '-services-in-') || str_contains($cleanPathLower, '-in-') || str_ends_with($cleanPathLower, '-services'));
 $isBlogs = (str_starts_with($cleanPathLower, '/blogs') || str_starts_with($cleanPathLower, '/blog'));
 $isContact = str_starts_with($cleanPathLower, '/contact');
 
@@ -390,7 +390,7 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
       if (clean.indexOf('/about') === 0) {
         return 'about';
       }
-      if (clean.indexOf('/services') === 0 || clean.indexOf('-services-in-') !== -1 || clean.indexOf('-in-') !== -1) {
+      if (clean.indexOf('/services') === 0 || clean.indexOf('-services-in-') !== -1 || clean.indexOf('-in-') !== -1 || clean.endsWith('-services')) {
         return 'services';
       }
       if (clean.indexOf('/blogs') === 0 || clean.indexOf('/blog') === 0) {

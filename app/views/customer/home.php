@@ -9,6 +9,69 @@ $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $curren
 <style>
 .home_banners {
   min-height: 520px;
+  position: relative;
+  overflow: visible !important;
+  contain: none !important;
+}
+.hero_video_bg_wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero_search_form {
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+.hero_search_btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 44px;
+  padding: 0 20px;
+  background: #f25b29;
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 5;
+}
+.hero_search_btn:hover {
+  background: #db4918;
+  transform: translateY(-50%) scale(1.02);
+}
+.form_control_input {
+  padding-right: 125px !important;
+}
+@media (max-width: 576px) {
+  .hero_search_btn span {
+    display: none;
+  }
+  .hero_search_btn {
+    padding: 0 14px;
+    height: 42px;
+  }
+  .form_control_input {
+    padding-right: 64px !important;
+    font-size: 14.5px !important;
+    height: 52px !important;
+  }
 }
 .search_service {
   padding: 85px 0 65px 0;
@@ -312,10 +375,12 @@ a.solution_card:active,
 
 <!-- Hero & Search Banner -->
 <div class="home_banners">
-  <video class="hero_bg_video" id="heroBgVideo" autoplay muted loop playsinline preload="auto">
-    <source src="<?= \App\Core\View::asset('hero-vid/Technicians_providing_home_services_1080p_20261005125651.mp4') ?>" type="video/mp4">
-    <source src="<?= \App\Core\View::asset('hero-vid/hero-bg.mp4') ?>" type="video/mp4">
-  </video>
+  <div class="hero_video_bg_wrapper">
+    <video class="hero_bg_video" id="heroBgVideo" autoplay muted loop playsinline preload="auto">
+      <source src="<?= \App\Core\View::asset('hero-vid/Technicians_providing_home_services_1080p_20261005125651.mp4') ?>" type="video/mp4">
+      <source src="<?= \App\Core\View::asset('hero-vid/hero-bg.mp4') ?>" type="video/mp4">
+    </video>
+  </div>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var v = document.getElementById('heroBgVideo');
@@ -342,31 +407,39 @@ a.solution_card:active,
 
           <div class="my_autocomplate">
             <!-- Service Search Input & Autocomplete Dropdown -->
-            <div class="form-group search-wrapper" style="position:relative;">
-              <i class="fa fa-search btn_btn_primary_search"></i>
-              <input type="text"
-                     class="form-control form_control_input"
-                     placeholder="What are you looking for?"
-                     id="citySearch_service"
-                     autocomplete="off">
+            <form id="heroSearchForm" class="hero_search_form" action="<?= \App\Core\View::url('/services') ?>" method="GET" autocomplete="off">
+              <div class="form-group search-wrapper" style="position:relative; margin-bottom: 0;">
+                <i class="fa fa-search btn_btn_primary_search"></i>
+                <input type="text"
+                       name="q"
+                       class="form-control form_control_input"
+                       placeholder="What are you looking for?"
+                       id="citySearch_service"
+                       autocomplete="off"
+                       aria-label="Search for services">
 
-              <div id="searchDropdown" class="search-dropdown" style="display:none;">
-                <div id="trendingBox">
-                  <h6>Trending searches</h6>
-                  <ul>
-                    <li data-service="cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Professional Full Home cleaning</li>
-                    <li data-service="cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Professional Bathroom Cleaning</li>
-                    <li data-service="cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Kitchen Deep Cleaning</li>
-                    <li data-service="cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Sofa Deep Cleaning</li>
-                    <li data-service="cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Commercial Space Cleaning</li>
-                    <li data-service="pest-control"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Pest Control</li>
-                    <li data-service="painting-services"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Home Painting</li>
-                    <li data-service="ac-services"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> AC Jet Service</li>
-                  </ul>
+                <button type="submit" class="hero_search_btn" id="heroSearchSubmitBtn" aria-label="Submit search">
+                  <i class="fa fa-search"></i> <span>Search</span>
+                </button>
+
+                <div id="searchDropdown" class="search-dropdown" style="display:none; z-index: 9999;">
+                  <div id="trendingBox">
+                    <h6>Trending searches</h6>
+                    <ul>
+                      <li data-slug="full-home-cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Professional Full Home cleaning</li>
+                      <li data-slug="bathroom-deep-cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Professional Bathroom Cleaning</li>
+                      <li data-slug="kitchen-deep-cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Kitchen Deep Cleaning</li>
+                      <li data-slug="sofa-cleaning"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Sofa Deep Cleaning</li>
+                      <li data-slug="balcony-deep-pressure-wash"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Balcony Deep Pressure Wash</li>
+                      <li data-slug="cockroach-pest-control"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Cockroach & Ant Pest Control</li>
+                      <li data-slug="interior-painting"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> Home Interior Painting</li>
+                      <li data-slug="ac-jet-service"><img src="<?= \App\Core\View::asset('img/traning.webp') ?>" alt="Trending"> AC High-Pressure Jet Service</li>
+                    </ul>
+                  </div>
+                  <div id="ajaxResults" style="display:none;"></div>
                 </div>
-                <div id="ajaxResults" style="display:none;"></div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
@@ -388,47 +461,6 @@ a.solution_card:active,
   </div>
 </div>
 
-<!-- Services Marquee Ticker Strip (Shifted below Trust Stats) -->
-<div class="services_marquee_strip" aria-label="Available Services">
-  <div class="services_marquee_track">
-    <div class="services_marquee_group">
-      <a href="<?= \App\Core\View::url("/cleaning-services-in-{$currentCitySlug}") ?>" class="sm-link">Full Home Deep Cleaning</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/ac-services-in-{$currentCitySlug}") ?>" class="sm-link">AC Service & Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/plumber-services-in-{$currentCitySlug}") ?>" class="sm-link">Plumbing & Leak Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/fall-ceiling-services-in-{$currentCitySlug}") ?>" class="sm-link">Fall Ceiling & POP Design</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/carpenter-services-in-{$currentCitySlug}") ?>" class="sm-link">Carpentry & Woodwork</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/painting-services-in-{$currentCitySlug}") ?>" class="sm-link">Interior & Exterior Painting</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/electrician-services-in-{$currentCitySlug}") ?>" class="sm-link">Electrical Wiring & MCB</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/appliance-repair-services-in-{$currentCitySlug}") ?>" class="sm-link">Appliance & Washing Machine Repair</a>
-      <span class="sm-dot">✦</span>
-    </div><div class="services_marquee_group" aria-hidden="true">
-      <a href="<?= \App\Core\View::url("/cleaning-services-in-{$currentCitySlug}") ?>" class="sm-link">Full Home Deep Cleaning</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/ac-services-in-{$currentCitySlug}") ?>" class="sm-link">AC Service & Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/plumber-services-in-{$currentCitySlug}") ?>" class="sm-link">Plumbing & Leak Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/fall-ceiling-services-in-{$currentCitySlug}") ?>" class="sm-link">Fall Ceiling & POP Design</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/carpenter-services-in-{$currentCitySlug}") ?>" class="sm-link">Carpentry & Woodwork</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/painting-services-in-{$currentCitySlug}") ?>" class="sm-link">Interior & Exterior Painting</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/electrician-services-in-{$currentCitySlug}") ?>" class="sm-link">Electrical Wiring & MCB</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/appliance-repair-services-in-{$currentCitySlug}") ?>" class="sm-link">Appliance & Washing Machine Repair</a>
-      <span class="sm-dot">✦</span>
-    </div>
-  </div>
-</div>
-
 
 <!-- Complete Home Solutions Section -->
 <?php
@@ -439,7 +471,7 @@ $solutionCards = [
     'desc'      => 'Home, Office, Deep Cleaning Sofa, Carpet, Kitchen, Bathroom',
     'image'     => 'refixel-cleaning.jpg',
     'icon_img'  => 'icons/cleaning icon.png',
-    'url'       => \App\Core\View::url("/cleaning-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/cleaning-services"),
   ],
   [
     'slug'      => 'painting-services',
@@ -447,7 +479,7 @@ $solutionCards = [
     'desc'      => 'Interior & Exterior Wall Painting, Waterproofing, Texture & Stencil',
     'image'     => 'refixel-painting.jpg',
     'icon_img'  => 'icons/painting icon.png',
-    'url'       => \App\Core\View::url("/painting-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/painting-services"),
   ],
   [
     'slug'      => 'fall-ceiling',
@@ -455,7 +487,7 @@ $solutionCards = [
     'desc'      => 'POP Ceiling, Gypsum Board, Cove Lighting & False Ceiling Design',
     'image'     => 'refixel-fall-ceiling.jpg',
     'icon_img'  => 'icons/fall ceiling icon.png',
-    'url'       => \App\Core\View::url("/fall-ceiling-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/fall-ceiling-services"),
   ],
   [
     'slug'      => 'plumbers',
@@ -463,7 +495,7 @@ $solutionCards = [
     'desc'      => 'Leak Repair, Pipe Fitting, Taps, Flush, Drainage Bathroom & Kitchen Plumbing',
     'image'     => 'refixel-plumber.jpg',
     'icon_img'  => 'icons/plumber icon.png',
-    'url'       => \App\Core\View::url("/plumber-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/plumber-services"),
   ],
   [
     'slug'      => 'carpenter',
@@ -471,7 +503,7 @@ $solutionCards = [
     'desc'      => 'Furniture Repair, Door Lock, Hinges, Modular Kitchen & Woodwork',
     'image'     => 'refixel-carpenter.jpg',
     'icon_img'  => 'icons/carpenter icon.png',
-    'url'       => \App\Core\View::url("/carpenter-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/carpenter-services"),
   ],
   [
     'slug'      => 'ac-services',
@@ -479,7 +511,7 @@ $solutionCards = [
     'desc'      => 'AC Installation, Uninstallation, Deep Jet Cleaning & Gas Refilling',
     'image'     => 'refixel-ac-service.jpg',
     'icon_img'  => 'icons/ac repair icon.png',
-    'url'       => \App\Core\View::url("/ac-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/ac-services"),
   ],
   [
     'slug'      => 'electrician',
@@ -487,7 +519,7 @@ $solutionCards = [
     'desc'      => 'Wiring, Switch, Fan, Light, Inverter, LED, Electrical Repairs',
     'image'     => 'refixel-electrician.jpg',
     'icon_img'  => 'icons/electrician icon.png',
-    'url'       => \App\Core\View::url("/electrician-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/electrician-services"),
   ],
   [
     'slug'      => 'appliance-repair',
@@ -495,7 +527,7 @@ $solutionCards = [
     'desc'      => 'TV, Fridge, Washing Machine, Microwave, Mixer & Home Appliances',
     'image'     => 'refixel-appliance-repair.jpg',
     'icon_img'  => 'icons/appliance repair icon.png',
-    'url'       => \App\Core\View::url("/appliance-repair-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/appliance-repair-services"),
   ],
   [
     'slug'      => 'pest-control',
@@ -503,7 +535,7 @@ $solutionCards = [
     'desc'      => 'Cockroach, Termite, Bed Bug, Ant & Rodent Treatment with Odourless Spray',
     'image'     => 'refixel-pest-control.jpg',
     'icon_img'  => 'icons/pest control icon.png',
-    'url'       => \App\Core\View::url("/pest-control-services-in-{$currentCitySlug}"),
+    'url'       => \App\Core\View::url("/pest-control-services"),
   ],
 ];
 ?>
@@ -553,8 +585,46 @@ $solutionCards = [
   </div>
 </section>
 
-
-
+<!-- Services Marquee Ticker Strip (Positioned directly below Complete Home Solutions) -->
+<div class="services_marquee_strip" aria-label="Available Services">
+  <div class="services_marquee_track">
+    <div class="services_marquee_group">
+      <a href="<?= \App\Core\View::url("/cleaning-services") ?>" class="sm-link">Full Home Deep Cleaning</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/ac-services") ?>" class="sm-link">AC Service & Repair</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/plumber-services") ?>" class="sm-link">Plumbing & Leak Repair</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/fall-ceiling-services") ?>" class="sm-link">Fall Ceiling & POP Design</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/carpenter-services") ?>" class="sm-link">Carpentry & Woodwork</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/painting-services") ?>" class="sm-link">Interior & Exterior Painting</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/electrician-services") ?>" class="sm-link">Electrical Wiring & MCB</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/appliance-repair-services") ?>" class="sm-link">Appliance & Washing Machine Repair</a>
+      <span class="sm-dot">✦</span>
+    </div><div class="services_marquee_group" aria-hidden="true">
+      <a href="<?= \App\Core\View::url("/cleaning-services") ?>" class="sm-link">Full Home Deep Cleaning</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/ac-services") ?>" class="sm-link">AC Service & Repair</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/plumber-services") ?>" class="sm-link">Plumbing & Leak Repair</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/fall-ceiling-services") ?>" class="sm-link">Fall Ceiling & POP Design</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/carpenter-services") ?>" class="sm-link">Carpentry & Woodwork</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/painting-services") ?>" class="sm-link">Interior & Exterior Painting</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/electrician-services") ?>" class="sm-link">Electrical Wiring & MCB</a>
+      <span class="sm-dot">✦</span>
+      <a href="<?= \App\Core\View::url("/appliance-repair-services") ?>" class="sm-link">Appliance & Washing Machine Repair</a>
+      <span class="sm-dot">✦</span>
+    </div>
+  </div>
+</div>
 
 <!-- Modern About REFIXEL Section -->
 <style>
@@ -5142,15 +5212,16 @@ document.addEventListener('DOMContentLoaded', function() {
   var sIdx = 0, charIdx = 0, isDeleting = false;
   var searchInput = document.getElementById("citySearch_service");
   var baseText = "Search services ";
+  var isSearchFocused = false;
 
   function typeEffect() {
-    if (!searchInput || services.length === 0) return;
+    if (!searchInput || services.length === 0 || isSearchFocused) return;
     var current = services[sIdx];
     if (!isDeleting) {
       charIdx++;
       searchInput.setAttribute("placeholder", baseText + "‘" + current.substring(0, charIdx) + "’");
       if (charIdx >= current.length) {
-        setTimeout(function() { isDeleting = true; }, 1200);
+        setTimeout(function() { if (!isSearchFocused) isDeleting = true; }, 1200);
       }
     } else {
       charIdx--;
@@ -5167,41 +5238,99 @@ document.addEventListener('DOMContentLoaded', function() {
   var searchDropdown = document.getElementById("searchDropdown");
   var trendingBox = document.getElementById("trendingBox");
   var ajaxResults = document.getElementById("ajaxResults");
+  var heroSearchForm = document.getElementById("heroSearchForm");
+  var currentSuggestions = [];
+
+  function performSearchNavigation() {
+    if (!searchInput) return;
+    var q = searchInput.value.trim();
+    if (!q) {
+      window.location.href = baseUrl + '/services';
+      return;
+    }
+
+    var qLower = q.toLowerCase();
+    // If top suggestion exists and closely matches input
+    if (currentSuggestions.length > 0) {
+      var topItem = currentSuggestions[0];
+      var topName = (topItem.name || '').toLowerCase();
+      var topSlug = (topItem.slug || '').toLowerCase();
+      if (topName.indexOf(qLower) !== -1 || topSlug.indexOf(qLower) !== -1 || qLower.indexOf(topSlug) !== -1) {
+        window.location.href = baseUrl + '/' + topItem.slug + '-in-' + selectedCitySlug;
+        return;
+      }
+    }
+
+    // Go to services catalog with query filter
+    window.location.href = baseUrl + '/services?q=' + encodeURIComponent(q);
+  }
 
   if (searchInput) {
     searchInput.addEventListener("focus", function() {
+      isSearchFocused = true;
       if (searchDropdown) searchDropdown.style.display = "block";
-      if (trendingBox) trendingBox.style.display = "block";
-      if (ajaxResults) ajaxResults.style.display = "none";
+      var q = this.value.trim().toLowerCase();
+      if (q.length < 2) {
+        if (trendingBox) trendingBox.style.display = "block";
+        if (ajaxResults) ajaxResults.style.display = "none";
+      }
     });
 
+    searchInput.addEventListener("blur", function() {
+      if (!this.value.trim()) {
+        isSearchFocused = false;
+      }
+    });
+
+    if (heroSearchForm) {
+      heroSearchForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        performSearchNavigation();
+      });
+    }
+
+    var searchDebounceTimer = null;
     searchInput.addEventListener("input", function() {
       var q = this.value.trim().toLowerCase();
+      clearTimeout(searchDebounceTimer);
+
       if (q.length >= 2) {
         if (trendingBox) trendingBox.style.display = "none";
         if (ajaxResults) {
           ajaxResults.style.display = "block";
-          ajaxResults.innerHTML = '<div class="p-2 text-muted small">Searching...</div>';
-          fetch(baseUrl + '/api/services?q=' + encodeURIComponent(q))
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-              if (data && data.services && data.services.length) {
-                var html = '<ul class="list-unstyled mb-0">';
-                data.services.forEach(function(s) {
-                  html += '<li class="p-2 border-bottom suggestion-item" style="cursor:pointer;" data-slug="' + s.slug + '">' +
-                          '<strong>' + s.name + '</strong> <span class="badge badge-success float-right">₹' + s.starting_price + '</span></li>';
-                });
-                html += '</ul>';
-                ajaxResults.innerHTML = html;
-              } else {
-                ajaxResults.innerHTML = '<div class="p-2 text-muted small">No direct match. Press enter or browse categories below.</div>';
-              }
-            })
-            .catch(function() {
-              ajaxResults.innerHTML = '<div class="p-2 text-muted small">Search service active.</div>';
-            });
+          ajaxResults.innerHTML = '<div class="p-3 text-muted small text-center"><i class="fa fa-spinner fa-spin mr-1"></i> Searching verified services...</div>';
+          
+          searchDebounceTimer = setTimeout(function() {
+            fetch(baseUrl + '/api/services?q=' + encodeURIComponent(q))
+              .then(function(r) { return r.json(); })
+              .then(function(data) {
+                currentSuggestions = (data && data.services) ? data.services : [];
+                if (currentSuggestions.length) {
+                  var html = '<ul class="list-unstyled mb-0 search-result-list">';
+                  currentSuggestions.forEach(function(s) {
+                    html += '<li class="p-2 border-bottom suggestion-item d-flex align-items-center justify-content-between" style="cursor:pointer; transition: background 0.15s ease;" data-slug="' + s.slug + '">' +
+                            '<div class="d-flex align-items-center">' +
+                            '<span class="badge badge-light border text-muted mr-2" style="font-size: 11px;">' + (s.category_name || 'Service') + '</span>' +
+                            '<strong style="color:#1e293b; font-size:14px;">' + s.name + '</strong>' +
+                            '</div>' +
+                            '<span class="badge text-white ml-2" style="background:#f25b29; font-size:12px; padding: 4px 8px; border-radius:12px;">₹' + s.starting_price + '</span>' +
+                            '</li>';
+                  });
+                  html += '</ul>';
+                  ajaxResults.innerHTML = html;
+                } else {
+                  currentSuggestions = [];
+                  ajaxResults.innerHTML = '<div class="p-3 text-muted small text-center">No exact match found. <a href="' + baseUrl + '/services?q=' + encodeURIComponent(q) + '" style="color:#f25b29; font-weight:600;">Search in all services &rarr;</a></div>';
+                }
+              })
+              .catch(function() {
+                currentSuggestions = [];
+                ajaxResults.innerHTML = '<div class="p-3 text-muted small text-center">Unable to load services right now. <a href="' + baseUrl + '/services" style="color:#f25b29;">View all services &rarr;</a></div>';
+              });
+          }, 180);
         }
       } else {
+        currentSuggestions = [];
         if (ajaxResults) ajaxResults.style.display = "none";
         if (trendingBox) trendingBox.style.display = "block";
       }
@@ -5219,13 +5348,20 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener("click", function(e) {
     var trendLi = e.target.closest("#trendingBox li");
     if (trendLi) {
-      var sSlug = trendLi.getAttribute("data-service") || 'cleaning';
-      window.location.href = baseUrl + '/' + sSlug + '-services-in-' + selectedCitySlug;
+      var sSlug = trendLi.getAttribute("data-slug");
+      if (sSlug) {
+        window.location.href = baseUrl + '/' + sSlug;
+        return;
+      }
+      var sCat = trendLi.getAttribute("data-service") || 'cleaning';
+      var cleanCat = sCat.endsWith('-services') ? sCat : (sCat + '-services');
+      window.location.href = baseUrl + '/' + cleanCat;
+      return;
     }
     var suggLi = e.target.closest(".suggestion-item");
     if (suggLi) {
       var sSlug2 = suggLi.getAttribute("data-slug") || 'cleaning';
-      window.location.href = baseUrl + '/' + sSlug2 + '-in-' + selectedCitySlug;
+      window.location.href = baseUrl + '/' + sSlug2;
     }
   });
 

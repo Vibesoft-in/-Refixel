@@ -1,11 +1,5 @@
 <div class="container py-5 my-3">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Cancellation & Refund Policy</li>
-    </ol>
-  </nav>
+
 
   <div class="card p-4 p-md-5 border-0 shadow-sm" style="border-radius: 16px; background: #ffffff;">
     <h1 class="font-weight-bold mb-3" style="font-size: 32px; color: #1a1a1a;">Cancellation & Refund Policy</h1>

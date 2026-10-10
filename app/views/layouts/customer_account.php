@@ -100,13 +100,7 @@ ob_start();
   .font-weight-500 { font-weight: 500 !important; }
 </style>
 <div class="container py-4 my-2" style="max-width: 1200px;">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px; font-weight: 500;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29; text-decoration: none;">Home</a></li>
-      <li class="breadcrumb-item active text-muted" aria-current="page">My Account</li>
-    </ol>
-  </nav>
+
 
   <div class="row">
     <!-- Fixed Account Sidebar Navigation -->

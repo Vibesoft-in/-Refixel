@@ -1,6 +1,9 @@
 <h3 class="text-center font-weight-bold mb-4" style="color:#13221e;">Sign In to REFIXEL</h3>
     <form action="<?= \App\Core\View::url('/login') ?>" method="POST">
       <?= \App\Core\View::csrfField() ?>
+      <?php if (!empty($_GET['redirect'])): ?>
+        <input type="hidden" name="redirect" value="<?= \App\Core\View::e($_GET['redirect']) ?>">
+      <?php endif; ?>
       <div class="form-group mb-3">
         <label class="font-weight-600">Email or Mobile Number</label>
         <input type="text" name="identifier" class="form-control" placeholder="admin@refixel.com or 9999999999" required autofocus>

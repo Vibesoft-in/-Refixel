@@ -9,14 +9,7 @@ $items = $cart['items'] ?? [];
 $isEmpty = $cart['is_empty'] ?? empty($items);
 ?>
 <div class="container py-5 my-3">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#f25b29;">Services</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Your Service Cart</li>
-    </ol>
-  </nav>
+
 
   <?php if ($isEmpty): ?>
     <!-- Empty Cart State -->

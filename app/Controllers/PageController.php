@@ -24,6 +24,34 @@ class PageController extends Controller
 
     public function gallery(Request $request): Response
     {
+        $categories = \App\Models\Category::getActive();
+        $services = \App\Models\Service::getActive();
+
+        $activeCategory = trim((string)($request->query('category') ?? $request->query('cat') ?? ''));
+        $activeService = trim((string)($request->query('service') ?? $request->query('svc') ?? ''));
+
+        // If activeService is provided, normalize and auto-detect parent category
+        if (!empty($activeService)) {
+            foreach ($services as $svc) {
+                if ($svc['slug'] === $activeService || (string)$svc['id'] === $activeService) {
+                    $activeService = $svc['slug'];
+                    if (empty($activeCategory) || $activeCategory === 'all') {
+                        foreach ($categories as $cat) {
+                            if ((int)$cat['id'] === (int)$svc['category_id']) {
+                                $activeCategory = $cat['slug'];
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (empty($activeCategory)) {
+            $activeCategory = 'all';
+        }
+
         $items = \App\Core\Database::fetchAll(
             "SELECT g.*, s.name as service_name, s.slug as service_slug, c.name as category_name, c.slug as category_slug
              FROM gallery_items g
@@ -32,7 +60,36 @@ class PageController extends Controller
              WHERE g.is_active = 1
              ORDER BY g.sort_order ASC, g.id DESC"
         );
-        return $this->render('customer.gallery', ['title' => 'Work Showcase | REFIXEL', 'items' => $items], 'customer');
+
+        // If specific service or category requested, prioritize matching showcases to appear first!
+        if (!empty($activeService)) {
+            usort($items, function ($a, $b) use ($activeService) {
+                $aMatch = (($a['service_slug'] ?? '') === $activeService) ? 1 : 0;
+                $bMatch = (($b['service_slug'] ?? '') === $activeService) ? 1 : 0;
+                if ($aMatch !== $bMatch) {
+                    return $bMatch <=> $aMatch;
+                }
+                return ($a['sort_order'] ?? 0) <=> ($b['sort_order'] ?? 0);
+            });
+        } elseif (!empty($activeCategory) && $activeCategory !== 'all') {
+            usort($items, function ($a, $b) use ($activeCategory) {
+                $aMatch = (($a['category_slug'] ?? '') === $activeCategory) ? 1 : 0;
+                $bMatch = (($b['category_slug'] ?? '') === $activeCategory) ? 1 : 0;
+                if ($aMatch !== $bMatch) {
+                    return $bMatch <=> $aMatch;
+                }
+                return ($a['sort_order'] ?? 0) <=> ($b['sort_order'] ?? 0);
+            });
+        }
+
+        return $this->render('customer.gallery', [
+            'title'          => 'Work Showcase & Transformations | REFIXEL',
+            'items'          => $items,
+            'categories'     => $categories,
+            'services'       => $services,
+            'activeCategory' => $activeCategory,
+            'activeService'  => $activeService,
+        ], 'customer');
     }
 
     public function contact(Request $request): Response

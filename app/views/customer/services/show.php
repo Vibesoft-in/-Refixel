@@ -17,14 +17,7 @@ foreach ($checklist ?? [] as $item) {
 }
 ?>
 <div class="container py-5 my-3">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#f25b29;">Services</a></li>
-      <li class="breadcrumb-item active" aria-current="page"><?= $svcName ?> - Available in your location</li>
-    </ol>
-  </nav>
+
 
   <div class="row">
     <!-- Main Service Information -->
@@ -300,7 +293,7 @@ foreach ($checklist ?? [] as $item) {
                   <span class="badge badge-success px-3 py-2 font-weight-bold" style="background: #10b981; color: #fff; font-size: 11.5px; border-radius: 20px;">
                     <i class="fa fa-check-circle mr-1"></i> <?= $transBadge ?>
                   </span>
-                  <a href="<?= \App\Core\View::url('/gallery') ?>" class="btn btn-sm btn-outline-dark font-weight-bold ml-2">
+                  <a href="<?= \App\Core\View::url('/gallery?category=' . urlencode($category['slug'] ?? 'cleaning') . '&service=' . urlencode($service['slug'] ?? '')) ?>" class="btn btn-sm btn-outline-dark font-weight-bold ml-2">
                     View Full Gallery &rarr;
                   </a>
                 </div>

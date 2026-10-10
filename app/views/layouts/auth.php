@@ -30,7 +30,36 @@
       <?= $content ?? '' ?>
     </div>
   </div>
+
+  <!-- Shared Mobile Drawer & Bottom Navigation Bar -->
+  <?= \App\Core\View::partial('mobile-drawer') ?>
+  <?= \App\Core\View::partial('mobile-bar') ?>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Mobile Drawer Toggle
+    var drawerTriggers = document.querySelectorAll(".open-mobile-drawer, #mobileMenuBtn");
+    var mobileDrawer = document.querySelector(".hometfn_popup");
+    var closeDrawerBtn = document.querySelector(".btnclose_tfn");
+
+    if (drawerTriggers.length && mobileDrawer) {
+      drawerTriggers.forEach(function(trigger) {
+        trigger.addEventListener("click", function(e) {
+          e.preventDefault();
+          mobileDrawer.classList.add("show");
+        });
+      });
+    }
+    if (closeDrawerBtn && mobileDrawer) {
+      closeDrawerBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        mobileDrawer.classList.remove("show");
+      });
+    }
+  });
+  </script>
 </body>
 </html>
+

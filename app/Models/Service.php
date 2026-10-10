@@ -82,18 +82,86 @@ class Service extends Model
 
     public static function search(string $query, ?int $limit = 10): array
     {
-        $term = '%' . $query . '%';
-        $rows = Database::fetchAll(
+        $q = trim(strtolower($query));
+        if (strlen($q) < 2) {
+            return [];
+        }
+
+        $allServices = Database::fetchAll(
             "SELECT s.*, c.name as category_name, c.slug as category_slug 
              FROM services s 
              JOIN categories c ON s.category_id = c.id 
-             WHERE (s.name LIKE :q1 OR s.description LIKE :q2 OR c.name LIKE :q3) AND s.is_active = 1 
-             LIMIT {$limit}",
-            ['q1' => $term, 'q2' => $term, 'q3' => $term]
+             WHERE s.is_active = 1"
         );
-        foreach ($rows as &$row) {
-            $row['image'] = self::resolveImage($row['slug'] ?? '', $row['image'] ?? null);
+
+        $isShort = strlen($q) <= 3;
+        $scored = [];
+
+        foreach ($allServices as $row) {
+            $name = strtolower($row['name'] ?? '');
+            $catName = strtolower($row['category_name'] ?? '');
+            $slug = strtolower($row['slug'] ?? '');
+            $catSlug = strtolower($row['category_slug'] ?? '');
+            $desc = strtolower($row['description'] ?? '');
+
+            $score = 0;
+
+            // 1. Exact matches (highest priority)
+            if ($name === $q) $score += 1000;
+            if ($catName === $q) $score += 850;
+            if ($slug === $q) $score += 900;
+
+            // 2. Starts with (service name or category name)
+            if (str_starts_with($name, $q)) $score += 600;
+            if (str_starts_with($catName, $q)) $score += 450;
+
+            // 3. Whole word boundary match in service name
+            if (preg_match('/\b' . preg_quote($q, '/') . '\b/i', $name)) {
+                $score += 400;
+            } elseif (!$isShort && str_contains($name, $q)) {
+                $score += 200;
+            }
+
+            // 4. Whole word boundary match in category name
+            if (preg_match('/\b' . preg_quote($q, '/') . '\b/i', $catName)) {
+                $score += 300;
+            } elseif (!$isShort && str_contains($catName, $q)) {
+                $score += 150;
+            }
+
+            // 5. Slug token match (e.g. "ac" in "ac-jet-service" or "kitchen" in "kitchen-deep-cleaning")
+            $slugTokens = explode('-', $slug);
+            $catSlugTokens = explode('-', $catSlug);
+            if (in_array($q, $slugTokens, true) || in_array($q, $catSlugTokens, true)) {
+                $score += 250;
+            } elseif (!$isShort && (str_contains($slug, $q) || str_contains($catSlug, $q))) {
+                $score += 100;
+            }
+
+            // 6. Description match (excluded for short queries <= 3 chars to prevent false positives like 'ac' in 'space')
+            if (!$isShort) {
+                if (preg_match('/\b' . preg_quote($q, '/') . '\b/i', $desc)) {
+                    $score += 40;
+                } elseif (str_contains($desc, $q)) {
+                    $score += 10;
+                }
+            }
+
+            if ($score > 0) {
+                $row['image'] = self::resolveImage($row['slug'] ?? '', $row['image'] ?? null);
+                $row['search_score'] = $score;
+                $scored[] = $row;
+            }
         }
-        return $rows;
+
+        // Sort descending by score, then alphabetically
+        usort($scored, function ($a, $b) {
+            if ($b['search_score'] !== $a['search_score']) {
+                return $b['search_score'] <=> $a['search_score'];
+            }
+            return strcmp($a['name'], $b['name']);
+        });
+
+        return array_slice($scored, 0, $limit ?? 10);
     }
 }

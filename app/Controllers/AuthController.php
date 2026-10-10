@@ -69,6 +69,11 @@ class AuthController extends Controller
             return $this->redirect('/change-password');
         }
 
+        $redirectUrl = (string)($request->input('redirect') ?? $request->query('redirect') ?? '');
+        if (!empty($redirectUrl) && (str_starts_with($redirectUrl, '/') || str_starts_with($redirectUrl, View::url('/')))) {
+            return $this->redirect($redirectUrl);
+        }
+
         return $this->redirectAfterLogin($user['role']);
     }
 

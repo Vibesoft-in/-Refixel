@@ -42,7 +42,10 @@ Router::get('/sitemap.xml', 'PageController@sitemap');
 Router::get('/robots.txt', 'PageController@robots');
 
 
-// Clean SEO URLs for categories and services
+// Clean URLs for categories (e.g. /cleaning-services, /painting-services)
+Router::get('/{category}-services', 'ServiceController@categoryClean');
+
+// SEO URLs for categories and services with city (backward-compatible)
 Router::get('/{category}-services-in-{city}', 'ServiceController@categoryInCity');
 Router::get('/{service}-in-{city}', 'ServiceController@serviceInCity');
 
@@ -58,6 +61,7 @@ Router::post('/api/cart/add', 'BookingController@addToCart');
 Router::post('/api/cart/update', 'BookingController@updateCart');
 Router::post('/api/cart/remove', 'BookingController@removeFromCart');
 Router::post('/api/cart/clear', 'BookingController@clearCart');
+Router::get('/api/services', 'ServiceController@apiSearch');
 
 // Legacy ajax endpoints compatibility
 Router::post('/cartajax/ajax_cart_add.php', 'BookingController@addToCart');
@@ -218,3 +222,6 @@ Router::post('/api/service-area/pincode', 'Api\\ServiceAreaController@checkPinco
 Router::post('/api/search', 'Api\\ServiceAreaController@search');
 Router::post('/api/job/status', 'Api\\JobStatusController@update', ['RequireLogin', 'VerifyCsrf']);
 Router::get('/api/notifications', 'Api\\NotificationController@recent', ['RequireLogin']);
+
+// Fallback for single clean service/category slugs (e.g. /full-home-cleaning, /bathroom-deep-cleaning)
+Router::get('/{service}', 'ServiceController@serviceClean');

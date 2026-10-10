@@ -147,13 +147,21 @@ INSERT INTO status_history (job_id, from_status, to_status, changed_by, notes, c
 
 -- 16. Before / After Gallery Items Showcase
 INSERT INTO gallery_items (id, service_id, title, before_image, after_image, sort_order, is_active) VALUES
-(1, 1, 'Laundry & Room Deep Cleaning', 'assets/img/before-after-laundry-cleaning.png', 'assets/img/before-after-laundry-cleaning.png', 1, 1),
-(2, 7, 'Kitchen Pest Control & Roach Eradication', 'assets/img/before-after-pest-control.png', 'assets/img/before-after-pest-control.png', 2, 1),
-(3, 4, 'Sofa & Upholstery Deep Cleaning', 'assets/img/before-after-sofa-cleaning.png', 'assets/img/before-after-sofa-cleaning.png', 3, 1),
-(4, 6, 'Living Room Wall Painting & Refurbishment', 'assets/img/before-after-room-painting.png', 'assets/img/before-after-room-painting.png', 4, 1),
-(5, 9, 'TV Feature Wall & Carpentry Renovation', 'assets/img/before-after-wall-renovation.png', 'assets/img/before-after-wall-renovation.png', 5, 1),
-(6, 11, 'Electrical MCB Panel & Switchboard Overhaul', 'assets/img/before-after-electrical-repair.png', 'assets/img/before-after-electrical-repair.png', 6, 1),
-(7, 8, 'Under-Sink Pipe Leak & Drainage Repair', 'assets/img/before-after-plumbing-repair.png', 'assets/img/before-after-plumbing-repair.png', 7, 1),
-(8, 10, 'AC Jet Service & Cooling Coil Deep Cleansing', 'assets/img/before-after-ac-service.png', 'assets/img/before-after-ac-service.png', 8, 1);
+(1, 15, 'Balcony Deep Pressure Wash & Algae Eradication', 'assets/img/transformations/balcony-before.jpg', 'assets/img/transformations/balcony-after.jpg', 1, 1),
+(2, 1, 'Full Home Deep Hygiene & Floor Scrubbing', 'assets/img/transformations/homeclean-before.jpg', 'assets/img/transformations/homeclean-after.jpg', 2, 1),
+(3, 2, 'Shower Glass Hard-Water Descaling & Tile Scrubbing', 'assets/img/transformations/bathroom-before.jpg', 'assets/img/transformations/bathroom-after.jpg', 3, 1),
+(4, 3, 'Kitchen Stove, Chimney & Tiles Deep Degreasing', 'assets/img/transformations/kitchen-before.jpg', 'assets/img/transformations/kitchen-after.jpg', 4, 1),
+(5, 4, 'Fabric Sofa Deep Shampoo & Stain Extraction', 'assets/img/transformations/sofa-before.jpg', 'assets/img/transformations/sofa-after.jpg', 5, 1),
+(6, 5, 'Commercial Workspace & Carpet Deep Sanitization', 'assets/img/transformations/office-before.jpg', 'assets/img/transformations/office-after.jpg', 6, 1),
+(7, 10, 'AC Cooling Coil Deep Jet Wash & Mold Decontamination', 'assets/img/transformations/ac-before.jpg', 'assets/img/transformations/ac-after.jpg', 7, 1),
+(8, 6, 'Living Room Wall Seepage Repair & Royal Emulsion Painting', 'assets/img/transformations/painting-before.jpg', 'assets/img/transformations/painting-after.jpg', 8, 1),
+(9, 7, 'Kitchen Under-Counter Cockroach Nest Eradication', 'assets/img/transformations/pest-before.jpg', 'assets/img/transformations/pest-after.jpg', 9, 1),
+(10, 8, 'Under-Sink Pipe Leak & Anti-Drip Drainage Repair', 'assets/img/transformations/plumbing-before.jpg', 'assets/img/transformations/plumbing-after.jpg', 10, 1),
+(11, 9, 'Flatpack Wardrobe Assembly & Soft-Close Hinge Alignment', 'assets/img/transformations/carpenter-before.jpg', 'assets/img/transformations/carpenter-after.jpg', 11, 1),
+(12, 11, 'MCB Distribution Board & Modular Switchboard Overhaul', 'assets/img/transformations/electrical-before.jpg', 'assets/img/transformations/electrical-after.jpg', 12, 1),
+(13, 12, 'Refrigerator & Washing Machine Component Repair', 'assets/img/transformations/appliance-before.jpg', 'assets/img/transformations/appliance-after.jpg', 13, 1),
+(14, 13, 'Designer POP Fall Ceiling & Concealed LED Cove Installation', 'assets/img/transformations/ceiling-before.jpg', 'assets/img/transformations/ceiling-after.jpg', 14, 1),
+(15, 14, 'Gypsum Ceiling Crack Restoration & Leveling', 'assets/img/transformations/ceilingrepair-before.jpg', 'assets/img/transformations/ceilingrepair-after.jpg', 15, 1);
+
 
 

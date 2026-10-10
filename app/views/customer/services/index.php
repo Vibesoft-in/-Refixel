@@ -851,33 +851,128 @@ if (empty($activeCategory)) {
 }
 
 /* ════════════════════════════════════════
-   BELOW 576px: 1 Column Cards Grid (Mobile)
+   BELOW 576px: 2 Columns Cards Grid (Mobile)
    ════════════════════════════════════════ */
 @media (max-width: 575px) {
   .services-wrapper-fluid {
-    padding-left: 14px !important;
-    padding-right: 14px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
   .services-cards-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 16px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
     width: 100% !important;
     box-sizing: border-box !important;
   }
 
+  .service-card-item,
+  .package-card-item {
+    width: 100% !important;
+  }
+
+  .service-cat-card,
+  .service-package-card {
+    border-radius: 12px !important;
+  }
+
+  .service-cat-card .cat-img-wrap,
+  .service-package-card .package-img-wrap {
+    aspect-ratio: 16 / 11 !important;
+  }
+
+  .card-img-cart-btn {
+    right: 6px !important;
+    bottom: 6px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+  }
+
+  .card-img-cart-btn i {
+    font-size: 11px !important;
+  }
+
+  .service-cat-card .card-body,
+  .service-package-card .card-body {
+    padding: 10px 8px !important;
+  }
+
+  .service-cat-card .card-body h4,
+  .service-package-card .card-body h4 {
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 4px !important;
+    letter-spacing: -0.2px;
+  }
+
+  .service-cat-card .card-body p,
+  .service-package-card .card-body p {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 8px !important;
+    min-height: 28px !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .service-cat-card .card-btn-footer .btn-view-category-services {
+    font-size: 11px !important;
+    padding: 6px 4px !important;
+    border-radius: 6px !important;
+    white-space: nowrap !important;
+  }
+
+  .service-package-card .card-body .d-flex.justify-content-between {
+    margin-bottom: 6px !important;
+    gap: 4px !important;
+  }
+
+  .service-package-card .card-body .d-flex.justify-content-between span.text-muted {
+    font-size: 9.5px !important;
+  }
+
+  .service-package-card .card-body .d-flex.justify-content-between h5 {
+    font-size: 13.5px !important;
+  }
+
+  .service-package-card .card-body .badge {
+    font-size: 9px !important;
+    padding: 2px 4px !important;
+    white-space: nowrap !important;
+  }
+
+  .service-package-card .card-btn-footer {
+    display: flex !important;
+    gap: 4px !important;
+  }
+
+  .service-package-card .btn-package-details,
+  .service-package-card .btn-package-book {
+    font-size: 10px !important;
+    padding: 5px 3px !important;
+    border-radius: 6px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    flex: 1 1 50% !important;
+  }
+
+  .service-package-card .btn-package-details i {
+    display: none !important;
+  }
+
   #serviceCatalogueHeader h1 {
-    font-size: 22px !important;
+    font-size: 20px !important;
     line-height: 1.3 !important;
   }
 
   #serviceCatalogueHeader p {
-    font-size: 13px !important;
-    line-height: 1.5 !important;
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
   }
 
   .category-packages-view h2 {
-    font-size: 19px !important;
+    font-size: 17px !important;
     line-height: 1.3 !important;
   }
 }
@@ -980,7 +1075,8 @@ if (empty($activeCategory)) {
             $catSlug = \App\Core\View::e($cat['slug']);
             $catName = \App\Core\View::e($cat['name']);
             $sidebarIcon = $iconMap[$catSlug] ?? 'icons/more services icon.png';
-            $targetUrl = \App\Core\View::url("/{$catSlug}-services-in-{$citySlug}");
+            $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
+            $targetUrl = \App\Core\View::url("/{$cleanCatSlug}");
           ?>
             <a href="<?= $targetUrl ?>" class="cat-sidebar-link <?= ($activeCategory === $catSlug) ? 'active' : '' ?>" data-filter="<?= $catSlug ?>" title="<?= $catName ?> - Available in your location">
               <div class="cat-icon-wrap">
@@ -1004,8 +1100,24 @@ if (empty($activeCategory)) {
 
     <!-- ── Right: Page Header & Category Cards Grid ── -->
     <main class="services-content-col">
+      <?php if (!empty($searchQuery)): ?>
+        <div class="alert alert-light border d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 shadow-sm" style="border-radius: 12px; background: #fff8f5; border-color: #ffdacf !important;">
+          <div class="d-flex align-items-center mb-2 mb-sm-0">
+            <span class="badge p-2 mr-2" style="background:#f25b29; color:#fff; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center;"><i class="fa fa-search"></i></span>
+            <div>
+              <span class="font-weight-bold" style="color:#0a1c33; font-size:15px;">Search results for &ldquo;<?= \App\Core\View::e($searchQuery) ?>&rdquo;</span>
+              <span class="text-muted small ml-1">(<?= count($services ?? []) ?> services found)</span>
+            </div>
+          </div>
+          <a href="<?= \App\Core\View::url('/services') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold px-3" style="border-radius: 20px; font-size: 12.5px;">
+            <i class="fa fa-times mr-1"></i> Clear Search
+          </a>
+        </div>
+      <?php endif; ?>
+
       <!-- Page Header -->
       <div class="page_heading text-center mb-4 pt-1" id="serviceCatalogueHeader" style="<?= ($activeCategory !== 'all') ? 'display: none;' : '' ?>">
+
         <h6 style="color: #f25b29; font-weight: 700; letter-spacing: 1.2px;">SERVICE CATALOGUE</h6>
         <h1 class="font-weight-bold" style="font-size: 34px; color: #1a1a1a; letter-spacing: -0.5px;">Explore Professional Home &amp; Commercial Services</h1>
         <p class="text-muted" style="max-width: 680px; margin: 0 auto; font-size: 15px; line-height: 1.6;">Select a category below to explore verified technicians, checklists, transparent pricing, and instant doorstep booking.</p>
@@ -1017,7 +1129,8 @@ if (empty($activeCategory)) {
           $catSlug = \App\Core\View::e($cat['slug']);
           $catName = \App\Core\View::e($cat['name']);
           $iconFile = !empty($cat['icon']) ? $cat['icon'] : 'home_claening.webp';
-          $targetUrl = \App\Core\View::url("/{$catSlug}-services-in-{$citySlug}");
+          $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
+          $targetUrl = \App\Core\View::url("/{$cleanCatSlug}");
 
           $catServices = array_values(array_filter($services ?? [], fn($s) => (int)$s['category_id'] === (int)$cat['id']));
           $primarySvcId = !empty($catServices) ? (int)$catServices[0]['id'] : 0;
@@ -1084,7 +1197,7 @@ if (empty($activeCategory)) {
                   $svcPrice = number_format((float)$svc['starting_price'], 0);
                   $svcDuration = (int)($svc['duration_minutes'] ?? 60);
                   $svcImg = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
-                  $svcUrl = \App\Core\View::url("/{$svcSlug}-in-{$citySlug}");
+                  $svcUrl = \App\Core\View::url("/{$svcSlug}");
                   $bookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
                 ?>
                   <div class="package-card-item">
@@ -1198,8 +1311,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // Category slug to URL map for seamless browser navigation
   var categoryUrls = {
     'all': '<?= \App\Core\View::url('/services') ?>'
-    <?php foreach ($categories ?? [] as $c): ?>
-      ,'<?= \App\Core\View::e($c['slug']) ?>': '<?= \App\Core\View::url("/{$c['slug']}-services-in-{$citySlug}") ?>'
+    <?php foreach ($categories ?? [] as $c): 
+      $cSlug = $c['slug'];
+      $cleanUrlSlug = str_ends_with($cSlug, '-services') ? $cSlug : "{$cSlug}-services";
+    ?>
+      ,'<?= \App\Core\View::e($cSlug) ?>': '<?= \App\Core\View::url("/{$cleanUrlSlug}") ?>'
     <?php endforeach; ?>
   };
 
@@ -1258,7 +1374,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       if (updateHistory && window.history && window.history.pushState) {
-        var targetUrl = categoryUrls[catSlug] || ('<?= \App\Core\View::url('/') ?>' + catSlug + '-services-in-<?= $citySlug ?>');
+        var fallbackSlug = catSlug.endsWith('-services') ? catSlug : (catSlug + '-services');
+        var targetUrl = categoryUrls[catSlug] || ('<?= \App\Core\View::url('/') ?>' + fallbackSlug);
         window.history.pushState({ category: catSlug }, '', targetUrl);
       }
     }

@@ -396,6 +396,9 @@ img {
     display: flex;
     flex-direction: column;
     box-shadow: -6px 0 24px rgba(0, 0, 0, 0.18);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .menu_header {
@@ -509,10 +512,10 @@ img {
 }
 
 .bottom_option {
-    padding: 6px 16px 16px 16px;
+    padding: 6px 16px 24px 16px;
     background: #f4f7f6;
-    overflow-y: auto;
-    flex: 1;
+    overflow-y: visible;
+    flex: none;
 }
 
 .bottom_option ul {
@@ -988,10 +991,14 @@ nav.navbar.navbar-expand-lg.navbar-light.main_menu {
     cursor: pointer;
 }
 
-.header-center-nav a.header-nav-link:hover,
+.header-center-nav a.header-nav-link:hover {
+    color: #f25b29 !important;
+    text-decoration: none !important;
+}
+
 .header-center-nav a.header-nav-link.active {
-    color: #012245 !important;
-    /* REFIXEL Brand Blue */
+    color: #f25b29 !important;
+    font-weight: 700 !important;
     text-decoration: none !important;
 }
 
@@ -1325,8 +1332,7 @@ ul.navbar-nav.mr-auto {
     background: #0a1120;
     height: 100%;
     min-height: 640px;
-    overflow: hidden;
-    contain: paint;
+    overflow: visible;
 }
 
 .hero_bg_video {

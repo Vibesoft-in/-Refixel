@@ -118,14 +118,7 @@ $refixelTrustData = [
 ];
 ?>
 <div class="container py-5 my-3">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb bg-transparent p-0 mb-4" style="font-size: 14px;">
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/') ?>" style="color:#f25b29;">Home</a></li>
-      <li class="breadcrumb-item"><a href="<?= \App\Core\View::url('/services') ?>" style="color:#f25b29;">Services</a></li>
-      <li class="breadcrumb-item active" aria-current="page"><?= $catName ?> - Available in your location</li>
-    </ol>
-  </nav>
+
 
   <!-- Hero Header for Category & City -->
   <div class="p-4 p-md-5 rounded mb-5" style="background: linear-gradient(135deg, #fff7f3 0%, #ffefe8 100%); border: 1px solid #ffdacf; border-radius: 16px;">
