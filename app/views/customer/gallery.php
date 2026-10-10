@@ -229,6 +229,7 @@ foreach ($services as $svc) {
                     <img src="<?= View::asset($item['before_image']) ?>" 
                          alt="Before <?= View::e($item['title']) ?>" 
                          style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='<?= View::asset('img/08_recent_work_before_after.png') ?>';"
                          loading="lazy">
                     <span class="badge position-absolute text-white font-weight-bold" style="bottom: 12px; left: 12px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); font-size: 11px; padding: 4px 10px; border-radius: 12px; letter-spacing: 0.5px;">
                       BEFORE
@@ -238,6 +239,7 @@ foreach ($services as $svc) {
                     <img src="<?= View::asset($item['after_image']) ?>" 
                          alt="After <?= View::e($item['title']) ?>" 
                          style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='<?= View::asset('img/08_recent_work_before_after.png') ?>';"
                          loading="lazy">
                     <span class="badge position-absolute text-white font-weight-bold" style="bottom: 12px; right: 12px; background: rgba(16, 185, 129, 0.95); backdrop-filter: blur(4px); font-size: 11px; padding: 4px 10px; border-radius: 12px; letter-spacing: 0.5px;">
                       AFTER
@@ -250,6 +252,7 @@ foreach ($services as $svc) {
                      class="w-100" 
                      alt="<?= View::e($item['title']) ?>" 
                      style="display: block; object-fit: cover; max-height: 320px;"
+                     onerror="this.onerror=null; this.src='<?= View::asset('img/08_recent_work_before_after.png') ?>';"
                      loading="lazy">
               <?php endif; ?>
 
@@ -330,8 +333,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (cardInner) cardInner.classList.add('active-service-highlight');
             matchedCards.push(card);
           } else {
-            // Service selected: keep other category cards visible below or hide depending on match
-            card.style.display = 'none';
+            // Keep other category cards visible below without active highlight
+            card.style.display = 'block';
             if (cardInner) cardInner.classList.remove('active-service-highlight');
             otherCards.push(card);
           }
