@@ -79,35 +79,160 @@ $isCart = str_starts_with($cleanPathLower, '/cart');
 </div>
 
 <style>
-/* Active taskbar icon styling with brand orange background */
-.bottomBarNavbar ul li a .bm-icon-circle {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2px;
-  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  background: transparent;
+/* Modern Bottom Taskbar Navigation Styling */
+.bottomBarNavbar {
+  height: 62px !important;
+  background: #ffffff !important;
+  box-shadow: 0 -2px 14px rgba(15, 23, 42, 0.08) !important;
+  border-top: 1px solid #eef2f6 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 5px 8px !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 1050 !important;
+  box-sizing: border-box !important;
 }
+
+.bottomBarNavbar ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.bottomBarNavbar ul li {
+  flex: 1 !important;
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.bottomBarNavbar ul li a {
+  text-decoration: none !important;
+  color: #64748b !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 2px 0 !important;
+  min-height: auto !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Bordered Icon Circle Container (Structured badge look) */
+.bottomBarNavbar ul li a .bm-icon-circle {
+  width: 33px !important;
+  height: 33px !important;
+  min-width: 33px !important;
+  min-height: 33px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  margin: 0 0 2px 0 !important;
+  padding: 0 !important;
+  background: #f8fafc !important;
+  border: 1.5px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.bottomBarNavbar ul li a .bm-icon-circle img {
+  width: 17px !important;
+  height: 17px !important;
+  max-width: 17px !important;
+  max-height: 17px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  object-fit: contain !important;
+  transition: transform 0.2s ease, filter 0.2s ease !important;
+}
+
+/* Active Taskbar Item */
 .bottomBarNavbar ul li a.active .bm-icon-circle {
   background: #f25b29 !important;
-  box-shadow: 0 3px 10px rgba(242, 91, 41, 0.45) !important;
+  border-color: #f25b29 !important;
+  box-shadow: 0 3px 10px rgba(242, 91, 41, 0.4) !important;
 }
+
 .bottomBarNavbar ul li a.active .bm-icon-circle img {
   filter: brightness(0) invert(1) !important;
-  transform: scale(1.05);
+  transform: scale(1.06) !important;
 }
+
+/* Hover/Touch State */
+.bottomBarNavbar ul li a:hover .bm-icon-circle {
+  border-color: #f25b29 !important;
+  background: #fff8f5 !important;
+  transform: translateY(-1px) !important;
+}
+
+.bottomBarNavbar ul li a.active:hover .bm-icon-circle {
+  background: #f25b29 !important;
+  border-color: #f25b29 !important;
+  transform: none !important;
+}
+
+/* Text Label */
+.bottomBarNavbar ul li a h6 {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+  color: #64748b !important;
+  letter-spacing: -0.2px !important;
+  transition: color 0.2s ease !important;
+}
+
 .bottomBarNavbar ul li a.active h6 {
   color: #f25b29 !important;
   font-weight: 700 !important;
 }
-.bottomBarNavbar ul li a:hover .bm-icon-circle {
-  transform: translateY(-2px);
+
+.bottomBarNavbar ul li a:hover h6 {
+  color: #f25b29 !important;
+}
+
+/* Cart Badge */
+.bottomBarNavbar ul li a #footer_cart_badge {
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  padding: 0 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #f25b29 !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  border: 1.5px solid #ffffff !important;
+  line-height: 1 !important;
+  z-index: 2 !important;
 }
 </style>
 

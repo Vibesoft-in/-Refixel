@@ -316,7 +316,7 @@ img {
     min-height: 44px;
 }
 
-.bottomBarNavbar ul li a span {
+.bottomBarNavbar ul li a #footer_cart_badge {
     position: absolute;
     top: -4px;
     width: 18px;

@@ -671,7 +671,7 @@ foreach ($checklist ?? [] as $item) {
   .service-mobile-book-bar {
     display: flex;
     position: fixed;
-    bottom: 60px; /* Sits right above .bottomBarNavbar (height: 60px) */
+    bottom: 62px; /* Sits right above .bottomBarNavbar (height: 62px) */
     left: 0;
     right: 0;
     z-index: 1045;
