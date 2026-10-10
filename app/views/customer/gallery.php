@@ -287,6 +287,13 @@ foreach ($services as $svc) {
           </div>
         </div>
       <?php endforeach; ?>
+      <div id="galleryNoMatches" class="col-12 text-center py-5" style="display: none;">
+        <div class="p-5 bg-light rounded border text-muted">
+          <i class="fa fa-picture-o fa-3x mb-3 text-muted" style="opacity: 0.4;"></i>
+          <h5>No transformation photos available for this specific service yet.</h5>
+          <p class="small">Please check our other services in this category or view all work.</p>
+        </div>
+      </div>
     <?php endif; ?>
   </div>
 
@@ -315,8 +322,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function filterCards(cat, svc) {
     var grid = document.getElementById('galleryShowcaseGrid');
+    var noMatches = document.getElementById('galleryNoMatches');
     var matchedCards = [];
-    var otherCards = [];
 
     cards.forEach(function(card) {
       var cardCat = card.getAttribute('data-cat');
@@ -326,29 +333,25 @@ document.addEventListener('DOMContentLoaded', function() {
       var catMatches = (cat === 'all' || cardCat === cat);
       var svcMatches = (!svc || svc === 'all' || cardSvc === svc);
 
-      if (catMatches) {
-        if (svc && svc !== 'all') {
-          if (cardSvc === svc) {
-            card.style.display = 'block';
-            if (cardInner) cardInner.classList.add('active-service-highlight');
-            matchedCards.push(card);
+      if (catMatches && svcMatches) {
+        card.style.display = 'block';
+        if (cardInner) {
+          if (svc && svc !== 'all') {
+            cardInner.classList.add('active-service-highlight');
           } else {
-            // Keep other category cards visible below without active highlight
-            card.style.display = 'block';
-            if (cardInner) cardInner.classList.remove('active-service-highlight');
-            otherCards.push(card);
+            cardInner.classList.remove('active-service-highlight');
           }
-        } else {
-          // All services under category
-          card.style.display = 'block';
-          if (cardInner) cardInner.classList.remove('active-service-highlight');
-          matchedCards.push(card);
         }
+        matchedCards.push(card);
       } else {
         card.style.display = 'none';
         if (cardInner) cardInner.classList.remove('active-service-highlight');
       }
     });
+
+    if (noMatches) {
+      noMatches.style.display = (matchedCards.length === 0) ? 'block' : 'none';
+    }
 
     // Reorder DOM so that matchedCards are displayed FIRST
     if (grid && matchedCards.length > 0) {
