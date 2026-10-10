@@ -12,11 +12,11 @@ INSERT INTO users (id, role, name, email, phone, password_hash, status, must_cha
 
 -- 2. Customer Profile
 INSERT INTO customer_profiles (user_id, address, city, pincode, lat, lng) VALUES
-(3, 'Tower 4, Apt 802, Palm Springs, Sector 54', 'Gurugram', '122002', 28.43500000, 77.10500000);
+(3, 'Station Road, Near Main Market', 'Kashipur', '244713', 29.21000000, 78.96000000);
 
 -- 3. Staff Profile
 INSERT INTO staff_profiles (user_id, rating_avg, rating_count, availability_note, is_available) VALUES
-(2, 4.95, 24, 'Available for Gurugram & South Delhi visits', 1);
+(2, 4.95, 24, 'Available for Kashipur, Jaspur & Thakurdwara doorstep visits', 1);
 
 -- 4. Service Categories
 INSERT INTO categories (id, name, slug, description, icon, sort_order, is_active) VALUES
@@ -81,24 +81,12 @@ INSERT INTO service_checklist_items (service_id, label, is_included, sort_order)
 (10, 'Gas pressure check and operating amp verification', 1, 3),
 (10, 'Gas refilling charges (billed separately if leakage found)', 0, 4);
 
--- 9. Service Areas (Major Cities & Pincodes)
+-- 9. Service Areas (Kashipur, Jaspur, Thakurdwara)
 INSERT INTO service_areas (city, area_name, pincode, is_active) VALUES
-('Gurugram', 'Cyber City / DLF Phase 2', '122002', 1),
-('Gurugram', 'Golf Course Road / Sector 54', '122011', 1),
-('Gurugram', 'Sohna Road / Sector 48', '122018', 1),
-('Delhi-NCR', 'South Extension', '110049', 1),
-('Delhi-NCR', 'Vasant Kunj', '110070', 1),
-('Delhi-NCR', 'Connaught Place', '110001', 1),
-('Delhi-NCR', 'Dwarka Sector 10', '110075', 1),
-('Delhi-NCR', 'Noida Sector 62', '201301', 1),
-('Mumbai', 'Bandra West', '400050', 1),
-('Mumbai', 'Andheri East', '400069', 1),
-('Hyderabad', 'Hitec City', '500081', 1),
-('Chennai', 'Anna Nagar', '600040', 1),
-('Ahmedabad', 'Bodakdev', '380054', 1),
-('Chandigarh', 'Sector 17', '160017', 1),
-('Kochi', 'Marine Drive', '682031', 1),
-('Pune', 'Koregaon Park', '411001', 1);
+('Kashipur', 'Bazpur Road / Main Market', '244713', 1),
+('Kashipur', 'Station Road / Industrial Area', '244713', 1),
+('Jaspur', 'Main Market / Bus Stand', '244712', 1),
+('Thakurdwara', 'Main Road / Market Zone', '244601', 1);
 
 -- 10. Process Steps
 INSERT INTO process_steps (step_no, title, description, is_active) VALUES
@@ -109,7 +97,7 @@ INSERT INTO process_steps (step_no, title, description, is_active) VALUES
 
 -- 11. Frequently Asked Questions (Global & Specific)
 INSERT INTO faqs (service_id, question, answer, sort_order, is_active) VALUES
-(NULL, 'How do I book a service on Primodomus?', 'Select your desired service, choose your preferred date and time slot, enter your address, and confirm your request. You will receive an immediate booking confirmation.', 1, 1),
+(NULL, 'How do I book a service on Refixel?', 'Select your desired service, choose your preferred date and time slot, enter your address, and confirm your request. You will receive an immediate booking confirmation.', 1, 1),
 (NULL, 'Are the service professionals background-checked?', 'Yes. All technicians and service partners undergo identity verification, police background checks, and practical skills assessments before onboarding.', 2, 1),
 (NULL, 'What payment methods are supported?', 'We accept UPI (Google Pay, PhonePe, Paytm), Net Banking, Credit/Debit cards, and Cash on Delivery upon satisfactory job completion.', 3, 1),
 (NULL, 'Can I reschedule or cancel my booking?', 'Yes. You can cancel or reschedule your booking free of charge up to 2 hours prior to the scheduled technician arrival time.', 4, 1),
@@ -121,7 +109,7 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ('company_name', 'Primodomus Home Services'),
 ('company_phone', '+91 99999 99999'),
 ('company_email', 'help@primodomus.com'),
-('company_address', 'Cyber City, DLF Phase 2, Gurugram, Haryana 122002'),
+('company_address', 'Station Road, Kashipur, Uttarakhand 244713'),
 ('company_gstin', '07AAAAA0000A1Z5'),
 ('promo_strip_text', 'Starting at ₹999 • Save up to 25% on your first booking'),
 ('stat_rating', '4.8★'),
@@ -135,7 +123,7 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 
 -- 13. Demo Booking & Assigned Job (Clearly marked as Demo)
 INSERT INTO bookings (id, booking_no, customer_id, service_id, name, phone, email, address, pincode, preferred_date, preferred_time, issue_details, status, priority, created_at) VALUES
-(1, 'BK-DEMO-001', 3, 1, 'Ananya Verma (Demo Customer)', '9876543212', 'customer@primodomus.com', 'Tower 4, Apt 802, Palm Springs, Sector 54, Gurugram', '122002', CURDATE(), '10:00 AM - 01:00 PM', 'Complete deep cleaning before housewarming party.', 'assigned', 'high', NOW());
+(1, 'BK-DEMO-001', 3, 1, 'Ananya Verma (Demo Customer)', '9876543212', 'customer@primodomus.com', 'Station Road, Kashipur, Uttarakhand', '244713', CURDATE(), '10:00 AM - 01:00 PM', 'Complete deep cleaning before housewarming party.', 'assigned', 'high', NOW());
 
 -- 14. Demo Job linked to Staff Rajesh Sharma
 INSERT INTO jobs (id, booking_id, staff_id, status, scheduled_at, created_at) VALUES

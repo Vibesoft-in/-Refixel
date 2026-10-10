@@ -628,7 +628,7 @@
                 <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;">
                   <i class="fa fa-sparkles"></i> Fabric Restored
                 </span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Golf Course Road</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Bazpur Road</span>
               </div>
               <h4>Sectional Fabric Sofa Stain Extraction</h4>
               <p>Deep-set grime, beverage spills, sweat marks and dust mites extracted via high-suction mechanized shampooing, restoring original fabric brightness and freshness.</p>
@@ -638,7 +638,7 @@
                 <span class="text-warning font-weight-bold">★ 4.9</span>
                 <span class="text-muted small ml-1">(Quick Dry in 2-3 Hrs)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/sofa-cleaning-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/sofa-cleaning-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Sofa Cleaning <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -746,7 +746,7 @@
                 <span class="text-warning font-weight-bold">★ 5.0</span>
                 <span class="text-muted small ml-1">(Certified Electricians)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/fan-switchboard-repair-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/fan-switchboard-repair-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Electrical Repair <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -782,7 +782,7 @@
                 <span class="text-warning font-weight-bold">★ 4.9</span>
                 <span class="text-muted small ml-1">(Instant Diagnosis)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/tap-leak-repair-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/tap-leak-repair-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book Plumbing Repair <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -818,7 +818,7 @@
                 <span class="text-warning font-weight-bold">★ 5.0</span>
                 <span class="text-muted small ml-1">(Full Coil Jet Clean)</span>
               </div>
-              <a href="<?= \App\Core\View::url('/ac-jet-service-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
+              <a href="<?= \App\Core\View::url('/ac-jet-service-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">
                 Book AC Service <i class="fa fa-angle-right ml-1"></i>
               </a>
             </div>
@@ -881,7 +881,7 @@
             <div>
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 11.5px; padding: 4px 8px;"><i class="fa fa-sparkles"></i> Fabric Restored</span>
-                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Golf Course Road</span>
+                <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Bazpur Road</span>
               </div>
               <h4>Sectional Fabric Sofa Stain Extraction</h4>
               <p>Deep-set grime, beverage spills, sweat marks and dust mites extracted via high-suction mechanized shampooing, restoring original fabric brightness and freshness.</p>
@@ -954,7 +954,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 5.0</span> <span class="text-muted small ml-1">(Certified Electricians)</span></div>
-              <a href="<?= \App\Core\View::url('/fan-switchboard-repair-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Electrical Repair <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/fan-switchboard-repair-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Electrical Repair <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>
@@ -976,7 +976,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 4.9</span> <span class="text-muted small ml-1">(Instant Diagnosis)</span></div>
-              <a href="<?= \App\Core\View::url('/tap-leak-repair-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Plumbing Repair <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/tap-leak-repair-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book Plumbing Repair <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>
@@ -998,7 +998,7 @@
             </div>
             <div class="transformation-meta-row">
               <div><span class="text-warning font-weight-bold">★ 5.0</span> <span class="text-muted small ml-1">(Full Coil Jet Clean)</span></div>
-              <a href="<?= \App\Core\View::url('/ac-jet-service-in-gurugram') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book AC Service <i class="fa fa-angle-right ml-1"></i></a>
+              <a href="<?= \App\Core\View::url('/ac-jet-service-in-kashipur') ?>" class="font-weight-bold text-decoration-none" style="color: #f25b29;">Book AC Service <i class="fa fa-angle-right ml-1"></i></a>
             </div>
           </div>
         </div>

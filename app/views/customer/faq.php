@@ -47,29 +47,4 @@
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll(".faq-item").forEach(function(item) {
-    var q = item.querySelector(".faq-question");
-    if (q) {
-      q.addEventListener("click", function() {
-        var isOpen = item.classList.contains("active");
-        document.querySelectorAll(".faq-item").forEach(function(other) {
-          other.classList.remove("active");
-          var ans = other.querySelector(".faq-answer");
-          var ico = other.querySelector(".faq-icon");
-          if (ans) ans.style.display = "none";
-          if (ico) ico.textContent = "+";
-        });
-        if (!isOpen) {
-          item.classList.add("active");
-          var ans = item.querySelector(".faq-answer");
-          var ico = item.querySelector(".faq-icon");
-          if (ans) ans.style.display = "block";
-          if (ico) ico.textContent = "−";
-        }
-      });
-    }
-  });
-});
-</script>
+

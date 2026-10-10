@@ -130,6 +130,12 @@ class AuthController extends Controller
         Auth::login($user);
 
         View::setFlash('success', 'Account created successfully! Welcome to REFIXEL.');
+
+        $redirectUrl = (string)($request->input('redirect') ?? $request->query('redirect') ?? '');
+        if (!empty($redirectUrl) && (str_starts_with($redirectUrl, '/') || str_starts_with($redirectUrl, View::url('/')))) {
+            return $this->redirect($redirectUrl);
+        }
+
         return $this->redirect('/account');
     }
 

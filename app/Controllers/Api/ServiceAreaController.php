@@ -33,4 +33,15 @@ class ServiceAreaController extends Controller
         $results = Service::search($q, 8);
         return $this->json(['status' => 'success', 'results' => $results]);
     }
+
+    public function setCity(Request $request): Response
+    {
+        $city = (string)($request->input('city') ?? '');
+        $savedCity = ServiceArea::setSessionCity($city);
+
+        return $this->json([
+            'status' => 'success',
+            'city'   => $savedCity,
+        ]);
+    }
 }

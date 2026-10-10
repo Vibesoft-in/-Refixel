@@ -217,6 +217,16 @@ assert($catRes->getStatusCode() === 200, "Category in city must return 200");
 assert(str_contains($catRes->getContent(), 'application/ld+json'), "Category page must contain JSON-LD schema");
 assert(str_contains($catRes->getContent(), 'BreadcrumbList'), "Category page must contain BreadcrumbList schema");
 
+// Authenticate session for service page test
+$_SESSION['user'] = [
+    'id'                   => 1,
+    'role'                 => 'customer',
+    'name'                 => 'Test Customer',
+    'email'                => 'customer@refixel.com',
+    'must_change_password' => false,
+];
+$_SESSION['last_activity'] = time();
+
 $svcReq = new Request([], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-in-kashipur']);
 $svcRes = $serviceCtrl->serviceInCity($svcReq, 'full-home-cleaning', 'kashipur');
 assert($svcRes->getStatusCode() === 200, "Service in city must return 200");

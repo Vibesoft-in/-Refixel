@@ -254,25 +254,23 @@ $refixelTrustData = [
     </div>
   </div>
 
-  <!-- Service Areas Covered in this City -->
+  <!-- Service Coverage Area -->
   <div class="mb-5">
     <h3 class="font-weight-bold mb-3" style="font-size: 22px;">
-      <i class="fa fa-map-marker mr-2" style="color:#f25b29;"></i> <?= $catName ?> Coverage Areas - Available in your location
+      <i class="fa fa-map-marker mr-2" style="color:#f25b29;"></i> Service Coverage Area
     </h3>
     <div class="p-4 rounded bg-white border">
-      <p class="text-muted small mb-3">Our mobile teams and vetted field technicians service all major localities - Available in your location:</p>
+      <p class="text-muted small mb-3">Our mobile teams and vetted field technicians service all major localities across:</p>
       <div class="d-flex flex-wrap" style="gap: 8px;">
-        <?php if (!empty($serviceAreas)): ?>
-          <?php foreach ($serviceAreas as $area): ?>
-            <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13px;">
-              <i class="fa fa-map-pin mr-1" style="color:#f25b29;"></i> <?= \App\Core\View::e($area['area_name']) ?> (<?= \App\Core\View::e($area['pincode']) ?>)
-            </span>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <span class="badge badge-light p-2 border">City Center & All Primary Sectors</span>
-          <span class="badge badge-light p-2 border">Residential Colonies & Gated Societies</span>
-          <span class="badge badge-light p-2 border">Commercial Hubs & Office Parks</span>
-        <?php endif; ?>
+        <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13.5px;">
+          <i class="fa fa-map-marker text-danger mr-1"></i> Kashipur
+        </span>
+        <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13.5px;">
+          <i class="fa fa-map-marker text-danger mr-1"></i> Jaspur
+        </span>
+        <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13.5px;">
+          <i class="fa fa-map-marker text-danger mr-1"></i> Thakurdwara
+        </span>
       </div>
     </div>
   </div>
@@ -330,28 +328,6 @@ $refixelTrustData = [
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll(".faq-item").forEach(function(item) {
-    var q = item.querySelector(".faq-question");
-    if (q) {
-      q.addEventListener("click", function() {
-        var isOpen = item.classList.contains("active");
-        document.querySelectorAll(".faq-item").forEach(function(other) {
-          other.classList.remove("active");
-          var ans = other.querySelector(".faq-answer");
-          var ico = other.querySelector(".faq-icon");
-          if (ans) ans.style.display = "none";
-          if (ico) ico.textContent = "+";
-        });
-        if (!isOpen) {
-          item.classList.add("active");
-          var ans = item.querySelector(".faq-answer");
-          var ico = item.querySelector(".faq-icon");
-          if (ans) ans.style.display = "block";
-          if (ico) ico.textContent = "−";
-        }
-      });
-    }
-  });
 
   /* Touch / Click anywhere on package card opens service details */
   document.addEventListener('click', function(e) {

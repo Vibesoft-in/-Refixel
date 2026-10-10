@@ -60,10 +60,10 @@ $bookingData = [
     'service_name'   => 'Kitchen Deep Cleaning',
     'name'           => 'Rohan Sharma',
     'phone'          => '9876543210',
-    'city'           => 'Gurugram',
+    'city'           => 'Kashipur',
     'preferred_date' => '2026-10-02',
     'preferred_time' => '10:00 AM - 01:00 PM',
-    'address'        => 'Tower 4, DLF Phase 5',
+    'address'        => 'Station Road, Kashipur',
 ];
 
 Notifier::notifyNewBookingAdmin($bookingData);

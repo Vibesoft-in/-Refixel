@@ -3,7 +3,7 @@
  * REFIXEL - Authentic Customer Home View
  * Faithfully matches https://www.REFIXEL.com/index.php
  */
-$currentCity = $_SESSION['selected_city'] ?? 'Gurugram';
+$currentCity = \App\Models\ServiceArea::getSessionCity();
 $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $currentCity), '-'));
 ?>
 <style>
@@ -73,14 +73,41 @@ $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $curren
     height: 52px !important;
   }
 }
+.home_banners {
+  position: relative !important;
+  z-index: 1050 !important;
+  overflow: visible !important;
+}
 .search_service {
   padding: 85px 0 65px 0;
+  position: relative !important;
+  z-index: 1055 !important;
 }
+.my_autocomplate {
+  position: relative !important;
+  z-index: 1060 !important;
+}
+.search-wrapper {
+  position: relative !important;
+  z-index: 1070 !important;
+}
+#searchDropdown.search-dropdown {
+  position: absolute !important;
+  z-index: 99999 !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 16px 40px rgba(10, 28, 51, 0.28) !important;
+  border-radius: 14px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
 .trust_stats_strip {
   background: #ffffff;
   padding: 30px 0 26px 0;
   position: relative;
-  z-index: 5;
+  z-index: 5 !important;
 }
 .trust_stats_strip .complate_serv {
   margin: 0 auto;
@@ -104,32 +131,104 @@ $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $curren
   transform: translateY(-3px);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
 }
+.trust_stats_strip .stats-clone {
+  display: none !important;
+}
+
 @media (max-width: 767px) {
   .home_banners {
     min-height: auto;
+    position: relative !important;
+    z-index: 1050 !important;
+    overflow: visible !important;
   }
   .search_service {
     padding: 24px 0 28px 0;
+    position: relative !important;
+    z-index: 1055 !important;
+  }
+  .my_autocomplate {
+    position: relative !important;
+    z-index: 1060 !important;
+  }
+  .search-wrapper {
+    position: relative !important;
+    z-index: 1070 !important;
+  }
+  #searchDropdown.search-dropdown {
+    position: absolute !important;
+    z-index: 99999 !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 16px 40px rgba(10, 28, 51, 0.3) !important;
+    border-radius: 14px !important;
   }
   .trust_stats_strip {
-    padding: 20px 0;
+    padding: 16px 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 2 !important;
   }
   .trust_stats_strip .complate_serv {
     display: block !important;
     width: 100% !important;
+    overflow: hidden !important;
+    position: relative !important;
+    mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   }
   .trust_stats_strip .complate_serv ul {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    width: max-content !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 4px 10px !important;
+    animation: trustStatsScroll 16s linear infinite !important;
+  }
+  .trust_stats_strip .stats-clone {
+    display: flex !important;
+  }
+  .trust_stats_strip .complate_serv ul:hover,
+  .trust_stats_strip .complate_serv ul:active {
+    animation-play-state: paused !important;
   }
   .trust_stats_strip .complate_serv ul li {
-    width: 100% !important;
-    padding: 12px 8px !important;
-    font-size: 19px !important;
+    flex: 0 0 175px !important;
+    width: 175px !important;
+    min-width: 175px !important;
+    max-width: 175px !important;
+    height: 76px !important;
+    padding: 8px 10px !important;
+    font-size: 18px !important;
+    font-weight: 800 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
   }
   .trust_stats_strip .complate_serv ul li h6 {
-    font-size: 11px !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+    margin-top: 3px !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+  }
+}
+
+@keyframes trustStatsScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50% - 6px));
   }
 }
 
@@ -338,37 +437,75 @@ a.solution_card:active,
 }
 @media (max-width: 767px) {
   .complete_solutions_main {
-    padding: 35px 0 30px 0;
+    padding: 30px 0 25px 0;
   }
   .solutions_header {
-    margin-bottom: 22px;
+    margin-bottom: 18px;
   }
   .solutions_header h2 {
-    font-size: 26px;
-  }
-  .solutions_header p {
-    font-size: 13.5px;
-    padding: 0 12px;
+    font-size: 24px;
+    margin-bottom: 0 !important;
   }
   .solutions_grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-    max-width: 520px;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+    padding: 0 4px !important;
   }
-  .solution_media_wrapper  { height: 135px; }
-  .solution_icon_wrap      { width: 40px; height: 40px; border-radius: 10px; top: 10px; left: 10px; padding: 3px; }
-  .solution_title          { font-size: 15px; margin-bottom: 4px; }
-  .solution_desc           { font-size: 11.5px; line-height: 1.45; margin-bottom: 10px; }
-  .solution_body           { padding: 12px 13px 14px 13px; }
+  .solution_card {
+    border-radius: 12px !important;
+    border: 1px solid #e8edf3 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+  }
+  .solution_media_wrapper {
+    height: 72px !important;
+  }
+  .solution_media_wrapper img {
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+  .solution_icon_wrap {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    top: 5px !important;
+    left: 5px !important;
+    padding: 2px !important;
+  }
+  .solution_body {
+    padding: 6px 4px 8px 4px !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+  }
+  .solution_title {
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    color: #0b1a2d !important;
+  }
+  .solution_desc {
+    display: none !important;
+  }
+  .solution_footer {
+    display: none !important;
+  }
 }
 @media (max-width: 480px) {
   .solutions_grid {
-    grid-template-columns: 1fr;
-    max-width: 360px;
-    gap: 14px;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 7px !important;
   }
-  .solution_media_wrapper { height: 160px; }
-  .solution_icon_wrap     { width: 44px; height: 44px; top: 12px; left: 12px; }
+  .solution_media_wrapper {
+    height: 64px !important;
+  }
+  .solution_title {
+    font-size: 10px !important;
+  }
 }
 
 </style>
@@ -449,13 +586,18 @@ a.solution_card:active,
 
 <!-- Trust Stats Section (Moved below Hero Banner) -->
 <div class="trust_stats_strip">
-  <div class="container">
-    <div class="complate_serv">
+  <div class="container px-0 px-md-3">
+    <div class="complate_serv" id="trustStatsSlider">
       <ul>
         <li>4.8★ <h6>Rated by 1000+ Happy Customers</h6></li>
         <li>5000+ <h6>Homes Professionally <br>Cleaned</h6></li>
         <li>60+ <h6>Trusted Service <br>Partners</h6></li>
         <li>400+ <h6>Verified <br>Professionals</h6></li>
+        <!-- Seamless continuous marquee clone on mobile -->
+        <li class="stats-clone">4.8★ <h6>Rated by 1000+ Happy Customers</h6></li>
+        <li class="stats-clone">5000+ <h6>Homes Professionally <br>Cleaned</h6></li>
+        <li class="stats-clone">60+ <h6>Trusted Service <br>Partners</h6></li>
+        <li class="stats-clone">400+ <h6>Verified <br>Professionals</h6></li>
       </ul>
     </div>
   </div>
@@ -464,6 +606,7 @@ a.solution_card:active,
 
 <!-- Complete Home Solutions Section -->
 <?php
+$isCustomerLoggedIn = \App\Core\Auth::check();
 $solutionCards = [
   [
     'slug'      => 'cleaning',
@@ -550,14 +693,16 @@ $solutionCards = [
             <span class="eyebrow_dash"></span>
           </div>
           <h2>Complete Home Solutions</h2>
-          <p>From cleaning to repairs, we provide end-to-end home services with verified professionals.</p>
         </div>
       </div>
     </div>
 
     <div class="solutions_grid" id="solutionsGrid">
-      <?php foreach ($solutionCards as $card): ?>
-        <a href="<?= $card['url'] ?>" class="solution_card" data-category="<?= $card['slug'] ?>" title="<?= \App\Core\View::e($card['title']) ?>">
+      <?php foreach ($solutionCards as $card): 
+        $targetUrl = $card['url'];
+        $cardHref = $isCustomerLoggedIn ? $targetUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetUrl));
+      ?>
+        <a href="<?= $cardHref ?>" class="solution_card" data-category="<?= $card['slug'] ?>" data-target-url="<?= $targetUrl ?>" title="<?= \App\Core\View::e($card['title']) ?>">
           <div class="solution_media_wrapper">
             <img src="<?= \App\Core\View::asset('img/' . $card['image']) ?>"
                  alt="<?= \App\Core\View::e($card['title']) ?>"
@@ -586,42 +731,36 @@ $solutionCards = [
 </section>
 
 <!-- Services Marquee Ticker Strip (Positioned directly below Complete Home Solutions) -->
+<?php
+$marqueeServices = [
+  ['title' => 'Full Home Deep Cleaning', 'url' => \App\Core\View::url("/cleaning-services")],
+  ['title' => 'AC Service & Repair', 'url' => \App\Core\View::url("/ac-services")],
+  ['title' => 'Plumbing & Leak Repair', 'url' => \App\Core\View::url("/plumber-services")],
+  ['title' => 'Fall Ceiling & POP Design', 'url' => \App\Core\View::url("/fall-ceiling-services")],
+  ['title' => 'Carpentry & Woodwork', 'url' => \App\Core\View::url("/carpenter-services")],
+  ['title' => 'Interior & Exterior Painting', 'url' => \App\Core\View::url("/painting-services")],
+  ['title' => 'Electrical Wiring & MCB', 'url' => \App\Core\View::url("/electrician-services")],
+  ['title' => 'Appliance & Washing Machine Repair', 'url' => \App\Core\View::url("/appliance-repair-services")],
+];
+?>
 <div class="services_marquee_strip" aria-label="Available Services">
   <div class="services_marquee_track">
     <div class="services_marquee_group">
-      <a href="<?= \App\Core\View::url("/cleaning-services") ?>" class="sm-link">Full Home Deep Cleaning</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/ac-services") ?>" class="sm-link">AC Service & Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/plumber-services") ?>" class="sm-link">Plumbing & Leak Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/fall-ceiling-services") ?>" class="sm-link">Fall Ceiling & POP Design</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/carpenter-services") ?>" class="sm-link">Carpentry & Woodwork</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/painting-services") ?>" class="sm-link">Interior & Exterior Painting</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/electrician-services") ?>" class="sm-link">Electrical Wiring & MCB</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/appliance-repair-services") ?>" class="sm-link">Appliance & Washing Machine Repair</a>
-      <span class="sm-dot">✦</span>
+      <?php foreach ($marqueeServices as $m): 
+        $mTarget = $m['url'];
+        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
+      ?>
+        <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= $m['title'] ?></a>
+        <span class="sm-dot">✦</span>
+      <?php endforeach; ?>
     </div><div class="services_marquee_group" aria-hidden="true">
-      <a href="<?= \App\Core\View::url("/cleaning-services") ?>" class="sm-link">Full Home Deep Cleaning</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/ac-services") ?>" class="sm-link">AC Service & Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/plumber-services") ?>" class="sm-link">Plumbing & Leak Repair</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/fall-ceiling-services") ?>" class="sm-link">Fall Ceiling & POP Design</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/carpenter-services") ?>" class="sm-link">Carpentry & Woodwork</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/painting-services") ?>" class="sm-link">Interior & Exterior Painting</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/electrician-services") ?>" class="sm-link">Electrical Wiring & MCB</a>
-      <span class="sm-dot">✦</span>
-      <a href="<?= \App\Core\View::url("/appliance-repair-services") ?>" class="sm-link">Appliance & Washing Machine Repair</a>
-      <span class="sm-dot">✦</span>
+      <?php foreach ($marqueeServices as $m): 
+        $mTarget = $m['url'];
+        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
+      ?>
+        <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= $m['title'] ?></a>
+        <span class="sm-dot">✦</span>
+      <?php endforeach; ?>
     </div>
   </div>
 </div>
@@ -5240,6 +5379,30 @@ document.addEventListener('DOMContentLoaded', function() {
   var ajaxResults = document.getElementById("ajaxResults");
   var heroSearchForm = document.getElementById("heroSearchForm");
   var currentSuggestions = [];
+  var isCustomerLoggedIn = <?= \App\Core\Auth::check() ? 'true' : 'false' ?>;
+
+  function navigateToService(targetUrl) {
+    if (!isCustomerLoggedIn) {
+      window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(targetUrl);
+    } else {
+      window.location.href = targetUrl;
+    }
+  }
+
+  // Intercept clicks on homepage service cards and marquee links for guests
+  if (!isCustomerLoggedIn) {
+    document.querySelectorAll('.solution_card, .services_marquee_strip a').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = this.getAttribute('data-target-url') || this.getAttribute('href');
+        if (target && target.indexOf('/login') !== -1) {
+          window.location.href = target;
+        } else if (target) {
+          window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(target);
+        }
+      });
+    });
+  }
 
   function performSearchNavigation() {
     if (!searchInput) return;
@@ -5256,7 +5419,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var topName = (topItem.name || '').toLowerCase();
       var topSlug = (topItem.slug || '').toLowerCase();
       if (topName.indexOf(qLower) !== -1 || topSlug.indexOf(qLower) !== -1 || qLower.indexOf(topSlug) !== -1) {
-        window.location.href = baseUrl + '/' + topItem.slug + '-in-' + selectedCitySlug;
+        var dest = baseUrl + '/' + topItem.slug + '-in-' + selectedCitySlug;
+        navigateToService(dest);
         return;
       }
     }
@@ -5350,42 +5514,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (trendLi) {
       var sSlug = trendLi.getAttribute("data-slug");
       if (sSlug) {
-        window.location.href = baseUrl + '/' + sSlug;
+        navigateToService(baseUrl + '/' + sSlug);
         return;
       }
       var sCat = trendLi.getAttribute("data-service") || 'cleaning';
       var cleanCat = sCat.endsWith('-services') ? sCat : (sCat + '-services');
-      window.location.href = baseUrl + '/' + cleanCat;
+      navigateToService(baseUrl + '/' + cleanCat);
       return;
     }
     var suggLi = e.target.closest(".suggestion-item");
     if (suggLi) {
       var sSlug2 = suggLi.getAttribute("data-slug") || 'cleaning';
-      window.location.href = baseUrl + '/' + sSlug2;
-    }
-  });
-
-  // 3. FAQ Accordion Toggle
-  document.querySelectorAll(".faq-item").forEach(function(item) {
-    var q = item.querySelector(".faq-question");
-    if (q) {
-      q.addEventListener("click", function() {
-        var isOpen = item.classList.contains("active");
-        document.querySelectorAll(".faq-item").forEach(function(other) {
-          other.classList.remove("active");
-          var ans = other.querySelector(".faq-answer");
-          var ico = other.querySelector(".faq-icon");
-          if (ans) ans.style.display = "none";
-          if (ico) ico.textContent = "+";
-        });
-        if (!isOpen) {
-          item.classList.add("active");
-          var ans = item.querySelector(".faq-answer");
-          var ico = item.querySelector(".faq-icon");
-          if (ans) ans.style.display = "block";
-          if (ico) ico.textContent = "−";
-        }
-      });
+      navigateToService(baseUrl + '/' + sSlug2);
     }
   });
 });

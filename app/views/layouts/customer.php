@@ -30,10 +30,10 @@
       'priceRange'=> '₹₹',
       'address'  => [
         '@type'          => 'PostalAddress',
-        'streetAddress'  => \App\Models\Setting::get('company_address', 'Cyber City, DLF Phase 2'),
-        'addressLocality'=> 'Gurugram',
-        'addressRegion'  => 'Haryana',
-        'postalCode'     => '122002',
+        'streetAddress'  => \App\Models\Setting::get('company_address', 'Station Road'),
+        'addressLocality'=> 'Kashipur',
+        'addressRegion'  => 'Uttarakhand',
+        'postalCode'     => '244713',
         'addressCountry' => 'IN',
       ],
       'openingHoursSpecification' => [
@@ -328,6 +328,54 @@
             }, 10);
           }
         });
+      }
+    });
+
+    // Global FAQ accordion click handler (single source of truth for all pages)
+    document.addEventListener('click', function(e) {
+      var questionEl = e.target.closest('.faq-question, .contact-faq-question');
+      var itemEl = e.target.closest('.faq-item, .contact-faq-item');
+
+      // Do not collapse if user is clicking or selecting text inside the open answer
+      if (e.target.closest('.faq-answer, .contact-faq-answer') && !questionEl) {
+        return;
+      }
+
+      var trigger = questionEl || itemEl;
+      if (!trigger) return;
+
+      var item = trigger.closest('.faq-item, .contact-faq-item');
+      if (!item) return;
+
+      var isActive = item.classList.contains('active');
+      var container = item.closest('.faq-container, .contact-faq-container') || item.parentElement;
+
+      // Close all other items in this accordion
+      if (container) {
+        container.querySelectorAll('.faq-item, .contact-faq-item').forEach(function(other) {
+          other.classList.remove('active');
+          var ans = other.querySelector('.faq-answer, .contact-faq-answer');
+          if (ans) {
+            ans.style.display = 'none';
+            ans.style.maxHeight = '0px';
+            ans.style.opacity = '0';
+          }
+          var icon = other.querySelector('.faq-icon, .contact-faq-icon');
+          if (icon) icon.textContent = '+';
+        });
+      }
+
+      // If clicked item was not active, open it
+      if (!isActive) {
+        item.classList.add('active');
+        var ans = item.querySelector('.faq-answer, .contact-faq-answer');
+        if (ans) {
+          ans.style.display = 'block';
+          ans.style.maxHeight = '1200px';
+          ans.style.opacity = '1';
+        }
+        var icon = item.querySelector('.faq-icon, .contact-faq-icon');
+        if (icon) icon.textContent = '−';
       }
     });
   });

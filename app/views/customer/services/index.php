@@ -126,8 +126,8 @@ $refixelTrustData = [
     ],
 ];
 
-$currentCity = $currentCity ?? ($_SESSION['selected_city'] ?? 'Gurugram');
-$citySlug = $citySlug ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $currentCity), '-'));
+$currentCity = \App\Models\ServiceArea::normalizeCity($currentCity ?? ($_SESSION['selected_city'] ?? null));
+$citySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $currentCity), '-'));
 
 // Determine if a specific category is active (default 'all')
 if (empty($activeCategory)) {
@@ -242,6 +242,119 @@ if (empty($activeCategory)) {
   align-items: center;
   justify-content: center;
   font-size: 14px;
+}
+
+.sidebar-search-container {
+  padding: 0 2px 10px 2px;
+  position: relative;
+  z-index: 25;
+}
+.sidebar-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.sidebar-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #94a3b8;
+  font-size: 13px;
+  pointer-events: none;
+}
+.sidebar-search-input {
+  width: 100%;
+  height: 38px;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 0 32px 0 34px;
+  font-size: 13px;
+  color: #0b1a2d;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.sidebar-search-input:focus {
+  border-color: #f25b29;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(242, 91, 41, 0.15);
+}
+.sidebar-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-search-clear:hover {
+  color: #f25b29;
+}
+.sidebar-suggestions-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 30px rgba(10, 28, 51, 0.16);
+  z-index: 100;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 6px;
+  padding: 6px 0;
+}
+.sidebar-sugg-heading {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #94a3b8;
+  padding: 6px 14px 4px 14px;
+  letter-spacing: 0.5px;
+}
+.sidebar-sugg-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  text-decoration: none !important;
+  color: #0b1a2d !important;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #f8fafc;
+}
+.sidebar-sugg-item:hover, .sidebar-sugg-item.highlighted {
+  background: #fff5f0;
+}
+.sidebar-sugg-item .sugg-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #0b1a2d;
+  line-height: 1.3;
+}
+.sidebar-sugg-item .sugg-cat-badge {
+  font-size: 10px;
+  color: #64748b;
+  display: block;
+}
+.sidebar-sugg-item .sugg-price {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f25b29;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+.sidebar-sugg-empty {
+  padding: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
 .sidebar-categories-list {
@@ -1061,6 +1174,24 @@ if (empty($activeCategory)) {
       </div>
 
       <div class="services-sidebar-card">
+        <!-- Service Categories Live Search Box -->
+        <div class="sidebar-search-container">
+          <div class="sidebar-search-wrap">
+            <i class="fa fa-search sidebar-search-icon"></i>
+            <input type="text"
+                   id="catSidebarSearchInput"
+                   class="sidebar-search-input"
+                   placeholder="Search services or categories..."
+                   autocomplete="off"
+                   aria-label="Search services or categories">
+            <button type="button" id="catSidebarSearchClear" class="sidebar-search-clear" aria-label="Clear search" style="display: none;">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <!-- Auto-Suggestions Dropdown Box -->
+          <div id="catSidebarSuggestions" class="sidebar-suggestions-panel" style="display: none;"></div>
+        </div>
+
         <div class="sidebar-categories-list" id="servicesSidebarList">
           <!-- All Categories Link -->
           <a href="javascript:void(0)" class="cat-sidebar-link <?= ($activeCategory === 'all') ? 'active' : '' ?>" data-filter="all" title="View all service categories">
@@ -1549,6 +1680,168 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
       }
     }, { passive: false });
+  }
+
+  /* ── Sidebar Categories Live Search & Auto-Suggestions Controller ── */
+  var catSearchInput = document.getElementById('catSidebarSearchInput');
+  var catSearchClear = document.getElementById('catSidebarSearchClear');
+  var catSuggestionsBox = document.getElementById('catSidebarSuggestions');
+  var catLinks = document.querySelectorAll('#servicesSidebarList .cat-sidebar-link');
+
+  var CATALOGUE_DATA = <?= json_encode(array_map(function($s) use ($categories) {
+    $catName = '';
+    $catSlug = '';
+    foreach ($categories ?? [] as $c) {
+      if ((int)$c['id'] === (int)$s['category_id']) {
+        $catName = $c['name'];
+        $catSlug = $c['slug'];
+        break;
+      }
+    }
+    return [
+      'id'            => (int)$s['id'],
+      'name'          => $s['name'],
+      'slug'          => $s['slug'],
+      'cat_name'      => $catName,
+      'cat_slug'      => $catSlug,
+      'starting_price'=> (float)($s['starting_price'] ?? 0),
+      'url'           => \App\Core\View::url('/services/' . $s['slug']),
+    ];
+  }, $services ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+  var CATEGORIES_DATA = <?= json_encode(array_map(function($c) {
+    $cSlug = $c['slug'];
+    $cleanSlug = str_ends_with($cSlug, '-services') ? $cSlug : "{$cSlug}-services";
+    return [
+      'id'    => (int)$c['id'],
+      'name'  => $c['name'],
+      'slug'  => $c['slug'],
+      'url'   => \App\Core\View::url("/{$cleanSlug}")
+    ];
+  }, $categories ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+  if (catSearchInput) {
+    catSearchInput.addEventListener('input', function() {
+      var query = this.value.trim().toLowerCase();
+
+      if (catSearchClear) {
+        catSearchClear.style.display = query.length > 0 ? 'flex' : 'none';
+      }
+
+      if (query.length === 0) {
+        // Reset sidebar links
+        catLinks.forEach(function(link) {
+          link.style.display = 'flex';
+          link.style.opacity = '1';
+        });
+        if (catSuggestionsBox) {
+          catSuggestionsBox.style.display = 'none';
+          catSuggestionsBox.innerHTML = '';
+        }
+        return;
+      }
+
+      // 1. Live Filter Sidebar Category Links
+      var matchedCatSlugs = {};
+      catLinks.forEach(function(link) {
+        var filterVal = (link.getAttribute('data-filter') || '').toLowerCase();
+        var catNameEl = link.querySelector('.cat-name');
+        var catText = (catNameEl ? catNameEl.textContent : '').toLowerCase();
+
+        // Check if category name matches OR if any service inside this category matches query
+        var isCatMatch = catText.indexOf(query) !== -1;
+        var hasServiceMatch = false;
+        CATALOGUE_DATA.forEach(function(svc) {
+          if (svc.cat_slug === filterVal && svc.name.toLowerCase().indexOf(query) !== -1) {
+            hasServiceMatch = true;
+          }
+        });
+
+        if (filterVal === 'all' || isCatMatch || hasServiceMatch) {
+          link.style.display = 'flex';
+          link.style.opacity = '1';
+          if (filterVal !== 'all') matchedCatSlugs[filterVal] = true;
+        } else {
+          link.style.display = 'none';
+        }
+      });
+
+      // 2. Build Auto-Suggestions Dropdown
+      if (catSuggestionsBox) {
+        var matchingCategories = CATEGORIES_DATA.filter(function(cat) {
+          return cat.name.toLowerCase().indexOf(query) !== -1;
+        });
+
+        var matchingServices = CATALOGUE_DATA.filter(function(svc) {
+          return svc.name.toLowerCase().indexOf(query) !== -1;
+        }).slice(0, 6);
+
+        var html = '';
+
+        if (matchingCategories.length > 0) {
+          html += '<div class="sidebar-sugg-heading">Categories (' + matchingCategories.length + ')</div>';
+          matchingCategories.slice(0, 3).forEach(function(cat) {
+            html += '<a href="' + cat.url + '" class="sidebar-sugg-item" data-type="category" data-slug="' + cat.slug + '">';
+            html += '  <div>';
+            html += '    <div class="sugg-title"><i class="fa fa-th-large text-warning mr-1"></i> ' + cat.name + '</div>';
+            html += '    <span class="sugg-cat-badge">Explore all services</span>';
+            html += '  </div>';
+            html += '  <i class="fa fa-arrow-right text-muted small"></i>';
+            html += '</a>';
+          });
+        }
+
+        if (matchingServices.length > 0) {
+          html += '<div class="sidebar-sugg-heading">Suggested Services (' + matchingServices.length + ')</div>';
+          matchingServices.forEach(function(svc) {
+            html += '<a href="' + svc.url + '" class="sidebar-sugg-item" data-type="service">';
+            html += '  <div style="flex: 1; min-width: 0; padding-right: 8px;">';
+            html += '    <div class="sugg-title text-truncate">' + svc.name + '</div>';
+            html += '    <span class="sugg-cat-badge text-truncate">' + svc.cat_name + '</span>';
+            html += '  </div>';
+            html += '  <span class="sugg-price">₹' + Math.round(svc.starting_price) + '</span>';
+            html += '</a>';
+          });
+        }
+
+        if (matchingCategories.length === 0 && matchingServices.length === 0) {
+          html += '<div class="sidebar-sugg-empty"><i class="fa fa-search mr-1 text-muted"></i> No services found matching "' + query + '"</div>';
+        }
+
+        catSuggestionsBox.innerHTML = html;
+        catSuggestionsBox.style.display = 'block';
+      }
+    });
+
+    if (catSearchClear) {
+      catSearchClear.addEventListener('click', function() {
+        catSearchInput.value = '';
+        catSearchInput.dispatchEvent(new Event('input'));
+        catSearchInput.focus();
+      });
+    }
+
+    // Close suggestions on outside click
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.sidebar-search-container')) {
+        if (catSuggestionsBox) catSuggestionsBox.style.display = 'none';
+      }
+    });
+
+    // Handle suggestion category link clicks
+    if (catSuggestionsBox) {
+      catSuggestionsBox.addEventListener('click', function(e) {
+        var catItem = e.target.closest('.sidebar-sugg-item[data-type="category"]');
+        if (catItem) {
+          var slug = catItem.getAttribute('data-slug');
+          if (slug && typeof switchCategory === 'function') {
+            e.preventDefault();
+            switchCategory(slug, true);
+            catSuggestionsBox.style.display = 'none';
+          }
+        }
+      });
+    }
   }
 });
 </script>

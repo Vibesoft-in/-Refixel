@@ -37,7 +37,7 @@
           <h6 class="text-muted small font-weight-bold mb-2">Popular Cities</h6>
           <div class="row no-gutters city-chip-grid" style="display:flex; flex-wrap:wrap; gap:8px;">
             <?php
-            $popularCities = ['Gurugram', 'Delhi-NCR', 'Mumbai', 'Hyderabad', 'Chennai', 'Ahmedabad', 'Chandigarh', 'Kochi', 'Pune'];
+            $popularCities = \App\Models\ServiceArea::ALLOWED_CITIES;
             foreach ($popularCities as $c):
             ?>
               <button type="button" class="btn btn-sm btn-outline-secondary select-city-btn" data-city="<?= \App\Core\View::e($c) ?>">
@@ -46,7 +46,7 @@
             <?php endforeach; ?>
           </div>
           <div id="locGateNoResult" style="display:none;" class="text-danger small mt-2">
-            We are coming soon to this area! Currently serving major metro cities.
+            We are coming soon to this area! Currently serving Kashipur, Jaspur, and Thakurdwara.
           </div>
         </div>
       </div>

@@ -278,7 +278,7 @@ class AccountController extends Controller
             if ($latestBooking) {
                 $customerProfile = [
                     'address' => $latestBooking['address'],
-                    'city'    => 'Gurugram',
+                    'city'    => \App\Models\ServiceArea::DEFAULT_CITY,
                     'pincode' => $latestBooking['pincode'],
                 ];
             }
@@ -297,9 +297,10 @@ class AccountController extends Controller
         $name = trim((string)$request->input('name'));
         $email = $request->input('email') ? trim((string)$request->input('email')) : null;
         $address = trim((string)$request->input('address'));
-        $city = trim((string)$request->input('city'));
+        $city = \App\Models\ServiceArea::normalizeCity((string)$request->input('city'));
         $pincode = trim((string)$request->input('pincode'));
-        $state = trim((string)$request->input('state', 'Haryana'));
+        $defaultState = ($city === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand';
+        $state = trim((string)$request->input('state', $defaultState)) ?: $defaultState;
         $house_no = trim((string)$request->input('house_no'));
         $street = trim((string)$request->input('street'));
         $address_type = trim((string)$request->input('address_type', 'Home'));

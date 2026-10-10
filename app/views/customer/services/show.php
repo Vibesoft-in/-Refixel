@@ -545,27 +545,23 @@ foreach ($checklist ?? [] as $item) {
             <?php endif; ?>
           </div>
 
-          <!-- Service Areas Covered in this City -->
+          <!-- Service Coverage Area -->
           <div class="mb-5">
             <h3 class="font-weight-bold mb-3" style="font-size: 22px;">
-              <i class="fa fa-map-marker mr-2" style="color:#f25b29;"></i> Service Coverage - Available in your location
+              <i class="fa fa-map-marker mr-2" style="color:#f25b29;"></i> Service Coverage Area
             </h3>
             <div class="p-3 rounded bg-white border">
-              <p class="text-muted small mb-2">Immediate technician dispatch - Available in your location:</p>
-              <div class="d-flex flex-wrap" style="gap: 6px;">
-                <?php if (!empty($serviceAreas)): ?>
-                  <?php foreach ($serviceAreas as $area): ?>
-                    <span class="badge badge-light p-2 border font-weight-normal">
-                      <?= \App\Core\View::e($area['area_name']) ?> (<?= \App\Core\View::e($area['pincode']) ?>)
-                    </span>
-                  <?php endforeach; ?>
-                <?php else: ?>
-                  <span class="badge badge-light p-2 border">DLF Phase 1–5</span>
-                  <span class="badge badge-light p-2 border">Cyber City</span>
-                  <span class="badge badge-light p-2 border">Sohna Road</span>
-                  <span class="badge badge-light p-2 border">Golf Course Ext.</span>
-                  <span class="badge badge-light p-2 border">All Major Sectors</span>
-                <?php endif; ?>
+              <p class="text-muted small mb-2">Immediate doorstep technician dispatch available across:</p>
+              <div class="d-flex flex-wrap" style="gap: 8px;">
+                <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13.5px;">
+                  <i class="fa fa-map-marker text-danger mr-1"></i> Kashipur
+                </span>
+                <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13.5px;">
+                  <i class="fa fa-map-marker text-danger mr-1"></i> Jaspur
+                </span>
+                <span class="badge badge-light p-2 border font-weight-normal" style="font-size: 13.5px;">
+                  <i class="fa fa-map-marker text-danger mr-1"></i> Thakurdwara
+                </span>
               </div>
             </div>
           </div>
@@ -955,6 +951,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
   });
+
+
 
   // Multi-Transformation Carousel Controller
   var carouselWrap = document.getElementById('baTransformationsCarousel');

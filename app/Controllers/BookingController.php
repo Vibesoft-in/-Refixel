@@ -19,6 +19,17 @@ class BookingController extends Controller
 {
     public function showForm(Request $request): Response
     {
+        $rawCity = $request->query('city');
+        if ($rawCity !== null && !ServiceArea::isValidCity((string)$rawCity)) {
+            $serviceId = (int)$request->query('service_id', 0);
+            $redirectParams = [];
+            if ($serviceId > 0) {
+                $redirectParams['service_id'] = $serviceId;
+            }
+            $redirectParams['city'] = ServiceArea::DEFAULT_CITY;
+            return $this->redirect('/book?' . http_build_query($redirectParams));
+        }
+
         $serviceId = (int)$request->query('service_id', 0);
         $service = $serviceId ? Service::find($serviceId) : null;
         $allServices = Service::getActive();
@@ -169,8 +180,9 @@ class BookingController extends Controller
         $priority = in_array($request->input('priority'), ['high', 'urgent']) ? (string)$request->input('priority') : 'normal';
 
         $addressInput = trim((string)$request->input('address'));
-        $cityInput = trim((string)$request->input('city', 'Gurugram'));
-        $stateInput = trim((string)$request->input('state', 'Haryana'));
+        $cityInput = ServiceArea::normalizeCity((string)$request->input('city'));
+        $defaultState = ($cityInput === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand';
+        $stateInput = trim((string)$request->input('state', $defaultState)) ?: $defaultState;
         $houseNoInput = trim((string)$request->input('house_no'));
         $streetInput = trim((string)$request->input('street'));
         $addressTypeInput = trim((string)$request->input('address_type', 'Home'));

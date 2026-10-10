@@ -25,7 +25,7 @@
       <p>REFIXEL maintains comprehensive incident assistance protocols. Any damage claims must be reported within 24 hours of job completion with photographic proof. Liability is strictly limited to the total service value paid for the specific booking.</p>
 
       <h4 class="font-weight-bold mt-4" style="color: #0a1c33;">7. Governing Law & Jurisdiction</h4>
-      <p>These terms are governed by the laws of the Republic of India. Courts situated in Gurugram, Haryana have exclusive jurisdiction over any disputes arising under or related to these terms.</p>
+      <p>These terms are governed by the laws of the Republic of India. Courts situated in Kashipur, Uttarakhand have exclusive jurisdiction over any disputes arising under or related to these terms.</p>
     </div>
   </div>
 </div>

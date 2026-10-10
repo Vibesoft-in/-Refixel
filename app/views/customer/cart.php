@@ -4,7 +4,7 @@
  */
 $user = \App\Core\Auth::user();
 $customerProfile = $user ? \App\Core\Database::fetchOne("SELECT address, city, pincode FROM customer_profiles WHERE user_id = ?", [$user['id']]) : null;
-$currentCity = $_SESSION['selected_city'] ?? ($customerProfile['city'] ?? 'Gurugram');
+$currentCity = \App\Models\ServiceArea::normalizeCity($_GET['city'] ?? ($_SESSION['selected_city'] ?? ($customerProfile['city'] ?? null)));
 $items = $cart['items'] ?? [];
 $isEmpty = $cart['is_empty'] ?? empty($items);
 ?>
@@ -34,7 +34,7 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
     <div class="row">
       <!-- Cart Items List -->
       <div class="col-lg-7 mb-4">
-        <div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px; border: 1.5px solid rgba(242, 91, 41, 0.45) !important; box-shadow: 0 0 16px rgba(242, 91, 41, 0.18), 0 4px 12px rgba(242, 91, 41, 0.08) !important;">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="font-weight-bold mb-0" style="font-size: 20px;">Selected Services (<?= count($items) ?>)</h4>
             <button type="button" class="btn btn-sm btn-link text-danger font-weight-bold p-0" id="clearCartBtn">
@@ -72,37 +72,82 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
 
         <!-- Doorstep Booking Schedule Form -->
         <div class="card p-4 p-md-5 border-0 shadow-sm" style="border-radius: 16px;">
-          <h4 class="font-weight-bold mb-2" style="font-size: 20px;">Doorstep Visit Details</h4>
+          <h2 class="font-weight-bold mb-2" style="font-size: 24px; color: #1a1a1a;">Doorstep Visit Details</h2>
           <p class="text-muted small mb-4">Enter your schedule and service location. Verified technicians will be matched to your booking.</p>
+
+          <style>
+          .booking-section-card {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1.5px solid rgba(242, 91, 41, 0.45) !important;
+            border-radius: 14px !important;
+            box-shadow: 0 0 16px rgba(242, 91, 41, 0.18), 0 4px 12px rgba(242, 91, 41, 0.08) !important;
+            margin-bottom: 22px !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          }
+          .booking-section-card:hover,
+          .booking-section-card:focus-within {
+            border-color: rgba(242, 91, 41, 0.8) !important;
+            box-shadow: 0 0 22px rgba(242, 91, 41, 0.26), 0 6px 16px rgba(242, 91, 41, 0.12) !important;
+          }
+          .booking-section-card h5 {
+            color: #0a1c33 !important;
+          }
+          .booking-section-card label {
+            color: #334155 !important;
+          }
+          .booking-section-card .form-control {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 1.5px solid #cbd5e1 !important;
+          }
+          .booking-section-card .form-control:focus {
+            border-color: #f25b29 !important;
+            box-shadow: 0 0 0 3px rgba(242, 91, 41, 0.2) !important;
+          }
+          .booking-section-card .custom-control-label {
+            color: #1e293b !important;
+            cursor: pointer;
+          }
+          .booking-section-card .text-muted {
+            color: #64748b !important;
+          }
+          </style>
 
           <form action="<?= \App\Core\View::url('/book') ?>" method="POST" enctype="multipart/form-data" id="cartCheckoutForm">
             <?= \App\Core\View::csrf() ?>
             <input type="hidden" name="from_cart" value="1">
             <input type="hidden" name="service_id" value="<?= (int)($items[0]['service_id'] ?? 1) ?>">
 
-            <div class="form-row">
-              <div class="col-md-6 form-group">
-                <label class="font-weight-bold small">Your Full Name <span class="text-danger">*</span></label>
-                <input type="text" name="name" class="form-control" value="<?= \App\Core\View::e($user['name'] ?? '') ?>" placeholder="e.g. Rahul Verma" required>
-              </div>
-              <div class="col-md-6 form-group">
-                <label class="font-weight-bold small">Mobile Number <span class="text-danger">*</span></label>
-                <div class="input-group">
-                  <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
-                  <input type="tel" name="phone" class="form-control" value="<?= \App\Core\View::e($user['phone'] ?? '') ?>" placeholder="10-digit number" pattern="[6-9][0-9]{9}" required>
+            <div class="booking-form-sections-parent">
+              <!-- 1st Section: Contact Information -->
+              <div class="booking-section-card p-3 p-md-4">
+                <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">1. Contact Details</h5>
+                <div class="form-row">
+                  <div class="col-md-6 form-group">
+                    <label class="font-weight-bold small">Your Full Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" value="<?= \App\Core\View::e($user['name'] ?? '') ?>" placeholder="e.g. Rahul Verma" required>
+                  </div>
+                  <div class="col-md-6 form-group">
+                    <label class="font-weight-bold small">Mobile Number <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
+                      <input type="tel" name="phone" class="form-control" value="<?= \App\Core\View::e($user['phone'] ?? '') ?>" placeholder="10-digit number" pattern="[6-9][0-9]{9}" required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group mb-0">
+                  <label class="font-weight-bold small">Email Address (Optional for GST Invoice)</label>
+                  <input type="email" name="email" class="form-control" value="<?= \App\Core\View::e($user['email'] ?? '') ?>" placeholder="rahul@example.com">
                 </div>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label class="font-weight-bold small">Email Address (Optional for GST Invoice)</label>
-              <input type="email" name="email" class="form-control" value="<?= \App\Core\View::e($user['email'] ?? '') ?>" placeholder="rahul@example.com">
-            </div>
-
-            <!-- Service Address Header with Auto-fill & "Use My Current Location" button -->
-            <div class="d-flex justify-content-between align-items-center flex-wrap mt-4 mb-3" style="gap: 10px;">
-              <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-                <h5 class="font-weight-bold mb-0" style="font-size: 17px; color: #0a1c33;">Service Address</h5>
+              <!-- 2nd Section: Service Address -->
+              <div class="booking-section-card p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+                  <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                    <h5 class="font-weight-bold mb-0" style="font-size: 18px; color: #0a1c33;">2. Service Address</h5>
                 <span id="cartBookingAutoFillBadge" class="badge" style="display: none; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px;">
                   <i class="fa fa-check-circle mr-1"></i> Auto-filled from Home Page
                 </span>
@@ -143,11 +188,11 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
             <div class="form-row">
               <div class="col-md-4 form-group">
                 <label class="font-weight-bold small">City <span class="text-danger">*</span></label>
-                <input type="text" name="city" id="cartInputCity" class="form-control" value="<?= \App\Core\View::e($customerProfile['city'] ?? '') ?>" placeholder="e.g. City / Town" required>
+                <input type="text" name="city" id="cartInputCity" class="form-control" value="<?= \App\Core\View::e($customerProfile['city'] ?? $currentCity) ?>" placeholder="e.g. Kashipur, Jaspur, Thakurdwara" required>
               </div>
               <div class="col-md-4 form-group">
                 <label class="font-weight-bold small">State <span class="text-danger">*</span></label>
-                <input type="text" name="state" id="cartInputState" class="form-control" value="<?= \App\Core\View::e($customerProfile['state'] ?? '') ?>" placeholder="e.g. State / Province / Region" required>
+                <input type="text" name="state" id="cartInputState" class="form-control" value="<?= \App\Core\View::e($customerProfile['state'] ?? (($currentCity === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand')) ?>" placeholder="e.g. State / Province / Region" required>
               </div>
               <div class="col-md-4 form-group">
                 <label class="font-weight-bold small">Pincode <span class="text-danger">*</span></label>
@@ -155,10 +200,15 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
               </div>
             </div>
             
-            <div class="form-group">
+            <div class="form-group mb-0">
               <label class="font-weight-bold small">Complete Address / Landmark (Optional)</label>
               <textarea name="address" id="cartInputAddress" rows="2" class="form-control" placeholder="Any extra landmark details"><?= \App\Core\View::e($customerProfile['address'] ?? '') ?></textarea>
             </div>
+          </div>
+
+          <!-- 3rd Section: Preferred Schedule & Booking Confirmation -->
+          <div class="booking-section-card p-3 p-md-4">
+            <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">3. Preferred Schedule</h5>
 
             <div class="form-row">
               <div class="col-md-6 form-group">
@@ -354,16 +404,18 @@ $isEmpty = $cart['is_empty'] ?? empty($items);
               <textarea name="issue_details" rows="2" class="form-control" placeholder="Any access gates, specific stains, or precautions"></textarea>
             </div>
 
-            <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
-              Confirm Booking & Schedule Visit &rarr;
-            </button>
+                <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
+                  Confirm Booking & Schedule Visit &rarr;
+                </button>
+              </div>
+            </div>
           </form>
         </div>
       </div>
 
       <!-- Price Breakdown Sticky Summary -->
       <div class="col-lg-5">
-        <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#fff8f5; border: 1px solid #ffdacf;">
+        <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#fff8f5; border: 1.5px solid rgba(242, 91, 41, 0.45) !important; box-shadow: 0 0 16px rgba(242, 91, 41, 0.18), 0 4px 12px rgba(242, 91, 41, 0.08) !important;">
           <h4 class="font-weight-bold mb-3" style="font-size: 20px;">Price Summary</h4>
 
           <div class="d-flex justify-content-between mb-2 small text-muted">

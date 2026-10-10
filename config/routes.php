@@ -219,6 +219,8 @@ Router::group(['middleware' => ['RequireRole:staff']], function () {
 // ==========================================
 Router::post('/api/upload', 'Api\\UploadController@upload', ['VerifyCsrf']);
 Router::post('/api/service-area/pincode', 'Api\\ServiceAreaController@checkPincode');
+Router::post('/api/service-areas', 'Api\\ServiceAreaController@setCity');
+Router::post('/api/set-city', 'Api\\ServiceAreaController@setCity');
 Router::post('/api/search', 'Api\\ServiceAreaController@search');
 Router::post('/api/job/status', 'Api\\JobStatusController@update', ['RequireLogin', 'VerifyCsrf']);
 Router::get('/api/notifications', 'Api\\NotificationController@recent', ['RequireLogin']);

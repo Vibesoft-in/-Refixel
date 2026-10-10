@@ -91,7 +91,7 @@ $areas = $areas ?? [];
         <div class="modal-body">
           <div class="form-group mb-3">
             <label class="font-weight-bold small">City / Town <span class="text-danger">*</span></label>
-            <input type="text" name="city" class="form-control" placeholder="e.g. Kashipur, Jaspur, or Gurugram" required>
+            <input type="text" name="city" class="form-control" placeholder="e.g. Kashipur, Jaspur, or Thakurdwara" required>
           </div>
 
           <div class="form-group mb-3">

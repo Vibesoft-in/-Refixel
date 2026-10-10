@@ -79,23 +79,29 @@ $isCart = str_starts_with($cleanPathLower, '/cart');
 </div>
 
 <style>
-/* Modern Bottom Taskbar Navigation Styling */
+/* Bottom Taskbar Navigation - Hidden on Desktop/Big Screens, Visible only on Mobile & Tablets */
 .bottomBarNavbar {
-  height: 62px !important;
-  background: #ffffff !important;
-  box-shadow: 0 -2px 14px rgba(15, 23, 42, 0.08) !important;
-  border-top: 1px solid #eef2f6 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 5px 8px !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  z-index: 1050 !important;
-  box-sizing: border-box !important;
+  display: none !important;
+}
+
+@media (max-width: 991px) {
+  .bottomBarNavbar {
+    height: 62px !important;
+    background: #ffffff !important;
+    box-shadow: 0 -2px 14px rgba(15, 23, 42, 0.08) !important;
+    border-top: 1px solid #eef2f6 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 5px 8px !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 1050 !important;
+    box-sizing: border-box !important;
+  }
 }
 
 .bottomBarNavbar ul {

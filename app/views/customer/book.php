@@ -1,7 +1,7 @@
 <?php
 $user = \App\Core\Auth::user();
 $customerProfile = $user ? \App\Core\Database::fetchOne("SELECT address, city, pincode FROM customer_profiles WHERE user_id = ?", [$user['id']]) : null;
-$currentCity = $_SESSION['selected_city'] ?? ($customerProfile['city'] ?? 'Gurugram');
+$currentCity = \App\Models\ServiceArea::normalizeCity($_GET['city'] ?? ($_SESSION['selected_city'] ?? ($customerProfile['city'] ?? null)));
 $selectedServiceId = $service['id'] ?? 0;
 ?>
 <div class="container py-5 my-3">
@@ -12,306 +12,364 @@ $selectedServiceId = $service['id'] ?? 0;
         <h2 class="font-weight-bold mb-2" style="font-size: 26px; color: #1a1a1a;">Book Doorstep Service</h2>
         <p class="text-muted small mb-4">A background-verified technician equipped with mechanized tools will arrive at your scheduled slot.</p>
 
+        <style>
+        .booking-section-card {
+          background: #ffffff !important;
+          color: #1e293b !important;
+          border: 1.5px solid rgba(242, 91, 41, 0.45) !important;
+          border-radius: 14px !important;
+          box-shadow: 0 0 16px rgba(242, 91, 41, 0.18), 0 4px 12px rgba(242, 91, 41, 0.08) !important;
+          margin-bottom: 22px !important;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .booking-section-card:hover,
+        .booking-section-card:focus-within {
+          border-color: rgba(242, 91, 41, 0.8) !important;
+          box-shadow: 0 0 22px rgba(242, 91, 41, 0.26), 0 6px 16px rgba(242, 91, 41, 0.12) !important;
+        }
+        .booking-section-card h5 {
+          color: #0a1c33 !important;
+        }
+        .booking-section-card label {
+          color: #334155 !important;
+        }
+        .booking-section-card .form-control {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          border: 1.5px solid #cbd5e1 !important;
+        }
+        .booking-section-card .form-control:focus {
+          border-color: #f25b29 !important;
+          box-shadow: 0 0 0 3px rgba(242, 91, 41, 0.2) !important;
+        }
+        .booking-section-card .custom-control-label {
+          color: #1e293b !important;
+          cursor: pointer;
+        }
+        .booking-section-card .text-muted {
+          color: #64748b !important;
+        }
+        .booking-section-card .service-summary-pill {
+          background: #f8fafc !important;
+          border-color: #e2e8f0 !important;
+        }
+        .booking-section-card .service-summary-pill h6 {
+          color: #0f172a !important;
+        }
+        .booking-section-card .schedule-summary-box {
+          background: #ffffff !important;
+        }
+        </style>
+
         <form action="<?= \App\Core\View::url('/book') ?>" method="POST" id="bookingForm">
           <?= \App\Core\View::csrf() ?>
 
-          <!-- Service Selection -->
-          <div class="form-group mb-4">
-            <label class="font-weight-bold small">Selected Service <span class="text-danger">*</span></label>
-            <?php if ($service): ?>
-              <input type="hidden" name="service_id" value="<?= (int)$service['id'] ?>" id="serviceIdInput">
-              <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="font-weight-bold mb-0"><?= \App\Core\View::e($service['name']) ?></h6>
-                  <small class="text-muted">Estimated duration: ~<?= (int)($service['duration_minutes'] ?? 60) ?> mins</small>
-                </div>
-                <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$service['starting_price'], 0) ?></h5>
-              </div>
-            <?php else: ?>
-              <select name="service_id" id="serviceIdSelect" class="form-control" required>
-                <option value="">-- Choose a service package --</option>
-                <?php foreach ($allServices ?? [] as $s): ?>
-                  <option value="<?= (int)$s['id'] ?>" data-price="<?= (float)$s['starting_price'] ?>">
-                    <?= \App\Core\View::e($s['name']) ?> (Starting at ₹<?= number_format((float)$s['starting_price'], 0) ?>)
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            <?php endif; ?>
-          </div>
-
-          <!-- Contact Details -->
-          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">1. Contact Details</h5>
-          <div class="form-row">
-            <div class="col-md-6 form-group">
-              <label class="font-weight-bold small">Full Name <span class="text-danger">*</span></label>
-              <input type="text" name="name" class="form-control" value="<?= \App\Core\View::e($user['name'] ?? '') ?>" placeholder="e.g. Ananya Sharma" required>
-            </div>
-            <div class="col-md-6 form-group">
-              <label class="font-weight-bold small">Mobile Number <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
-                <input type="tel" name="phone" class="form-control" value="<?= \App\Core\View::e($user['phone'] ?? '') ?>" placeholder="10-digit number" pattern="[6-9][0-9]{9}" required>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="font-weight-bold small">Email Address (Optional for GST Invoice)</label>
-            <input type="email" name="email" class="form-control" value="<?= \App\Core\View::e($user['email'] ?? '') ?>" placeholder="yourname@example.com">
-          </div>
-
-          <!-- Address & City -->
-          <div class="d-flex justify-content-between align-items-center flex-wrap mt-4 mb-3" style="gap: 10px;">
-            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-              <h5 class="font-weight-bold mb-0" style="font-size: 18px; color: #0a1c33;">2. Service Address</h5>
-              <span id="bookingAutoFillBadge" class="badge" style="display: none; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px;">
-                <i class="fa fa-check-circle mr-1"></i> Auto-filled from Home Page
-              </span>
-            </div>
-            <button type="button" id="btnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc" style="background: #fff3ec; color: #f25b29; border: 1.5px solid #ffdacf; font-weight: 600; border-radius: 8px; padding: 7px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(242, 91, 41, 0.08); cursor: pointer;">
-              <i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>
-            </button>
-          </div>
-          <div id="bookingLocStatus" class="small mb-3" style="display: none;"></div>
-          
-          <div class="form-group mb-3">
-            <label class="font-weight-bold small d-block mb-2">Address Type</label>
-            <div class="custom-control custom-radio custom-control-inline">
-              <input type="radio" id="typeHomeBook" name="address_type" class="custom-control-input" value="Home" <?= ($customerProfile['address_type'] ?? 'Home') === 'Home' ? 'checked' : '' ?>>
-              <label class="custom-control-label small" for="typeHomeBook">Home</label>
-            </div>
-            <div class="custom-control custom-radio custom-control-inline">
-              <input type="radio" id="typeOfficeBook" name="address_type" class="custom-control-input" value="Office" <?= ($customerProfile['address_type'] ?? '') === 'Office' ? 'checked' : '' ?>>
-              <label class="custom-control-label small" for="typeOfficeBook">Office</label>
-            </div>
-            <div class="custom-control custom-radio custom-control-inline">
-              <input type="radio" id="typeOtherBook" name="address_type" class="custom-control-input" value="Other" <?= ($customerProfile['address_type'] ?? '') === 'Other' ? 'checked' : '' ?>>
-              <label class="custom-control-label small" for="typeOtherBook">Other</label>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="col-md-6 form-group">
-              <label class="font-weight-bold small">House / Flat / Office No. <span class="text-danger">*</span></label>
-              <input type="text" name="house_no" id="inputHouseNo" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604 / House No." required>
-            </div>
-            <div class="col-md-6 form-group">
-              <label class="font-weight-bold small">Street / Society / Area <span class="text-danger">*</span></label>
-              <input type="text" name="street" id="inputStreet" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Colony, Street, Apartment" required autocomplete="off">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="col-md-4 form-group">
-              <label class="font-weight-bold small">City <span class="text-danger">*</span></label>
-              <input type="text" name="city" id="inputCity" class="form-control" value="<?= \App\Core\View::e($customerProfile['city'] ?? '') ?>" placeholder="e.g. City / Town" required>
-            </div>
-            <div class="col-md-4 form-group">
-              <label class="font-weight-bold small">State <span class="text-danger">*</span></label>
-              <input type="text" name="state" id="inputState" class="form-control" value="<?= \App\Core\View::e($customerProfile['state'] ?? '') ?>" placeholder="e.g. State / Province / Region" required>
-            </div>
-            <div class="col-md-4 form-group">
-              <label class="font-weight-bold small">Pincode <span class="text-danger">*</span></label>
-              <input type="text" name="pincode" id="inputPincode" class="form-control" placeholder="Postal Code / PIN" value="<?= \App\Core\View::e($customerProfile['pincode'] ?? '') ?>" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="font-weight-bold small">Complete Address / Landmark (Optional)</label>
-            <textarea name="address" id="inputAddress" rows="2" class="form-control" placeholder="Any extra landmark details"><?= \App\Core\View::e($customerProfile['address'] ?? '') ?></textarea>
-          </div>
-
-          <!-- Preferred Slot -->
-          <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">3. Preferred Schedule</h5>
-          
-          <!-- Hidden inputs for backend form processing -->
-          <input type="hidden" name="preferred_date" id="preferredDateInput" value="<?= date('Y-m-d') ?>" required>
-          <input type="hidden" name="preferred_time" id="preferredTimeInput" value="02:00 - 04:00 PM" required>
-
-          <div class="row mb-4">
-            <!-- Calendar Input with Popover Dropdown (Matching reference image) -->
-            <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
-              <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" style="letter-spacing: 0.5px; font-size: 12px;">
-                Select Service Date <span class="text-danger">*</span>
-              </label>
-
-              <div class="position-relative" id="datePickerContainer">
-                <!-- Clickable Date Input Trigger -->
-                <div class="cal-input-trigger" id="dateInputTrigger" role="button" tabindex="0">
-                  <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
-                    <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
-                      <i class="fa fa-calendar"></i>
+          <div class="booking-form-sections-parent">
+            <!-- 1st Section: Service Selection & Contact Information -->
+            <div class="booking-section-card p-3 p-md-4">
+              <!-- Service Selection -->
+              <div class="form-group mb-4">
+                <label class="font-weight-bold small">Selected Service <span class="text-danger">*</span></label>
+                <?php if ($service): ?>
+                  <input type="hidden" name="service_id" value="<?= (int)$service['id'] ?>" id="serviceIdInput">
+                  <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="font-weight-bold mb-0"><?= \App\Core\View::e($service['name']) ?></h6>
+                      <small class="text-muted">Estimated duration: ~<?= (int)($service['duration_minutes'] ?? 60) ?> mins</small>
                     </div>
-                    <input type="text" id="displayDateInput" class="cal-custom-input" readonly value="<?= date('d M Y') ?>" placeholder="Click to select date...">
+                    <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$service['starting_price'], 0) ?></h5>
                   </div>
-                  <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="calChevronIcon"></i>
+                <?php else: ?>
+                  <select name="service_id" id="serviceIdSelect" class="form-control" required>
+                    <option value="">-- Choose a service package --</option>
+                    <?php foreach ($allServices ?? [] as $s): ?>
+                      <option value="<?= (int)$s['id'] ?>" data-price="<?= (float)$s['starting_price'] ?>">
+                        <?= \App\Core\View::e($s['name']) ?> (Starting at ₹<?= number_format((float)$s['starting_price'], 0) ?>)
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                <?php endif; ?>
+              </div>
+
+              <!-- Contact Details -->
+              <h5 class="font-weight-bold mt-4 mb-3" style="font-size: 18px; color: #0a1c33;">1. Contact Details</h5>
+              <div class="form-row">
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">Full Name <span class="text-danger">*</span></label>
+                  <input type="text" name="name" class="form-control" value="<?= \App\Core\View::e($user['name'] ?? '') ?>" placeholder="e.g. Ananya Sharma" required>
                 </div>
-
-                <!-- Dropdown / Popover Calendar -->
-                <div id="calendarDropdown" class="calendar-dropdown-popover">
-                  <div class="refixel-calendar-card">
-                    <!-- Top Header: Day Number, Month Name & Navigation -->
-                    <div class="cal-top-header">
-                      <div class="cal-title-wrap">
-                        <div id="calDayNumber" class="cal-day-num"><?= date('j') ?></div>
-                        <div id="calMonthName" class="cal-month-name"><?= date('F') ?></div>
-                      </div>
-                      <div class="cal-nav-wrap d-flex align-items-center" style="gap: 6px;">
-                        <button type="button" id="calPrevMonthBtn" class="cal-nav-btn" title="Previous Month" aria-label="Previous Month">
-                          <i class="fa fa-chevron-left" style="font-size: 11px;"></i>
-                        </button>
-                        <!-- Mini 3D Calendar Icon Badge from reference image -->
-                        <div class="cal-icon-badge" title="Calendar">
-                          <div class="cal-badge-bar"></div>
-                          <div class="cal-badge-dots">
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot red"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                            <span class="cal-badge-dot"></span>
-                          </div>
-                        </div>
-                        <button type="button" id="calNextMonthBtn" class="cal-nav-btn" title="Next Month" aria-label="Next Month">
-                          <i class="fa fa-chevron-right" style="font-size: 11px;"></i>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- 3-Segment Accent Bar (matching reference image) -->
-                    <div class="cal-accent-divider">
-                      <span class="bar-segment" style="flex: 1.2;"></span>
-                      <span class="bar-segment" style="flex: 1.8;"></span>
-                      <span class="bar-segment muted" style="flex: 2.2;"></span>
-                    </div>
-
-                    <!-- Weekday Headers (M T W T F S S) -->
-                    <div class="cal-weekdays">
-                      <span class="cal-weekday">M</span>
-                      <span class="cal-weekday">T</span>
-                      <span class="cal-weekday">W</span>
-                      <span class="cal-weekday">T</span>
-                      <span class="cal-weekday">F</span>
-                      <span class="cal-weekday">S</span>
-                      <span class="cal-weekday">S</span>
-                    </div>
-
-                    <!-- Monthly Days Grid -->
-                    <div id="calDaysGrid" class="cal-days-grid">
-                      <!-- Generated dynamically via JS -->
-                    </div>
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">Mobile Number <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
+                    <input type="tel" name="phone" class="form-control" value="<?= \App\Core\View::e($user['phone'] ?? '') ?>" placeholder="10-digit number" pattern="[6-9][0-9]{9}" required>
                   </div>
                 </div>
               </div>
+              <div class="form-group mb-0">
+                <label class="font-weight-bold small">Email Address (Optional for GST Invoice)</label>
+                <input type="email" name="email" class="form-control" value="<?= \App\Core\View::e($user['email'] ?? '') ?>" placeholder="yourname@example.com">
+              </div>
             </div>
 
-            <!-- Time Slot Dropdown Selection -->
-            <div class="col-lg-6 col-md-12">
-              <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" style="letter-spacing: 0.5px; font-size: 12px;">
-                Select Time Slot <span class="text-danger">*</span>
-              </label>
+            <!-- 2nd Section: Service Address -->
+            <div class="booking-section-card p-3 p-md-4">
+              <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap: 10px;">
+                <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                  <h5 class="font-weight-bold mb-0" style="font-size: 18px; color: #0a1c33;">2. Service Address</h5>
+                  <span id="bookingAutoFillBadge" class="badge" style="display: none; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 6px;">
+                    <i class="fa fa-check-circle mr-1"></i> Auto-filled from Home Page
+                  </span>
+                </div>
+                <button type="button" id="btnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc" style="background: #fff3ec; color: #f25b29; border: 1.5px solid #ffdacf; font-weight: 600; border-radius: 8px; padding: 7px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(242, 91, 41, 0.08); cursor: pointer;">
+                  <i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>
+                </button>
+              </div>
+              <div id="bookingLocStatus" class="small mb-3" style="display: none;"></div>
+              
+              <div class="form-group mb-3">
+                <label class="font-weight-bold small d-block mb-2">Address Type</label>
+                <div class="custom-control custom-radio custom-control-inline">
+                  <input type="radio" id="typeHomeBook" name="address_type" class="custom-control-input" value="Home" <?= ($customerProfile['address_type'] ?? 'Home') === 'Home' ? 'checked' : '' ?>>
+                  <label class="custom-control-label small" for="typeHomeBook">Home</label>
+                </div>
+                <div class="custom-control custom-radio custom-control-inline">
+                  <input type="radio" id="typeOfficeBook" name="address_type" class="custom-control-input" value="Office" <?= ($customerProfile['address_type'] ?? '') === 'Office' ? 'checked' : '' ?>>
+                  <label class="custom-control-label small" for="typeOfficeBook">Office</label>
+                </div>
+                <div class="custom-control custom-radio custom-control-inline">
+                  <input type="radio" id="typeOtherBook" name="address_type" class="custom-control-input" value="Other" <?= ($customerProfile['address_type'] ?? '') === 'Other' ? 'checked' : '' ?>>
+                  <label class="custom-control-label small" for="typeOtherBook">Other</label>
+                </div>
+              </div>
 
-              <div class="position-relative" id="timePickerContainer">
-                <!-- Clickable Time Input Trigger -->
-                <div class="cal-input-trigger" id="timeInputTrigger" role="button" tabindex="0">
-                  <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
-                    <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
-                      <i class="fa fa-clock-o"></i>
+              <div class="form-row">
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">House / Flat / Office No. <span class="text-danger">*</span></label>
+                  <input type="text" name="house_no" id="inputHouseNo" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604 / House No." required>
+                </div>
+                <div class="col-md-6 form-group">
+                  <label class="font-weight-bold small">Street / Society / Area <span class="text-danger">*</span></label>
+                  <input type="text" name="street" id="inputStreet" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Colony, Street, Apartment" required autocomplete="off">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">City <span class="text-danger">*</span></label>
+                  <input type="text" name="city" id="inputCity" class="form-control" value="<?= \App\Core\View::e($customerProfile['city'] ?? $currentCity) ?>" placeholder="e.g. Kashipur, Jaspur, Thakurdwara" required>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">State <span class="text-danger">*</span></label>
+                  <input type="text" name="state" id="inputState" class="form-control" value="<?= \App\Core\View::e($customerProfile['state'] ?? (($currentCity === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand')) ?>" placeholder="e.g. State / Province / Region" required>
+                </div>
+                <div class="col-md-4 form-group">
+                  <label class="font-weight-bold small">Pincode <span class="text-danger">*</span></label>
+                  <input type="text" name="pincode" id="inputPincode" class="form-control" placeholder="Postal Code / PIN" value="<?= \App\Core\View::e($customerProfile['pincode'] ?? '') ?>" required>
+                </div>
+              </div>
+              <div class="form-group mb-0">
+                <label class="font-weight-bold small">Complete Address / Landmark (Optional)</label>
+                <textarea name="address" id="inputAddress" rows="2" class="form-control" placeholder="Any extra landmark details"><?= \App\Core\View::e($customerProfile['address'] ?? '') ?></textarea>
+              </div>
+            </div>
+
+            <!-- 3rd Section: Preferred Schedule & Booking Confirmation -->
+            <div class="booking-section-card p-3 p-md-4">
+              <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">3. Preferred Schedule</h5>
+              
+              <!-- Hidden inputs for backend form processing -->
+              <input type="hidden" name="preferred_date" id="preferredDateInput" value="<?= date('Y-m-d') ?>" required>
+              <input type="hidden" name="preferred_time" id="preferredTimeInput" value="02:00 - 04:00 PM" required>
+
+              <div class="row mb-4">
+                <!-- Calendar Input with Popover Dropdown (Matching reference image) -->
+                <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
+                  <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" style="letter-spacing: 0.5px; font-size: 12px;">
+                    Select Service Date <span class="text-danger">*</span>
+                  </label>
+
+                  <div class="position-relative" id="datePickerContainer">
+                    <!-- Clickable Date Input Trigger -->
+                    <div class="cal-input-trigger" id="dateInputTrigger" role="button" tabindex="0">
+                      <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
+                        <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
+                          <i class="fa fa-calendar"></i>
+                        </div>
+                        <input type="text" id="displayDateInput" class="cal-custom-input" readonly value="<?= date('d M Y') ?>" placeholder="Click to select date...">
+                      </div>
+                      <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="calChevronIcon"></i>
                     </div>
-                    <input type="text" id="displayTimeInput" class="cal-custom-input" readonly value="02:00 - 04:00 PM" placeholder="Click to select time slot...">
+
+                    <!-- Dropdown / Popover Calendar -->
+                    <div id="calendarDropdown" class="calendar-dropdown-popover">
+                      <div class="refixel-calendar-card">
+                        <!-- Top Header: Day Number, Month Name & Navigation -->
+                        <div class="cal-top-header">
+                          <div class="cal-title-wrap">
+                            <div id="calDayNumber" class="cal-day-num"><?= date('j') ?></div>
+                            <div id="calMonthName" class="cal-month-name"><?= date('F') ?></div>
+                          </div>
+                          <div class="cal-nav-wrap d-flex align-items-center" style="gap: 6px;">
+                            <button type="button" id="calPrevMonthBtn" class="cal-nav-btn" title="Previous Month" aria-label="Previous Month">
+                              <i class="fa fa-chevron-left" style="font-size: 11px;"></i>
+                            </button>
+                            <!-- Mini 3D Calendar Icon Badge from reference image -->
+                            <div class="cal-icon-badge" title="Calendar">
+                              <div class="cal-badge-bar"></div>
+                              <div class="cal-badge-dots">
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot red"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                                <span class="cal-badge-dot"></span>
+                              </div>
+                            </div>
+                            <button type="button" id="calNextMonthBtn" class="cal-nav-btn" title="Next Month" aria-label="Next Month">
+                              <i class="fa fa-chevron-right" style="font-size: 11px;"></i>
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- 3-Segment Accent Bar (matching reference image) -->
+                        <div class="cal-accent-divider">
+                          <span class="bar-segment" style="flex: 1.2;"></span>
+                          <span class="bar-segment" style="flex: 1.8;"></span>
+                          <span class="bar-segment muted" style="flex: 2.2;"></span>
+                        </div>
+
+                        <!-- Weekday Headers (M T W T F S S) -->
+                        <div class="cal-weekdays">
+                          <span class="cal-weekday">M</span>
+                          <span class="cal-weekday">T</span>
+                          <span class="cal-weekday">W</span>
+                          <span class="cal-weekday">T</span>
+                          <span class="cal-weekday">F</span>
+                          <span class="cal-weekday">S</span>
+                          <span class="cal-weekday">S</span>
+                        </div>
+
+                        <!-- Monthly Days Grid -->
+                        <div id="calDaysGrid" class="cal-days-grid">
+                          <!-- Generated dynamically via JS -->
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="timeChevronIcon"></i>
                 </div>
 
-                <!-- Dropdown / Popover Time Slot List -->
-                <div id="timeDropdown" class="time-dropdown-popover">
-                  <div class="time-dropdown-menu-card">
-                    <div class="time-dropdown-header pb-2 mb-2 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f1f5f9; padding: 4px 6px;">
-                      <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: #64748b;">Available Arrival Slots</span>
-                      <span class="badge" style="background: #fff3ec; color: #ff5238; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">Doorstep Visit</span>
+                <!-- Time Slot Dropdown Selection -->
+                <div class="col-lg-6 col-md-12">
+                  <label class="font-weight-bold small text-muted text-uppercase mb-2 d-block" style="letter-spacing: 0.5px; font-size: 12px;">
+                    Select Time Slot <span class="text-danger">*</span>
+                  </label>
+
+                  <div class="position-relative" id="timePickerContainer">
+                    <!-- Clickable Time Input Trigger -->
+                    <div class="cal-input-trigger" id="timeInputTrigger" role="button" tabindex="0">
+                      <div class="d-flex align-items-center" style="gap: 10px; width: 100%;">
+                        <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
+                          <i class="fa fa-clock-o"></i>
+                        </div>
+                        <input type="text" id="displayTimeInput" class="cal-custom-input" readonly value="02:00 - 04:00 PM" placeholder="Click to select time slot...">
+                      </div>
+                      <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="timeChevronIcon"></i>
                     </div>
-                    <div class="time-options-list" id="timeSlotsGroup">
-                      <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM">
-                        <div class="d-flex align-items-center" style="gap: 12px;">
-                          <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
-                          <div>
-                            <div class="time-opt-title font-weight-bold">09:00 - 11:00 AM</div>
-                            <div class="time-opt-sub">Morning Slot</div>
-                          </div>
-                        </div>
-                        <i class="fa fa-check time-opt-check"></i>
-                      </div>
 
-                      <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM">
-                        <div class="d-flex align-items-center" style="gap: 12px;">
-                          <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
-                          <div>
-                            <div class="time-opt-title font-weight-bold">11:00 AM - 01:00 PM</div>
-                            <div class="time-opt-sub">Noon Slot</div>
-                          </div>
+                    <!-- Dropdown / Popover Time Slot List -->
+                    <div id="timeDropdown" class="time-dropdown-popover">
+                      <div class="time-dropdown-menu-card">
+                        <div class="time-dropdown-header pb-2 mb-2 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f1f5f9; padding: 4px 6px;">
+                          <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: #64748b;">Available Arrival Slots</span>
+                          <span class="badge" style="background: #fff3ec; color: #ff5238; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">Doorstep Visit</span>
                         </div>
-                        <i class="fa fa-check time-opt-check"></i>
-                      </div>
+                        <div class="time-options-list" id="timeSlotsGroup">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
+                              <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
+                              <div>
+                                <div class="time-opt-title font-weight-bold">09:00 - 11:00 AM</div>
+                                <div class="time-opt-sub">Morning Slot</div>
+                              </div>
+                            </div>
+                            <i class="fa fa-check time-opt-check"></i>
+                          </div>
 
-                      <div class="time-option-item active" role="button" tabindex="0" data-slot="02:00 - 04:00 PM">
-                        <div class="d-flex align-items-center" style="gap: 12px;">
-                          <div class="time-opt-icon"><i class="fa fa-cloud"></i></div>
-                          <div>
-                            <div class="time-opt-title font-weight-bold">02:00 - 04:00 PM</div>
-                            <div class="time-opt-sub">Afternoon Slot</div>
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
+                              <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
+                              <div>
+                                <div class="time-opt-title font-weight-bold">11:00 AM - 01:00 PM</div>
+                                <div class="time-opt-sub">Noon Slot</div>
+                              </div>
+                            </div>
+                            <i class="fa fa-check time-opt-check"></i>
                           </div>
-                        </div>
-                        <i class="fa fa-check time-opt-check"></i>
-                      </div>
 
-                      <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM">
-                        <div class="d-flex align-items-center" style="gap: 12px;">
-                          <div class="time-opt-icon"><i class="fa fa-moon-o"></i></div>
-                          <div>
-                            <div class="time-opt-title font-weight-bold">04:00 - 06:00 PM</div>
-                            <div class="time-opt-sub">Evening Slot</div>
+                          <div class="time-option-item active" role="button" tabindex="0" data-slot="02:00 - 04:00 PM">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
+                              <div class="time-opt-icon"><i class="fa fa-cloud"></i></div>
+                              <div>
+                                <div class="time-opt-title font-weight-bold">02:00 - 04:00 PM</div>
+                                <div class="time-opt-sub">Afternoon Slot</div>
+                              </div>
+                            </div>
+                            <i class="fa fa-check time-opt-check"></i>
+                          </div>
+
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
+                              <div class="time-opt-icon"><i class="fa fa-moon-o"></i></div>
+                              <div>
+                                <div class="time-opt-title font-weight-bold">04:00 - 06:00 PM</div>
+                                <div class="time-opt-sub">Evening Slot</div>
+                              </div>
+                            </div>
+                            <i class="fa fa-check time-opt-check"></i>
                           </div>
                         </div>
-                        <i class="fa fa-check time-opt-check"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Scheduled Slot Badge (Full width below both dropdowns) -->
+                <div class="col-12 mt-3">
+                  <div class="schedule-summary-box p-3 rounded-lg" style="background: #fff8f5; border: 1.5px dashed #ffdacf; border-radius: 14px;">
+                    <div class="d-flex align-items-center">
+                      <div class="schedule-summary-icon mr-3" style="width: 40px; height: 40px; border-radius: 12px; background: #ff5238; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(255, 82, 56, 0.3);">
+                        <i class="fa fa-calendar-check-o"></i>
+                      </div>
+                      <div>
+                        <div class="small" style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: #f25b29;">Confirmed Slot</div>
+                        <div class="font-weight-bold text-dark" id="calSummaryDisplay" style="font-size: 14px;">Loading schedule...</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Scheduled Slot Badge (Full width below both dropdowns) -->
-            <div class="col-12 mt-3">
-              <div class="schedule-summary-box p-3 rounded-lg" style="background: #fff8f5; border: 1.5px dashed #ffdacf; border-radius: 14px;">
-                <div class="d-flex align-items-center">
-                  <div class="schedule-summary-icon mr-3" style="width: 40px; height: 40px; border-radius: 12px; background: #ff5238; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(255, 82, 56, 0.3);">
-                    <i class="fa fa-calendar-check-o"></i>
-                  </div>
-                  <div>
-                    <div class="small" style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; color: #f25b29;">Confirmed Slot</div>
-                    <div class="font-weight-bold text-dark" id="calSummaryDisplay" style="font-size: 14px;">Loading schedule...</div>
-                  </div>
-                </div>
+              <!-- Special instructions -->
+              <div class="form-group mb-4">
+                <label class="font-weight-bold small">Specific Instructions or Issues (Optional)</label>
+                <textarea name="issue_details" rows="2" class="form-control" placeholder="e.g. Please bring extra tile descaler, parking available in basement"></textarea>
               </div>
+
+              <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
+                Confirm & Schedule Booking &rarr;
+              </button>
             </div>
           </div>
-
-          <!-- Special instructions -->
-          <div class="form-group mb-4">
-            <label class="font-weight-bold small">Specific Instructions or Issues (Optional)</label>
-            <textarea name="issue_details" rows="2" class="form-control" placeholder="e.g. Please bring extra tile descaler, parking available in basement"></textarea>
-          </div>
-
-          <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
-            Confirm & Schedule Booking &rarr;
-          </button>
         </form>
       </div>
     </div>

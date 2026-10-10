@@ -23,10 +23,28 @@ assert(str_contains($html1, 'LocalBusiness'), "Expected LocalBusiness in JSON-LD
 assert(str_contains($html1, 'BreadcrumbList'), "Expected BreadcrumbList in JSON-LD");
 echo "Test 1: Category in city (/cleaning-services-in-kashipur) - PASSED\n";
 
-// Test 2: Service detail route with city
-$req2 = new Request([], [], [], [], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-in-gurugram']);
-$resp2 = $ctrl->serviceInCity($req2, 'full-home-cleaning', 'gurugram');
-assert($resp2->getStatusCode() === 200, "Expected 200 for /full-home-cleaning-in-gurugram");
+// Test 2a: Guest accessing service details is redirected to /login
+unset($_SESSION['user']);
+$reqGuest = new Request([], [], [], [], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-in-kashipur']);
+$respGuest = $ctrl->serviceInCity($reqGuest, 'full-home-cleaning', 'kashipur');
+assert($respGuest->getStatusCode() === 302, "Expected 302 redirect for guest accessing service detail");
+assert(str_contains($respGuest->getHeader('Location') ?? '', '/login'), "Expected redirect to /login");
+echo "Test 2a: Guest access requires login redirect (/login?redirect=...) - PASSED\n";
+
+// Authenticate session for service page tests
+$_SESSION['user'] = [
+    'id'                   => 1,
+    'role'                 => 'customer',
+    'name'                 => 'Test Customer',
+    'email'                => 'customer@refixel.com',
+    'must_change_password' => false,
+];
+$_SESSION['last_activity'] = time();
+
+// Test 2b: Service detail route with city (Authenticated Customer in Kashipur)
+$req2 = new Request([], [], [], [], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-in-kashipur']);
+$resp2 = $ctrl->serviceInCity($req2, 'full-home-cleaning', 'kashipur');
+assert($resp2->getStatusCode() === 200, "Expected 200 for /full-home-cleaning-in-kashipur");
 $html2 = $resp2->getContent();
 assert(str_contains($html2, 'Professional Full Home Cleaning'), "Expected H1 with Service name");
 assert(str_contains($html2, "What's Included"), "Expected What's Included checklist");
@@ -34,7 +52,14 @@ assert(str_contains($html2, "What's Excluded"), "Expected What's Excluded checkl
 assert(str_contains($html2, 'Transformation Showcase'), "Expected Before/After showcase");
 assert(str_contains($html2, 'Verified Customer Reviews'), "Expected reviews section");
 assert(str_contains($html2, 'AggregateRating'), "Expected AggregateRating in JSON-LD");
-echo "Test 2: Service in city (/full-home-cleaning-in-gurugram) - PASSED\n";
+echo "Test 2b: Authenticated Service in city (/full-home-cleaning-in-kashipur) - PASSED\n";
+
+// Test 2c: Non-allowed city (gurugram) redirects 301 to kashipur
+$reqDisallowed = new Request([], [], [], [], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-in-gurugram']);
+$respDisallowed = $ctrl->serviceInCity($reqDisallowed, 'full-home-cleaning', 'gurugram');
+assert($respDisallowed->getStatusCode() === 301, "Expected 301 redirect for non-allowed city");
+assert(str_contains($respDisallowed->getHeader('Location') ?? '', 'kashipur'), "Expected redirect to kashipur");
+echo "Test 2c: Disallowed city 301 redirect to Kashipur - PASSED\n";
 
 // Test 3: Cross-slug resolution (Service hitting category route pattern)
 $req3 = new Request([], [], [], [], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-services-in-kashipur']);

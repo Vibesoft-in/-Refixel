@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
@@ -76,13 +77,13 @@ class ServiceController extends Controller
 
     public function categoryClean(Request $request, string $category): Response
     {
-        $city = $_SESSION['selected_city'] ?? 'Gurugram';
+        $city = ServiceArea::getSessionCity();
         return $this->categoryInCity($request, $category, $city);
     }
 
     public function serviceClean(Request $request, string $service): Response
     {
-        $city = $_SESSION['selected_city'] ?? 'Gurugram';
+        $city = ServiceArea::getSessionCity();
         $cityName = $this->formatCityName($city);
 
         // 1. Try resolving as Category
@@ -103,6 +104,11 @@ class ServiceController extends Controller
 
     public function categoryInCity(Request $request, string $category, string $city): Response
     {
+        if (!ServiceArea::isValidCity($city)) {
+            $defaultCitySlug = strtolower(ServiceArea::DEFAULT_CITY);
+            return $this->redirect(View::url("/{$category}-services-in-{$defaultCitySlug}"), 301);
+        }
+
         $cityName = $this->formatCityName($city);
 
         // 1. Try resolving as a Category
@@ -123,6 +129,11 @@ class ServiceController extends Controller
 
     public function serviceInCity(Request $request, string $service, string $city): Response
     {
+        if (!ServiceArea::isValidCity($city)) {
+            $defaultCitySlug = strtolower(ServiceArea::DEFAULT_CITY);
+            return $this->redirect(View::url("/{$service}-in-{$defaultCitySlug}"), 301);
+        }
+
         $cityName = $this->formatCityName($city);
 
         // 1. Try resolving as a Service
@@ -219,6 +230,13 @@ class ServiceController extends Controller
 
     protected function renderServicePage(array $svc, string $cityName, string $rawCity): Response
     {
+        // Enforce login for viewing a particular service
+        if (!Auth::check()) {
+            $currentUri = $_SERVER['REQUEST_URI'] ?? View::url('/' . ($svc['slug'] ?? 'services'));
+            View::setFlash('info', 'Please sign in or create an account to view service details.');
+            return $this->redirect('/login?redirect=' . urlencode($currentUri));
+        }
+
         $checklist = ServiceChecklistItem::getByService((int)$svc['id']);
         $faqs = Faq::getByService((int)$svc['id']);
         if (empty($faqs)) {
@@ -308,8 +326,7 @@ class ServiceController extends Controller
 
     protected function formatCityName(string $city): string
     {
-        $clean = str_replace('-', ' ', $city);
-        return ucwords(strtolower($clean));
+        return ServiceArea::normalizeCity($city);
     }
 
     protected function resolveCategory(string $slug): ?array
