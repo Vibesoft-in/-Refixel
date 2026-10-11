@@ -418,5 +418,142 @@ class AccountController extends Controller
         \App\Core\View::setFlash('success', 'Your data erasure request has been formally recorded under the DPDP Act. Our compliance officer will process your request within the statutory timeframe (subject to statutory financial record retention requirements).');
         return $this->redirect('/account/privacy');
     }
+
+    public function apiSaveAddress(Request $request): Response
+    {
+        $userId = Auth::id();
+
+        $houseNo = trim((string)$request->input('house_no', ''));
+        $street = trim((string)$request->input('street', ''));
+        $address = trim((string)$request->input('address', ''));
+        $rawCity = (string)$request->input('city', '');
+        $city = !empty($rawCity) ? \App\Models\ServiceArea::normalizeCity($rawCity) : \App\Models\ServiceArea::DEFAULT_CITY;
+        $defaultState = ($city === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand';
+        $state = trim((string)$request->input('state', $defaultState)) ?: $defaultState;
+        $pincode = trim((string)$request->input('pincode', ''));
+        $addressType = trim((string)$request->input('address_type', 'Home')) ?: 'Home';
+        $lat = ($request->input('lat') !== null && is_numeric($request->input('lat'))) ? (float)$request->input('lat') : null;
+        $lng = ($request->input('lng') !== null && is_numeric($request->input('lng'))) ? (float)$request->input('lng') : null;
+
+        if (empty($houseNo)) {
+            $houseNo = 'House No. 1';
+        }
+
+        if (!$userId) {
+            $_SESSION['customer_profile'] = [
+                'house_no'     => $houseNo,
+                'street'       => $street,
+                'address'      => $address,
+                'city'         => $city,
+                'state'        => $state,
+                'pincode'      => $pincode,
+                'address_type' => $addressType,
+                'lat'          => $lat,
+                'lng'          => $lng,
+            ];
+            return Response::json([
+                'success' => true,
+                'message' => 'Address saved successfully',
+                'profile' => $_SESSION['customer_profile']
+            ]);
+        }
+
+        // Sync name & email if provided
+        $name = trim((string)$request->input('name', ''));
+        $email = trim((string)$request->input('email', ''));
+
+        if (!empty($name) || !empty($email)) {
+            $userUpdates = [];
+            $userParams = [];
+            if (!empty($name)) {
+                $userUpdates[] = "name = ?";
+                $userParams[] = $name;
+            }
+            if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $userUpdates[] = "email = ?";
+                $userParams[] = $email;
+            }
+            if (!empty($userUpdates)) {
+                $userParams[] = $userId;
+                \App\Core\Database::execute("UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = ?", $userParams);
+                $currUser = Auth::user();
+                if ($currUser) {
+                    if (!empty($name)) $currUser['name'] = $name;
+                    if (!empty($email)) $currUser['email'] = $email;
+                    Auth::login($currUser);
+                }
+            }
+        }
+
+        $existing = \App\Core\Database::fetchOne("SELECT id, house_no FROM customer_profiles WHERE user_id = ?", [$userId]);
+        if (empty($houseNo) && !empty($existing['house_no'])) {
+            $houseNo = $existing['house_no'];
+        }
+        if (empty($houseNo)) {
+            $houseNo = 'House No. 1';
+        }
+
+        if ($existing) {
+            \App\Core\Database::execute(
+                "UPDATE customer_profiles SET house_no = ?, street = ?, address = ?, city = ?, state = ?, pincode = ?, address_type = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng) WHERE user_id = ?",
+                [$houseNo, $street, $address, $city, $state, $pincode, $addressType, $lat, $lng, $userId]
+            );
+        } else {
+            \App\Core\Database::execute(
+                "INSERT INTO customer_profiles (user_id, house_no, street, address, city, state, pincode, address_type, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [$userId, $houseNo, $street, $address, $city, $state, $pincode, $addressType, $lat, $lng]
+            );
+        }
+
+        return Response::json([
+            'success' => true,
+            'message' => 'Address saved successfully',
+            'profile' => [
+                'house_no'     => $houseNo,
+                'street'       => $street,
+                'address'      => $address,
+                'city'         => $city,
+                'state'        => $state,
+                'pincode'      => $pincode,
+                'address_type' => $addressType,
+            ]
+        ]);
+    }
+
+    public function apiGetProfile(Request $request): Response
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return Response::json(['authenticated' => false, 'profile' => null]);
+        }
+        $user = \App\Models\User::find($userId);
+        $profile = \App\Core\Database::fetchOne("SELECT * FROM customer_profiles WHERE user_id = ?", [$userId]);
+        if (!$profile) {
+            $latestBooking = \App\Core\Database::fetchOne("SELECT name, phone, email, address, pincode FROM bookings WHERE customer_id = ? ORDER BY id DESC LIMIT 1", [$userId]);
+            if ($latestBooking) {
+                $profile = [
+                    'house_no'     => 'House No. 1',
+                    'street'       => '',
+                    'address'      => $latestBooking['address'],
+                    'city'         => \App\Models\ServiceArea::DEFAULT_CITY,
+                    'state'        => 'Uttarakhand',
+                    'pincode'      => $latestBooking['pincode'],
+                    'address_type' => 'Home',
+                ];
+            }
+        } elseif (empty($profile['house_no'])) {
+            $profile['house_no'] = 'House No. 1';
+        }
+        return Response::json([
+            'authenticated' => true,
+            'user' => [
+                'id'    => $user['id'] ?? $userId,
+                'name'  => $user['name'] ?? '',
+                'phone' => $user['phone'] ?? '',
+                'email' => $user['email'] ?? '',
+            ],
+            'profile' => $profile,
+        ]);
+    }
 }
 

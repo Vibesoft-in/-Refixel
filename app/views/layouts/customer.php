@@ -112,6 +112,14 @@
     }
   }
   </style>
+  <script>
+    window.REFIXEL_AUTH = {
+      isLoggedIn: <?= \App\Core\Auth::check() ? 'true' : 'false' ?>,
+      role: <?= json_encode(\App\Core\Auth::role() ?? '') ?>,
+      userId: <?= json_encode(\App\Core\Auth::id() ?? null) ?>
+    };
+    window.REFIXEL_BASE_URL = '<?= rtrim(\App\Core\View::url(), '/') ?>';
+  </script>
 </head>
 <body>
   <!-- Promo Announcement Strip (Responsive Single Line on Mobile) -->

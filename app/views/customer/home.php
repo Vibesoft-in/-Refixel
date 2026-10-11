@@ -4581,6 +4581,22 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       toStore.timestamp = Date.now();
       localStorage.setItem('refixel_user_location', JSON.stringify(toStore));
+      if (window.REFIXEL_AUTH && window.REFIXEL_AUTH.isLoggedIn) {
+        fetch((window.REFIXEL_BASE_URL || '') + '/api/customer/save-address', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            house_no: toStore.houseNo || '',
+            street: toStore.street || toStore.area || '',
+            city: toStore.city || '',
+            state: toStore.state || '',
+            pincode: toStore.pincode || '',
+            address: toStore.fullAddress || '',
+            lat: toStore.lat || null,
+            lng: toStore.lng || null
+          })
+        }).catch(function() {});
+      }
     } catch (err) {
       console.warn('Could not cache location in localStorage:', err);
     }

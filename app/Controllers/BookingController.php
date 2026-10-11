@@ -184,6 +184,9 @@ class BookingController extends Controller
         $defaultState = ($cityInput === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand';
         $stateInput = trim((string)$request->input('state', $defaultState)) ?: $defaultState;
         $houseNoInput = trim((string)$request->input('house_no'));
+        if (empty($houseNoInput)) {
+            $houseNoInput = 'House No. 1';
+        }
         $streetInput = trim((string)$request->input('street'));
         $addressTypeInput = trim((string)$request->input('address_type', 'Home'));
 
@@ -226,6 +229,29 @@ class BookingController extends Controller
                 \App\Core\Database::execute("UPDATE customer_profiles SET address = ?, pincode = ?, city = ?, state = ?, house_no = ?, street = ?, address_type = ? WHERE user_id = ?", [$addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput, $customerId]);
             } else {
                 \App\Core\Database::execute("INSERT INTO customer_profiles (user_id, address, pincode, city, state, house_no, street, address_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [$customerId, $addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput]);
+            }
+
+            // Sync user name and email in users table if provided
+            if (!empty($nameInput) || !empty($emailInput)) {
+                $userUpdates = [];
+                $userParams = [];
+                if (!empty($nameInput)) {
+                    $userUpdates[] = "name = ?";
+                    $userParams[] = $nameInput;
+                }
+                if (!empty($emailInput)) {
+                    $userUpdates[] = "email = ?";
+                    $userParams[] = $emailInput;
+                }
+                $userParams[] = $customerId;
+                \App\Core\Database::execute("UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = ?", $userParams);
+
+                $currUser = Auth::user();
+                if ($currUser && (int)$currUser['id'] === (int)$customerId) {
+                    if (!empty($nameInput)) $currUser['name'] = $nameInput;
+                    if (!empty($emailInput)) $currUser['email'] = $emailInput;
+                    Auth::login($currUser);
+                }
             }
         }
 
