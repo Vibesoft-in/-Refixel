@@ -228,16 +228,16 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
               <div id="addressDetailedFields" style="<?= $hasSavedAddress ? 'display: none;' : 'display: block;' ?> transition: all 0.2s ease;">
                 <div class="form-row">
                   <div class="col-md-6 form-group">
-                    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap" style="min-height: 24px;">
-                      <label class="font-weight-bold small mb-0">House / Flat / Office No. <span class="text-danger">*</span></label>
+                    <div class="d-flex justify-content-between align-items-center mb-1" style="min-height: 28px;">
+                      <label class="font-weight-bold small mb-0 text-nowrap" for="inputHouseNo">House / Flat / Office No. <span class="text-danger">*</span></label>
                     </div>
                     <input type="text" name="house_no" id="inputHouseNo" class="form-control" value="<?= \App\Core\View::e(!empty($customerProfile['house_no']) ? $customerProfile['house_no'] : 'House No. 1') ?>" placeholder="e.g. Flat 604 / House No." required>
                   </div>
                   <div class="col-md-6 form-group">
-                    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap" style="gap: 6px; min-height: 24px;">
-                      <label class="font-weight-bold small mb-0">Street / Society / Area <span class="text-danger">*</span></label>
-                      <button type="button" id="btnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc" style="background: #fff3ec; color: #f25b29; border: 1.5px solid #ffdacf; font-weight: 600; border-radius: 6px; padding: 3px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; box-shadow: 0 1px 4px rgba(242, 91, 41, 0.08); cursor: pointer;">
-                        <i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>
+                    <div class="d-flex justify-content-between align-items-center mb-1" style="min-height: 28px; gap: 8px;">
+                      <label class="font-weight-bold small mb-0 text-nowrap" for="inputStreet">Street / Society / Area <span class="text-danger">*</span></label>
+                      <button type="button" id="btnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc" style="background: #fff3ec; color: #f25b29; border: 1.5px solid #ffdacf; font-weight: 600; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease; box-shadow: 0 1px 4px rgba(242, 91, 41, 0.08); cursor: pointer; white-space: nowrap; flex-shrink: 0; line-height: 1.35;">
+                        <i class="fa fa-crosshairs"></i> <span>Detect Location</span>
                       </button>
                     </div>
                     <input type="text" name="street" id="inputStreet" class="form-control" value="<?= \App\Core\View::e($customerProfile['street'] ?? '') ?>" placeholder="e.g. Colony, Street, Apartment" required autocomplete="off">
@@ -1477,7 +1477,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (savedAddressBox) savedAddressBox.style.display = 'none';
 
         if (btnUseCurrentLoc) {
-          btnUseCurrentLoc.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>';
+          btnUseCurrentLoc.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Detect Location</span>';
           btnUseCurrentLoc.style.background = '#fff3ec';
           btnUseCurrentLoc.style.borderColor = '#ffdacf';
           btnUseCurrentLoc.style.color = '#f25b29';
@@ -1757,7 +1757,7 @@ document.addEventListener('DOMContentLoaded', function() {
           })
           .catch(function() {
             btnUseCurrentLoc.disabled = false;
-            btnUseCurrentLoc.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Use My Current Location</span>';
+            btnUseCurrentLoc.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Detect Location</span>';
             if (bookingLocStatus) {
               bookingLocStatus.innerHTML = '<span class="text-danger"><i class="fa fa-exclamation-circle mr-1"></i> Could not detect location automatically. Please enter your address manually.</span>';
             }
