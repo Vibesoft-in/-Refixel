@@ -64,6 +64,8 @@ Router::post('/api/cart/clear', 'BookingController@clearCart');
 Router::get('/api/services', 'ServiceController@apiSearch');
 Router::post('/api/customer/save-address', 'AccountController@apiSaveAddress');
 Router::get('/api/customer/profile', 'AccountController@apiGetProfile');
+Router::get('/api/customer/addresses', 'AccountController@apiGetSavedAddresses');
+Router::post('/api/customer/delete-address', 'AccountController@apiDeleteAddress');
 
 // Legacy ajax endpoints compatibility
 Router::post('/cartajax/ajax_cart_add.php', 'BookingController@addToCart');

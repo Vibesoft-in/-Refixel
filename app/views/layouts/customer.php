@@ -182,20 +182,13 @@
     }
 
     // 2. Header Login Trigger Modal
-    var hdrLoginTrigger = document.getElementById("hdrLoginTrigger");
     var hdrLoginPopup = document.getElementById("hdrLoginPopup");
     var hdrCloseLoginPopup = document.getElementById("hdrCloseLoginPopup");
 
     window.openLoginModal = function() {
-      if (hdrLoginPopup) hdrLoginPopup.style.display = "flex";
+      window.location.href = baseUrl + '/login';
     };
 
-    if (hdrLoginTrigger && hdrLoginPopup) {
-      hdrLoginTrigger.addEventListener("click", function(e) {
-        e.preventDefault();
-        hdrLoginPopup.style.display = "flex";
-      });
-    }
     if (hdrCloseLoginPopup && hdrLoginPopup) {
       hdrCloseLoginPopup.addEventListener("click", function() {
         hdrLoginPopup.style.display = "none";

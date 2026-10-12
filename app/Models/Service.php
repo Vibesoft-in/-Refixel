@@ -30,11 +30,15 @@ class Service extends Model
         ];
 
         $cur = trim((string)$currentImage);
-        if (empty($cur) || $cur === 'Full-home-clean.jpg' || $cur === '5_1_Full-home-clean.jpg') {
-            return $map[$slug] ?? ($cur ?: 'refixel-cleaning.jpg');
+        if (isset($map[$slug]) && (empty($cur) || ($cur === 'refixel-cleaning.jpg' && $slug !== 'full-home-cleaning') || $cur === 'Full-home-clean.jpg' || $cur === '5_1_Full-home-clean.jpg')) {
+            return $map[$slug];
         }
 
-        return $cur;
+        if (!empty($cur)) {
+            return $cur;
+        }
+
+        return $map[$slug] ?? 'refixel-cleaning.jpg';
     }
 
     public static function getActive(): array

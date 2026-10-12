@@ -35,6 +35,75 @@ $currentCity = \App\Models\ServiceArea::normalizeCity($_GET['city'] ?? ($_SESSIO
 $items = $cart['items'] ?? [];
 $isEmpty = $cart['is_empty'] ?? empty($items);
 
+$savedAddresses = [];
+if ($user) {
+    try {
+        $savedAddresses = \App\Core\Database::fetchAll(
+            "SELECT * FROM customer_addresses WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC, id DESC",
+            [$user['id']]
+        ) ?: [];
+    } catch (\Throwable $e) {}
+
+    if ($customerProfile && (!empty($customerProfile['street']) || !empty($customerProfile['address']))) {
+        $found = false;
+        foreach ($savedAddresses as $sa) {
+            if (($sa['street'] ?? '') === ($customerProfile['street'] ?? '') && ($sa['house_no'] ?? '') === ($customerProfile['house_no'] ?? '')) {
+                $found = true;
+                break;
+            }
+        }
+        if (!$found) {
+            array_unshift($savedAddresses, [
+                'id'           => 0,
+                'label'        => $customerProfile['address_type'] ?? 'Home',
+                'address_type' => $customerProfile['address_type'] ?? 'Home',
+                'house_no'     => $customerProfile['house_no'] ?? 'House No. 1',
+                'street'       => $customerProfile['street'] ?? '',
+                'city'         => $customerProfile['city'] ?? $currentCity,
+                'state'        => $customerProfile['state'] ?? 'Uttarakhand',
+                'pincode'      => $customerProfile['pincode'] ?? '',
+                'address'      => $customerProfile['address'] ?? '',
+                'is_default'   => 1,
+            ]);
+        }
+    }
+
+    try {
+        $pastBookings = \App\Core\Database::fetchAll(
+            "SELECT DISTINCT address, pincode FROM bookings WHERE customer_id = ? AND address IS NOT NULL AND TRIM(address) != '' ORDER BY id DESC LIMIT 5",
+            [$user['id']]
+        ) ?: [];
+        foreach ($pastBookings as $pb) {
+            $addrText = trim((string)$pb['address']);
+            if (!$addrText) continue;
+            $alreadyExists = false;
+            foreach ($savedAddresses as $sa) {
+                if (trim((string)($sa['address'] ?? '')) === $addrText || trim((string)($sa['street'] ?? '')) === $addrText) {
+                    $alreadyExists = true;
+                    break;
+                }
+            }
+            if (!$alreadyExists) {
+                $savedAddresses[] = [
+                    'id'           => 'bk_' . substr(md5($addrText), 0, 8),
+                    'label'        => 'Previous Booking',
+                    'address_type' => 'Other',
+                    'house_no'     => 'House No. 1',
+                    'street'       => $addrText,
+                    'city'         => $customerProfile['city'] ?? $currentCity,
+                    'state'        => $customerProfile['state'] ?? 'Uttarakhand',
+                    'pincode'      => $pb['pincode'] ?? '',
+                    'address'      => $addrText,
+                    'is_default'   => 0,
+                ];
+            }
+        }
+    } catch (\Throwable $e) {}
+}
+if (empty($savedAddresses) && !empty($_SESSION['customer_addresses'])) {
+    $savedAddresses = $_SESSION['customer_addresses'];
+}
+
 $hasSavedAddress = !empty($customerProfile) && (
     !empty($customerProfile['street']) ||
     !empty($customerProfile['address']) ||
@@ -51,6 +120,23 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
 ?>
 <div class="container py-5 my-3">
 
+  <?php if ($flashError = \App\Core\View::flash('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert" style="border-radius: 12px; border-left: 4px solid #dc2626;">
+      <i class="fa fa-exclamation-circle mr-2 text-danger"></i> <strong><?= \App\Core\View::e($flashError) ?></strong>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($flashSuccess = \App\Core\View::flash('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert" style="border-radius: 12px; border-left: 4px solid #16a34a;">
+      <i class="fa fa-check-circle mr-2 text-success"></i> <strong><?= \App\Core\View::e($flashSuccess) ?></strong>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  <?php endif; ?>
 
   <?php if ($isEmpty): ?>
     <!-- Empty Cart State -->
@@ -112,7 +198,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
         </div>
 
         <!-- Doorstep Booking Schedule Form -->
-        <div class="card p-4 p-md-5 border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card p-4 p-md-5 border-0 shadow-sm doorstep-form-card" style="border-radius: 16px;">
           <h2 class="font-weight-bold mb-2" style="font-size: 24px; color: #1a1a1a;">Doorstep Visit Details</h2>
           <p class="text-muted small mb-4">Enter your schedule and service location. Verified technicians will be matched to your booking.</p>
 
@@ -121,15 +207,82 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
             background: #ffffff !important;
             color: #1e293b !important;
             border: 1.5px solid rgba(242, 91, 41, 0.45) !important;
-            border-radius: 14px !important;
+            border-radius: 16px !important;
             box-shadow: 0 0 16px rgba(242, 91, 41, 0.18), 0 4px 12px rgba(242, 91, 41, 0.08) !important;
             margin-bottom: 22px !important;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            overflow: visible !important;
           }
           .booking-section-card:hover,
           .booking-section-card:focus-within {
             border-color: rgba(242, 91, 41, 0.8) !important;
             box-shadow: 0 0 22px rgba(242, 91, 41, 0.26), 0 6px 16px rgba(242, 91, 41, 0.12) !important;
+          }
+          @media (max-width: 991px) {
+            .doorstep-form-card {
+              background: transparent !important;
+              border: none !important;
+              box-shadow: none !important;
+              padding: 0 !important;
+            }
+            .doorstep-form-card > h2 {
+              font-size: 20px !important;
+              padding: 0 2px !important;
+            }
+            .doorstep-form-card > p {
+              padding: 0 2px !important;
+            }
+            .booking-section-card {
+              width: 100% !important;
+              margin-left: 0 !important;
+              margin-right: 0 !important;
+            }
+          }
+          @media (max-width: 576px) {
+            .card.p-4 {
+              padding: 18px 16px !important;
+            }
+            .booking-section-card {
+              padding: 18px 16px !important;
+            }
+          }
+          .btn-confirm-booking {
+            background: #f25b29 !important;
+            color: #ffffff !important;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 12px 18px;
+            box-shadow: 0 4px 14px rgba(242, 91, 41, 0.28);
+            white-space: nowrap !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.2s ease;
+            line-height: 1.25;
+            text-decoration: none;
+            cursor: pointer;
+            width: 100%;
+          }
+          .btn-confirm-booking:hover {
+            background: #e04816 !important;
+            box-shadow: 0 6px 18px rgba(242, 91, 41, 0.38);
+            color: #ffffff !important;
+          }
+          @media (max-width: 576px) {
+            .btn-confirm-booking {
+              font-size: 14px !important;
+              padding: 11px 12px !important;
+              white-space: nowrap !important;
+            }
+          }
+          @media (max-width: 380px) {
+            .btn-confirm-booking {
+              font-size: 13px !important;
+              padding: 10px 8px !important;
+              white-space: nowrap !important;
+            }
           }
           .booking-section-card h5 {
             color: #0a1c33 !important;
@@ -152,6 +305,408 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
           }
           .booking-section-card .text-muted {
             color: #64748b !important;
+          }
+          .street-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 28px;
+            margin-bottom: 4px;
+          }
+          .btn-use-curr-loc {
+            background: #fff3ec !important;
+            color: #f25b29 !important;
+            border: 1.5px solid #ffdacf !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+            padding: 2px 7px !important;
+            font-size: 11px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 4px rgba(242, 91, 41, 0.08) !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            line-height: 1.35 !important;
+            max-width: 100% !important;
+          }
+          .btn-use-curr-loc:hover {
+            background: #ffede3 !important;
+            border-color: #f25b29 !important;
+            color: #e04816 !important;
+          }
+          @media (max-width: 576px) {
+            .street-label-row {
+              gap: 4px;
+            }
+            .btn-use-curr-loc {
+              padding: 2px 6px !important;
+              font-size: 10.5px !important;
+            }
+          }
+
+          /* Modern Reference Calendar Card */
+          .refixel-calendar-card {
+            background: #ffffff;
+            border-radius: 24px;
+            border: 1.5px solid #edf0f5;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            padding: 20px 18px;
+            width: 100%;
+            max-width: 330px;
+            user-select: none;
+          }
+          .cal-top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+          }
+          .cal-day-num {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+            color: #111827;
+            letter-spacing: -0.5px;
+          }
+          .cal-month-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #8a92a0;
+            margin-top: 4px;
+          }
+          .cal-nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          .cal-nav-btn:hover:not(:disabled) {
+            background: #ff5238;
+            color: #ffffff;
+            border-color: #ff5238;
+          }
+          .cal-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            pointer-events: none;
+          }
+          .cal-icon-badge {
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border: 1.5px solid #eef2f6;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+          }
+          .cal-icon-badge .cal-badge-bar {
+            background: #ff5238;
+            height: 11px;
+            width: 100%;
+          }
+          .cal-icon-badge .cal-badge-dots {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 3px);
+            grid-gap: 3px;
+            align-content: center;
+            justify-content: center;
+            padding: 3px;
+          }
+          .cal-icon-badge .cal-badge-dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #d1d5db;
+          }
+          .cal-icon-badge .cal-badge-dot.red {
+            background: #ff5238;
+          }
+          .cal-accent-divider {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 14px;
+          }
+          .cal-accent-divider .bar-segment {
+            height: 3px;
+            border-radius: 3px;
+            background: #ff5238;
+          }
+          .cal-accent-divider .bar-segment.muted {
+            background: #eef2f6;
+          }
+          .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            margin-bottom: 8px;
+          }
+          .cal-weekday {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+          }
+          .cal-days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            row-gap: 6px;
+            column-gap: 2px;
+            text-align: center;
+          }
+          .cal-day-cell {
+            width: 34px;
+            height: 34px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+          }
+          .cal-day-cell:hover:not(.disabled):not(.selected) {
+            background: #fff0eb;
+            color: #ff5238;
+          }
+          .cal-day-cell.selected {
+            background: #ff5238 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(255, 82, 56, 0.4);
+            border-radius: 8px;
+          }
+          .cal-day-cell.today:not(.selected) {
+            border: 1.5px solid #ff5238;
+            color: #ff5238;
+          }
+          .cal-day-cell.disabled {
+            color: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.35;
+            pointer-events: none;
+          }
+          .cal-day-cell.empty {
+            cursor: default;
+            pointer-events: none;
+          }
+
+          /* Date Input Trigger */
+          .cal-input-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 11px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+          }
+          .cal-input-trigger:hover {
+            border-color: #ff5238;
+          }
+          .cal-input-trigger.active {
+            border-color: #ff5238;
+            box-shadow: 0 0 0 3px rgba(255, 82, 56, 0.15);
+          }
+          .cal-custom-input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 14.5px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            width: 100%;
+            pointer-events: none;
+          }
+          .cal-trigger-chevron {
+            font-size: 12px;
+            transition: transform 0.25s ease;
+          }
+          .cal-input-trigger.active .cal-trigger-chevron {
+            transform: rotate(180deg);
+            color: #ff5238 !important;
+          }
+
+          /* Calendar Popover Dropdown */
+          .calendar-dropdown-popover {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            z-index: 1050;
+            display: none !important;
+            filter: drop-shadow(0 14px 30px rgba(15, 23, 42, 0.15));
+            width: 100%;
+            max-width: 330px;
+          }
+          @media (max-width: 767px) {
+            .calendar-dropdown-popover {
+              left: 0 !important;
+              right: 0 !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              min-width: 0 !important;
+            }
+            .refixel-calendar-card {
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 16px 10px !important;
+              border-radius: 18px !important;
+              box-sizing: border-box !important;
+            }
+            .cal-top-header {
+              margin-bottom: 10px !important;
+            }
+            .cal-day-num {
+              font-size: 30px !important;
+            }
+            .cal-month-name {
+              font-size: 13.5px !important;
+            }
+            .cal-nav-btn {
+              width: 26px !important;
+              height: 26px !important;
+            }
+            .cal-icon-badge {
+              width: 36px !important;
+              height: 36px !important;
+            }
+            .cal-weekdays {
+              margin-bottom: 6px !important;
+              width: 100% !important;
+            }
+            .cal-weekday {
+              font-size: 11.5px !important;
+            }
+            .cal-days-grid {
+              row-gap: 4px !important;
+              column-gap: 1px !important;
+              width: 100% !important;
+            }
+            .cal-day-cell {
+              width: 30px !important;
+              height: 30px !important;
+              font-size: 12.5px !important;
+            }
+          }
+          .calendar-dropdown-popover.show {
+            display: block !important;
+            animation: calDropdownFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          @keyframes calDropdownFade {
+            from {
+              opacity: 0;
+              transform: translateY(-8px) scale(0.98);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+
+          /* Time Dropdown Popover */
+          .time-dropdown-popover {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            display: none !important;
+            filter: drop-shadow(0 14px 30px rgba(15, 23, 42, 0.15));
+          }
+          .time-dropdown-popover.show {
+            display: block !important;
+            animation: calDropdownFade 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .time-dropdown-menu-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1.5px solid #f1f5f9;
+            padding: 12px;
+          }
+          .time-option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-bottom: 6px;
+            border: 1.5px solid transparent;
+            user-select: none;
+          }
+          .time-option-item:last-child {
+            margin-bottom: 0;
+          }
+          .time-option-item:hover {
+            background: #fff8f5;
+            border-color: #ffe3d9;
+          }
+          .time-option-item.active {
+            background: #fff5f2;
+            border-color: #ffdacf;
+            box-shadow: 0 2px 6px rgba(255, 82, 56, 0.1);
+          }
+          .time-opt-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #fff0eb;
+            color: #ff5238;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+          }
+          .time-option-item.active .time-opt-icon {
+            background: #ff5238;
+            color: #ffffff;
+          }
+          .time-opt-title {
+            font-size: 13.5px;
+            color: #1e293b;
+          }
+          .time-option-item.active .time-opt-title {
+            color: #e0452d;
+            font-weight: 700;
+          }
+          .time-opt-sub {
+            font-size: 11px;
+            color: #64748b;
+          }
+          .time-option-item.active .time-opt-sub {
+            color: #e0452d;
+            font-weight: 600;
+          }
+          .time-opt-check {
+            color: #ff5238;
+            font-size: 13px;
+            display: none;
+          }
+          .time-option-item.active .time-opt-check {
+            display: block;
           }
           </style>
 
@@ -195,28 +750,72 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                 <div id="cartBookingLocStatus" class="small mb-3" style="display: none;"></div>
 
                 <div class="form-group mb-3">
-                  <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 8px;">
-                    <div>
-                      <label class="font-weight-bold small d-block mb-1">Address Type</label>
-                      <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
-                        <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
-                          <input type="radio" id="typeHomeCart" name="address_type" class="custom-control-input" value="Home" <?= ($customerProfile['address_type'] ?? 'Home') === 'Home' ? 'checked' : '' ?>>
-                          <label class="custom-control-label small" for="typeHomeCart">Home</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
-                          <input type="radio" id="typeOfficeCart" name="address_type" class="custom-control-input" value="Office" <?= ($customerProfile['address_type'] ?? '') === 'Office' ? 'checked' : '' ?>>
-                          <label class="custom-control-label small" for="typeOfficeCart">Office</label>
-                        </div>
-                        <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
-                          <input type="radio" id="typeOtherCart" name="address_type" class="custom-control-input" value="Other" <?= ($customerProfile['address_type'] ?? '') === 'Other' ? 'checked' : '' ?>>
-                          <label class="custom-control-label small" for="typeOtherCart">Other</label>
-                        </div>
+                  <label class="font-weight-bold small d-block mb-1">Address Type</label>
+                  <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+                    <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
+                      <input type="radio" id="typeHomeCart" name="address_type" class="custom-control-input" value="Home" <?= ($customerProfile['address_type'] ?? 'Home') === 'Home' ? 'checked' : '' ?>>
+                      <label class="custom-control-label small" for="typeHomeCart">Home</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
+                      <input type="radio" id="typeOfficeCart" name="address_type" class="custom-control-input" value="Office" <?= ($customerProfile['address_type'] ?? '') === 'Office' ? 'checked' : '' ?>>
+                      <label class="custom-control-label small" for="typeOfficeCart">Office</label>
+                    </div>
+                    <div class="custom-control custom-radio custom-control-inline mb-0 mr-0">
+                      <input type="radio" id="typeOtherCart" name="address_type" class="custom-control-input" value="Other" <?= ($customerProfile['address_type'] ?? '') === 'Other' ? 'checked' : '' ?>>
+                      <label class="custom-control-label small" for="typeOtherCart">Other</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Choose Saved Address Action Bar (Below Address Type) -->
+                <div class="choose-saved-address-bar mb-3 p-2 px-3 rounded" style="background: #f8fafc; border: 1.5px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                  <div class="d-flex align-items-center" style="gap: 9px; min-width: 0;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #fff3ec; color: #f25b29; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                      <i class="fa fa-map-marker"></i>
+                    </div>
+                    <div style="min-width: 0;">
+                      <div class="font-weight-bold" style="font-size: 13px; color: #0a1c33; line-height: 1.2;">
+                        Choose Saved Address
+                      </div>
+                      <div class="text-muted text-truncate" id="cartActiveAddressSubtext" style="font-size: 11.5px; line-height: 1.2;">
+                        <?= !empty($customerProfile['street']) ? ('Active: ' . \App\Core\View::e($customerProfile['address_type'] ?? 'Home') . ' - ' . \App\Core\View::e($customerProfile['street'])) : 'Pick Home, Office, or another saved location' ?>
                       </div>
                     </div>
-                    <div>
-                      <button type="button" id="cartBtnAddNewLocation" class="btn btn-sm" style="background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; font-weight: 600; border-radius: 6px; padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(29, 78, 216, 0.08); cursor: pointer;">
-                        <i class="fa fa-plus-circle"></i> <span>+ Add New Location</span>
-                      </button>
+                  </div>
+                  <button type="button" id="cartBtnOpenAddressPicker" class="btn btn-sm btn-choose-address" style="background: #ffffff; color: #f25b29; border: 1.5px solid #f25b29; font-weight: 700; font-size: 11.5px; border-radius: 6px; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 1px 3px rgba(242, 91, 41, 0.1); transition: all 0.2s ease;">
+                    <i class="fa fa-list-ul"></i> <span>Choose Address</span>
+                    <span class="badge badge-pill badge-primary ml-1" id="cartSavedAddressesCountBadge" style="background: #f25b29; color: #fff; font-size: 10.5px; padding: 2px 6px;"><?= count($savedAddresses) ?: 1 ?></span>
+                  </button>
+                </div>
+
+                <!-- Modal: Choose From Saved Addresses -->
+                <div class="modal fade" id="cartSavedAddressesModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+                  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content" style="border-radius: 16px; border: 1.5px solid #e2e8f0; box-shadow: 0 12px 40px rgba(0,0,0,0.18); overflow: hidden;">
+                      <div class="modal-header py-3 px-4" style="background: #f8fafc; border-bottom: 1.5px solid #e2e8f0;">
+                        <div>
+                          <h5 class="modal-title font-weight-bold mb-1" style="color: #0a1c33; font-size: 17px;">
+                            <i class="fa fa-map-marker mr-2 text-danger"></i> Choose Service Address
+                          </h5>
+                          <p class="text-muted small mb-0">Select which saved location you want REFIXEL technicians to visit:</p>
+                        </div>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 26px; outline: none;">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body p-3 p-md-4" style="max-height: 60vh; overflow-y: auto;">
+                        <div id="cartSavedAddressesList" class="d-flex flex-column" style="gap: 10px;">
+                          <!-- Populated dynamically via JS -->
+                        </div>
+                      </div>
+                      <div class="modal-footer py-2 px-4 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-top: 1.5px solid #e2e8f0;">
+                        <button type="button" id="cartBtnAddNewAddressFromModal" class="btn btn-sm" style="background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; font-weight: 600; border-radius: 6px; padding: 6px 14px;">
+                          <i class="fa fa-plus-circle mr-1"></i> + Enter New Address
+                        </button>
+                        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal" style="font-weight: 600; border-radius: 6px; padding: 6px 16px;">
+                          Close
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -236,15 +835,6 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                     <div id="cartSavedAddressSummaryText" style="font-size: 13.5px; color: #1e293b; font-weight: 600; line-height: 1.4;">
                       <?= \App\Core\View::e($initialSummaryLine) ?>
                     </div>
-                    <?php if (!empty($customerProfile['address'])): ?>
-                    <div id="cartSavedAddressLandmarkText" class="small text-muted mt-1" style="font-size: 12px; line-height: 1.35;">
-                      <i class="fa fa-info-circle mr-1 text-primary"></i> <span id="cartSavedAddressLandmarkSpan"><?= \App\Core\View::e($customerProfile['address']) ?></span>
-                    </div>
-                    <?php else: ?>
-                    <div id="cartSavedAddressLandmarkText" class="small text-muted mt-1" style="font-size: 12px; line-height: 1.35; display: none;">
-                      <i class="fa fa-info-circle mr-1 text-primary"></i> <span id="cartSavedAddressLandmarkSpan"></span>
-                    </div>
-                    <?php endif; ?>
                   </div>
                   <div>
                     <button type="button" id="cartBtnToggleAddressDetails" class="btn btn-sm" style="background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a; font-weight: 600; font-size: 12px; border-radius: 6px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
@@ -260,14 +850,14 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                 <div class="form-row">
                   <div class="col-md-6 form-group">
                     <div class="d-flex justify-content-between align-items-center mb-1" style="min-height: 28px;">
-                      <label class="font-weight-bold small mb-0 text-nowrap" for="cartInputHouseNo">House / Flat / Office No. <span class="text-danger">*</span></label>
+                      <label class="font-weight-bold small mb-0" for="cartInputHouseNo">House / Flat / Office No. <span class="text-danger">*</span></label>
                     </div>
                     <input type="text" name="house_no" id="cartInputHouseNo" class="form-control" value="<?= \App\Core\View::e(!empty($customerProfile['house_no']) ? $customerProfile['house_no'] : 'House No. 1') ?>" placeholder="e.g. Flat 604 / House No." required>
                   </div>
                   <div class="col-md-6 form-group">
-                    <div class="d-flex justify-content-between align-items-center mb-1" style="min-height: 28px; gap: 8px;">
-                      <label class="font-weight-bold small mb-0 text-nowrap" for="cartInputStreet">Street / Society / Area <span class="text-danger">*</span></label>
-                      <button type="button" id="cartBtnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc" style="background: #fff3ec; color: #f25b29; border: 1.5px solid #ffdacf; font-weight: 600; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s ease; box-shadow: 0 1px 4px rgba(242, 91, 41, 0.08); cursor: pointer; white-space: nowrap; flex-shrink: 0; line-height: 1.35;">
+                    <div class="street-label-row">
+                      <label class="font-weight-bold small mb-0" for="cartInputStreet">Street / Society / Area <span class="text-danger">*</span></label>
+                      <button type="button" id="cartBtnUseCurrentLocation" class="btn btn-sm btn-use-curr-loc">
                         <i class="fa fa-crosshairs"></i> <span>Detect Location</span>
                       </button>
                     </div>
@@ -502,8 +1092,8 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
               <textarea name="issue_details" rows="2" class="form-control" placeholder="Any access gates, specific stains, or precautions"></textarea>
             </div>
 
-                <button type="submit" class="btn text-white py-3 font-weight-bold w-100" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3);">
-                  Confirm Booking & Schedule Visit &rarr;
+                <button type="submit" class="btn text-white font-weight-bold btn-confirm-booking" id="cartSubmitBtn">
+                  <span>Confirm Booking &amp; Schedule Visit &rarr;</span>
                 </button>
               </div>
             </div>
@@ -551,42 +1141,86 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initCartPage() {
   var baseUrl = '<?= rtrim(\App\Core\View::url(), '/') ?>';
 
   // Plus Qty
   document.querySelectorAll('.cart-plus-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var id = this.getAttribute('data-id');
-      fetch(baseUrl + '/api/cart/update', {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = parseInt(this.getAttribute('data-id'), 10);
+      if (!id) return;
+      var self = this;
+      self.disabled = true;
+      var originalHtml = self.innerHTML;
+      self.innerHTML = '<i class="fa fa-spinner fa-spin" style="font-size:10px;"></i>';
+      fetch((window.REFIXEL_BASE_URL || baseUrl) + '/api/cart/update', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({service_id: id, action: 'plus'})
-      }).then(function() { window.location.reload(); });
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({service_id: id, vendor_price_id: id, action: 'plus'})
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.location.reload();
+      })
+      .catch(function(err) {
+        console.error('Cart plus error:', err);
+        self.disabled = false;
+        self.innerHTML = originalHtml;
+      });
     });
   });
 
   // Minus Qty
   document.querySelectorAll('.cart-minus-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var id = this.getAttribute('data-id');
-      fetch(baseUrl + '/api/cart/update', {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = parseInt(this.getAttribute('data-id'), 10);
+      if (!id) return;
+      var self = this;
+      self.disabled = true;
+      var originalHtml = self.innerHTML;
+      self.innerHTML = '<i class="fa fa-spinner fa-spin" style="font-size:10px;"></i>';
+      fetch((window.REFIXEL_BASE_URL || baseUrl) + '/api/cart/update', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({service_id: id, action: 'minus'})
-      }).then(function() { window.location.reload(); });
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({service_id: id, vendor_price_id: id, action: 'minus'})
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        window.location.reload();
+      })
+      .catch(function(err) {
+        console.error('Cart minus error:', err);
+        self.disabled = false;
+        self.innerHTML = originalHtml;
+      });
     });
   });
 
   // Clear Cart
   var clearBtn = document.getElementById('clearCartBtn');
   if (clearBtn) {
-    clearBtn.addEventListener('click', function() {
+    clearBtn.addEventListener('click', function(e) {
+      e.preventDefault();
       if (confirm('Are you sure you want to remove all items from your cart?')) {
-        fetch(baseUrl + '/api/cart/clear', {
+        var self = this;
+        self.disabled = true;
+        self.textContent = 'Clearing...';
+        fetch((window.REFIXEL_BASE_URL || baseUrl) + '/api/cart/clear', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'}
-        }).then(function() { window.location.reload(); });
+          headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}
+        })
+        .then(function() { window.location.reload(); })
+        .catch(function() { window.location.reload(); });
       }
     });
   }
@@ -837,6 +1471,19 @@ document.addEventListener('DOMContentLoaded', function() {
       'address'      => $customerProfile['address'] ?? '',
   ]) ?>;
 
+  window.CUSTOMER_SAVED_ADDRESSES = <?= json_encode($savedAddresses ?? []) ?>;
+
+  var inputHouseNo = document.getElementById('cartInputHouseNo');
+  var inputStreet  = document.getElementById('cartInputStreet');
+  var inputCity    = document.getElementById('cartInputCity');
+  var inputState   = document.getElementById('cartInputState');
+  var inputPincode = document.getElementById('cartInputPincode');
+  var inputAddress = document.getElementById('cartInputAddress');
+
+  var inputName = document.getElementById('cartInputName');
+  var inputPhone = document.getElementById('cartInputPhone');
+  var inputEmail = document.getElementById('cartInputEmail');
+
   var btnUseCurrentLoc    = document.getElementById('cartBtnUseCurrentLocation');
   var btnAddNewLoc        = document.getElementById('cartBtnAddNewLocation');
   var btnToggleAddress    = document.getElementById('cartBtnToggleAddressDetails');
@@ -884,16 +1531,337 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  var inputHouseNo = document.getElementById('cartInputHouseNo');
-  var inputStreet  = document.getElementById('cartInputStreet');
-  var inputCity    = document.getElementById('cartInputCity');
-  var inputState   = document.getElementById('cartInputState');
-  var inputPincode = document.getElementById('cartInputPincode');
-  var inputAddress = document.getElementById('cartInputAddress');
+  // ══════════════════════════════════════════════════════════════════
+  // MULTI-ADDRESS REGISTRY & "CHOOSE SAVED ADDRESS" PICKER
+  // ══════════════════════════════════════════════════════════════════
+  var savedAddresses = window.CUSTOMER_SAVED_ADDRESSES || [];
 
-  var inputName = document.getElementById('cartInputName');
-  var inputPhone = document.getElementById('cartInputPhone');
-  var inputEmail = document.getElementById('cartInputEmail');
+  // Merge any addresses saved in localStorage for guest/client persistence
+  try {
+    var localAddresses = JSON.parse(localStorage.getItem('refixel_saved_addresses') || '[]');
+    if (Array.isArray(localAddresses)) {
+      localAddresses.forEach(function(la) {
+        var exists = savedAddresses.some(function(sa) {
+          return (sa.street && sa.street.toLowerCase() === (la.street || '').toLowerCase()) &&
+                 (sa.house_no && sa.house_no.toLowerCase() === (la.house_no || '').toLowerCase());
+        });
+        if (!exists && (la.street || la.address)) {
+          savedAddresses.push(la);
+        }
+      });
+    }
+  } catch(e) {}
+
+  function syncSavedAddressesBadge() {
+    var count = savedAddresses.length;
+    var badge = document.getElementById('cartSavedAddressesCountBadge');
+    if (badge) badge.textContent = count;
+  }
+  syncSavedAddressesBadge();
+
+  function triggerNewAddressEntry() {
+    isNewLocationMode = true;
+    if (btnAddNewLoc) {
+      btnAddNewLoc.innerHTML = '<i class="fa fa-undo"></i> <span>Use Saved Address</span>';
+      btnAddNewLoc.style.background = '#fef2f2';
+      btnAddNewLoc.style.color = '#dc2626';
+      btnAddNewLoc.style.borderColor = '#fecaca';
+    }
+
+    if (inputHouseNo) { inputHouseNo.value = ''; inputHouseNo.placeholder = 'e.g. Flat 604 / House No.'; }
+    if (inputStreet) { inputStreet.value = ''; inputStreet.placeholder = 'e.g. Colony, Street, Apartment'; }
+    if (inputAddress) { inputAddress.value = ''; inputAddress.placeholder = 'Any extra landmark details'; }
+    if (inputPincode) { inputPincode.value = ''; inputPincode.placeholder = '6-digit PIN code'; }
+
+    var radioOther = document.querySelector('input[name="address_type"][value="Other"]');
+    if (radioOther) radioOther.checked = true;
+
+    if (addressDetailedBox) addressDetailedBox.style.display = 'block';
+    if (toggleAddressText) toggleAddressText.textContent = 'Hide Details';
+    if (toggleAddressIcon) toggleAddressIcon.className = 'fa fa-chevron-up';
+    if (savedAddressBox) savedAddressBox.style.display = 'none';
+
+    if (btnUseCurrentLoc) {
+      btnUseCurrentLoc.innerHTML = '<i class="fa fa-crosshairs"></i> <span>Detect Location</span>';
+      btnUseCurrentLoc.style.background = '#fff3ec';
+      btnUseCurrentLoc.style.borderColor = '#ffdacf';
+      btnUseCurrentLoc.style.color = '#f25b29';
+      btnUseCurrentLoc.disabled = false;
+    }
+
+    if (bookingAutoFillBadge) {
+      bookingAutoFillBadge.innerHTML = '<i class="fa fa-plus-circle mr-1"></i> Entering New Location';
+      bookingAutoFillBadge.style.background = '#eff6ff';
+      bookingAutoFillBadge.style.color = '#2563eb';
+      bookingAutoFillBadge.style.borderColor = '#bfdbfe';
+      bookingAutoFillBadge.style.display = 'inline-block';
+    }
+    if (bookingLocStatus) {
+      bookingLocStatus.style.display = 'block';
+      bookingLocStatus.innerHTML = '<span style="color: #2563eb;"><i class="fa fa-map-pin mr-1"></i> Enter your new address details below or click Use Current Location</span>';
+    }
+
+    if (inputHouseNo) {
+      inputHouseNo.focus();
+    }
+  }
+
+  function renderSavedAddressesModal() {
+    var container = document.getElementById('cartSavedAddressesList');
+    if (!container) return;
+
+    if (!savedAddresses || savedAddresses.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-4">
+          <div class="mb-2" style="font-size: 28px; color: #94a3b8;"><i class="fa fa-map-marker"></i></div>
+          <p class="text-muted small mb-3">No saved addresses found.</p>
+          <button type="button" class="btn btn-sm btn-primary-custom" id="cartModalEmptyAddBtn">
+            <i class="fa fa-plus-circle mr-1"></i> Add New Address
+          </button>
+        </div>
+      `;
+      var emptyAddBtn = document.getElementById('cartModalEmptyAddBtn');
+      if (emptyAddBtn) {
+        emptyAddBtn.addEventListener('click', function() {
+          closeCartAddressModal();
+          triggerNewAddressEntry();
+        });
+      }
+      return;
+    }
+
+    var currStreet = inputStreet ? inputStreet.value.trim().toLowerCase() : '';
+    var currHouse = inputHouseNo ? inputHouseNo.value.trim().toLowerCase() : '';
+
+    var html = '';
+    savedAddresses.forEach(function(addr, idx) {
+      var addrStreet = (addr.street || '').trim().toLowerCase();
+      var addrHouse = (addr.house_no || '').trim().toLowerCase();
+      var isCurrent = (currStreet && addrStreet === currStreet && (!currHouse || addrHouse === currHouse));
+
+      var type = (addr.address_type || addr.label || 'Home');
+
+      // Compose clean single-line / plain text full address - NO small text
+      var addressParts = [
+        addr.house_no,
+        addr.street,
+        addr.city,
+        addr.state,
+        addr.pincode
+      ].filter(Boolean);
+      var plainAddress = addressParts.join(', ');
+      if (!plainAddress && addr.address) {
+        plainAddress = addr.address;
+      }
+
+      html += `
+        <div class="saved-address-plain-item p-2 px-3 select-saved-addr-btn" data-index="${idx}" style="cursor: pointer; border: 1.5px solid ${isCurrent ? '#f25b29' : '#e2e8f0'}; background: ${isCurrent ? '#fff8f5' : '#ffffff'}; border-radius: 8px; transition: all 0.15s ease; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div class="d-flex align-items-center" style="gap: 10px; flex: 1; min-width: 0;">
+            <span class="badge" style="background: ${isCurrent ? '#ffede3' : '#f1f5f9'}; color: ${isCurrent ? '#f25b29' : '#475569'}; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;">
+              ${type}
+            </span>
+            <div style="color: #1e293b; font-size: 13.5px; line-height: 1.4; font-weight: 600; word-break: break-word;">
+              ${plainAddress}
+            </div>
+          </div>
+          <div class="d-flex align-items-center" style="gap: 8px; flex-shrink: 0;">
+            <button type="button" class="btn btn-sm btn-delete-saved-addr" data-index="${idx}" title="Delete Address" style="width: 34px; height: 34px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 0; cursor: pointer; transition: all 0.15s ease;">
+              <i class="fa fa-trash-o" style="font-size: 15px;"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-select-saved-addr-icon" data-index="${idx}" title="${isCurrent ? 'Active Address' : 'Select Address'}" style="width: 34px; height: 34px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; background: ${isCurrent ? '#059669' : '#ffffff'}; color: ${isCurrent ? '#ffffff' : '#f25b29'}; border: 1.5px solid ${isCurrent ? '#059669' : '#f25b29'}; padding: 0; cursor: pointer; transition: all 0.15s ease;">
+              <i class="fa fa-check" style="font-size: 14px;"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+
+    // Attach click listeners to select address (row click or select icon click)
+    container.querySelectorAll('.select-saved-addr-btn').forEach(function(row) {
+      row.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-delete-saved-addr')) return;
+        var idx = parseInt(this.getAttribute('data-index'), 10);
+        if (!isNaN(idx) && savedAddresses[idx]) {
+          applySelectedSavedAddress(savedAddresses[idx]);
+          closeCartAddressModal();
+        }
+      });
+      row.addEventListener('mouseenter', function() {
+        if (!this.querySelector('.btn-select-saved-addr-icon[style*="#059669"]')) {
+          this.style.borderColor = '#cbd5e1';
+          this.style.backgroundColor = '#f8fafc';
+        }
+      });
+      row.addEventListener('mouseleave', function() {
+        var isCurr = this.querySelector('.btn-select-saved-addr-icon[style*="#059669"]');
+        this.style.borderColor = isCurr ? '#f25b29' : '#e2e8f0';
+        this.style.backgroundColor = isCurr ? '#fff8f5' : '#ffffff';
+      });
+    });
+
+    // Attach click listeners to delete address icon button
+    container.querySelectorAll('.btn-delete-saved-addr').forEach(function(delBtn) {
+      delBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var idx = parseInt(this.getAttribute('data-index'), 10);
+        if (isNaN(idx) || !savedAddresses[idx]) return;
+        if (!confirm('Are you sure you want to delete this saved address?')) return;
+
+        var targetAddr = savedAddresses[idx];
+        savedAddresses.splice(idx, 1);
+        try {
+          localStorage.setItem('refixel_saved_addresses', JSON.stringify(savedAddresses));
+        } catch(err) {}
+
+        fetch((window.REFIXEL_BASE_URL || '') + '/api/customer/delete-address', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: targetAddr.id, street: targetAddr.street })
+        }).catch(function(){});
+
+        syncSavedAddressesBadge();
+        renderSavedAddressesModal();
+
+        var currStreet = inputStreet ? inputStreet.value.trim().toLowerCase() : '';
+        if (targetAddr.street && targetAddr.street.trim().toLowerCase() === currStreet) {
+          if (savedAddresses.length > 0) {
+            applySelectedSavedAddress(savedAddresses[0]);
+          } else {
+            if (inputStreet) inputStreet.value = '';
+            if (inputHouseNo) inputHouseNo.value = 'House No. 1';
+            if (inputAddress) inputAddress.value = '';
+            var sumText = document.getElementById('cartSavedAddressSummaryText');
+            if (sumText) sumText.textContent = 'No saved address selected';
+            updateAddressSummaryDisplay();
+          }
+        }
+      });
+    });
+  }
+
+  function openCartAddressModal() {
+    renderSavedAddressesModal();
+    if (window.jQuery && typeof $('#cartSavedAddressesModal').modal === 'function') {
+      try {
+        $('#cartSavedAddressesModal').modal('show');
+        return;
+      } catch (err) {}
+    }
+    var modalEl = document.getElementById('cartSavedAddressesModal');
+    if (modalEl) {
+      modalEl.classList.add('show');
+      modalEl.style.display = 'block';
+      modalEl.removeAttribute('aria-hidden');
+      modalEl.setAttribute('aria-modal', 'true');
+      document.body.classList.add('modal-open');
+      if (!document.getElementById('cartModalBackdrop')) {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.id = 'cartModalBackdrop';
+        document.body.appendChild(backdrop);
+        backdrop.addEventListener('click', closeCartAddressModal);
+      }
+    }
+  }
+
+  function closeCartAddressModal() {
+    if (window.jQuery && typeof $('#cartSavedAddressesModal').modal === 'function') {
+      try {
+        $('#cartSavedAddressesModal').modal('hide');
+      } catch (err) {}
+    }
+    var modalEl = document.getElementById('cartSavedAddressesModal');
+    if (modalEl) {
+      modalEl.classList.remove('show');
+      modalEl.style.display = 'none';
+      modalEl.setAttribute('aria-hidden', 'true');
+      modalEl.removeAttribute('aria-modal');
+      document.body.classList.remove('modal-open');
+      var backdrop = document.getElementById('cartModalBackdrop');
+      if (backdrop) backdrop.remove();
+      var bds = document.querySelectorAll('.modal-backdrop');
+      bds.forEach(function(b) { b.remove(); });
+    }
+  }
+
+  document.querySelectorAll('#cartSavedAddressesModal [data-dismiss="modal"]').forEach(function(b) {
+    b.addEventListener('click', function(e) {
+      e.preventDefault();
+      closeCartAddressModal();
+    });
+  });
+
+  function applySelectedSavedAddress(addr) {
+    if (!addr) return;
+    if (inputHouseNo) inputHouseNo.value = addr.house_no || 'House No. 1';
+    if (inputStreet) inputStreet.value = addr.street || '';
+    if (inputCity) inputCity.value = addr.city || '<?= addslashes($currentCity) ?>';
+    if (inputState) inputState.value = addr.state || 'Uttarakhand';
+    if (inputPincode) inputPincode.value = addr.pincode || '';
+    if (inputAddress) inputAddress.value = addr.address || '';
+
+    var targetType = addr.address_type || addr.label || 'Home';
+    var radioToSelect = document.querySelector('input[name="address_type"][value="' + targetType + '"]');
+    if (radioToSelect) {
+      radioToSelect.checked = true;
+    } else {
+      var radioOther = document.querySelector('input[name="address_type"][value="Other"]');
+      if (radioOther) radioOther.checked = true;
+    }
+
+    var subtext = document.getElementById('cartActiveAddressSubtext');
+    if (subtext) {
+      subtext.textContent = 'Active: ' + targetType + ' - ' + (addr.street || addr.city);
+    }
+
+    if (bookingAutoFillBadge) {
+      bookingAutoFillBadge.innerHTML = '<i class="fa fa-check-circle mr-1"></i> Selected: ' + targetType + ' Address';
+      bookingAutoFillBadge.style.display = 'inline-block';
+    }
+
+    if (savedAddressBox) savedAddressBox.style.display = 'block';
+    if (addressDetailedBox) addressDetailedBox.style.display = 'none';
+    if (toggleAddressText) toggleAddressText.textContent = 'Change / Edit Address';
+    if (toggleAddressIcon) toggleAddressIcon.className = 'fa fa-chevron-down';
+
+    updateAddressSummaryDisplay();
+    queueAddressPersist();
+  }
+
+  // Open Saved Address Modal
+  var btnOpenAddrPicker = document.getElementById('cartBtnOpenAddressPicker');
+  if (btnOpenAddrPicker) {
+    btnOpenAddrPicker.addEventListener('click', function(e) {
+      e.preventDefault();
+      openCartAddressModal();
+    });
+  }
+
+  var btnAddFromModal = document.getElementById('cartBtnAddNewAddressFromModal');
+  if (btnAddFromModal) {
+    btnAddFromModal.addEventListener('click', function() {
+      closeCartAddressModal();
+      triggerNewAddressEntry();
+    });
+  }
+
+  // When Address Type radio (Home, Office, Other) is clicked, check if we have an existing address for that type
+  document.querySelectorAll('input[name="address_type"]').forEach(function(r) {
+    r.addEventListener('change', function() {
+      if (isNewLocationMode) return;
+      var chosenType = this.value;
+      var match = savedAddresses.find(function(sa) {
+        return (sa.address_type && sa.address_type.toLowerCase() === chosenType.toLowerCase()) ||
+               (sa.label && sa.label.toLowerCase() === chosenType.toLowerCase());
+      });
+      if (match && (!inputStreet.value.trim() || inputStreet.value.trim() !== match.street)) {
+        applySelectedSavedAddress(match);
+      }
+    });
+  });
 
   function flashHighlight(el) {
     if (!el) return;
@@ -965,6 +1933,32 @@ document.addEventListener('DOMContentLoaded', function() {
       }).catch(function(err) {
         console.warn('Auto-save address error on cart:', err);
       });
+    }
+    if (streetVal || addrVal) {
+      var existingIdx = savedAddresses.findIndex(function(sa) {
+        return (sa.street && sa.street.toLowerCase() === streetVal.toLowerCase()) &&
+               ((sa.house_no || '').toLowerCase() === houseVal.toLowerCase());
+      });
+      var newEntry = {
+        label: typeVal,
+        address_type: typeVal,
+        house_no: houseVal,
+        street: streetVal,
+        city: cityVal,
+        state: stateVal,
+        pincode: pinVal,
+        address: addrVal,
+        is_default: 1
+      };
+      if (existingIdx !== -1) {
+        savedAddresses[existingIdx] = Object.assign(savedAddresses[existingIdx], newEntry);
+      } else {
+        savedAddresses.unshift(newEntry);
+      }
+      try {
+        localStorage.setItem('refixel_saved_addresses', JSON.stringify(savedAddresses));
+      } catch(e) {}
+      syncSavedAddressesBadge();
     }
     updateAddressSummaryDisplay();
   }
@@ -1393,6 +2387,35 @@ document.addEventListener('DOMContentLoaded', function() {
           localStorage.setItem('refixel_user_location', JSON.stringify(fullLoc));
         } catch(e) {}
 
+        var existingIdx = savedAddresses.findIndex(function(sa) {
+          return (sa.street && sa.street.toLowerCase() === streetVal.toLowerCase()) &&
+                 ((sa.house_no || '').toLowerCase() === houseVal.toLowerCase());
+        });
+        var newEntry = {
+          label: typeVal,
+          address_type: typeVal,
+          house_no: houseVal,
+          street: streetVal,
+          city: cityVal,
+          state: stateVal,
+          pincode: pinVal,
+          address: addrVal,
+          is_default: 1
+        };
+        if (existingIdx !== -1) {
+          savedAddresses[existingIdx] = Object.assign(savedAddresses[existingIdx], newEntry);
+        } else {
+          savedAddresses.unshift(newEntry);
+        }
+        try {
+          localStorage.setItem('refixel_saved_addresses', JSON.stringify(savedAddresses));
+        } catch(e) {}
+        syncSavedAddressesBadge();
+        var subtext = document.getElementById('cartActiveAddressSubtext');
+        if (subtext) {
+          subtext.textContent = 'Active: ' + typeVal + ' - ' + (streetVal || cityVal);
+        }
+
         window.CUSTOMER_SAVED_PROFILE = {
           house_no: houseVal,
           street: streetVal,
@@ -1444,16 +2467,58 @@ document.addEventListener('DOMContentLoaded', function() {
   // Safeguard: Ensure hidden fields don't block HTML5 validation if unexpectedly empty
   var cartCheckoutFormEl = document.getElementById('cartCheckoutForm');
   if (cartCheckoutFormEl) {
-    cartCheckoutFormEl.addEventListener('submit', function() {
-      if (addressDetailedBox && addressDetailedBox.style.display === 'none') {
-        var reqs = addressDetailedBox.querySelectorAll('[required]');
-        var missing = false;
-        reqs.forEach(function(inp) { if (!inp.value.trim()) missing = true; });
-        if (missing) {
-          addressDetailedBox.style.display = 'block';
-          if (toggleAddressText) toggleAddressText.textContent = 'Hide Details';
-          if (toggleAddressIcon) toggleAddressIcon.className = 'fa fa-chevron-up';
+    cartCheckoutFormEl.addEventListener('submit', function(e) {
+      // 1. Fallback for house_no
+      if (inputHouseNo && !inputHouseNo.value.trim()) {
+        inputHouseNo.value = 'House No. 1';
+      }
+
+      // 2. Ensure street / area is filled
+      if (inputStreet && !inputStreet.value.trim()) {
+        if (addressDetailedBox) addressDetailedBox.style.display = 'block';
+        if (toggleAddressText) toggleAddressText.textContent = 'Hide Details';
+        if (toggleAddressIcon) toggleAddressIcon.className = 'fa fa-chevron-up';
+        inputStreet.focus();
+        e.preventDefault();
+        return false;
+      }
+
+      // 3. Ensure address has at least 5 characters for backend validator
+      if (inputAddress) {
+        var addrText = inputAddress.value.trim();
+        if (addrText.length < 5) {
+          var compositeParts = [
+            inputHouseNo ? inputHouseNo.value.trim() : 'House No. 1',
+            inputStreet ? inputStreet.value.trim() : '',
+            inputCity ? inputCity.value.trim() : '',
+            inputPincode ? inputPincode.value.trim() : ''
+          ].filter(Boolean);
+          inputAddress.value = compositeParts.join(', ');
         }
+      }
+
+      // 4. Ensure preferred date and time slot have values
+      if (preferredDateInput && !preferredDateInput.value) {
+        preferredDateInput.value = formatYYYYMMDD(selectedDate || new Date());
+      }
+      if (preferredTimeInput && !preferredTimeInput.value) {
+        preferredTimeInput.value = '02:00 - 04:00 PM';
+      }
+
+      // 5. Avoid browser cancelling submission if detailed address box is collapsed
+      if (addressDetailedBox && addressDetailedBox.style.display === 'none') {
+        addressDetailedBox.querySelectorAll('input[required]').forEach(function(inp) {
+          if (!inp.value.trim()) {
+            inp.removeAttribute('required');
+          }
+        });
+      }
+
+      // 6. Visual feedback on submit button
+      var submitBtn = cartCheckoutFormEl.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Confirming Booking & Scheduling Visit...';
       }
     });
   }
@@ -1462,7 +2527,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btnUseCurrentLoc) {
     btnUseCurrentLoc.addEventListener('click', function() {
       btnUseCurrentLoc.disabled = true;
-      btnUseCurrentLoc.innerHTML = '<i class="fa fa-spinner fa-spin"></i> <span>Detecting GPS Location...</span>';
+      btnUseCurrentLoc.innerHTML = '<i class="fa fa-spinner fa-spin"></i> <span>Detecting GPS...</span>';
       if (bookingLocStatus) {
         bookingLocStatus.style.display = 'block';
         bookingLocStatus.innerHTML = '<span class="text-muted"><i class="fa fa-spinner fa-spin mr-1"></i> Requesting GPS coordinates...</span>';
@@ -1638,6 +2703,12 @@ document.addEventListener('DOMContentLoaded', function() {
       );
     });
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCartPage);
+} else {
+  initCartPage();
+}
 </script>
 

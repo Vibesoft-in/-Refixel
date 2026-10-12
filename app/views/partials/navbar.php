@@ -331,7 +331,7 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
           </li>
         <?php else: ?>
           <li>
-            <a href="javascript:void(0)" id="hdrLoginTrigger" class="hdr-login-btn">
+            <a href="<?= \App\Core\View::url('/login') ?>" id="hdrLoginTrigger" class="hdr-login-btn">
               <img src="<?= \App\Core\View::asset('img/account.webp') ?>" alt="Login">
               <strong>Login</strong>
             </a>

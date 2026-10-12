@@ -77,6 +77,7 @@ class BookingController extends Controller
         $details = Cart::getDetails();
 
         return Response::json([
+            'success'    => $res['success'] ?? true,
             'status'     => $res['success'] ? 'success' : 'error',
             'cart_count' => $details['count'],
             'cart_total' => $details['total'],
@@ -142,6 +143,24 @@ class BookingController extends Controller
 
     public function submit(Request $request): Response
     {
+        if ($request->input('from_cart') && (int)$request->input('service_id', 0) <= 0) {
+            $cartDetails = Cart::getDetails();
+            if (!empty($cartDetails['items'][0]['service_id'])) {
+                $request->set('service_id', (int)$cartDetails['items'][0]['service_id']);
+            }
+        }
+
+        $addrInput = trim((string)$request->input('address', ''));
+        $streetInput = trim((string)$request->input('street', ''));
+        $houseNoInput = trim((string)$request->input('house_no', ''));
+        $cityInput = trim((string)$request->input('city', ''));
+        $pincodeInput = trim((string)$request->input('pincode', ''));
+        if (strlen($addrInput) < 5 && (!empty($streetInput) || !empty($houseNoInput))) {
+            $synthParts = array_filter([$houseNoInput ?: 'House No. 1', $streetInput, $cityInput]);
+            $synthesized = implode(', ', $synthParts) . (!empty($pincodeInput) ? ' - ' . $pincodeInput : '');
+            $request->set('address', $synthesized);
+        }
+
         $validator = $this->validate($request, [
             'service_id'     => 'required|numeric',
             'name'           => 'required|min:2',

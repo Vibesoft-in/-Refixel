@@ -22,6 +22,34 @@ try {
     echo "[SKIP] customer_profiles: " . $e->getMessage() . "\n";
 }
 
+// 1b. Multiple Customer Addresses Table
+try {
+    \App\Core\Database::query("
+        CREATE TABLE IF NOT EXISTS customer_addresses (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            user_id INT UNSIGNED NOT NULL,
+            label VARCHAR(80) NOT NULL DEFAULT 'Home',
+            house_no VARCHAR(100) NULL,
+            street VARCHAR(255) NULL,
+            address VARCHAR(255) NULL,
+            city VARCHAR(80) NULL,
+            state VARCHAR(100) NULL,
+            pincode VARCHAR(10) NULL,
+            address_type VARCHAR(50) DEFAULT 'Home',
+            lat DECIMAL(10,8) NULL,
+            lng DECIMAL(11,8) NULL,
+            is_default TINYINT(1) NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_user_id (user_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    ");
+    echo "[OK] customer_addresses table verified/created\n";
+} catch (Exception $e) {
+    echo "[SKIP] customer_addresses: " . $e->getMessage() . "\n";
+}
+
 // 2. Sync all service images to exact dedicated image assets
 $imageUpdates = [
     'balcony-deep-pressure-wash'       => 'refixel-balcony-pressure-wash.png',

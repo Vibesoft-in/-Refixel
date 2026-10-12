@@ -451,6 +451,39 @@ class AccountController extends Controller
                 'lat'          => $lat,
                 'lng'          => $lng,
             ];
+
+            if (!isset($_SESSION['customer_addresses']) || !is_array($_SESSION['customer_addresses'])) {
+                $_SESSION['customer_addresses'] = [];
+            }
+            $guestMatch = false;
+            foreach ($_SESSION['customer_addresses'] as &$ga) {
+                if (trim((string)($ga['street'] ?? '')) === $street && trim((string)($ga['house_no'] ?? '')) === $houseNo) {
+                    $ga['address'] = $address;
+                    $ga['city'] = $city;
+                    $ga['state'] = $state;
+                    $ga['pincode'] = $pincode;
+                    $ga['address_type'] = $addressType;
+                    $ga['label'] = $addressType;
+                    $guestMatch = true;
+                    break;
+                }
+            }
+            unset($ga);
+            if (!$guestMatch) {
+                array_unshift($_SESSION['customer_addresses'], [
+                    'id'           => 'sess_' . substr(md5($street . $houseNo . microtime()), 0, 8),
+                    'label'        => $addressType,
+                    'address_type' => $addressType,
+                    'house_no'     => $houseNo,
+                    'street'       => $street,
+                    'address'      => $address,
+                    'city'         => $city,
+                    'state'        => $state,
+                    'pincode'      => $pincode,
+                    'is_default'   => 1,
+                ]);
+            }
+
             return Response::json([
                 'success' => true,
                 'message' => 'Address saved successfully',
@@ -505,6 +538,25 @@ class AccountController extends Controller
             );
         }
 
+        // Save/Update in customer_addresses registry: Only match if BOTH street AND house_no match
+        try {
+            $existingAddr = \App\Core\Database::fetchOne(
+                "SELECT id FROM customer_addresses WHERE user_id = ? AND street = ? AND house_no = ?",
+                [$userId, $street, $houseNo]
+            );
+            if ($existingAddr) {
+                \App\Core\Database::execute(
+                    "UPDATE customer_addresses SET address = ?, city = ?, state = ?, pincode = ?, address_type = ?, label = ?, lat = COALESCE(?, lat), lng = COALESCE(?, lng), updated_at = NOW() WHERE id = ?",
+                    [$address, $city, $state, $pincode, $addressType, $addressType, $lat, $lng, $existingAddr['id']]
+                );
+            } else {
+                \App\Core\Database::execute(
+                    "INSERT INTO customer_addresses (user_id, label, house_no, street, address, city, state, pincode, address_type, lat, lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    [$userId, $addressType, $houseNo, $street, $address, $city, $state, $pincode, $addressType, $lat, $lng]
+                );
+            }
+        } catch (\Throwable $e) {}
+
         return Response::json([
             'success' => true,
             'message' => 'Address saved successfully',
@@ -518,6 +570,114 @@ class AccountController extends Controller
                 'address_type' => $addressType,
             ]
         ]);
+    }
+
+    public function apiGetSavedAddresses(Request $request): Response
+    {
+        $userId = Auth::id();
+        $addresses = [];
+
+        if ($userId) {
+            try {
+                $addresses = \App\Core\Database::fetchAll(
+                    "SELECT * FROM customer_addresses WHERE user_id = ? ORDER BY is_default DESC, updated_at DESC, id DESC",
+                    [$userId]
+                ) ?: [];
+            } catch (\Throwable $e) {}
+
+            // Fallback to customer_profiles if customer_addresses is empty
+            $profile = \App\Core\Database::fetchOne("SELECT * FROM customer_profiles WHERE user_id = ?", [$userId]);
+            if ($profile && (!empty($profile['street']) || !empty($profile['address']))) {
+                $hasMatch = false;
+                foreach ($addresses as $a) {
+                    if (($a['street'] ?? '') === ($profile['street'] ?? '') && ($a['house_no'] ?? '') === ($profile['house_no'] ?? '')) {
+                        $hasMatch = true;
+                        break;
+                    }
+                }
+                if (!$hasMatch) {
+                    array_unshift($addresses, [
+                        'id'           => 0,
+                        'label'        => $profile['address_type'] ?? 'Home',
+                        'address_type' => $profile['address_type'] ?? 'Home',
+                        'house_no'     => $profile['house_no'] ?? 'House No. 1',
+                        'street'       => $profile['street'] ?? '',
+                        'city'         => $profile['city'] ?? \App\Models\ServiceArea::DEFAULT_CITY,
+                        'state'        => $profile['state'] ?? 'Uttarakhand',
+                        'pincode'      => $profile['pincode'] ?? '',
+                        'address'      => $profile['address'] ?? '',
+                        'is_default'   => 1,
+                    ]);
+                }
+            }
+
+            // Also include unique past booking locations
+            try {
+                $pastBookings = \App\Core\Database::fetchAll(
+                    "SELECT DISTINCT address, pincode FROM bookings WHERE customer_id = ? AND address IS NOT NULL AND TRIM(address) != '' ORDER BY id DESC LIMIT 5",
+                    [$userId]
+                ) ?: [];
+                foreach ($pastBookings as $pb) {
+                    $addrStr = trim((string)$pb['address']);
+                    if (!$addrStr) continue;
+                    $exists = false;
+                    foreach ($addresses as $a) {
+                        if (trim((string)($a['address'] ?? '')) === $addrStr || trim((string)($a['street'] ?? '')) === $addrStr) {
+                            $exists = true;
+                            break;
+                        }
+                    }
+                    if (!$exists) {
+                        $addresses[] = [
+                            'id'           => 'bk_' . substr(md5($addrStr), 0, 8),
+                            'label'        => 'Previous Booking',
+                            'address_type' => 'Other',
+                            'house_no'     => 'House No. 1',
+                            'street'       => $addrStr,
+                            'city'         => \App\Models\ServiceArea::DEFAULT_CITY,
+                            'state'        => 'Uttarakhand',
+                            'pincode'      => $pb['pincode'] ?? '',
+                            'address'      => $addrStr,
+                            'is_default'   => 0,
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if (empty($addresses) && !empty($_SESSION['customer_addresses'])) {
+            $addresses = $_SESSION['customer_addresses'];
+        }
+
+        return Response::json([
+            'success'   => true,
+            'addresses' => $addresses,
+        ]);
+    }
+
+    public function apiDeleteAddress(Request $request): Response
+    {
+        $userId = Auth::id();
+        $addrId = $request->input('id');
+        $street = trim((string)$request->input('street', ''));
+
+        if ($userId) {
+            if (is_numeric($addrId) && (int)$addrId > 0) {
+                \App\Core\Database::execute("DELETE FROM customer_addresses WHERE id = ? AND user_id = ?", [(int)$addrId, $userId]);
+            } elseif ($street) {
+                \App\Core\Database::execute("DELETE FROM customer_addresses WHERE street = ? AND user_id = ?", [$street, $userId]);
+            }
+        }
+
+        if (!empty($_SESSION['customer_addresses'])) {
+            $_SESSION['customer_addresses'] = array_values(array_filter($_SESSION['customer_addresses'], function($a) use ($addrId, $street) {
+                if ($addrId && isset($a['id']) && (string)$a['id'] === (string)$addrId) return false;
+                if ($street && isset($a['street']) && trim((string)$a['street']) === $street) return false;
+                return true;
+            }));
+        }
+
+        return Response::json(['success' => true]);
     }
 
     public function apiGetProfile(Request $request): Response

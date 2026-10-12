@@ -96,6 +96,32 @@ class Request
         return $this->post[$key] ?? $default;
     }
 
+    public function has(string $key): bool
+    {
+        $all = $this->all();
+        return array_key_exists($key, $all);
+    }
+
+    public function set(string $key, mixed $value): void
+    {
+        $this->post[$key] = $value;
+        if ($this->json !== null && is_array($this->json)) {
+            $this->json[$key] = $value;
+        }
+    }
+
+    public function merge(array $data): void
+    {
+        foreach ($data as $k => $v) {
+            $this->set((string)$k, $v);
+        }
+    }
+
+    public function hasFile(string $key): bool
+    {
+        return isset($this->files[$key]) && !empty($this->files[$key]['tmp_name']);
+    }
+
     public function file(string $key): ?array
     {
         return $this->files[$key] ?? null;

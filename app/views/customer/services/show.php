@@ -28,6 +28,13 @@ foreach ($checklist ?? [] as $item) {
                alt="<?= $svcName ?>"
                class="service-detail-hero-img"
                onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
+          <button type="button" 
+                  class="btn-add-to-cart hero-img-cart-btn" 
+                  data-service-id="<?= (int)$service['id'] ?>" 
+                  title="Add to Cart" 
+                  aria-label="Add <?= $svcName ?> to cart">
+            <i class="fa fa-shopping-cart"></i>
+          </button>
         </div>
 
         <div class="card-body p-4 p-md-5">
@@ -379,11 +386,11 @@ foreach ($checklist ?? [] as $item) {
                           <input type="range" min="0" max="100" value="50" class="ba_range_input" aria-label="Slide to compare before and after">
                         </div>
 
-                        <!-- Left & Right Carousel Slide Buttons -->
-                        <button type="button" class="ba_carousel_nav_btn ba_carousel_prev" aria-label="Previous transformation">
+                        <!-- Left & Right Carousel Slide Buttons (Floating over image on desktop) -->
+                        <button type="button" class="ba_carousel_nav_btn ba_carousel_prev ba_floating_nav d-none d-md-flex" aria-label="Previous transformation">
                           <i class="fa fa-chevron-left"></i>
                         </button>
-                        <button type="button" class="ba_carousel_nav_btn ba_carousel_next" aria-label="Next transformation">
+                        <button type="button" class="ba_carousel_nav_btn ba_carousel_next ba_floating_nav d-none d-md-flex" aria-label="Next transformation">
                           <i class="fa fa-chevron-right"></i>
                         </button>
                       </div>
@@ -396,9 +403,21 @@ foreach ($checklist ?? [] as $item) {
                             <button type="button" class="ba_quick_btn active" data-set-pos="50">Split</button>
                             <button type="button" class="ba_quick_btn" data-set-pos="0">After</button>
                           </div>
-                          <span class="badge badge-success ba_verified_badge font-weight-bold">
-                            <i class="fa fa-check-circle mr-1"></i> <?= \App\Core\View::e($slide['badge']) ?>
-                          </span>
+
+                          <!-- Right Side: Green badge on Desktop, shifted Left/Right nav buttons on Mobile -->
+                          <div class="ba_controls_right d-flex align-items-center">
+                            <span class="badge badge-success ba_verified_badge font-weight-bold d-none d-md-inline-block">
+                              <i class="fa fa-check-circle mr-1"></i> <?= \App\Core\View::e($slide['badge']) ?>
+                            </span>
+                            <div class="ba_mobile_nav_group d-flex d-md-none align-items-center">
+                              <button type="button" class="ba_carousel_nav_btn ba_carousel_nav_inline ba_carousel_prev" aria-label="Previous transformation">
+                                <i class="fa fa-chevron-left"></i>
+                              </button>
+                              <button type="button" class="ba_carousel_nav_btn ba_carousel_nav_inline ba_carousel_next" aria-label="Next transformation">
+                                <i class="fa fa-chevron-right"></i>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                         <div class="ba_gallery_link_row w-100 text-center text-md-right mt-2 mt-md-0">
                           <a href="<?= \App\Core\View::url('/gallery?category=' . urlencode($category['slug'] ?? 'cleaning') . '&service=' . urlencode($service['slug'] ?? '')) ?>" class="btn btn-sm btn-outline-dark font-weight-bold ba_gallery_btn">
@@ -411,13 +430,30 @@ foreach ($checklist ?? [] as $item) {
                 <?php endforeach; ?>
               </div>
 
-              <!-- Carousel Indicators (Dots & Slide Count) -->
+              <!-- Carousel Indicators (Dots, Swipe Hint & Slide Count) -->
               <div class="d-flex justify-content-between align-items-center mt-2 px-1">
-                <div class="ba_carousel_dots d-flex align-items-center" style="gap: 6px;">
-                  <?php foreach ($showcaseSlides as $sIdx => $slide): ?>
-                    <button type="button" class="ba_carousel_dot <?= $sIdx === 0 ? 'active' : '' ?>" data-to-slide="<?= $sIdx ?>" aria-label="Go to slide <?= $sIdx + 1 ?>"></button>
-                  <?php endforeach; ?>
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                  <div class="ba_carousel_dots d-flex align-items-center" style="gap: 6px;">
+                    <?php foreach ($showcaseSlides as $sIdx => $slide): ?>
+                      <button type="button" class="ba_carousel_dot <?= $sIdx === 0 ? 'active' : '' ?>" data-to-slide="<?= $sIdx ?>" aria-label="Go to slide <?= $sIdx + 1 ?>"></button>
+                    <?php endforeach; ?>
+                  </div>
+
+                  <!-- Swipe Gesture Hint in Refixel Orange Theme -->
+                  <div class="ba_swipe_hint d-inline-flex align-items-center" title="Swipe horizontally to view next" aria-label="Swipe to view next transformation">
+                    <svg class="ba_swipe_hand_svg" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 4h4" stroke="#f25b29" stroke-width="1.9" stroke-linecap="round"/>
+                      <path d="M6 2l-2 2l2 2" stroke="#f25b29" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 4h4" stroke="#f25b29" stroke-width="1.9" stroke-linecap="round"/>
+                      <path d="M18 2l2 2l-2 2" stroke="#f25b29" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 5.5a2 2 0 1 1 4 0" stroke="#f25b29" stroke-width="1.7"/>
+                      <path d="M12 7.5v6" stroke="#f25b29" stroke-width="1.7" stroke-linecap="round"/>
+                      <path d="M12 11.5a1.5 1.5 0 0 1 3 0v1.5a1.5 1.5 0 0 1 3 0v1.5a1.5 1.5 0 0 1 3 0v2.5a6 6 0 0 1 -6 6h-2a6 6 0 0 1 -6 -6v-3l2.5 -2.5" stroke="#f25b29" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="ba_swipe_hint_text">SWIPE</span>
+                  </div>
                 </div>
+
                 <span class="text-muted small ba_slide_counter" style="font-size: 11.5px; font-weight: 600;">
                   <span class="ba_current_slide_num">1</span> / <?= count($showcaseSlides) ?> Transformations
                 </span>
@@ -608,9 +644,18 @@ foreach ($checklist ?? [] as $item) {
           <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> 24-Hour satisfaction re-clean guarantee</li>
         </ul>
 
-        <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white py-3 font-weight-bold text-center w-100 mb-2" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);">
-          Book Doorstep Visit
-        </a>
+        <div class="d-flex mb-2" style="gap: 10px;">
+          <button type="button" 
+                  class="btn btn-add-to-cart desktop-cart-btn" 
+                  data-service-id="<?= (int)$service['id'] ?>"
+                  title="Add to Cart"
+                  aria-label="Add <?= $svcName ?> to cart">
+            <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
+          </button>
+          <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white py-3 font-weight-bold text-center flex-grow-1" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);">
+            Book Doorstep Visit
+          </a>
+        </div>
 
         <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success py-2 font-weight-bold text-center w-100 small" style="border-radius: 8px;">
           <i class="fa fa-whatsapp mr-1"></i> Quick Book via WhatsApp
@@ -627,7 +672,14 @@ foreach ($checklist ?? [] as $item) {
       <span class="smb-label">Starting Price</span>
       <span class="smb-price">₹<?= $price ?></span>
     </div>
-    <div>
+    <div class="d-flex align-items-center" style="gap: 10px;">
+      <button type="button" 
+              class="btn btn-add-to-cart smb-cart-btn" 
+              data-service-id="<?= (int)$service['id'] ?>" 
+              title="Add to Cart" 
+              aria-label="Add <?= $svcName ?> to cart">
+        <i class="fa fa-shopping-cart"></i>
+      </button>
       <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn">
         Book Now &rarr;
       </a>
@@ -702,6 +754,123 @@ foreach ($checklist ?? [] as $item) {
   }
 }
 
+/* Floating Add to Cart Button on Service Hero Image */
+.hero-img-cart-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #f25b29;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-img-cart-btn i {
+  font-size: 17px;
+  line-height: 1;
+  color: #f25b29;
+  transition: color 0.2s ease;
+}
+.hero-img-cart-btn:hover {
+  background: #f25b29 !important;
+  color: #ffffff !important;
+  border-color: #f25b29 !important;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(242, 91, 41, 0.45) !important;
+}
+.hero-img-cart-btn:hover i {
+  color: #ffffff !important;
+}
+.hero-img-cart-btn:active {
+  transform: scale(0.93);
+}
+
+/* Desktop Sidebar Add to Cart Button */
+.desktop-cart-btn {
+  background: #fff3ec;
+  color: #f25b29;
+  border: 1.5px solid #ffdacf;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(242, 91, 41, 0.1);
+  cursor: pointer;
+}
+.desktop-cart-btn:hover {
+  background: #f25b29 !important;
+  color: #ffffff !important;
+  border-color: #f25b29 !important;
+  box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3) !important;
+}
+
+/* Mobile Sticky Bar Add to Cart Button */
+.smb-cart-btn {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 50%;
+  background: #fff3ec;
+  color: #f25b29;
+  border: 1.5px solid #ffdacf;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(242, 91, 41, 0.15);
+  transition: all 0.2s ease;
+}
+.smb-cart-btn i {
+  font-size: 16px;
+  line-height: 1;
+  color: #f25b29;
+  transition: color 0.2s ease;
+}
+.smb-cart-btn:hover,
+.smb-cart-btn:focus {
+  background: #f25b29 !important;
+  color: #ffffff !important;
+  border-color: #f25b29 !important;
+}
+.smb-cart-btn:hover i,
+.smb-cart-btn:focus i {
+  color: #ffffff !important;
+}
+.smb-cart-btn:active {
+  transform: scale(0.92);
+}
+@media (max-width: 400px) {
+  .smb-cart-btn {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+  }
+  .smb-book-btn {
+    padding: 8px 16px !important;
+    font-size: 13.5px !important;
+  }
+}
+
 /* Multi-Transformation Carousel & Responsive Controls */
 .ba_carousel_wrapper {
   position: relative;
@@ -763,6 +932,37 @@ foreach ($checklist ?? [] as $item) {
   border-radius: 10px;
   background: #f25b29;
 }
+.ba_swipe_hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  background: #fff3ec;
+  border: 1px solid #ffdacf;
+  border-radius: 12px;
+  color: #f25b29;
+  line-height: 1;
+  user-select: none;
+  animation: baSwipeNudge 3s ease-in-out infinite;
+  box-shadow: 0 1px 3px rgba(242, 91, 41, 0.08);
+}
+.ba_swipe_hand_svg {
+  flex-shrink: 0;
+  display: block;
+}
+.ba_swipe_hint_text {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #f25b29;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+@keyframes baSwipeNudge {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-1px); }
+}
 .ba_bottom_controls {
   display: flex;
   flex-wrap: wrap;
@@ -782,17 +982,73 @@ foreach ($checklist ?? [] as $item) {
   white-space: nowrap;
 }
 
+/* Shifted Mobile Nav Buttons (Replaces green badge in phone view) */
+.ba_mobile_nav_group {
+  gap: 7px;
+}
+.ba_carousel_nav_inline {
+  position: static !important;
+  transform: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+  color: #1e293b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  cursor: pointer;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  z-index: 5 !important;
+}
+.ba_carousel_nav_inline:hover,
+.ba_carousel_nav_inline:active {
+  background: #f25b29 !important;
+  color: #ffffff !important;
+  border-color: #f25b29 !important;
+  box-shadow: 0 2px 8px rgba(242, 91, 41, 0.3) !important;
+  transform: scale(1.06) !important;
+}
+
+@media (max-width: 767.98px) {
+  .ba_floating_nav {
+    display: none !important;
+  }
+  .ba_verified_badge {
+    display: none !important;
+  }
+  .ba_mobile_nav_group {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .ba_mobile_nav_group {
+    display: none !important;
+  }
+}
+
 @media (max-width: 576px) {
-  .ba_carousel_nav_btn {
-    width: 32px;
-    height: 32px;
-    font-size: 12px;
+  .ba_floating_nav {
+    display: none !important;
   }
-  .ba_carousel_prev {
-    left: 8px;
+  .ba_verified_badge {
+    display: none !important;
   }
-  .ba_carousel_next {
-    right: 8px;
+  .ba_mobile_nav_group {
+    display: flex !important;
+  }
+  .ba_carousel_nav_inline {
+    width: 31px !important;
+    height: 31px !important;
+    min-width: 31px !important;
+    font-size: 11px !important;
   }
   .ba_bottom_controls {
     flex-direction: column;
@@ -808,13 +1064,6 @@ foreach ($checklist ?? [] as $item) {
   .ba_quick_btn {
     padding: 3px 8px !important;
     font-size: 11px !important;
-  }
-  .ba_verified_badge {
-    font-size: 9.5px !important;
-    padding: 3px 7px !important;
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .ba_gallery_link_row {
     width: 100%;
@@ -1037,12 +1286,163 @@ document.addEventListener('DOMContentLoaded', function () {
 
     carouselWrap.addEventListener('mouseenter', function () { isUserInteracting = true; });
     carouselWrap.addEventListener('mouseleave', function () { isUserInteracting = false; });
-    carouselWrap.addEventListener('touchstart', function () { isUserInteracting = true; }, { passive: true });
+
+    // Touch & Swipe Gesture: allow horizontal swiping anywhere on bottom div / card (outside .ba_compare_viewer)
+    var swipeStartX = 0;
+    var swipeStartY = 0;
+    var swipeCurrentX = 0;
+    var swipeCurrentY = 0;
+    var isSwipingCarousel = false;
+    var touchStartedOnViewer = false;
+    var justSwipedCarousel = false;
+    var activeSlideEl = null;
+
+    carouselWrap.addEventListener('touchstart', function (e) {
+      if (!e.touches || e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      swipeStartX = touch.clientX;
+      swipeStartY = touch.clientY;
+      swipeCurrentX = touch.clientX;
+      swipeCurrentY = touch.clientY;
+      isSwipingCarousel = false;
+
+      // If user touches the before/after image viewer, let the before/after divider handle it!
+      touchStartedOnViewer = !!e.target.closest('.ba_compare_viewer');
+      if (touchStartedOnViewer) {
+        return;
+      }
+
+      isUserInteracting = true;
+      activeSlideEl = slides[currentSlideIdx];
+    }, { passive: true });
+
+    carouselWrap.addEventListener('touchmove', function (e) {
+      if (touchStartedOnViewer || !e.touches || e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      swipeCurrentX = touch.clientX;
+      swipeCurrentY = touch.clientY;
+      var diffX = swipeCurrentX - swipeStartX;
+      var diffY = swipeCurrentY - swipeStartY;
+
+      // Determine if gesture is predominantly horizontal
+      if (!isSwipingCarousel) {
+        if (Math.abs(diffX) > 12 && Math.abs(diffX) > Math.abs(diffY)) {
+          isSwipingCarousel = true;
+        }
+      }
+
+      if (isSwipingCarousel) {
+        if (e.cancelable) {
+          e.preventDefault(); // Prevent page scroll during horizontal carousel swipe
+        }
+        if (activeSlideEl) {
+          var dampening = Math.min(65, Math.max(-65, diffX * 0.45));
+          activeSlideEl.style.transform = 'translateX(' + dampening + 'px)';
+          activeSlideEl.style.transition = 'none';
+        }
+      }
+    }, { passive: false });
+
     carouselWrap.addEventListener('touchend', function () {
+      if (touchStartedOnViewer) {
+        touchStartedOnViewer = false;
+        return;
+      }
+
+      if (activeSlideEl) {
+        activeSlideEl.style.transition = 'transform 0.22s ease';
+        activeSlideEl.style.transform = '';
+      }
+
+      if (isSwipingCarousel) {
+        var diffX = swipeCurrentX - swipeStartX;
+        var threshold = 35; // px threshold for slide change
+
+        if (diffX < -threshold) {
+          // Swiped Left -> Next transformation slide
+          justSwipedCarousel = true;
+          goToSlide(currentSlideIdx + 1);
+        } else if (diffX > threshold) {
+          // Swiped Right -> Previous transformation slide
+          justSwipedCarousel = true;
+          goToSlide(currentSlideIdx - 1);
+        }
+
+        if (justSwipedCarousel) {
+          setTimeout(function () { justSwipedCarousel = false; }, 350);
+        }
+      }
+
+      isSwipingCarousel = false;
       setTimeout(function () { isUserInteracting = false; }, 4000);
     });
 
+    carouselWrap.addEventListener('touchcancel', function () {
+      if (activeSlideEl) {
+        activeSlideEl.style.transition = '';
+        activeSlideEl.style.transform = '';
+      }
+      isSwipingCarousel = false;
+      touchStartedOnViewer = false;
+    });
+
+    // Prevent accidental clicks on buttons/links right after a swipe gesture
+    carouselWrap.addEventListener('click', function (e) {
+      if (justSwipedCarousel) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+
     startAutoPlay();
   }
+
+  /* Add to Cart button handler */
+  document.addEventListener('click', function(e) {
+    var cartBtn = e.target.closest('.btn-add-to-cart');
+    if (!cartBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    var serviceId = cartBtn.getAttribute('data-service-id');
+    if (!serviceId || serviceId === '0') return;
+
+    var origHtml = cartBtn.innerHTML;
+    cartBtn.disabled = true;
+    cartBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+    fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1'
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      cartBtn.innerHTML = '<i class="fa fa-check"></i>';
+      cartBtn.style.background = '#10b981';
+      cartBtn.style.borderColor = '#10b981';
+      cartBtn.style.color = '#ffffff';
+
+      if (window.syncCartUI) {
+        window.syncCartUI();
+      }
+
+      setTimeout(function() {
+        cartBtn.innerHTML = origHtml;
+        cartBtn.style.background = '';
+        cartBtn.style.borderColor = '';
+        cartBtn.style.color = '';
+        cartBtn.disabled = false;
+      }, 1500);
+    })
+    .catch(function(err) {
+      console.error(err);
+      cartBtn.innerHTML = origHtml;
+      cartBtn.disabled = false;
+    });
+  });
 });
 </script>
