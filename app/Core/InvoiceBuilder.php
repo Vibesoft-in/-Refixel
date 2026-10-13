@@ -7,7 +7,7 @@ class InvoiceBuilder
 {
     public const DEFAULT_GST_RATE = 18.00;
 
-    public static function createForPayment(int $paymentId, float $subtotal, float $gstRate = self::DEFAULT_GST_RATE): array
+    public static function createForPayment(int $paymentId, float $subtotal, float $gstRate = self::DEFAULT_GST_RATE, float $advancePaid = 0.0, float $dueAmount = 0.0): array
     {
         $gstAmount = round($subtotal * ($gstRate / 100), 2);
         $total = round($subtotal + $gstAmount, 2);
@@ -15,29 +15,33 @@ class InvoiceBuilder
         $invoiceNo = 'INV-' . date('Ym') . '-' . strtoupper(bin2hex(random_bytes(3)));
 
         Database::query(
-            "INSERT INTO invoices (payment_id, invoice_no, subtotal, gst_rate, gst_amount, total, issued_at)
-             VALUES (:payment_id, :invoice_no, :subtotal, :gst_rate, :gst_amount, :total, NOW())",
+            "INSERT INTO invoices (payment_id, invoice_no, subtotal, gst_rate, gst_amount, total, advance_paid, due_amount, issued_at)
+             VALUES (:payment_id, :invoice_no, :subtotal, :gst_rate, :gst_amount, :total, :advance_paid, :due_amount, NOW())",
             [
-                'payment_id' => $paymentId,
-                'invoice_no' => $invoiceNo,
-                'subtotal'   => $subtotal,
-                'gst_rate'   => $gstRate,
-                'gst_amount' => $gstAmount,
-                'total'      => $total,
+                'payment_id'   => $paymentId,
+                'invoice_no'   => $invoiceNo,
+                'subtotal'     => $subtotal,
+                'gst_rate'     => $gstRate,
+                'gst_amount'   => $gstAmount,
+                'total'        => $total,
+                'advance_paid' => $advancePaid,
+                'due_amount'   => $dueAmount,
             ]
         );
 
         $id = (int)Database::lastInsertId();
 
         return [
-            'id'         => $id,
-            'payment_id' => $paymentId,
-            'invoice_no' => $invoiceNo,
-            'subtotal'   => $subtotal,
-            'gst_rate'   => $gstRate,
-            'gst_amount' => $gstAmount,
-            'total'      => $total,
-            'issued_at'  => date('Y-m-d H:i:s'),
+            'id'           => $id,
+            'payment_id'   => $paymentId,
+            'invoice_no'   => $invoiceNo,
+            'subtotal'     => $subtotal,
+            'gst_rate'     => $gstRate,
+            'gst_amount'   => $gstAmount,
+            'total'        => $total,
+            'advance_paid' => $advancePaid,
+            'due_amount'   => $dueAmount,
+            'issued_at'    => date('Y-m-d H:i:s'),
         ];
     }
 

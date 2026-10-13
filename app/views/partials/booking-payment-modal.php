@@ -9,9 +9,9 @@
         <div class="modal-header d-flex align-items-center justify-content-between px-3 py-3" style="background: #0a1c33; color: #ffffff; border-bottom: none;">
           <div>
             <h5 class="modal-title font-weight-bold mb-0" id="bookingPaymentModalTitle" style="font-size: 16px; color: #ffffff;">
-              <i class="fa fa-shield mr-1" style="color: #f25b29;"></i> Select Payment Method
+              <i class="fa fa-shield mr-1" style="color: #f25b29;"></i> Select Payment Option
             </h5>
-            <small style="color: #94a3b8; font-size: 11px;">Zero Advance · Pay Online or After Service</small>
+            <small style="color: #94a3b8; font-size: 11px;">Pre-booking Online Confirmation · Doorstep Service</small>
           </div>
           <button type="button" class="close text-white rfx-modal-close" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; outline: none; font-size: 24px; padding: 0; margin: 0; line-height: 1; border: none; background: transparent;">
             <span aria-hidden="true">&times;</span>
@@ -19,10 +19,20 @@
         </div>
 
         <div class="modal-body p-3" style="background: #ffffff;">
-          <!-- Amount Highlight Card -->
-          <div class="p-2 mb-3 rounded d-flex justify-content-between align-items-center" style="background: #fff8f5; border: 1.5px dashed #ffdacf;">
-            <span class="small font-weight-bold text-muted">Total Payable:</span>
-            <span class="font-weight-bold" style="color: #f25b29; font-size: 18px;" id="rfxModalPayTotalDisplay">₹899</span>
+          <!-- Amount Highlight Card with Real-time Advance & Due Breakdown -->
+          <div class="p-2 mb-3 rounded" style="background: #fff8f5; border: 1.5px dashed #ffdacf;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small font-weight-bold text-muted">Total Service Value:</span>
+              <span class="font-weight-bold" style="color: #f25b29; font-size: 17px;" id="rfxModalPayTotalDisplay">₹899</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
+              <span class="text-muted font-weight-bold">Pay Now Online (Advance):</span>
+              <span class="font-weight-bold text-success" id="rfxModalPayAdvanceDisplay">₹49 (Online)</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
+              <span class="text-muted font-weight-bold">Due to Technician After Service:</span>
+              <span class="font-weight-bold text-danger" id="rfxModalPayDueDisplay">₹850</span>
+            </div>
           </div>
 
           <!-- Error Alert (Hidden by default) -->
@@ -35,13 +45,19 @@
             <label class="rfx-pay-card active d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardCod" style="cursor: pointer; border: 2px solid #f25b29; background: #fffbf9; transition: all 0.2s ease;">
               <input type="radio" name="modal_payment_method" value="cod" checked style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
-                <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
                   <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Cash on Delivery (COD)</span>
-                  <span class="badge" style="background: #dcfce7; color: #16a34a; font-size: 10px; font-weight: 700; padding: 3px 6px;">Zero Advance</span>
+                  <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 10px; font-weight: 700; padding: 2px 6px;">
+                    <i class="fa fa-clock-o mr-1"></i>Medium Priority
+                  </span>
                 </div>
-                <p class="small text-muted mb-0 mt-1" style="font-size: 11.5px; line-height: 1.35;">
-                  Pay safely with Cash or UPI to the technician after doorstep service completion.
+                <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
+                  Pay <strong>₹49 pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹49 deducted) is payable to technician after service.
                 </p>
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                  <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;">₹49 Advance Online</span>
+                  <span class="badge badge-light border text-muted font-weight-bold" style="font-size: 9.5px;">Rest Cash/UPI Later</span>
+                </div>
               </div>
             </label>
 
@@ -49,15 +65,17 @@
             <label class="rfx-pay-card d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardOnline" style="cursor: pointer; border: 1.5px solid #e2e8f0; background: #ffffff; transition: all 0.2s ease;">
               <input type="radio" name="modal_payment_method" value="online" style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
-                <div class="d-flex align-items-center justify-content-between">
-                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Pay Online (Instant)</span>
-                  <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; font-size: 10px; font-weight: 700; padding: 2px 6px;">Instant Confirmation</span>
+                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
+                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">100% Online Payment</span>
+                  <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-size: 10px; font-weight: 700; padding: 2px 6px;">
+                    <i class="fa fa-bolt mr-1"></i>High Priority
+                  </span>
                 </div>
                 <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
-                  UPI, Google Pay, PhonePe, Paytm, Debit / Credit Cards & Net Banking.
+                  Pay 100% full amount online via UPI / Cards. High priority technician dispatch & zero balance during visit.
                 </p>
                 <div class="d-flex align-items-center mt-1" style="gap: 5px;">
-                  <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 9.5px;">UPI</span>
+                  <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 9.5px;">UPI QR</span>
                   <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 9.5px;">GPay</span>
                   <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 9.5px;">PhonePe</span>
                   <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 9.5px;">Cards</span>
@@ -76,7 +94,7 @@
         <!-- Modal Footer CTA -->
         <div class="modal-footer p-3" style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
           <button type="button" id="rfxBtnConfirmPayment" class="btn text-white font-weight-bold w-100 py-2" style="background: #f25b29; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25); border: none;">
-            <span id="rfxBtnConfirmPaymentText">Confirm Booking (Pay After Service) &rarr;</span>
+            <span id="rfxBtnConfirmPaymentText">Pay ₹49 Advance & Book (Medium Priority) &rarr;</span>
           </button>
         </div>
       </div>
@@ -131,7 +149,7 @@
 
         <!-- Booking Summary (Short & Small Display) -->
         <div class="p-2 mb-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 11.5px;">
-          <div class="font-weight-bold text-muted mb-1 text-uppercase" style="font-size: 10px; letter-spacing: 0.4px;">Booking Summary</div>
+          <div class="font-weight-bold text-muted mb-1 text-uppercase" style="font-size: 10px; letter-spacing: 0.4px;">Booking & Payment Summary</div>
           <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;">
             <span class="text-muted">Service:</span>
             <strong style="color: #f25b29;" id="rfxSuccessService">Doorstep Service</strong>
@@ -141,12 +159,20 @@
             <strong class="text-dark" id="rfxSuccessName">Customer</strong>
           </div>
           <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;">
-            <span class="text-muted">Location:</span>
-            <strong class="text-dark text-truncate" style="max-width: 60%;" id="rfxSuccessLocation">Service Area</strong>
+            <span class="text-muted">Booking Priority:</span>
+            <strong id="rfxSuccessPriority" style="color: #15803d;">Medium Priority</strong>
+          </div>
+          <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;">
+            <span class="text-muted">Pre-Booking Advance:</span>
+            <strong class="text-success" id="rfxSuccessAdvance">₹49 (Paid Online)</strong>
+          </div>
+          <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;">
+            <span class="text-muted">Due to Technician:</span>
+            <strong class="text-danger" id="rfxSuccessDue">₹850 (After Service)</strong>
           </div>
           <div class="d-flex justify-content-between pt-1">
-            <span class="text-muted">Payment:</span>
-            <strong class="text-success" id="rfxSuccessPayment">Cash on Delivery</strong>
+            <span class="text-muted">Payment Mode:</span>
+            <strong class="text-dark" id="rfxSuccessPayment">Cash on Delivery</strong>
           </div>
         </div>
 
@@ -247,16 +273,28 @@ function fallbackModalCopy(text, cb) {
     var radioOnline = cardOnline ? cardOnline.querySelector('input[type="radio"]') : null;
     var btnText = document.getElementById('rfxBtnConfirmPaymentText');
     var payTotalDisplay = document.getElementById('rfxModalPayTotalDisplay');
+    var advDisplay = document.getElementById('rfxModalPayAdvanceDisplay');
+    var dueDisplay = document.getElementById('rfxModalPayDueDisplay');
+    var dueNote = document.getElementById('rfxCodDueNote');
+
+    var totText = payTotalDisplay ? payTotalDisplay.innerText : '₹899';
+    var totalVal = parseFloat(totText.replace(/[^\d.]/g, '')) || 899;
+    var dueVal = Math.max(0, totalVal - 49);
+
+    if (dueNote) dueNote.innerText = '₹' + Math.round(dueVal);
 
     if (radioCod && radioCod.checked) {
       if (cardCod) { cardCod.style.borderColor = '#f25b29'; cardCod.style.background = '#fffbf9'; }
       if (cardOnline) { cardOnline.style.borderColor = '#e2e8f0'; cardOnline.style.background = '#ffffff'; }
-      if (btnText) btnText.innerHTML = 'Confirm Booking (Pay After Service) &rarr;';
+      if (advDisplay) advDisplay.innerText = '₹49 (Online)';
+      if (dueDisplay) dueDisplay.innerText = '₹' + Math.round(dueVal) + ' (To Technician)';
+      if (btnText) btnText.innerHTML = 'Pay ₹49 Advance & Book (Medium Priority) &rarr;';
     } else if (radioOnline && radioOnline.checked) {
       if (cardOnline) { cardOnline.style.borderColor = '#f25b29'; cardOnline.style.background = '#fffbf9'; }
       if (cardCod) { cardCod.style.borderColor = '#e2e8f0'; cardCod.style.background = '#ffffff'; }
-      var amtText = payTotalDisplay ? payTotalDisplay.innerText : '';
-      if (btnText) btnText.innerHTML = 'Proceed to Pay ' + amtText + ' & Confirm &rarr;';
+      if (advDisplay) advDisplay.innerText = '₹' + Math.round(totalVal) + ' (100% Full)';
+      if (dueDisplay) dueDisplay.innerText = '₹0 (Fully Paid)';
+      if (btnText) btnText.innerHTML = 'Pay Full ₹' + Math.round(totalVal) + ' Online (High Priority) &rarr;';
     }
   }
 
@@ -502,8 +540,30 @@ function fallbackModalCopy(text, cb) {
 
             document.getElementById('rfxSuccessService').innerText = d.service_name || 'Doorstep Service';
             document.getElementById('rfxSuccessName').innerText = d.name || 'Customer';
-            document.getElementById('rfxSuccessLocation').innerText = d.city || d.address || 'Service Area';
-            document.getElementById('rfxSuccessPayment').innerText = paymentText || 'Cash on Delivery (Pay After Service)';
+
+            var isCod = (d.payment_type === 'cod' || (d.due_amount && d.due_amount > 0));
+            var prioElem = document.getElementById('rfxSuccessPriority');
+            if (prioElem) {
+              if (isCod) {
+                prioElem.innerHTML = '<span class="badge" style="background:#fef3c7; color:#b45309; border:1px solid #fde68a;"><i class="fa fa-clock-o mr-1"></i>Medium Priority (COD)</span>';
+              } else {
+                prioElem.innerHTML = '<span class="badge badge-success"><i class="fa fa-bolt mr-1"></i>High Priority (Online)</span>';
+              }
+            }
+
+            var advElem = document.getElementById('rfxSuccessAdvance');
+            if (advElem) {
+              var advVal = (d.advance_amount !== undefined) ? d.advance_amount : (isCod ? 49 : (d.total_amount || 899));
+              advElem.innerText = '₹' + advVal + ' (Paid Online)';
+            }
+
+            var dueElem = document.getElementById('rfxSuccessDue');
+            if (dueElem) {
+              var dueVal = (d.due_amount !== undefined) ? d.due_amount : (isCod ? Math.max(0, (d.total_amount || 899) - 49) : 0);
+              dueElem.innerText = '₹' + dueVal + (dueVal > 0 ? ' (Due to Technician)' : ' (Zero Due)');
+            }
+
+            document.getElementById('rfxSuccessPayment').innerText = paymentText || (isCod ? 'Cash on Delivery (Advance Paid)' : '100% Paid Online');
 
             var targetUrl = d.redirect_url || (window.REFIXEL_BASE_URL ? window.REFIXEL_BASE_URL + '/account/bookings' : '/account/bookings');
             var dashBtn = document.getElementById('rfxSuccessDashboardBtn');
@@ -541,12 +601,17 @@ function fallbackModalCopy(text, cb) {
               return;
             }
 
+            var isCodMode = (d.payment_type === 'cod');
+            var rzpDesc = isCodMode 
+              ? ('Pre-booking Advance (₹49) · ' + (d.service_name || 'Doorstep Service') + ' (' + d.booking_no + ')')
+              : ('100% Full Payment · ' + (d.service_name || 'Doorstep Service') + ' (' + d.booking_no + ')');
+
             var rzpOptions = {
               key: d.razorpay_key_id,
               amount: d.amount,
               currency: d.currency || 'INR',
               name: 'REFIXEL Technologies',
-              description: 'Booking: ' + (d.service_name || 'Service Booking') + ' (' + d.booking_no + ')',
+              description: rzpDesc,
               image: '<?= \App\Core\View::asset("img/refixel-logo-horizontal.png") ?>',
               order_id: d.razorpay_order_id,
               prefill: {
@@ -555,7 +620,12 @@ function fallbackModalCopy(text, cb) {
                 email: d.email || ''
               },
               notes: {
-                booking_no: d.booking_no
+                booking_no: d.booking_no,
+                payment_type: d.payment_type || 'cod',
+                total_amount: d.total_amount,
+                advance_amount: d.advance_amount,
+                due_amount: d.due_amount,
+                priority: d.priority
               },
               theme: {
                 color: '#f25b29'
@@ -568,7 +638,9 @@ function fallbackModalCopy(text, cb) {
                   btnConfirm.disabled = false;
                   btnConfirm.innerHTML = originalBtnHtml;
                   if (errorAlert) {
-                    errorAlert.innerText = 'Online payment was closed. You can retry paying online or choose Cash on Delivery.';
+                    errorAlert.innerText = isCodMode
+                      ? 'Pre-booking advance payment was closed. Please complete the ₹49 online payment to confirm your booking.'
+                      : 'Online payment was closed. You can retry paying online or choose Cash on Delivery.';
                     errorAlert.style.display = 'block';
                   }
                 }
@@ -621,7 +693,11 @@ function fallbackModalCopy(text, cb) {
                     return;
                   }
 
-                  showSuccessCard(d, 'Online Paid (Razorpay Instant)');
+                  var finalData = Object.assign({}, d, vResult.data);
+                  var succText = (finalData.payment_type === 'cod') 
+                    ? 'Pre-booking Advance Paid (₹49 Online)' 
+                    : '100% Full Payment Paid Online';
+                  showSuccessCard(finalData, succText);
                 })
                 .catch(function(err) {
                   btnConfirm.disabled = false;

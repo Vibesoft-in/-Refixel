@@ -273,8 +273,14 @@
 
       <!-- Booking Summary (Short & Small Display) -->
       <?php if (!empty($booking)): ?>
+      <?php 
+        $totAmt = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 0);
+        $advAmt = (float)($booking['advance_amount'] ?? 0);
+        $dueAmt = (float)($booking['due_amount'] ?? 0);
+        $isCod = (($booking['payment_type'] ?? '') === 'cod' || $dueAmt > 0 || ($booking['priority'] ?? '') === 'normal');
+      ?>
       <div class="rfx-sum-box">
-        <div class="rfx-sum-title">Booking Summary</div>
+        <div class="rfx-sum-title">Booking & Payment Summary</div>
         <div class="rfx-sum-row">
           <span>Service</span>
           <strong style="color: #f25b29;"><?= \App\Core\View::e($booking['service_name'] ?? 'Home Service') ?></strong>
@@ -284,9 +290,32 @@
           <strong><?= \App\Core\View::e($booking['name'] ?? 'Customer') ?></strong>
         </div>
         <div class="rfx-sum-row">
-          <span>Location</span>
-          <strong><?= \App\Core\View::e($booking['address'] ?? 'Service Area') ?></strong>
+          <span>Priority</span>
+          <?php if ($isCod && $dueAmt > 0): ?>
+            <strong style="color: #b45309;"><i class="fa fa-clock-o mr-1"></i>Medium Priority</strong>
+          <?php else: ?>
+            <strong style="color: #15803d;"><i class="fa fa-bolt mr-1"></i>High Priority</strong>
+          <?php endif; ?>
         </div>
+        <div class="rfx-sum-row">
+          <span>Total Service</span>
+          <strong>₹<?= number_format($totAmt > 0 ? $totAmt : 899, 2) ?></strong>
+        </div>
+        <?php if ($isCod && $dueAmt > 0): ?>
+          <div class="rfx-sum-row">
+            <span>Pre-Booking (Online)</span>
+            <strong style="color: #16a34a;">- ₹<?= number_format($advAmt > 0 ? $advAmt : 49, 2) ?> (Paid)</strong>
+          </div>
+          <div class="rfx-sum-row" style="background: #fff8f5; border-radius: 4px; padding: 4px 6px;">
+            <span style="color: #c2410c; font-weight: 700;">Due to Technician</span>
+            <strong style="color: #c2410c; font-size: 13px;">₹<?= number_format($dueAmt > 0 ? $dueAmt : 850, 2) ?></strong>
+          </div>
+        <?php else: ?>
+          <div class="rfx-sum-row">
+            <span>Payment Status</span>
+            <strong style="color: #16a34a;"><i class="fa fa-check-circle mr-1"></i>100% Paid Online</strong>
+          </div>
+        <?php endif; ?>
       </div>
       <?php endif; ?>
 

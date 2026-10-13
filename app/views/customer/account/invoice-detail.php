@@ -27,10 +27,26 @@ $invoice = $invoice ?? [];
         <p class="text-muted small mb-0">Support: wearerefixel@gmail.com &bull; +91 94581 82006</p>
       </div>
       <div class="col-sm-5 text-sm-right mt-3 mt-sm-0">
-        <span class="badge badge-success px-3 py-1 font-weight-bold mb-2" style="font-size: 12px; letter-spacing: 0.5px;">TAX INVOICE</span>
+        <?php 
+          $advPaid = (float)($invoice['advance_paid'] ?? $invoice['booking_advance_amount'] ?? 0);
+          $dueAmt = (float)($invoice['due_amount'] ?? $invoice['booking_due_amount'] ?? 0);
+          $isCodAdvance = ($dueAmt > 0 || ($invoice['booking_priority'] ?? '') === 'normal' || ($invoice['booking_payment_type'] ?? '') === 'cod');
+        ?>
+        <div class="mb-2">
+          <span class="badge badge-success px-3 py-1 font-weight-bold mr-1" style="font-size: 11px; letter-spacing: 0.5px;">TAX INVOICE</span>
+          <?php if ($isCodAdvance && $dueAmt > 0): ?>
+            <span class="badge px-2 py-1 font-weight-bold" style="background:#fef3c7; color:#b45309; font-size: 11px; border: 1px solid #fde68a;">
+              <i class="fa fa-clock-o mr-1"></i>MEDIUM PRIORITY (COD)
+            </span>
+          <?php else: ?>
+            <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size: 11px;">
+              <i class="fa fa-bolt mr-1"></i>HIGH PRIORITY (ONLINE)
+            </span>
+          <?php endif; ?>
+        </div>
         <h5 class="font-weight-bold text-dark mb-1">#<?= View::e($invoice['invoice_no']) ?></h5>
         <div class="text-muted small">Date: <?= View::e(substr((string)$invoice['issued_at'], 0, 10)) ?></div>
-        <div class="text-muted small">Payment Mode: <strong><?= strtoupper(View::e($invoice['payment_method'] ?? 'CASH')) ?></strong></div>
+        <div class="text-muted small">Payment Mode: <strong><?= strtoupper(View::e($invoice['payment_method'] ?? 'UPI')) ?></strong></div>
         <?php if (!empty($invoice['transaction_ref'])): ?>
           <div class="text-muted small">Ref: <?= View::e($invoice['transaction_ref']) ?></div>
         <?php endif; ?>
@@ -58,7 +74,13 @@ $invoice = $invoice ?? [];
           </a>
         </div>
         <div class="text-muted small">Service: <strong><?= View::e($invoice['service_name']) ?></strong></div>
-        <div class="text-muted small">Status: <span class="badge badge-success px-2 py-1">PAID</span></div>
+        <div class="text-muted small">Status: 
+          <?php if ($dueAmt > 0): ?>
+            <span class="badge badge-warning text-dark px-2 py-1 font-weight-bold">PRE-BOOKED (PARTIAL)</span>
+          <?php else: ?>
+            <span class="badge badge-success px-2 py-1 font-weight-bold">PAID IN FULL</span>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
 
@@ -87,7 +109,7 @@ $invoice = $invoice ?? [];
 
     <!-- Tax & Amount Calculations -->
     <div class="row justify-content-end mb-4">
-      <div class="col-sm-6 col-md-5">
+      <div class="col-sm-7 col-md-6">
         <div class="d-flex justify-content-between py-1 small">
           <span class="text-muted">Subtotal (Taxable Value):</span>
           <span class="font-weight-bold text-dark">₹<?= number_format((float)$invoice['subtotal'], 2) ?></span>
@@ -100,10 +122,36 @@ $invoice = $invoice ?? [];
           <span class="text-muted">SGST (9.0%):</span>
           <span class="text-dark">₹<?= number_format((float)$invoice['gst_amount'] / 2, 2) ?></span>
         </div>
-        <div class="d-flex justify-content-between py-2 border-top border-bottom mt-2">
-          <strong class="text-dark font-weight-bold" style="font-size: 15px;">Total Paid:</strong>
-          <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$invoice['total'], 2) ?></h5>
+        <div class="d-flex justify-content-between py-2 border-top mt-2">
+          <strong class="text-dark font-weight-bold" style="font-size: 14.5px;">Total Service Amount:</strong>
+          <span class="font-weight-bold text-dark" style="font-size: 15px;">₹<?= number_format((float)$invoice['total'], 2) ?></span>
         </div>
+
+        <?php if ($dueAmt > 0): ?>
+          <div class="d-flex justify-content-between py-1 small">
+            <span class="text-success font-weight-bold"><i class="fa fa-check-circle mr-1"></i>Pre-Booking Advance Paid (Online):</span>
+            <span class="text-success font-weight-bold">- ₹<?= number_format($advPaid, 2) ?></span>
+          </div>
+          <div class="d-flex justify-content-between py-2 border-top border-bottom mt-2" style="background: #fff8f5; padding-left: 8px; padding-right: 8px; border-radius: 6px;">
+            <div>
+              <strong class="text-danger font-weight-bold d-block" style="font-size: 14px;">Remaining Due to Technician:</strong>
+              <small class="text-muted">Payable via Cash / UPI after service</small>
+            </div>
+            <h5 class="font-weight-bold mb-0 text-danger align-self-center">₹<?= number_format($dueAmt, 2) ?></h5>
+          </div>
+        <?php else: ?>
+          <div class="d-flex justify-content-between py-2 border-top border-bottom mt-2" style="background: #f0fdf4; padding-left: 8px; padding-right: 8px; border-radius: 6px;">
+            <div>
+              <strong class="text-success font-weight-bold d-block" style="font-size: 14px;">Paid in Full Online:</strong>
+              <small class="text-muted">100% Fully Settled Online</small>
+            </div>
+            <h5 class="font-weight-bold mb-0 text-success align-self-center">₹<?= number_format((float)$invoice['total'], 2) ?></h5>
+          </div>
+          <div class="d-flex justify-content-between py-1 small mt-1">
+            <span class="text-muted">Remaining Balance:</span>
+            <span class="text-success font-weight-bold">₹0.00 (Nil)</span>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
 

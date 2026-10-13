@@ -101,6 +101,9 @@ class PaymentController extends Controller
             "SELECT i.*, p.method as payment_method, p.paid_at, p.transaction_ref,
                     b.booking_no, b.name as customer_name, b.phone as customer_phone,
                     b.email as customer_email, b.address as customer_address, b.pincode,
+                    b.priority as booking_priority, b.payment_type as booking_payment_type,
+                    b.total_amount as booking_total_amount, b.advance_amount as booking_advance_amount,
+                    b.due_amount as booking_due_amount,
                     s.name as service_name
              FROM invoices i
              JOIN payments p ON i.payment_id = p.id

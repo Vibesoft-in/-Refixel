@@ -199,14 +199,46 @@ foreach ($payments as $p) {
       <div class="card p-4 border-0 shadow-sm mb-4" style="border-radius: 16px; background:#fff8f5; border:1px solid #ffdacf;">
         <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">Payment & Invoices</h5>
 
+        <?php 
+          $totAmount = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 0);
+          $advAmount = (float)($booking['advance_amount'] ?? 0);
+          $dueAmount = (float)($booking['due_amount'] ?? 0);
+          $isCod = (($booking['payment_type'] ?? '') === 'cod' || $dueAmount > 0 || ($booking['priority'] ?? '') === 'normal');
+        ?>
+
         <div class="d-flex justify-content-between mb-2 small text-muted">
-          <span>Starting Base Price:</span>
-          <span class="font-weight-bold text-dark">₹<?= number_format((float)($booking['starting_price'] ?? 0), 0) ?></span>
+          <span>Booking Priority:</span>
+          <?php if ($isCod && $dueAmount > 0): ?>
+            <span class="badge font-weight-bold" style="background:#fef3c7; color:#b45309; border: 1px solid #fde68a;">
+              <i class="fa fa-clock-o mr-1"></i>Medium Priority (COD)
+            </span>
+          <?php else: ?>
+            <span class="badge badge-success font-weight-bold">
+              <i class="fa fa-bolt mr-1"></i>High Priority (Online)
+            </span>
+          <?php endif; ?>
         </div>
+
         <div class="d-flex justify-content-between mb-2 small text-muted">
-          <span>Payment Status:</span>
-          <span class="badge badge-light p-1 font-weight-bold"><?= strtoupper(\App\Core\View::e($booking['payment_status'] ?? 'PENDING')) ?></span>
+          <span>Total Service Value:</span>
+          <span class="font-weight-bold text-dark">₹<?= number_format($totAmount > 0 ? $totAmount : 899, 2) ?></span>
         </div>
+
+        <?php if ($isCod && $dueAmount > 0): ?>
+          <div class="d-flex justify-content-between mb-2 small text-muted">
+            <span class="text-success font-weight-bold"><i class="fa fa-check-circle mr-1"></i>Pre-Booking Advance:</span>
+            <span class="text-success font-weight-bold">- ₹<?= number_format($advAmount > 0 ? $advAmount : 49, 2) ?></span>
+          </div>
+          <div class="d-flex justify-content-between p-2 rounded mb-2" style="background: #ffffff; border: 1.5px solid #fed7aa;">
+            <span class="font-weight-bold" style="color: #c2410c; font-size: 12.5px;">Due to Technician:</span>
+            <span class="font-weight-bold" style="color: #c2410c; font-size: 14px;">₹<?= number_format($dueAmount > 0 ? $dueAmount : 850, 2) ?></span>
+          </div>
+        <?php else: ?>
+          <div class="d-flex justify-content-between mb-2 small text-muted">
+            <span class="text-success font-weight-bold">Paid Online:</span>
+            <span class="text-success font-weight-bold">₹<?= number_format($totAmount > 0 ? $totAmount : 899, 2) ?> (100%)</span>
+          </div>
+        <?php endif; ?>
 
         <hr>
 

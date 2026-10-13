@@ -186,6 +186,10 @@ CREATE TABLE bookings (
     preferred_date DATE NULL,
     preferred_time VARCHAR(30) NULL,
     issue_details TEXT NULL,
+    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    advance_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    due_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    payment_type VARCHAR(20) NOT NULL DEFAULT 'cod',
     status ENUM('new','assigned','accepted','in_progress','completed','invoiced','reviewed','cancelled','rescheduled','refund_requested','refunded') NOT NULL DEFAULT 'new',
     priority ENUM('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
     admin_notes TEXT NULL,
@@ -274,6 +278,8 @@ CREATE TABLE invoices (
     gst_rate DECIMAL(4,2) NOT NULL DEFAULT 18.00,
     gst_amount DECIMAL(10,2) NOT NULL,
     total DECIMAL(10,2) NOT NULL,
+    advance_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    due_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -22,7 +22,22 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
       </a>
       <h4 class="font-weight-bold text-dark mb-0">Booking #<?= View::e($booking['booking_no']) ?></h4>
     </div>
-    <div>
+    <div class="d-flex align-items-center" style="gap: 8px;">
+      <?php 
+        $totAmt = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 0);
+        $advAmt = (float)($booking['advance_amount'] ?? 0);
+        $dueAmt = (float)($booking['due_amount'] ?? 0);
+        $isHigh = (($booking['priority'] ?? '') === 'high' || ($booking['payment_type'] ?? '') === 'online');
+      ?>
+      <?php if ($isHigh && $dueAmt <= 0): ?>
+        <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 12px; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
+          <i class="fa fa-bolt mr-1"></i>HIGH PRIORITY (ONLINE FULL)
+        </span>
+      <?php else: ?>
+        <span class="badge px-3 py-2 font-weight-bold" style="font-size: 12px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
+          <i class="fa fa-clock-o mr-1"></i>MEDIUM PRIORITY (COD ADVANCE)
+        </span>
+      <?php endif; ?>
       <span class="badge badge-status-<?= View::e($booking['status']) ?> px-3 py-2 font-weight-bold" style="font-size: 13px;">
         <?= strtoupper(str_replace('_', ' ', $booking['status'])) ?>
       </span>
@@ -55,7 +70,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
           <div class="col-md-6 mb-3">
             <span class="text-muted small text-uppercase font-weight-bold">Service & Fee</span>
             <h5 class="font-weight-bold text-dark mt-1 mb-1"><?= View::e($booking['service_name']) ?></h5>
-            <div class="text-success font-weight-bold mb-2">Base Price: ₹<?= number_format((float)($booking['starting_price'] ?? 0), 2) ?></div>
+            <div class="text-success font-weight-bold mb-2">Total Service Price: ₹<?= number_format($totAmt > 0 ? $totAmt : (float)($booking['starting_price'] ?? 0), 2) ?></div>
             <div class="p-2 bg-light rounded small text-dark">
               <i class="fa fa-calendar-check-o text-primary mr-1"></i><strong>Scheduled:</strong> <?= View::e($booking['preferred_date'] ?? 'Flexible') ?> (<?= View::e($booking['preferred_time'] ?? '') ?>)
             </div>
@@ -126,12 +141,34 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
       <!-- Payments & Invoices -->
       <div class="stat-card mb-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="font-weight-bold text-dark mb-0"><i class="fa fa-money text-success mr-2"></i>Payment & Billing</h6>
+          <h6 class="font-weight-bold text-dark mb-0"><i class="fa fa-money text-success mr-2"></i>Payment & Billing Breakdown</h6>
           <?php if (empty($payments)): ?>
             <button type="button" class="btn btn-sm btn-outline-success font-weight-bold" data-toggle="modal" data-target="#recordPaymentModal">
               <i class="fa fa-plus mr-1"></i>Record Payment
             </button>
           <?php endif; ?>
+        </div>
+
+        <!-- Breakdown Highlight Card -->
+        <div class="p-3 rounded mb-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+          <div class="row text-center">
+            <div class="col-sm-4 border-right mb-2 mb-sm-0">
+              <span class="text-muted small text-uppercase font-weight-bold d-block">Total Service Amount</span>
+              <span class="font-weight-bold text-dark" style="font-size: 16px;">₹<?= number_format($totAmt > 0 ? $totAmt : 899, 2) ?></span>
+            </div>
+            <div class="col-sm-4 border-right mb-2 mb-sm-0">
+              <span class="text-muted small text-uppercase font-weight-bold d-block">Advance Paid (Online)</span>
+              <span class="font-weight-bold text-success" style="font-size: 16px;">
+                ₹<?= number_format($advAmt > 0 ? $advAmt : ($dueAmt > 0 ? 49 : $totAmt), 2) ?>
+              </span>
+            </div>
+            <div class="col-sm-4">
+              <span class="text-muted small text-uppercase font-weight-bold d-block">Due to Technician</span>
+              <span class="font-weight-bold <?= $dueAmt > 0 ? 'text-danger' : 'text-success' ?>" style="font-size: 16px;">
+                ₹<?= number_format($dueAmt, 2) ?>
+              </span>
+            </div>
+          </div>
         </div>
 
         <?php if (empty($payments)): ?>

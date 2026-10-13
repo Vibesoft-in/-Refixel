@@ -76,6 +76,21 @@ $search = $search ?? '';
                   <a href="<?= View::url('/admin/bookings/' . $b['id']) ?>" class="font-weight-bold text-dark">
                     #<?= View::e($b['booking_no']) ?>
                   </a>
+                  <div class="mt-1">
+                    <?php 
+                      $bDue = (float)($b['due_amount'] ?? 0);
+                      $isBHigh = (($b['priority'] ?? '') === 'high' || ($b['payment_type'] ?? '') === 'online');
+                    ?>
+                    <?php if ($isBHigh && $bDue <= 0): ?>
+                      <span class="badge badge-success font-weight-bold" style="font-size: 10px; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
+                        <i class="fa fa-bolt mr-1"></i>High Priority
+                      </span>
+                    <?php else: ?>
+                      <span class="badge font-weight-bold" style="font-size: 10px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
+                        <i class="fa fa-clock-o mr-1"></i>Medium Priority (COD)
+                      </span>
+                    <?php endif; ?>
+                  </div>
                   <div class="text-muted" style="font-size: 11px;"><?= View::e(substr((string)$b['created_at'], 0, 10)) ?></div>
                 </td>
                 <td>
@@ -89,7 +104,19 @@ $search = $search ?? '';
                 </td>
                 <td>
                   <div class="font-weight-bold text-dark small"><?= View::e($b['service_name']) ?></div>
-                  <div class="text-success small font-weight-bold">₹<?= number_format((float)($b['starting_price'] ?? 0), 2) ?></div>
+                  <?php 
+                    $bTotal = (float)($b['total_amount'] ?? $b['starting_price'] ?? 0);
+                    $bAdv = (float)($b['advance_amount'] ?? 0);
+                  ?>
+                  <?php if ($bDue > 0): ?>
+                    <div class="text-dark small font-weight-bold">Total: ₹<?= number_format($bTotal > 0 ? $bTotal : 899, 0) ?></div>
+                    <div class="small" style="font-size: 11px;">
+                      <span class="text-success font-weight-bold">Adv: ₹<?= number_format($bAdv > 0 ? $bAdv : 49, 0) ?></span> &bull; 
+                      <span class="text-danger font-weight-bold">Due: ₹<?= number_format($bDue, 0) ?></span>
+                    </div>
+                  <?php else: ?>
+                    <div class="text-success small font-weight-bold">₹<?= number_format($bTotal > 0 ? $bTotal : (float)($b['starting_price'] ?? 0), 0) ?> (Full Online)</div>
+                  <?php endif; ?>
                 </td>
                 <td>
                   <div class="font-weight-bold text-dark small"><i class="fa fa-calendar mr-1 text-muted"></i><?= View::e($b['preferred_date'] ?? 'Flexible') ?></div>

@@ -122,7 +122,7 @@ assert($dataTampered['success'] === false, "Tampered signature response must hav
 
 echo "Test 3: Forged Signature Rejection - PASSED\n";
 
-// TEST 4: Cash on Delivery (COD) booking submission
+// TEST 4: Cash on Delivery (COD) booking submission with ₹49 online pre-booking advance
 $postDataCod = [
     '_csrf'          => $token,
     'is_ajax'        => '1',
@@ -148,14 +148,62 @@ assert($respCod->getStatusCode() === 200, "COD booking submission must return 20
 $dataCod = json_decode($respCod->getContent(), true);
 
 assert($dataCod['success'] === true, "COD booking response success must be true");
-assert($dataCod['requires_payment'] === false, "COD booking response must have requires_payment=false");
+assert($dataCod['requires_payment'] === true, "COD booking response must have requires_payment=true for advance ₹49");
+assert($dataCod['amount'] === 4900, "COD advance amount in paise must be 4900 (₹49)");
+assert((float)$dataCod['advance_amount'] === 49.0, "COD advance amount must be 49.00");
+assert($dataCod['priority'] === 'normal', "COD booking priority must be 'normal' (Medium Priority)");
+assert($dataCod['priority_label'] === 'Medium Priority', "COD priority_label must be 'Medium Priority'");
+assert($dataCod['due_amount'] > 0, "COD due_amount must be total - 49");
 
 $codBookingId = (int)$dataCod['booking_id'];
+$codBookingNo = (string)$dataCod['booking_no'];
+$codOrderId = (string)$dataCod['razorpay_order_id'];
+
+echo "Test 4: Cash on Delivery (COD) ₹49 Pre-booking Razorpay Order Generation - PASSED (Order: {$codOrderId})\n";
+
+// TEST 5: COD ₹49 Advance Payment Verification & Invoice with Remaining Due
+$codPaymentId = 'pay_cod_' . bin2hex(random_bytes(4));
+$codSignature = hash_hmac('sha256', "{$codOrderId}|{$codPaymentId}", $keySecret);
+
+$verifyDataCod = [
+    'booking_id'          => (string)$codBookingId,
+    'booking_no'          => $codBookingNo,
+    'service_name'        => 'Full Home Deep Cleaning',
+    'razorpay_order_id'   => $codOrderId,
+    'razorpay_payment_id' => $codPaymentId,
+    'razorpay_signature'  => $codSignature,
+];
+
+$reqVerifyCod = new Request([], $verifyDataCod, [], [], [], [
+    'REQUEST_METHOD' => 'POST',
+    'REQUEST_URI'    => '/book/verify-payment',
+    'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+]);
+
+$respVerifyCod = $ctrl->verifyPayment($reqVerifyCod);
+assert($respVerifyCod->getStatusCode() === 200, "COD advance verification must return 200");
+$dataVerifyCod = json_decode($respVerifyCod->getContent(), true);
+
+assert($dataVerifyCod['success'] === true, "COD advance verification must be success");
+assert((float)$dataVerifyCod['advance_amount'] === 49.0, "Verified advance_amount must be 49.00");
+assert($dataVerifyCod['priority'] === 'normal', "Verified COD booking priority must remain 'normal'");
+assert($dataVerifyCod['priority_label'] === 'Medium Priority', "Verified COD priority_label must be 'Medium Priority'");
+
+// Check DB values for COD booking & invoice
+$dbCodBooking = Booking::find($codBookingId);
+assert((float)$dbCodBooking['advance_amount'] === 49.00, "DB advance_amount must be 49.00");
+assert((float)$dbCodBooking['due_amount'] > 0, "DB due_amount must be > 0");
+assert($dbCodBooking['priority'] === 'normal', "DB priority must be normal");
+
 $dbCodPayment = Database::fetchOne("SELECT * FROM payments WHERE booking_id = ? ORDER BY id DESC LIMIT 1", [$codBookingId]);
-assert($dbCodPayment !== null, "COD payment record must exist");
-assert($dbCodPayment['status'] === 'pending', "COD payment status must be 'pending'");
-assert($dbCodPayment['method'] === 'cash', "COD payment method must be 'cash'");
+assert($dbCodPayment['status'] === 'paid', "COD advance payment status must be paid");
+assert((float)$dbCodPayment['amount'] === 49.00, "COD payment amount must be 49.00");
 
-echo "Test 4: Cash on Delivery (COD) Flow & Pending Payment Recording - PASSED\n";
+$dbCodInvoice = Database::fetchOne("SELECT * FROM invoices WHERE payment_id = ? LIMIT 1", [$dbCodPayment['id']]);
+assert($dbCodInvoice !== null, "Invoice must be created for COD booking");
+assert((float)$dbCodInvoice['advance_paid'] === 49.00, "Invoice advance_paid must be 49.00");
+assert((float)$dbCodInvoice['due_amount'] === (float)$dbCodBooking['due_amount'], "Invoice due_amount must match booking due_amount");
 
-echo "=== ALL 4 RAZORPAY & COD BOOKING PAYMENT TESTS PASSED PERFECTLY! ===\n";
+echo "Test 5: COD ₹49 Advance Verification, Invoice Due Deduction & Medium Priority - PASSED\n";
+
+echo "=== ALL 5 RAZORPAY ADVANCE & COD BOOKING PAYMENT TESTS PASSED PERFECTLY! ===\n";

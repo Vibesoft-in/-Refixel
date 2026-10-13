@@ -30,6 +30,9 @@ class Invoice extends Model
                     b.id as booking_id, b.customer_id, b.booking_no, b.name as customer_name,
                     b.phone as customer_phone, b.email as customer_email,
                     b.address as customer_address, b.pincode,
+                    b.priority as booking_priority, b.payment_type as booking_payment_type,
+                    b.total_amount as booking_total_amount, b.advance_amount as booking_advance_amount,
+                    b.due_amount as booking_due_amount,
                     s.name as service_name
              FROM invoices i
              JOIN payments p ON i.payment_id = p.id
