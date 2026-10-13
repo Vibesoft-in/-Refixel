@@ -171,6 +171,7 @@
   </div>
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 function rfxModalCopyText(text, btn) {
   if (!text) return;
@@ -480,56 +481,174 @@ function fallbackModalCopy(text, cb) {
             return;
           }
 
-          // Transition to Step 2 within the SAME MODAL
-          var d = result.data;
-          document.getElementById('modalStepPayment').style.display = 'none';
-          var stepSuccess = document.getElementById('modalStepSuccess');
-          stepSuccess.style.display = 'block';
+          function showSuccessCard(d, paymentText) {
+            document.getElementById('modalStepPayment').style.display = 'none';
+            var stepSuccess = document.getElementById('modalStepSuccess');
+            stepSuccess.style.display = 'block';
 
-          // Populate confirmation fields matching 2nd screenshot
-          document.getElementById('rfxSuccessBookingNo').innerText = d.booking_no || 'BK-CONFIRMED';
-          document.getElementById('rfxSuccessPhone').innerText = '+91-' + (d.identifier || d.phone || '');
-          
-          var pwdElem = document.getElementById('rfxSuccessPassword');
-          var pwdBtn = document.getElementById('rfxSuccessPasswordCopyBtn');
-          if (d.generated_password) {
-            pwdElem.innerText = d.generated_password;
-            pwdElem.style.color = '#fde047';
-            if (pwdBtn) pwdBtn.style.display = 'inline-block';
-          } else {
-            pwdElem.innerHTML = '<span style="color:#34d399; font-size:11px;"><i class="fa fa-check-circle mr-1"></i> Active / Logged In</span>';
-            if (pwdBtn) pwdBtn.style.display = 'none';
-          }
-
-          document.getElementById('rfxSuccessService').innerText = d.service_name || 'Doorstep Service';
-          document.getElementById('rfxSuccessName').innerText = d.name || 'Customer';
-          document.getElementById('rfxSuccessLocation').innerText = d.city || d.address || 'Service Area';
-          document.getElementById('rfxSuccessPayment').innerText = (selectedMethod === 'online') ? 'Online Paid (Instant)' : 'Cash on Delivery (Pay After Service)';
-
-          var targetUrl = d.redirect_url || (window.REFIXEL_BASE_URL ? window.REFIXEL_BASE_URL + '/account/bookings' : '/account/bookings');
-          var dashBtn = document.getElementById('rfxSuccessDashboardBtn');
-          if (dashBtn) {
-            dashBtn.setAttribute('href', targetUrl);
-          }
-
-          // Start Countdown auto-redirect to dashboard
-          var secondsLeft = 5;
-          var countElem = document.getElementById('rfxRedirectCount');
-          if (redirectTimer) clearInterval(redirectTimer);
-          redirectTimer = setInterval(function() {
-            secondsLeft--;
-            if (countElem) countElem.innerText = secondsLeft;
-            if (secondsLeft <= 0) {
-              clearInterval(redirectTimer);
-              window.location.href = targetUrl;
+            document.getElementById('rfxSuccessBookingNo').innerText = d.booking_no || 'BK-CONFIRMED';
+            document.getElementById('rfxSuccessPhone').innerText = '+91-' + (d.identifier || d.phone || '');
+            
+            var pwdElem = document.getElementById('rfxSuccessPassword');
+            var pwdBtn = document.getElementById('rfxSuccessPasswordCopyBtn');
+            if (d.generated_password) {
+              pwdElem.innerText = d.generated_password;
+              pwdElem.style.color = '#fde047';
+              if (pwdBtn) pwdBtn.style.display = 'inline-block';
+            } else {
+              pwdElem.innerHTML = '<span style="color:#34d399; font-size:11px;"><i class="fa fa-check-circle mr-1"></i> Active / Logged In</span>';
+              if (pwdBtn) pwdBtn.style.display = 'none';
             }
-          }, 1000);
 
-          if (dashBtn) {
-            dashBtn.onclick = function() {
-              if (redirectTimer) clearInterval(redirectTimer);
-            };
+            document.getElementById('rfxSuccessService').innerText = d.service_name || 'Doorstep Service';
+            document.getElementById('rfxSuccessName').innerText = d.name || 'Customer';
+            document.getElementById('rfxSuccessLocation').innerText = d.city || d.address || 'Service Area';
+            document.getElementById('rfxSuccessPayment').innerText = paymentText || 'Cash on Delivery (Pay After Service)';
+
+            var targetUrl = d.redirect_url || (window.REFIXEL_BASE_URL ? window.REFIXEL_BASE_URL + '/account/bookings' : '/account/bookings');
+            var dashBtn = document.getElementById('rfxSuccessDashboardBtn');
+            if (dashBtn) {
+              dashBtn.setAttribute('href', targetUrl);
+            }
+
+            // Start Countdown auto-redirect to dashboard
+            var secondsLeft = 5;
+            var countElem = document.getElementById('rfxRedirectCount');
+            if (redirectTimer) clearInterval(redirectTimer);
+            redirectTimer = setInterval(function() {
+              secondsLeft--;
+              if (countElem) countElem.innerText = secondsLeft;
+              if (secondsLeft <= 0) {
+                clearInterval(redirectTimer);
+                window.location.href = targetUrl;
+              }
+            }, 1000);
+
+            if (dashBtn) {
+              dashBtn.onclick = function() {
+                if (redirectTimer) clearInterval(redirectTimer);
+              };
+            }
           }
+
+          if (result.data.requires_payment) {
+            var d = result.data;
+            if (typeof Razorpay === 'undefined') {
+              if (errorAlert) {
+                errorAlert.innerText = 'Razorpay payment SDK not loaded. Please refresh the page and try again.';
+                errorAlert.style.display = 'block';
+              }
+              return;
+            }
+
+            var rzpOptions = {
+              key: d.razorpay_key_id,
+              amount: d.amount,
+              currency: d.currency || 'INR',
+              name: 'REFIXEL Technologies',
+              description: 'Booking: ' + (d.service_name || 'Service Booking') + ' (' + d.booking_no + ')',
+              image: '<?= \App\Core\View::asset("img/refixel-logo-horizontal.png") ?>',
+              order_id: d.razorpay_order_id,
+              prefill: {
+                name: d.name,
+                contact: d.phone,
+                email: d.email || ''
+              },
+              notes: {
+                booking_no: d.booking_no
+              },
+              theme: {
+                color: '#f25b29'
+              },
+              modal: {
+                backdropclose: false,
+                escape: false,
+                handleback: true,
+                ondismiss: function() {
+                  btnConfirm.disabled = false;
+                  btnConfirm.innerHTML = originalBtnHtml;
+                  if (errorAlert) {
+                    errorAlert.innerText = 'Online payment was closed. You can retry paying online or choose Cash on Delivery.';
+                    errorAlert.style.display = 'block';
+                  }
+                }
+              },
+              handler: function(paymentResponse) {
+                btnConfirm.disabled = true;
+                btnConfirm.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Verifying UPI Payment...';
+                if (errorAlert) { errorAlert.style.display = 'none'; errorAlert.innerText = ''; }
+
+                var verifyData = new FormData();
+                verifyData.append('booking_id', d.booking_id);
+                verifyData.append('booking_no', d.booking_no);
+                verifyData.append('service_name', d.service_name || '');
+                verifyData.append('razorpay_order_id', paymentResponse.razorpay_order_id);
+                verifyData.append('razorpay_payment_id', paymentResponse.razorpay_payment_id);
+                verifyData.append('razorpay_signature', paymentResponse.razorpay_signature);
+                if (activeBookingForm) {
+                  var csrfEl = activeBookingForm.querySelector('[name="_csrf"]');
+                  if (csrfEl) verifyData.append('_csrf', csrfEl.value);
+                }
+
+                var verifyUrl = window.REFIXEL_BASE_URL ? (window.REFIXEL_BASE_URL + '/book/verify-payment') : '/book/verify-payment';
+                fetch(verifyUrl, {
+                  method: 'POST',
+                  headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                  },
+                  body: verifyData
+                })
+                .then(function(vRes) {
+                  return vRes.json().then(function(vData) {
+                    return { ok: vRes.ok, data: vData };
+                  }).catch(function() {
+                    return { ok: vRes.ok, data: null };
+                  });
+                })
+                .then(function(vResult) {
+                  btnConfirm.disabled = false;
+                  btnConfirm.innerHTML = originalBtnHtml;
+
+                  if (!vResult.ok || !vResult.data || !vResult.data.success) {
+                    var vErr = (vResult.data && vResult.data.message) ? vResult.data.message : 'Payment verification failed.';
+                    if (errorAlert) {
+                      errorAlert.innerText = vErr;
+                      errorAlert.style.display = 'block';
+                    } else {
+                      alert(vErr);
+                    }
+                    return;
+                  }
+
+                  showSuccessCard(d, 'Online Paid (Razorpay Instant)');
+                })
+                .catch(function(err) {
+                  btnConfirm.disabled = false;
+                  btnConfirm.innerHTML = originalBtnHtml;
+                  if (errorAlert) {
+                    errorAlert.innerText = 'Network error while verifying payment. Ref ID: ' + paymentResponse.razorpay_payment_id;
+                    errorAlert.style.display = 'block';
+                  }
+                });
+              }
+            };
+
+            var rzp = new Razorpay(rzpOptions);
+            rzp.on('payment.failed', function(resp) {
+              btnConfirm.disabled = false;
+              btnConfirm.innerHTML = originalBtnHtml;
+              if (errorAlert) {
+                errorAlert.innerText = 'Payment failed: ' + ((resp.error && resp.error.description) ? resp.error.description : 'Transaction declined.');
+                errorAlert.style.display = 'block';
+              }
+            });
+            rzp.open();
+            return;
+          }
+
+          // COD or standard non-payment flow
+          showSuccessCard(result.data, (selectedMethod === 'online') ? 'Online Paid (Instant)' : 'Cash on Delivery (Pay After Service)');
         })
         .catch(function(err) {
           console.error('Booking submission error:', err);

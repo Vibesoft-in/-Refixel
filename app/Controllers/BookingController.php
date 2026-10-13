@@ -6,6 +6,7 @@ namespace App\Controllers;
 use App\Core\Auth;
 use App\Core\Cart;
 use App\Core\Database;
+use App\Core\InvoiceBuilder;
 use App\Core\Logger;
 use App\Core\Notifier;
 use App\Core\Request;
@@ -17,6 +18,7 @@ use App\Models\BookingAttachment;
 use App\Models\Service;
 use App\Models\ServiceArea;
 use App\Models\User;
+use App\Services\Payment\RazorpayGateway;
 
 class BookingController extends Controller
 {
@@ -352,26 +354,41 @@ class BookingController extends Controller
         // Record payment record in payments table
         $paymentMethodInput = (string)$request->input('payment_method', 'cod');
         $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
-        try {
-            $payAmount = (float)($service['starting_price'] ?? 0);
-            if ($request->input('from_cart')) {
-                $cartData = Cart::get();
-                if (!empty($cartData['total'])) {
-                    $payAmount = (float)$cartData['total'];
-                }
+        $payAmount = (float)($service['starting_price'] ?? 0);
+        if ($request->input('from_cart')) {
+            $cartData = Cart::getDetails();
+            if (!empty($cartData['total'])) {
+                $payAmount = (float)$cartData['total'];
             }
+        }
+        if ($payAmount <= 0) {
+            $payAmount = 899.00;
+        }
 
-            if ($paymentMethod === 'online') {
+        $rzpOrder = null;
+        if ($paymentMethod === 'online') {
+            try {
+                $rzpGateway = new RazorpayGateway();
+                $rzpOrder = $rzpGateway->createOrder($bookingId, $payAmount, 'INR', [
+                    'booking_no'   => $bookingNo,
+                    'service_name' => $service['name'] ?? 'Doorstep Service',
+                    'customer_id'  => (string)$customerId,
+                ]);
+
                 \App\Models\Payment::create([
                     'booking_id'      => $bookingId,
                     'amount'          => $payAmount,
                     'method'          => 'upi',
-                    'status'          => 'paid',
-                    'transaction_ref' => 'TXN-RZP-' . strtoupper(bin2hex(random_bytes(4))),
-                    'paid_at'         => date('Y-m-d H:i:s'),
+                    'status'          => 'pending',
+                    'transaction_ref' => $rzpOrder['order_id'] ?? null,
+                    'paid_at'         => null,
                     'recorded_by'     => $customerId ?: null,
                 ]);
-            } else {
+            } catch (\Throwable $e) {
+                Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
+            }
+        } else {
+            try {
                 \App\Models\Payment::create([
                     'booking_id'      => $bookingId,
                     'amount'          => $payAmount,
@@ -381,23 +398,175 @@ class BookingController extends Controller
                     'paid_at'         => null,
                     'recorded_by'     => null,
                 ]);
+            } catch (\Throwable $e) {
+                Logger::error("COD Payment record creation error: " . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            Logger::error("Payment creation skipped: " . $e->getMessage());
         }
 
-        // Trigger notifications (admin alert + customer confirmation)
+        // Trigger notifications for COD bookings immediately
+        if ($paymentMethod !== 'online') {
+            try {
+                $bookingRecord = [
+                    'booking_no'     => $bookingNo,
+                    'service_name'   => $service['name'],
+                    'name'           => trim((string)$request->input('name')),
+                    'phone'          => preg_replace('/\D/', '', (string)$request->input('phone')),
+                    'email'          => $request->input('email') ? trim((string)$request->input('email')) : null,
+                    'address'        => trim((string)$request->input('address')),
+                    'city'           => $pincode ? "Pincode: {$pincode}" : 'Service Area',
+                    'preferred_date' => (string)$request->input('preferred_date'),
+                    'preferred_time' => (string)$request->input('preferred_time'),
+                ];
+
+                if (isset($_SESSION['guest_account_created']) && $_SESSION['guest_account_created'] === true) {
+                    $bookingRecord['generated_password'] = $_SESSION['guest_account_password'];
+                    $bookingRecord['identifier'] = $_SESSION['guest_account_identifier'];
+                }
+
+                Notifier::notifyNewBookingAdmin($bookingRecord);
+                Notifier::notifyBookingConfirmationCustomer($bookingRecord);
+            } catch (\Throwable $e) {
+                Logger::error("Booking notification error: " . $e->getMessage());
+            }
+        }
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            $isNewAcc = !empty($_SESSION['guest_account_created']);
+            $genPwd = $_SESSION['guest_account_password'] ?? null;
+            $ident = $_SESSION['guest_account_identifier'] ?? $phoneInput;
+
+            if ($paymentMethod === 'online' && !empty($rzpOrder['order_id'])) {
+                $rzpGateway = new RazorpayGateway();
+                return Response::json([
+                    'success'            => true,
+                    'requires_payment'   => true,
+                    'razorpay_order_id'  => $rzpOrder['order_id'],
+                    'razorpay_key_id'    => $rzpGateway->getKeyId(),
+                    'amount'             => (int)round($payAmount * 100), // paise
+                    'currency'           => 'INR',
+                    'booking_no'         => $bookingNo,
+                    'booking_id'         => $bookingId,
+                    'name'               => $nameInput,
+                    'phone'              => $phoneInput,
+                    'email'              => $emailInput ?? '',
+                    'service_name'       => $service['name'] ?? 'Doorstep Service',
+                    'address'            => $addressInput,
+                    'city'               => $cityInput,
+                    'preferred_date'     => (string)$request->input('preferred_date'),
+                    'preferred_time'     => (string)$request->input('preferred_time'),
+                    'payment_method'     => 'online',
+                    'is_new_customer'    => $isNewAcc,
+                    'generated_password' => $genPwd,
+                    'identifier'         => $ident,
+                    'redirect_url'       => View::url('/account/bookings'),
+                ]);
+            }
+
+            return Response::json([
+                'success'            => true,
+                'requires_payment'   => false,
+                'booking_no'         => $bookingNo,
+                'booking_id'         => $bookingId,
+                'name'               => $nameInput,
+                'phone'              => $phoneInput,
+                'service_name'       => $service['name'] ?? 'Doorstep Service',
+                'address'            => $addressInput,
+                'city'               => $cityInput,
+                'preferred_date'     => (string)$request->input('preferred_date'),
+                'preferred_time'     => (string)$request->input('preferred_time'),
+                'payment_method'     => 'Cash on Delivery (Pay After Service)',
+                'is_new_customer'    => $isNewAcc,
+                'generated_password' => $genPwd,
+                'identifier'         => $ident,
+                'redirect_url'       => View::url('/account/bookings'),
+            ]);
+        }
+
+        return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));
+    }
+
+    public function verifyPayment(Request $request): Response
+    {
+        $bookingId = (int)$request->input('booking_id');
+        $bookingNo = (string)$request->input('booking_no');
+        $orderId = (string)$request->input('razorpay_order_id');
+        $paymentId = (string)$request->input('razorpay_payment_id');
+        $signature = (string)$request->input('razorpay_signature');
+
+        if (empty($bookingId) || empty($orderId) || empty($paymentId) || empty($signature)) {
+            return Response::json([
+                'success' => false,
+                'message' => 'Incomplete payment verification payload.',
+            ], 400);
+        }
+
+        $booking = Booking::find($bookingId);
+        if (!$booking) {
+            return Response::json([
+                'success' => false,
+                'message' => 'Booking not found for payment confirmation.',
+            ], 404);
+        }
+
+        $rzpGateway = new RazorpayGateway();
+        $isValid = $rzpGateway->verifySignature([
+            'razorpay_order_id'   => $orderId,
+            'razorpay_payment_id' => $paymentId,
+            'razorpay_signature'  => $signature,
+        ]);
+
+        if (!$isValid) {
+            Logger::error("Razorpay signature verification failed for booking #{$bookingId}: order={$orderId}, payment={$paymentId}");
+            return Response::json([
+                'success' => false,
+                'message' => 'Payment signature verification failed. Please try again or contact support.',
+            ], 400);
+        }
+
+        // Update payment record in database
+        $payment = Database::fetchOne("SELECT * FROM payments WHERE booking_id = ? ORDER BY id DESC LIMIT 1", [$bookingId]);
+        $payAmount = $payment ? (float)$payment['amount'] : 899.00;
+
+        if ($payment) {
+            Database::execute(
+                "UPDATE payments SET status = 'paid', method = 'upi', transaction_ref = ?, paid_at = NOW() WHERE id = ?",
+                [$paymentId, $payment['id']]
+            );
+            $paymentIdDb = (int)$payment['id'];
+        } else {
+            $paymentIdDb = (int)Database::execute(
+                "INSERT INTO payments (booking_id, amount, method, status, transaction_ref, paid_at) VALUES (?, ?, 'upi', 'paid', ?, NOW())",
+                [$bookingId, $payAmount, $paymentId],
+                true
+            );
+        }
+
+        // Generate GST Invoice
+        try {
+            $existingInvoice = Database::fetchOne("SELECT id FROM invoices WHERE payment_id = ? LIMIT 1", [$paymentIdDb]);
+            if (!$existingInvoice) {
+                $subtotal = round($payAmount / 1.18, 2);
+                InvoiceBuilder::createForPayment($paymentIdDb, $subtotal, 18.00);
+            }
+        } catch (\Throwable $e) {
+            Logger::error("Invoice generation skipped: " . $e->getMessage());
+        }
+
+        // Update booking status and priority
+        Database::execute("UPDATE bookings SET priority = 'high', status = 'new' WHERE id = ?", [$bookingId]);
+
+        // Send booking confirmation notifications
         try {
             $bookingRecord = [
-                'booking_no'     => $bookingNo,
-                'service_name'   => $service['name'],
-                'name'           => trim((string)$request->input('name')),
-                'phone'          => preg_replace('/\D/', '', (string)$request->input('phone')),
-                'email'          => $request->input('email') ? trim((string)$request->input('email')) : null,
-                'address'        => trim((string)$request->input('address')),
-                'city'           => $pincode ? "Pincode: {$pincode}" : 'Service Area',
-                'preferred_date' => (string)$request->input('preferred_date'),
-                'preferred_time' => (string)$request->input('preferred_time'),
+                'booking_no'     => $booking['booking_no'],
+                'service_name'   => $request->input('service_name', 'Doorstep Service'),
+                'name'           => $booking['name'],
+                'phone'          => $booking['phone'],
+                'email'          => $booking['email'] ?? null,
+                'address'        => $booking['address'],
+                'city'           => $booking['pincode'] ? "Pincode: {$booking['pincode']}" : 'Service Area',
+                'preferred_date' => (string)$booking['preferred_date'],
+                'preferred_time' => (string)$booking['preferred_time'],
             ];
 
             if (isset($_SESSION['guest_account_created']) && $_SESSION['guest_account_created'] === true) {
@@ -408,35 +577,25 @@ class BookingController extends Controller
             Notifier::notifyNewBookingAdmin($bookingRecord);
             Notifier::notifyBookingConfirmationCustomer($bookingRecord);
         } catch (\Throwable $e) {
-            // Notification failure does not break booking completion
-            Logger::error("Booking notification error: " . $e->getMessage());
+            Logger::error("Booking notification error post-payment: " . $e->getMessage());
         }
 
-        if ($request->isAjax() || $request->input('is_ajax')) {
-            $isNewAcc = !empty($_SESSION['guest_account_created']);
-            $genPwd = $_SESSION['guest_account_password'] ?? null;
-            $ident = $_SESSION['guest_account_identifier'] ?? $phoneInput;
+        // Clear cart
+        Cart::clear();
 
-            return Response::json([
-                'success'            => true,
-                'booking_no'         => $bookingNo,
-                'booking_id'         => $bookingId,
-                'name'               => $nameInput,
-                'phone'              => $phoneInput,
-                'service_name'       => $service['name'] ?? 'Doorstep Service',
-                'address'            => $addressInput,
-                'city'               => $cityInput,
-                'preferred_date'     => (string)$request->input('preferred_date'),
-                'preferred_time'     => (string)$request->input('preferred_time'),
-                'payment_method'     => $paymentMethod === 'online' ? 'Online Paid (Instant)' : 'Cash on Delivery (Pay After Service)',
-                'is_new_customer'    => $isNewAcc,
-                'generated_password' => $genPwd,
-                'identifier'         => $ident,
-                'redirect_url'       => View::url('/account/bookings'),
-            ]);
-        }
-
-        return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));
+        return Response::json([
+            'success'            => true,
+            'booking_no'         => $booking['booking_no'],
+            'booking_id'         => $booking['id'],
+            'name'               => $booking['name'],
+            'phone'              => $booking['phone'],
+            'service_name'       => $request->input('service_name', 'Doorstep Service'),
+            'address'            => $booking['address'],
+            'city'               => $booking['city'] ?? 'Service Area',
+            'payment_method'     => 'Online Paid (Razorpay Instant)',
+            'payment_id'         => $paymentId,
+            'redirect_url'       => View::url('/account/bookings'),
+        ]);
     }
 
     public function success(Request $request): Response
