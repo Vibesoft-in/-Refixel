@@ -174,6 +174,12 @@ class BookingController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json([
+                    'success' => false,
+                    'message' => $validator->firstError(),
+                ], 422);
+            }
             View::setFlash('error', $validator->firstError());
             $redirectUrl = $request->input('from_cart') ? '/cart' : '/book?service_id=' . (int)$request->input('service_id');
             return $this->redirect($redirectUrl);
@@ -182,6 +188,12 @@ class BookingController extends Controller
         $serviceId = (int)$request->input('service_id');
         $service = Service::find($serviceId);
         if (!$service || empty($service['is_active'])) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json([
+                    'success' => false,
+                    'message' => 'The requested service is currently unavailable.',
+                ], 400);
+            }
             View::setFlash('error', 'The requested service is currently unavailable.');
             return $this->redirect('/services');
         }
@@ -189,6 +201,12 @@ class BookingController extends Controller
         // Pincode validation (optional but verified if supplied)
         $pincode = $request->input('pincode') ? trim((string)$request->input('pincode')) : null;
         if ($pincode && !preg_match('/^[0-9]{6}$/', $pincode)) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json([
+                    'success' => false,
+                    'message' => 'Please enter a valid 6-digit Indian postal pincode.',
+                ], 422);
+            }
             View::setFlash('error', 'Please enter a valid 6-digit Indian postal pincode.');
             return $this->redirect('/book?service_id=' . $serviceId);
         }
@@ -329,6 +347,43 @@ class BookingController extends Controller
         // Record DPDP Act consent for booking processing
         \App\Models\Consent::record($customerId, 'booking_terms_and_data_processing', $request->getIp());
 
+        // Record payment record in payments table
+        $paymentMethodInput = (string)$request->input('payment_method', 'cod');
+        $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
+        try {
+            $payAmount = (float)($service['starting_price'] ?? 0);
+            if ($request->input('from_cart')) {
+                $cartData = Cart::get();
+                if (!empty($cartData['total'])) {
+                    $payAmount = (float)$cartData['total'];
+                }
+            }
+
+            if ($paymentMethod === 'online') {
+                \App\Models\Payment::create([
+                    'booking_id'      => $bookingId,
+                    'amount'          => $payAmount,
+                    'method'          => 'upi',
+                    'status'          => 'paid',
+                    'transaction_ref' => 'TXN-RZP-' . strtoupper(bin2hex(random_bytes(4))),
+                    'paid_at'         => date('Y-m-d H:i:s'),
+                    'recorded_by'     => $customerId ?: null,
+                ]);
+            } else {
+                \App\Models\Payment::create([
+                    'booking_id'      => $bookingId,
+                    'amount'          => $payAmount,
+                    'method'          => 'cash',
+                    'status'          => 'pending',
+                    'transaction_ref' => null,
+                    'paid_at'         => null,
+                    'recorded_by'     => null,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Logger::error("Payment creation skipped: " . $e->getMessage());
+        }
+
         // Trigger notifications (admin alert + customer confirmation)
         try {
             $bookingRecord = [
@@ -353,6 +408,30 @@ class BookingController extends Controller
         } catch (\Throwable $e) {
             // Notification failure does not break booking completion
             Logger::error("Booking notification error: " . $e->getMessage());
+        }
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            $isNewAcc = !empty($_SESSION['guest_account_created']);
+            $genPwd = $_SESSION['guest_account_password'] ?? null;
+            $ident = $_SESSION['guest_account_identifier'] ?? $phoneInput;
+
+            return Response::json([
+                'success'            => true,
+                'booking_no'         => $bookingNo,
+                'booking_id'         => $bookingId,
+                'name'               => $nameInput,
+                'phone'              => $phoneInput,
+                'service_name'       => $service['name'] ?? 'Doorstep Service',
+                'address'            => $addressInput,
+                'city'               => $cityInput,
+                'preferred_date'     => (string)$request->input('preferred_date'),
+                'preferred_time'     => (string)$request->input('preferred_time'),
+                'payment_method'     => $paymentMethod === 'online' ? 'Online Paid (Instant)' : 'Cash on Delivery (Pay After Service)',
+                'is_new_customer'    => $isNewAcc,
+                'generated_password' => $genPwd,
+                'identifier'         => $ident,
+                'redirect_url'       => View::url('/account/bookings'),
+            ]);
         }
 
         return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));

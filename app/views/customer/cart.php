@@ -1138,6 +1138,8 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
   <?php endif; ?>
 </div>
 
+<?= \App\Core\View::partial('booking-payment-modal') ?>
+
 <script>
 function initCartPage() {
   var baseUrl = '<?= rtrim(\App\Core\View::url(), '/') ?>';

@@ -720,6 +720,8 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
   </div>
 </div>
 
+<?= \App\Core\View::partial('booking-payment-modal') ?>
+
 <style>
 /* Modern Reference Calendar Card */
 .refixel-calendar-card {
