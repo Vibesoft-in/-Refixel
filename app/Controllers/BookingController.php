@@ -358,6 +358,16 @@ class BookingController extends Controller
 
             $bookingNo = Booking::generateBookingNo();
             $customerId = Auth::id(); // Null for guest, or user ID if authenticated
+            if ($customerId) {
+                $userInDb = \App\Models\User::find($customerId);
+                if (!$userInDb) {
+                    // Stale or deleted user in session - clear it so foreign key constraints never fail
+                    $customerId = null;
+                    if (isset($_SESSION['user'])) {
+                        unset($_SESSION['user']);
+                    }
+                }
+            }
             $phoneInput = preg_replace('/\D/', '', (string)$request->input('phone'));
             $emailInput = $request->input('email') ? trim((string)$request->input('email')) : null;
             $nameInput = trim((string)$request->input('name'));
@@ -425,51 +435,60 @@ class BookingController extends Controller
             }
 
             if ($customerId) {
-                $existingProfile = \App\Core\Database::fetchOne("SELECT id FROM customer_profiles WHERE user_id = ?", [$customerId]);
-                if ($existingProfile) {
-                    \App\Core\Database::execute("UPDATE customer_profiles SET address = ?, pincode = ?, city = ?, state = ?, house_no = ?, street = ?, address_type = ? WHERE user_id = ?", [$addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput, $customerId]);
-                } else {
-                    \App\Core\Database::execute("INSERT INTO customer_profiles (user_id, address, pincode, city, state, house_no, street, address_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [$customerId, $addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput]);
-                }
-
-                // Sync user name and email in users table if provided
-                if (!empty($nameInput) || !empty($emailInput)) {
+                $verifiedUser = \App\Models\User::find($customerId);
+                if ($verifiedUser) {
                     try {
-                        $userUpdates = [];
-                        $userParams = [];
-                        if (!empty($nameInput)) {
-                            $userUpdates[] = "name = ?";
-                            $userParams[] = $nameInput;
+                        $existingProfile = \App\Core\Database::fetchOne("SELECT id FROM customer_profiles WHERE user_id = ?", [$customerId]);
+                        if ($existingProfile) {
+                            \App\Core\Database::execute("UPDATE customer_profiles SET address = ?, pincode = ?, city = ?, state = ?, house_no = ?, street = ?, address_type = ? WHERE user_id = ?", [$addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput, $customerId]);
+                        } else {
+                            \App\Core\Database::execute("INSERT INTO customer_profiles (user_id, address, pincode, city, state, house_no, street, address_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [$customerId, $addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput]);
                         }
-                        if (!empty($emailInput)) {
-                            $emailOwner = \App\Models\User::findBy('email', $emailInput);
-                            if (!$emailOwner || (int)$emailOwner['id'] === (int)$customerId) {
-                                $userUpdates[] = "email = ?";
-                                $userParams[] = $emailInput;
-                            }
-                        }
-                        if (!empty($userUpdates)) {
-                            $userParams[] = $customerId;
-                            \App\Core\Database::execute("UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = ?", $userParams);
-                        }
+                    } catch (\Throwable $profErr) {
+                        Logger::warning("Customer profile save skipped: " . $profErr->getMessage());
+                    }
 
-                        $currUser = Auth::user();
-                        if ($currUser && (int)$currUser['id'] === (int)$customerId) {
-                            if (!empty($nameInput)) $currUser['name'] = $nameInput;
-                            if (!empty($emailInput) && (!isset($emailOwner) || !$emailOwner || (int)$emailOwner['id'] === (int)$customerId)) {
-                                $currUser['email'] = $emailInput;
+                    // Sync user name and email in users table if provided
+                    if (!empty($nameInput) || !empty($emailInput)) {
+                        try {
+                            $userUpdates = [];
+                            $userParams = [];
+                            if (!empty($nameInput)) {
+                                $userUpdates[] = "name = ?";
+                                $userParams[] = $nameInput;
                             }
-                            Auth::login($currUser);
+                            if (!empty($emailInput)) {
+                                $emailOwner = \App\Models\User::findBy('email', $emailInput);
+                                if (!$emailOwner || (int)$emailOwner['id'] === (int)$customerId) {
+                                    $userUpdates[] = "email = ?";
+                                    $userParams[] = $emailInput;
+                                }
+                            }
+                            if (!empty($userUpdates)) {
+                                $userParams[] = $customerId;
+                                \App\Core\Database::execute("UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = ?", $userParams);
+                            }
+
+                            $currUser = Auth::user();
+                            if ($currUser && (int)$currUser['id'] === (int)$customerId) {
+                                if (!empty($nameInput)) $currUser['name'] = $nameInput;
+                                if (!empty($emailInput) && (!isset($emailOwner) || !$emailOwner || (int)$emailOwner['id'] === (int)$customerId)) {
+                                    $currUser['email'] = $emailInput;
+                                }
+                                Auth::login($currUser);
+                            }
+                        } catch (\Throwable $userSyncErr) {
+                            Logger::warning("Non-fatal: user name/email sync skipped: " . $userSyncErr->getMessage());
                         }
-                    } catch (\Throwable $userSyncErr) {
-                        Logger::warning("Non-fatal: user name/email sync skipped: " . $userSyncErr->getMessage());
                     }
                 }
             }
 
+            $validCustomerId = ($customerId && \App\Models\User::find($customerId)) ? $customerId : null;
+
             $bookingId = Booking::create([
                 'booking_no'     => $bookingNo,
-                'customer_id'    => $customerId,
+                'customer_id'    => $validCustomerId,
                 'service_id'     => $service['id'],
                 'name'           => trim((string)$request->input('name')),
                 'phone'          => preg_replace('/\D/', '', (string)$request->input('phone')),
@@ -511,7 +530,13 @@ class BookingController extends Controller
             }
 
             // Record DPDP Act consent for booking processing
-            \App\Models\Consent::record($customerId, 'booking_terms_and_data_processing', $request->getIp());
+            if ($validCustomerId) {
+                try {
+                    \App\Models\Consent::record($validCustomerId, 'booking_terms_and_data_processing', $request->getIp());
+                } catch (\Throwable $consentErr) {
+                    Logger::warning("Consent record skipped: " . $consentErr->getMessage());
+                }
+            }
 
             // Record payment record in payments table
             $paymentMethodInput = (string)$request->input('payment_method', 'cod');
@@ -544,7 +569,7 @@ class BookingController extends Controller
                 $rzpOrder = $rzpGateway->createOrder($bookingId, $advanceAmount, 'INR', [
                     'booking_no'     => $bookingNo,
                     'service_name'   => $service['name'] ?? 'Doorstep Service',
-                    'customer_id'    => (string)$customerId,
+                    'customer_id'    => (string)($validCustomerId ?? ''),
                     'payment_type'   => $paymentMethod,
                     'total_amount'   => (string)$totalServiceAmount,
                     'advance_amount' => (string)$advanceAmount,
@@ -558,7 +583,7 @@ class BookingController extends Controller
                     'status'          => 'pending',
                     'transaction_ref' => $rzpOrder['order_id'] ?? null,
                     'paid_at'         => null,
-                    'recorded_by'     => $customerId ?: null,
+                    'recorded_by'     => $validCustomerId ?: null,
                 ]);
             } catch (\Throwable $e) {
                 Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
@@ -829,6 +854,9 @@ class BookingController extends Controller
 
         // Customer handling: Auto account generation if new user
         $customerId = Auth::id();
+        if ($customerId && !User::find($customerId)) {
+            $customerId = null;
+        }
         $isNewCustomer = false;
         $generatedPassword = null;
 
@@ -857,18 +885,22 @@ class BookingController extends Controller
 
                 if ($customerId) {
                     $isNewCustomer = true;
-                    // Seed customer profile
-                    Database::execute(
-                        "INSERT INTO customer_profiles (user_id, address, city, address_type) VALUES (?, ?, ?, 'Home')",
-                        [$customerId, $location ?: 'Uttarakhand Service Area', 'Kashipur']
-                    );
-
-                    // Seed default customer address
-                    if (!empty($location)) {
+                    // Seed customer profile safely
+                    try {
                         Database::execute(
-                            "INSERT INTO customer_addresses (user_id, label, address, city, is_default) VALUES (?, 'Home', ?, 'Kashipur', 1)",
-                            [$customerId, $location]
+                            "INSERT INTO customer_profiles (user_id, address, city, address_type) VALUES (?, ?, ?, 'Home')",
+                            [$customerId, $location ?: 'Uttarakhand Service Area', 'Kashipur']
                         );
+                    } catch (\Throwable $e) {}
+
+                    // Seed default customer address safely
+                    if (!empty($location)) {
+                        try {
+                            Database::execute(
+                                "INSERT INTO customer_addresses (user_id, label, address, city, is_default) VALUES (?, 'Home', ?, 'Kashipur', 1)",
+                                [$customerId, $location]
+                            );
+                        } catch (\Throwable $e) {}
                     }
 
                     $newUser = User::find($customerId);
