@@ -176,6 +176,84 @@ class BookingController extends Controller
         return 0;
     }
 
+    /**
+     * Self-healing migration for financial tracking columns.
+     * Ensures bookings and invoices tables have required columns on legacy/live databases.
+     */
+    public static function ensureFinancialSchema(): void
+    {
+        static $executed = false;
+        if ($executed) return;
+        $executed = true;
+
+        try {
+            $bookingCols = Database::fetchAll("SHOW COLUMNS FROM bookings");
+            $existingCols = array_column($bookingCols, 'Field');
+
+            if (!in_array('total_amount', $existingCols, true)) {
+                try { Database::execute("ALTER TABLE bookings ADD COLUMN total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER issue_details"); } catch (\Throwable $e) {}
+            }
+            if (!in_array('advance_amount', $existingCols, true)) {
+                try { Database::execute("ALTER TABLE bookings ADD COLUMN advance_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00"); } catch (\Throwable $e) {}
+            }
+            if (!in_array('due_amount', $existingCols, true)) {
+                try { Database::execute("ALTER TABLE bookings ADD COLUMN due_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00"); } catch (\Throwable $e) {}
+            }
+            if (!in_array('payment_type', $existingCols, true)) {
+                try { Database::execute("ALTER TABLE bookings ADD COLUMN payment_type VARCHAR(20) NOT NULL DEFAULT 'cod'"); } catch (\Throwable $e) {}
+            }
+
+            $invCols = Database::fetchAll("SHOW COLUMNS FROM invoices");
+            $existingInvCols = array_column($invCols, 'Field');
+            if (!in_array('advance_paid', $existingInvCols, true)) {
+                try { Database::execute("ALTER TABLE invoices ADD COLUMN advance_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER total"); } catch (\Throwable $e) {}
+            }
+            if (!in_array('due_amount', $existingInvCols, true)) {
+                try { Database::execute("ALTER TABLE invoices ADD COLUMN due_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER advance_paid"); } catch (\Throwable $e) {}
+            }
+        } catch (\Throwable $e) {
+            Logger::warning("Schema verification skipped: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Safely updates booking financial tracking columns.
+     * Tries full financial column update first; falls back gracefully to priority/status
+     * if the database cannot be altered.
+     */
+    protected function updateBookingFinancials(int $bookingId, float $totalAmount, float $advanceAmount, float $dueAmount, string $paymentMethod, string $priority, ?string $status = null): void
+    {
+        self::ensureFinancialSchema();
+
+        try {
+            if ($status !== null) {
+                Database::execute(
+                    "UPDATE bookings SET priority = ?, status = ?, total_amount = ?, advance_amount = ?, due_amount = ? WHERE id = ?",
+                    [$priority, $status, $totalAmount, $advanceAmount, $dueAmount, $bookingId]
+                );
+            } else {
+                Database::execute(
+                    "UPDATE bookings SET total_amount = ?, advance_amount = ?, due_amount = ?, payment_type = ?, priority = ? WHERE id = ?",
+                    [$totalAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority, $bookingId]
+                );
+            }
+            return;
+        } catch (\Throwable $updErr) {
+            Logger::warning("Could not update financial columns on bookings, falling back to basic columns: " . $updErr->getMessage());
+        }
+
+        // Safe fallback for live database if columns do not exist and could not be altered
+        try {
+            if ($status !== null) {
+                Database::execute("UPDATE bookings SET priority = ?, status = ? WHERE id = ?", [$priority, $status, $bookingId]);
+            } else {
+                Database::execute("UPDATE bookings SET priority = ? WHERE id = ?", [$priority, $bookingId]);
+            }
+        } catch (\Throwable $e) {
+            Logger::error("Failed updating booking priority/status: " . $e->getMessage());
+        }
+    }
+
     public function submit(Request $request): Response
     {
         try {
@@ -457,11 +535,8 @@ class BookingController extends Controller
             $dueAmount = max(0.00, round($totalServiceAmount - $advanceAmount, 2));
             $priority = ($paymentMethod === 'online') ? 'high' : 'normal';
 
-            // Update booking financial tracking columns
-            Database::execute(
-                "UPDATE bookings SET total_amount = ?, advance_amount = ?, due_amount = ?, payment_type = ?, priority = ? WHERE id = ?",
-                [$totalServiceAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority, $bookingId]
-            );
+            // Update booking financial tracking columns (self-healing & backward-compatible)
+            $this->updateBookingFinancials($bookingId, $totalServiceAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority);
 
             $rzpOrder = null;
             try {
@@ -641,12 +716,9 @@ class BookingController extends Controller
             Logger::error("Invoice generation skipped: " . $e->getMessage());
         }
 
-        // Update booking status and priority
+        // Update booking status and priority (self-healing & backward-compatible)
         $prio = ($paymentType === 'online') ? 'high' : 'normal';
-        Database::execute(
-            "UPDATE bookings SET priority = ?, status = 'new', total_amount = ?, advance_amount = ?, due_amount = ? WHERE id = ?",
-            [$prio, $totalAmount, $advanceAmount, $dueAmount, $bookingId]
-        );
+        $this->updateBookingFinancials($bookingId, $totalAmount, $advanceAmount, $dueAmount, $paymentType, $prio, 'new');
 
         // Send booking confirmation notifications
         try {
