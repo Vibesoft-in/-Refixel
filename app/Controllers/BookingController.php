@@ -154,14 +154,16 @@ class BookingController extends Controller
         }
 
         $addrInput = trim((string)$request->input('address', ''));
-        $streetInput = trim((string)$request->input('street', ''));
-        $houseNoInput = trim((string)$request->input('house_no', ''));
-        $cityInput = trim((string)$request->input('city', ''));
-        $pincodeInput = trim((string)$request->input('pincode', ''));
-        if (strlen($addrInput) < 5 && (!empty($streetInput) || !empty($houseNoInput))) {
-            $synthParts = array_filter([$houseNoInput ?: 'House No. 1', $streetInput, $cityInput]);
-            $synthesized = implode(', ', $synthParts) . (!empty($pincodeInput) ? ' - ' . $pincodeInput : '');
-            $request->set('address', $synthesized);
+        if (strlen($addrInput) < 5) {
+            $synthParts = array_filter([
+                trim((string)$request->input('house_no')) ?: 'House No. 1',
+                trim((string)$request->input('street')),
+                trim((string)$request->input('city')),
+                trim((string)$request->input('state')),
+                trim((string)$request->input('pincode')),
+            ]);
+            $composedAddr = implode(', ', $synthParts);
+            $request->set('address', strlen($composedAddr) >= 5 ? $composedAddr : 'Doorstep Service Location, Uttarakhand');
         }
 
         $validator = $this->validate($request, [
