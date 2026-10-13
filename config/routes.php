@@ -53,6 +53,8 @@ Router::get('/{service}-in-{city}', 'ServiceController@serviceInCity');
 Router::get('/book', 'BookingController@showForm');
 Router::post('/book', 'BookingController@submit', ['VerifyCsrf']);
 Router::get('/book-success', 'BookingController@success');
+Router::post('/quick-enquiry', 'BookingController@quickEnquiry');
+Router::get('/enquiry-success', 'BookingController@enquirySuccess');
 
 Router::get('/cart', 'BookingController@cart');
 Router::get('/cart.php', 'BookingController@cart');

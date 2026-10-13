@@ -5,6 +5,8 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Core\Cart;
+use App\Core\Database;
+use App\Core\Logger;
 use App\Core\Notifier;
 use App\Core\Request;
 use App\Core\Response;
@@ -14,6 +16,7 @@ use App\Models\Booking;
 use App\Models\BookingAttachment;
 use App\Models\Service;
 use App\Models\ServiceArea;
+use App\Models\User;
 
 class BookingController extends Controller
 {
@@ -359,11 +362,219 @@ class BookingController extends Controller
     {
         $bookingNo = (string)$request->query('booking_no', '');
 
+        $booking = null;
+        if (!empty($bookingNo)) {
+            $booking = Database::fetchOne(
+                "SELECT b.*, s.name as service_name 
+                 FROM bookings b 
+                 LEFT JOIN services s ON b.service_id = s.id 
+                 WHERE b.booking_no = ? 
+                 LIMIT 1",
+                [$bookingNo]
+            );
+        }
+
         return $this->render('customer.book-success', [
-            'title'       => 'Booking Confirmed | REFIXEL',
-            'description' => 'Your doorstep service booking has been confirmed with REFIXEL.',
+            'title'       => 'Booking Done | REFIXEL',
             'booking_no'  => $bookingNo,
-        ], 'customer');
+            'booking'     => $booking,
+        ], null);
+    }
+
+    public function quickEnquiry(Request $request): Response
+    {
+        $name         = trim((string)$request->input('name', ''));
+        $rawPhone     = trim((string)$request->input('phone', ''));
+        $serviceInput = trim((string)$request->input('service', ''));
+        $location     = trim((string)($request->input('location') ?? $request->input('detected_location') ?? ''));
+        $message      = trim((string)$request->input('message', ''));
+
+        // Clean phone number (strip spaces, symbols, +91)
+        $cleanPhone = preg_replace('/\D/', '', $rawPhone);
+        if (str_starts_with($cleanPhone, '91') && strlen($cleanPhone) === 12) {
+            $cleanPhone = substr($cleanPhone, 2);
+        }
+
+        if (empty($name) || empty($cleanPhone)) {
+            View::setFlash('error', 'Please enter your name and a valid phone number.');
+            return $this->redirect('/#homeContactSection');
+        }
+
+        // Resolve service ID from name, slug or keyword
+        $serviceId = $this->resolveServiceId($serviceInput);
+        $service = Service::find($serviceId);
+
+        // Generate unique Booking/Enquiry reference number (e.g. BK-XXXXXX)
+        $bookingNo = Booking::generateBookingNo();
+
+        // Customer handling: Auto account generation if new user
+        $customerId = Auth::id();
+        $isNewCustomer = false;
+        $generatedPassword = null;
+
+        if (!$customerId) {
+            // Check if user already exists with this phone
+            $existingUser = User::findBy('phone', $cleanPhone);
+            if ($existingUser) {
+                $customerId = (int)$existingUser['id'];
+                // Update name if previously empty or placeholder
+                if (!empty($name) && empty($existingUser['name'])) {
+                    Database::execute("UPDATE users SET name = ? WHERE id = ?", [$name, $customerId]);
+                    $existingUser['name'] = $name;
+                }
+                Auth::login($existingUser);
+            } else {
+                // Generate authentic, memorable password like Refixel@4829
+                $randomDigits = str_pad((string)random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
+                $generatedPassword = 'Refixel@' . $randomDigits;
+                $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
+
+                $customerId = (int)Database::execute(
+                    "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
+                    [$name, $cleanPhone, null, $hashedPassword],
+                    true
+                );
+
+                if ($customerId) {
+                    $isNewCustomer = true;
+                    // Seed customer profile
+                    Database::execute(
+                        "INSERT INTO customer_profiles (user_id, address, city, address_type) VALUES (?, ?, ?, 'Home')",
+                        [$customerId, $location ?: 'Uttarakhand Service Area', 'Kashipur']
+                    );
+
+                    // Seed default customer address
+                    if (!empty($location)) {
+                        Database::execute(
+                            "INSERT INTO customer_addresses (user_id, label, address, city, is_default) VALUES (?, 'Home', ?, 'Kashipur', 1)",
+                            [$customerId, $location]
+                        );
+                    }
+
+                    $newUser = User::find($customerId);
+                    if ($newUser) {
+                        Auth::login($newUser);
+                    }
+                }
+            }
+        }
+
+        // Insert booking / enquiry record with status 'new'
+        $bookingId = Booking::create([
+            'booking_no'     => $bookingNo,
+            'customer_id'    => $customerId ?: null,
+            'service_id'     => $serviceId,
+            'name'           => $name,
+            'phone'          => $cleanPhone,
+            'email'          => null,
+            'address'        => $location ?: 'Uttarakhand Service Area',
+            'pincode'        => null,
+            'preferred_date' => date('Y-m-d'),
+            'preferred_time' => 'Immediate / ASAP',
+            'issue_details'  => $message ?: 'Quick enquiry submitted from homepage',
+            'status'         => 'new',
+            'priority'       => 'high',
+        ]);
+
+        // Save session data for confirmation page
+        $_SESSION['last_enquiry'] = [
+            'booking_no'         => $bookingNo,
+            'booking_id'         => $bookingId,
+            'name'               => $name,
+            'phone'              => $cleanPhone,
+            'service_name'       => $service ? $service['name'] : ($serviceInput ?: 'Home Maintenance Service'),
+            'location'           => $location ?: 'Uttarakhand Service Area',
+            'message'            => $message,
+            'is_new_customer'    => $isNewCustomer,
+            'identifier'         => $cleanPhone,
+            'generated_password' => $generatedPassword,
+        ];
+
+        // Trigger Notifications
+        try {
+            $record = [
+                'booking_no'     => $bookingNo,
+                'service_name'   => $service ? $service['name'] : ($serviceInput ?: 'Home Service'),
+                'name'           => $name,
+                'phone'          => $cleanPhone,
+                'address'        => $location ?: 'Service Area',
+                'preferred_date' => date('Y-m-d'),
+                'preferred_time' => 'Immediate / ASAP',
+            ];
+            if ($isNewCustomer && $generatedPassword) {
+                $record['generated_password'] = $generatedPassword;
+                $record['identifier'] = $cleanPhone;
+            }
+            Notifier::notifyNewBookingAdmin($record);
+            Notifier::notifyBookingConfirmationCustomer($record);
+        } catch (\Throwable $e) {
+            Logger::error("Enquiry notification note: " . $e->getMessage());
+        }
+
+        return $this->redirect('/enquiry-success?booking_no=' . urlencode($bookingNo));
+    }
+
+    public function enquirySuccess(Request $request): Response
+    {
+        $bookingNo = (string)$request->query('booking_no', '');
+        $enquiryData = $_SESSION['last_enquiry'] ?? null;
+
+        // Fallback: If session data was lost or page was reloaded, fetch from DB
+        if ((!$enquiryData || ($enquiryData['booking_no'] ?? '') !== $bookingNo) && !empty($bookingNo)) {
+            $row = Database::fetchOne(
+                "SELECT b.*, s.name as service_name 
+                 FROM bookings b 
+                 LEFT JOIN services s ON b.service_id = s.id 
+                 WHERE b.booking_no = ? 
+                 LIMIT 1",
+                [$bookingNo]
+            );
+            if ($row) {
+                $enquiryData = [
+                    'booking_no'         => $row['booking_no'],
+                    'booking_id'         => $row['id'],
+                    'name'               => $row['name'],
+                    'phone'              => $row['phone'],
+                    'service_name'       => $row['service_name'] ?? 'Home Service',
+                    'location'           => $row['address'],
+                    'message'            => $row['issue_details'],
+                    'is_new_customer'    => false,
+                    'identifier'         => $row['phone'],
+                    'generated_password' => null,
+                ];
+            }
+        }
+
+        return $this->render('customer.enquiry-success', [
+            'title'       => 'Booking Done | REFIXEL',
+            'description' => 'Your booking enquiry has been registered with REFIXEL.',
+            'enquiry'     => $enquiryData,
+            'booking_no'  => $bookingNo,
+        ], null);
+    }
+
+    protected function resolveServiceId(string $serviceInput): int
+    {
+        if (is_numeric($serviceInput) && (int)$serviceInput > 0) {
+            $row = Database::fetchOne("SELECT id FROM services WHERE id = ?", [(int)$serviceInput]);
+            if ($row) return (int)$row['id'];
+        }
+
+        if (!empty($serviceInput)) {
+            $row = Database::fetchOne("SELECT id FROM services WHERE name = ? OR slug = ?", [$serviceInput, $serviceInput]);
+            if ($row) return (int)$row['id'];
+
+            $keywords = ['cleaning', 'plumb', 'pipe', 'leak', 'ac', 'paint', 'pest', 'carpent', 'electric', 'appliance', 'ceiling', 'wash'];
+            foreach ($keywords as $kw) {
+                if (stripos($serviceInput, $kw) !== false) {
+                    $row = Database::fetchOne("SELECT id FROM services WHERE name LIKE ? OR slug LIKE ?", ["%{$kw}%", "%{$kw}%"]);
+                    if ($row) return (int)$row['id'];
+                }
+            }
+        }
+
+        $first = Database::fetchOne("SELECT id FROM services WHERE is_active = 1 ORDER BY id ASC LIMIT 1");
+        return (int)($first['id'] ?? 1);
     }
 }
 

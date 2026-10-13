@@ -227,6 +227,11 @@ class PageController extends Controller
 
     public function submitContact(Request $request): Response
     {
+        // If submitted from home quick enquiry form (contains service or phone without email)
+        if ($request->post('service') || ($request->post('phone') && !$request->post('email'))) {
+            return (new BookingController())->quickEnquiry($request);
+        }
+
         $name    = trim((string)$request->post('name', ''));
         $email   = trim((string)$request->post('email', ''));
         $message = trim((string)$request->post('message', ''));

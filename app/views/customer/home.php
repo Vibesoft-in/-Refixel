@@ -4213,7 +4213,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Right: Form -->
         <div class="col-lg-8">
           <div class="contact_form_wrap">
-            <form id="homeContactForm" action="<?= \App\Core\View::url('/contact') ?>" method="POST">
+            <form id="homeContactForm" action="<?= \App\Core\View::url('/quick-enquiry') ?>" method="POST">
               <?= \App\Core\View::csrf() ?>
               <input type="hidden" name="detected_location" id="homeContactLocation" value="">
               
