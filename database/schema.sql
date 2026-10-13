@@ -106,7 +106,8 @@ CREATE TABLE categories (
     name VARCHAR(100) NOT NULL,
     slug VARCHAR(120) NOT NULL UNIQUE,
     description TEXT NULL,
-    icon VARCHAR(60) NULL,
+    image VARCHAR(255) NULL,
+    icon VARCHAR(255) NULL,
     sort_order INT NOT NULL DEFAULT 0,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -283,6 +284,9 @@ CREATE TABLE staff_earnings (
     job_id INT UNSIGNED NOT NULL,
     staff_id INT UNSIGNED NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
+    gross_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    material_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    admin_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     month VARCHAR(7) NOT NULL COMMENT 'YYYY-MM',
     is_settled TINYINT(1) NOT NULL DEFAULT 0,
     settled_at DATETIME NULL,
@@ -387,4 +391,40 @@ CREATE TABLE consents (
     granted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ip VARCHAR(45) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 27. Payment Gateways Registry
+CREATE TABLE payment_gateways (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    environment ENUM('test','live') NOT NULL DEFAULT 'live',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    key_id VARCHAR(255) NULL,
+    key_secret VARCHAR(255) NULL,
+    webhook_secret VARCHAR(255) NULL,
+    merchant_email VARCHAR(150) NULL,
+    merchant_name VARCHAR(150) NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    description TEXT NULL,
+    display_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 28. Commission Rules & Profit Splits
+CREATE TABLE commission_rules (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    category_id INT UNSIGNED NULL,
+    worker_tier ENUM('all','senior','standard','trainee') NOT NULL DEFAULT 'all',
+    admin_percent DECIMAL(5,2) NOT NULL DEFAULT 25.00,
+    worker_percent DECIMAL(5,2) NOT NULL DEFAULT 75.00,
+    deduct_material_first TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1: Deduct material cost before calculating split',
+    material_payer ENUM('worker','company','customer') NOT NULL DEFAULT 'worker' COMMENT 'Party providing materials upfront',
+    min_visit_charge DECIMAL(10,2) NOT NULL DEFAULT 200.00,
+    notes VARCHAR(255) NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

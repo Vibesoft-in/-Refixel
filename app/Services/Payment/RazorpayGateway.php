@@ -14,8 +14,11 @@ class RazorpayGateway implements PaymentGatewayInterface
 
     public function __construct(?string $keyId = null, ?string $keySecret = null)
     {
-        $this->keyId = $keyId ?? (string)Env::get('RAZORPAY_KEY_ID', 'rzp_test_placeholder');
-        $this->keySecret = $keySecret ?? (string)Env::get('RAZORPAY_KEY_SECRET', 'secret_placeholder');
+        $dbKeyId = (string)\App\Models\Setting::get('razorpay_key_id', '');
+        $dbKeySecret = (string)\App\Models\Setting::get('razorpay_key_secret', '');
+
+        $this->keyId = $keyId ?? (!empty($dbKeyId) ? $dbKeyId : (string)Env::get('RAZORPAY_KEY_ID', 'rzp_test_placeholder'));
+        $this->keySecret = $keySecret ?? (!empty($dbKeySecret) ? $dbKeySecret : (string)Env::get('RAZORPAY_KEY_SECRET', 'secret_placeholder'));
     }
 
     public function getProviderName(): string

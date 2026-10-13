@@ -19,16 +19,16 @@ INSERT INTO staff_profiles (user_id, rating_avg, rating_count, availability_note
 (2, 4.95, 24, 'Available for Kashipur, Jaspur & Thakurdwara doorstep visits', 1);
 
 -- 4. Service Categories
-INSERT INTO categories (id, name, slug, description, icon, sort_order, is_active) VALUES
-(1, 'Cleaning', 'cleaning', 'Comprehensive deep cleaning solutions for residential and commercial spaces.', 'refixel-cleaning.jpg', 1, 1),
-(2, 'Painting Services', 'painting-services', 'Professional interior and exterior painting with dust-free mechanized tools.', 'refixel-painting.jpg', 2, 1),
-(3, 'Fall Ceiling', 'fall-ceiling-services', 'Architectural Gypsum & POP fall ceiling solutions, precision laser leveling, LED cove light troughs, and seamless crack-free finishing by Refixel specialists.', 'refixel-fall-ceiling.jpg', 3, 1),
-(4, 'Plumbers', 'plumbers', 'Expert plumbers for leak fixes, tap fittings, pipe blocks, and sanitary ware.', 'refixel-plumber.jpg', 4, 1),
-(5, 'Carpenter', 'carpenter', 'Skilled carpentry services for furniture repair, assembly, and bespoke woodwork.', 'refixel-carpenter.jpg', 5, 1),
-(6, 'AC Service & Repair', 'ac-services', 'High-pressure jet servicing, gas charging, filter sanitization, and cooling diagnostics.', 'refixel-ac-service.jpg', 6, 1),
-(7, 'Electrician', 'electrician', 'Professional electrician services for wiring, switchboards, MCBs, fans, and appliance installations.', 'refixel-electrician.jpg', 7, 1),
-(8, 'Appliance Repair', 'appliance-repair', 'Expert repair and servicing for washing machines, refrigerators, microwaves, and home appliances.', 'refixel-appliance-repair.jpg', 8, 1),
-(9, 'Pest Control', 'pest-control', 'Eco-friendly and odourless pest control solutions for cockroaches, termites, and pests.', 'service-pest-control.jpg', 9, 1);
+INSERT INTO categories (id, name, slug, description, image, icon, sort_order, is_active) VALUES
+(1, 'Cleaning', 'cleaning', 'Home, Office, Deep Cleaning Sofa, Carpet, Kitchen, Bathroom', 'refixel-cleaning.jpg', 'icons/cleaning icon.png', 1, 1),
+(2, 'Painting Services', 'painting-services', 'Interior & Exterior Wall Painting, Waterproofing, Texture & Stencil', 'refixel-painting.jpg', 'icons/painting icon.png', 2, 1),
+(3, 'Fall Ceiling', 'fall-ceiling-services', 'POP Ceiling, Gypsum Board, Cove Lighting & False Ceiling Design', 'refixel-fall-ceiling.jpg', 'icons/fall ceiling icon.png', 3, 1),
+(4, 'Plumbers', 'plumbers', 'Leak Repair, Pipe Fitting, Taps, Flush, Drainage Bathroom & Kitchen Plumbing', 'refixel-plumber.jpg', 'icons/plumber icon.png', 4, 1),
+(5, 'Carpenter', 'carpenter', 'Furniture Repair, Door Lock, Hinges, Modular Kitchen & Woodwork', 'refixel-carpenter.jpg', 'icons/carpenter icon.png', 5, 1),
+(6, 'AC Service & Repair', 'ac-services', 'AC Installation, Uninstallation, Deep Jet Cleaning & Gas Refilling', 'refixel-ac-service.jpg', 'icons/ac repair icon.png', 6, 1),
+(7, 'Electrician', 'electrician', 'Wiring, Switch, Fan, Light, Inverter, LED, Electrical Repairs', 'refixel-electrician.jpg', 'icons/electrician icon.png', 7, 1),
+(8, 'Appliance Repair', 'appliance-repair', 'TV, Fridge, Washing Machine, Microwave, Mixer & Home Appliances', 'refixel-appliance-repair.jpg', 'icons/appliance repair icon.png', 8, 1),
+(9, 'Pest Control', 'pest-control', 'Cockroach, Termite, Bed Bug, Ant & Rodent Treatment with Odourless Spray', 'service-pest-control.jpg', 'icons/pest control icon.png', 9, 1);
 
 -- 5. Staff Skills
 INSERT INTO staff_skills (staff_id, category_id) VALUES
@@ -150,6 +150,21 @@ INSERT INTO gallery_items (id, service_id, title, before_image, after_image, sor
 (13, 12, 'Refrigerator & Washing Machine Component Repair', 'assets/img/transformations/appliance-before.jpg', 'assets/img/transformations/appliance-after.jpg', 13, 1),
 (14, 13, 'Designer POP Fall Ceiling & Concealed LED Cove Installation', 'assets/img/transformations/ceiling-before.jpg', 'assets/img/transformations/ceiling-after.jpg', 14, 1),
 (15, 14, 'Gypsum Ceiling Crack Restoration & Leveling', 'assets/img/transformations/ceilingrepair-before.jpg', 'assets/img/transformations/ceilingrepair-after.jpg', 15, 1);
+
+-- 17. Payment Gateways Registry
+INSERT INTO payment_gateways (code, name, environment, is_active, key_id, key_secret, webhook_secret, merchant_email, merchant_name, currency, description, display_order) VALUES
+('razorpay', 'Razorpay Payment Gateway', 'live', 1, 'rzp_live_R72df4G16qv1Rh', 'ZxuiIKL44pv12Ba5b8rwnwuH', '', 'payments@refixel.com', 'REFIXEL Technologies', 'INR', 'All-in-one payment gateway for Credit/Debit Cards, UPI (GPay, PhonePe, Paytm), NetBanking, and Wallets.', 1),
+('cod', 'Cash on Delivery (COD) / Direct Pay', 'live', 1, 'COD_DIRECT', 'N/A', '', 'billing@refixel.com', 'REFIXEL Doorstep Collection', 'INR', 'Customer pays cash directly to technician upon satisfactory job completion.', 2),
+('phonepe', 'PhonePe Merchant Gateway', 'test', 0, 'PGTESTPAYUAT', '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399', '', 'support@refixel.com', 'REFIXEL PhonePe', 'INR', 'Direct UPI Intent and dynamic QR code processing powered by PhonePe Business.', 3),
+('stripe', 'Stripe Global Card Gateway', 'test', 0, 'pk_test_sample_stripe_key', 'sk_test_sample_stripe_secret', '', 'finance@refixel.com', 'REFIXEL Global', 'INR', 'International credit cards and cross-border digital payments.', 4);
+
+-- 18. Commission Rules & Profit Splits
+INSERT INTO commission_rules (category_id, worker_tier, admin_percent, worker_percent, deduct_material_first, material_payer, min_visit_charge, notes, is_active) VALUES
+(NULL, 'all', 25.00, 75.00, 1, 'worker', 250.00, 'Global Standard Base Split: 25% Company, 75% Worker (Material cost deducted before split)', 1),
+(NULL, 'senior', 20.00, 80.00, 1, 'worker', 300.00, 'Senior Specialist Tier: 20% Company, 80% Technician', 1),
+(NULL, 'standard', 25.00, 75.00, 1, 'worker', 250.00, 'Standard Verified Technician: 25% Company, 75% Technician', 1),
+(NULL, 'trainee', 35.00, 65.00, 1, 'worker', 180.00, 'Apprentice / Trainee Partner: 35% Company, 65% Technician', 1);
+
 
 
 

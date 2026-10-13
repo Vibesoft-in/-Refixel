@@ -157,7 +157,7 @@ if (empty($activeCategory)) {
   margin-right: 0;
   padding-left: clamp(12px, 2.5vw, 32px);
   padding-right: clamp(12px, 2.5vw, 32px);
-  padding-top: clamp(36px, 4.5vw, 60px);
+  padding-top: clamp(20px, 2.5vw, 36px);
   padding-bottom: 60px;
   box-sizing: border-box;
 }
@@ -179,7 +179,7 @@ if (empty($activeCategory)) {
   flex-shrink: 0;
   position: -webkit-sticky;
   position: sticky;
-  top: 102px;
+  top: 96px;
   align-self: flex-start;
   z-index: 10;
   box-sizing: border-box;
@@ -190,10 +190,11 @@ if (empty($activeCategory)) {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 18px;
-  padding: 16px 8px 16px 14px;
+  padding: 16px 8px 36px 14px;
   box-shadow: 0 4px 20px rgba(10, 28, 51, 0.05);
   transition: box-shadow 0.25s ease;
-  max-height: calc(100vh - 110px);
+  max-height: calc(100vh - 180px);
+  max-height: var(--sidebar-card-max-h, calc(100vh - 180px));
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -450,23 +451,52 @@ if (empty($activeCategory)) {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border: 1px solid #e2e8f0;
   border-radius: 14px;
-  padding: 16px 14px;
+  padding: 14px 12px 16px;
   text-align: center;
-  margin-top: 18px;
+  margin-top: 16px;
+  margin-bottom: 6px;
 }
 
 .support-icon {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #ffffff;
   color: #f25b29;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.sidebar-support-btn {
+  background: #ffffff !important;
+  color: #0a1c33 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  padding: 8px 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+  transition: all 0.22s ease !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+.sidebar-support-btn:hover {
+  background: #f25b29 !important;
+  color: #ffffff !important;
+  border-color: #f25b29 !important;
+  box-shadow: 0 4px 12px rgba(242, 91, 41, 0.3) !important;
+  text-decoration: none !important;
+}
+
+.sidebar-support-btn:hover i {
+  color: #ffffff !important;
 }
 
 /* ── Right Content Area ── */
@@ -771,49 +801,45 @@ if (empty($activeCategory)) {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    height: 100% !important;
-    width: 290px !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    width: 300px !important;
     max-width: 88vw !important;
-    z-index: 1080 !important;
+    z-index: 99999 !important;
     transform: translateX(-110%) !important;
     transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
     background: #ffffff !important;
     box-shadow: 4px 0 28px rgba(0, 0, 0, 0.16) !important;
     border-radius: 0 20px 20px 0 !important;
     padding: 0 !important;
     border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    touch-action: pan-y !important;
   }
 
   .services-sidebar-col.is-open {
     transform: translateX(0) !important;
   }
 
-  .services-sidebar-card {
-    position: static !important;
-    border-radius: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 14px 32px !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow-y: visible !important;
-    overscroll-behavior: auto !important;
-    background: transparent !important;
-  }
-
-  /* ── Sidebar close header in mobile drawer ── */
+  /* ── Sidebar close header in mobile drawer (pinned at top) ── */
   .sidebar-close-btn {
+    flex-shrink: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 16px 14px 12px !important;
+    padding: 16px 16px 12px !important;
     border-bottom: 1px solid #f1f5f9 !important;
-    margin-bottom: 10px !important;
+    margin-bottom: 0 !important;
     font-weight: 700 !important;
     font-size: 15px !important;
     color: #1a1a1a !important;
+    background: #ffffff !important;
+    z-index: 10 !important;
   }
 
   .close-x {
@@ -832,19 +858,53 @@ if (empty($activeCategory)) {
     line-height: 1 !important;
   }
 
+  /* ── Inner content container: perfectly scrollable on mobile ── */
+  .services-sidebar-card {
+    position: static !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    touch-action: pan-y !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 12px 14px 120px !important;
+    background: #ffffff !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #cbd5e1 transparent !important;
+  }
+
+  .services-sidebar-card::-webkit-scrollbar {
+    width: 5px !important;
+  }
+
+  .services-sidebar-card::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 4px !important;
+  }
+
   /* ── Dark backdrop overlay ── */
   .sidebar-backdrop {
     display: none;
     position: fixed !important;
     inset: 0 !important;
     background: rgba(0, 0, 0, 0.48) !important;
-    z-index: 1079 !important;
+    z-index: 99998 !important;
     backdrop-filter: blur(2px) !important;
     -webkit-backdrop-filter: blur(2px) !important;
   }
 
   .sidebar-backdrop.is-open {
     display: block !important;
+  }
+
+  body.drawer-scroll-locked {
+    overflow: hidden !important;
   }
 
   /* ── Floating filter category button (matching live REFIXEL screenshot) ── */
@@ -1224,7 +1284,9 @@ if (empty($activeCategory)) {
           <div class="support-icon"><i class="fa fa-headphones"></i></div>
           <h6 class="font-weight-bold mb-1" style="font-size: 13.5px; color: #0a1c33;">Need Help Choosing?</h6>
           <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.45;">Talk to our verified service coordinator for custom home solutions.</p>
-          <a href="<?= \App\Core\View::url('/contact') ?>" class="btn btn-sm btn-outline-dark w-100 font-weight-bold" style="border-radius: 8px; font-size: 12px; padding: 7px 12px;">Contact Support</a>
+          <a href="<?= \App\Core\View::url('/contact') ?>" class="sidebar-support-btn w-100 font-weight-bold">
+            <i class="fa fa-phone mr-1" style="color: #f25b29;"></i> Contact Support
+          </a>
         </div>
       </div>
     </aside>
@@ -1259,9 +1321,18 @@ if (empty($activeCategory)) {
         <?php foreach ($categories ?? [] as $cat):
           $catSlug = \App\Core\View::e($cat['slug']);
           $catName = \App\Core\View::e($cat['name']);
-          $iconFile = !empty($cat['icon']) ? $cat['icon'] : 'home_claening.webp';
           $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
           $targetUrl = \App\Core\View::url("/{$cleanCatSlug}");
+
+          $rawCatImg = \App\Models\Category::resolveImage($catSlug, $cat['image'] ?? null);
+          $catImgUrl = (str_starts_with($rawCatImg, 'http://') || str_starts_with($rawCatImg, 'https://') || str_starts_with($rawCatImg, 'uploads/') || str_starts_with($rawCatImg, 'assets/') || str_starts_with($rawCatImg, 'img/'))
+              ? \App\Core\View::asset($rawCatImg)
+              : \App\Core\View::asset('img/' . $rawCatImg);
+
+          $sidebarIcon = $iconMap[$catSlug] ?? (!empty($cat['icon']) ? $cat['icon'] : 'icons/more services icon.png');
+          $iconUrl = (str_starts_with($sidebarIcon, 'http://') || str_starts_with($sidebarIcon, 'https://') || str_starts_with($sidebarIcon, 'uploads/') || str_starts_with($sidebarIcon, 'assets/') || str_starts_with($sidebarIcon, 'icons/'))
+              ? \App\Core\View::asset($sidebarIcon)
+              : \App\Core\View::asset('icons/' . $sidebarIcon);
 
           $catServices = array_values(array_filter($services ?? [], fn($s) => (int)$s['category_id'] === (int)$cat['id']));
           $primarySvcId = !empty($catServices) ? (int)$catServices[0]['id'] : 0;
@@ -1269,11 +1340,11 @@ if (empty($activeCategory)) {
           <div class="service-card-item" id="cat-card-<?= $catSlug ?>" data-category="<?= $catSlug ?>">
             <div class="card h-100 service-cat-card border-0">
               <div class="cat-img-wrap">
-                <img src="<?= \App\Core\View::asset('img/' . $iconFile) ?>"
+                <img src="<?= $catImgUrl ?>"
                      alt="<?= $catName ?>"
                      loading="lazy"
                      decoding="async"
-                     onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
+                     onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
                 <?php if (!empty($primarySvcId)): ?>
                   <!-- Floating Add to Cart Icon Button on the Right of Image -->
                   <button type="button" 
@@ -1286,7 +1357,12 @@ if (empty($activeCategory)) {
                 <?php endif; ?>
               </div>
               <div class="card-body d-flex flex-column p-3">
-                <h4 class="font-weight-bold mb-1" style="font-size: 16px; color: #1a1a1a; letter-spacing: -0.2px;"><?= $catName ?></h4>
+                <div class="d-flex align-items-center mb-1">
+                  <div class="mr-2 d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; background: #fff3ef; border: 1px solid #ffdacf; border-radius: 6px; padding: 2px; flex-shrink: 0;">
+                    <img src="<?= $iconUrl ?>" alt="" style="width: 100%; height: 100%; object-fit: contain;">
+                  </div>
+                  <h4 class="font-weight-bold mb-0" style="font-size: 16px; color: #1a1a1a; letter-spacing: -0.2px;"><?= $catName ?></h4>
+                </div>
                 <p class="text-muted small flex-grow-1 mb-2" style="font-size: 12.5px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;"><?= \App\Core\View::e($cat['description'] ?? 'Verified technicians with standardized multi-point hygiene checklists.') ?></p>
                 <div class="mt-auto pt-2 border-top card-btn-footer" style="border-top-color: #f1f5f9 !important;">
                   <a href="<?= $targetUrl ?>" class="btn btn-sm text-white w-100 font-weight-bold btn-view-category-services text-center" data-category="<?= $catSlug ?>" style="background:#f25b29; border-radius: 7px; padding: 7px 12px; font-size: 12.5px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2);">
@@ -1328,13 +1404,16 @@ if (empty($activeCategory)) {
                   $svcPrice = number_format((float)$svc['starting_price'], 0);
                   $svcDuration = (int)($svc['duration_minutes'] ?? 60);
                   $svcImg = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
+                  $svcImgUrl = (str_starts_with($svcImg, 'http://') || str_starts_with($svcImg, 'https://') || str_starts_with($svcImg, 'uploads/') || str_starts_with($svcImg, 'assets/') || str_starts_with($svcImg, 'img/'))
+                      ? \App\Core\View::asset($svcImg)
+                      : \App\Core\View::asset('img/' . $svcImg);
                   $svcUrl = \App\Core\View::url("/{$svcSlug}");
                   $bookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
                 ?>
                   <div class="package-card-item">
                     <div class="card h-100 shadow-sm border-0 service-package-card" data-service-url="<?= $svcUrl ?>">
                       <div class="package-img-wrap">
-                        <img src="<?= \App\Core\View::asset('img/' . $svcImg) ?>?v=20261009"
+                        <img src="<?= $svcImgUrl ?>?v=20261009"
                              alt="<?= $svcName ?>"
                              loading="lazy"
                              decoding="async"
@@ -1454,13 +1533,19 @@ document.addEventListener('DOMContentLoaded', function () {
   function openSidebar() {
     if (sidebarCol) sidebarCol.classList.add('is-open');
     if (backdrop) backdrop.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('drawer-scroll-locked');
+    var activeLink = sidebarCol ? sidebarCol.querySelector('.cat-sidebar-link.active') : null;
+    if (activeLink) {
+      setTimeout(function() {
+        activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 100);
+    }
   }
 
   function closeSidebar() {
     if (sidebarCol) sidebarCol.classList.remove('is-open');
     if (backdrop) backdrop.classList.remove('is-open');
-    document.body.style.overflow = '';
+    document.body.classList.remove('drawer-scroll-locked');
   }
 
   if (openBtn)  openBtn.addEventListener('click', openSidebar);
@@ -1666,21 +1751,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  /* ── Desktop independent sidebar scroll isolation ── */
-  var sidebarCard = document.querySelector('.services-sidebar-card');
-  if (sidebarCard) {
-    sidebarCard.addEventListener('wheel', function(e) {
-      var scrollTop = this.scrollTop;
-      var scrollHeight = this.scrollHeight;
-      var height = this.clientHeight;
-      var delta = e.deltaY;
-
-      // Prevent scroll chaining to parent window/body
-      if ((delta > 0 && scrollTop + height >= scrollHeight) || (delta < 0 && scrollTop <= 0)) {
-        e.preventDefault();
-      }
-    }, { passive: false });
+  /* ── Dynamic Desktop Sidebar Viewport Fitting ── */
+  function fitDesktopSidebar() {
+    if (window.innerWidth < 992) {
+      document.documentElement.style.removeProperty('--sidebar-card-max-h');
+      return;
+    }
+    var sidebarCol = document.getElementById('servicesSidebarCol');
+    if (!sidebarCol) return;
+    var rect = sidebarCol.getBoundingClientRect();
+    var currentTop = Math.max(rect.top, 85);
+    // Ensure the bottom of the sidebar card finishes 24px above the viewport bottom
+    var available = Math.floor(window.innerHeight - currentTop - 24);
+    if (available > 200) {
+      document.documentElement.style.setProperty('--sidebar-card-max-h', available + 'px');
+    }
   }
+  window.addEventListener('scroll', fitDesktopSidebar, { passive: true });
+  window.addEventListener('resize', fitDesktopSidebar, { passive: true });
+  fitDesktopSidebar();
 
   /* ── Sidebar Categories Live Search & Auto-Suggestions Controller ── */
   var catSearchInput = document.getElementById('catSidebarSearchInput');

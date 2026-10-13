@@ -238,10 +238,25 @@ class JobController extends Controller
             // Execute workflow status transition
             Workflow::transition((int)$id, Workflow::STATUS_COMPLETED, $staffId, 'staff', $workSummary);
 
-            // Calculate technician earnings commission (70% of service starting price or standard default)
+            // Calculate technician earnings commission dynamically based on admin commission rules & material costs
             $basePrice = (float)($job['starting_price'] ?? 0);
-            $commission = $basePrice > 0 ? round($basePrice * 0.70, 2) : 350.00;
-            StaffEarning::recordJobCommission((int)$id, $staffId, $commission);
+            $materialCost = (float)($request->input('material_cost') ?? 0);
+            $split = \App\Models\CommissionRule::calculateSplit(
+                $basePrice > 0 ? $basePrice : 500.00,
+                $materialCost,
+                isset($job['category_id']) ? (int)$job['category_id'] : null,
+                'standard',
+                'worker'
+            );
+            StaffEarning::recordJobCommission(
+                (int)$id,
+                $staffId,
+                (float)$split['worker_total_payout'],
+                null,
+                (float)$split['gross_charge'],
+                (float)$split['material_cost'],
+                (float)$split['admin_share']
+            );
 
             View::setFlash('success', "Job #{$id} marked as completed successfully! Payout credited to your earnings.");
             return $this->redirect('/staff/jobs/' . $id);

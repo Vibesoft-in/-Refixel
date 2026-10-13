@@ -101,6 +101,11 @@ class View
         return self::csrfField();
     }
 
+    public static function csrfToken(): string
+    {
+        return Csrf::token();
+    }
+
 
     public static function flash(string $key): ?string
     {

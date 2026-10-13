@@ -607,80 +607,35 @@ a.solution_card:active,
 <!-- Complete Home Solutions Section -->
 <?php
 $isCustomerLoggedIn = \App\Core\Auth::check();
-$solutionCards = [
-  [
-    'slug'      => 'cleaning',
-    'title'     => 'Cleaning',
-    'desc'      => 'Home, Office, Deep Cleaning Sofa, Carpet, Kitchen, Bathroom',
-    'image'     => 'refixel-cleaning.jpg',
-    'icon_img'  => 'icons/cleaning icon.png',
-    'url'       => \App\Core\View::url("/cleaning-services"),
-  ],
-  [
-    'slug'      => 'painting-services',
-    'title'     => 'Painting Services',
-    'desc'      => 'Interior & Exterior Wall Painting, Waterproofing, Texture & Stencil',
-    'image'     => 'refixel-painting.jpg',
-    'icon_img'  => 'icons/painting icon.png',
-    'url'       => \App\Core\View::url("/painting-services"),
-  ],
-  [
-    'slug'      => 'fall-ceiling',
-    'title'     => 'Fall Ceiling',
-    'desc'      => 'POP Ceiling, Gypsum Board, Cove Lighting & False Ceiling Design',
-    'image'     => 'refixel-fall-ceiling.jpg',
-    'icon_img'  => 'icons/fall ceiling icon.png',
-    'url'       => \App\Core\View::url("/fall-ceiling-services"),
-  ],
-  [
-    'slug'      => 'plumbers',
-    'title'     => 'Plumbers',
-    'desc'      => 'Leak Repair, Pipe Fitting, Taps, Flush, Drainage Bathroom & Kitchen Plumbing',
-    'image'     => 'refixel-plumber.jpg',
-    'icon_img'  => 'icons/plumber icon.png',
-    'url'       => \App\Core\View::url("/plumber-services"),
-  ],
-  [
-    'slug'      => 'carpenter',
-    'title'     => 'Carpenter',
-    'desc'      => 'Furniture Repair, Door Lock, Hinges, Modular Kitchen & Woodwork',
-    'image'     => 'refixel-carpenter.jpg',
-    'icon_img'  => 'icons/carpenter icon.png',
-    'url'       => \App\Core\View::url("/carpenter-services"),
-  ],
-  [
-    'slug'      => 'ac-services',
-    'title'     => 'AC Service & Repair',
-    'desc'      => 'AC Installation, Uninstallation, Deep Jet Cleaning & Gas Refilling',
-    'image'     => 'refixel-ac-service.jpg',
-    'icon_img'  => 'icons/ac repair icon.png',
-    'url'       => \App\Core\View::url("/ac-services"),
-  ],
-  [
-    'slug'      => 'electrician',
-    'title'     => 'Electrician',
-    'desc'      => 'Wiring, Switch, Fan, Light, Inverter, LED, Electrical Repairs',
-    'image'     => 'refixel-electrician.jpg',
-    'icon_img'  => 'icons/electrician icon.png',
-    'url'       => \App\Core\View::url("/electrician-services"),
-  ],
-  [
-    'slug'      => 'appliance-repair',
-    'title'     => 'Appliance Repair',
-    'desc'      => 'TV, Fridge, Washing Machine, Microwave, Mixer & Home Appliances',
-    'image'     => 'refixel-appliance-repair.jpg',
-    'icon_img'  => 'icons/appliance repair icon.png',
-    'url'       => \App\Core\View::url("/appliance-repair-services"),
-  ],
-  [
-    'slug'      => 'pest-control',
-    'title'     => 'Pest Control',
-    'desc'      => 'Cockroach, Termite, Bed Bug, Ant & Rodent Treatment with Odourless Spray',
-    'image'     => 'refixel-pest-control.jpg',
-    'icon_img'  => 'icons/pest control icon.png',
-    'url'       => \App\Core\View::url("/pest-control-services"),
-  ],
-];
+$activeCategories = $categories ?? \App\Models\Category::getActive();
+
+// Helper to resolve card banner image
+$resolveCardImage = function(?string $img): string {
+    $img = trim((string)$img);
+    if (empty($img)) {
+        return \App\Core\View::asset('img/refixel-cleaning.jpg');
+    }
+    if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://') || str_starts_with($img, 'uploads/') || str_starts_with($img, 'assets/') || str_starts_with($img, 'img/')) {
+        return \App\Core\View::asset($img);
+    }
+    return \App\Core\View::asset('img/' . $img);
+};
+
+// Helper to resolve card icon (image or FontAwesome class)
+$resolveCardIcon = function(?string $icon): array {
+    $icon = trim((string)$icon);
+    if (empty($icon)) {
+        return ['type' => 'img', 'src' => \App\Core\View::asset('icons/more services icon.png')];
+    }
+    if (str_contains($icon, '/') || str_ends_with($icon, '.png') || str_ends_with($icon, '.jpg') || str_ends_with($icon, '.webp') || str_ends_with($icon, '.svg')) {
+        $src = (str_starts_with($icon, 'http://') || str_starts_with($icon, 'https://') || str_starts_with($icon, 'uploads/') || str_starts_with($icon, 'assets/') || str_starts_with($icon, 'icons/'))
+            ? \App\Core\View::asset($icon)
+            : \App\Core\View::asset('icons/' . $icon);
+        return ['type' => 'img', 'src' => $src];
+    }
+    // FontAwesome class (e.g. fa-wrench, fa-paint-brush)
+    return ['type' => 'fa', 'class' => $icon];
+};
 ?>
 <section class="complete_solutions_main" id="completeHomeSolutions">
   <div class="container">
@@ -698,26 +653,35 @@ $solutionCards = [
     </div>
 
     <div class="solutions_grid" id="solutionsGrid">
-      <?php foreach ($solutionCards as $card): 
-        $targetUrl = $card['url'];
+      <?php foreach ($activeCategories as $cat): 
+        $catSlug = $cat['slug'];
+        $cleanUrlSlug = str_ends_with($catSlug, '-services') ? $catSlug : ($catSlug === 'cleaning' ? 'cleaning-services' : "{$catSlug}-services");
+        $targetUrl = \App\Core\View::url("/{$cleanUrlSlug}");
         $cardHref = $isCustomerLoggedIn ? $targetUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetUrl));
+
+        $bannerSrc = $resolveCardImage($cat['image'] ?? $cat['icon'] ?? null);
+        $iconData = $resolveCardIcon($cat['icon'] ?? null);
       ?>
-        <a href="<?= $cardHref ?>" class="solution_card" data-category="<?= $card['slug'] ?>" data-target-url="<?= $targetUrl ?>" title="<?= \App\Core\View::e($card['title']) ?>">
+        <a href="<?= $cardHref ?>" class="solution_card" data-category="<?= \App\Core\View::e($catSlug) ?>" data-target-url="<?= $targetUrl ?>" title="<?= \App\Core\View::e($cat['name']) ?>">
           <div class="solution_media_wrapper">
-            <img src="<?= \App\Core\View::asset('img/' . $card['image']) ?>"
-                 alt="<?= \App\Core\View::e($card['title']) ?>"
+            <img src="<?= $bannerSrc ?>"
+                 alt="<?= \App\Core\View::e($cat['name']) ?>"
                  width="380" height="178" loading="lazy"
                  onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/service-pest-control.jpg') ?>';">
-            <div class="solution_icon_wrap" title="<?= \App\Core\View::e($card['title']) ?>">
-              <img src="<?= \App\Core\View::asset($card['icon_img']) ?>"
-                   alt="<?= \App\Core\View::e($card['title']) ?> icon"
-                   class="solution_custom_icon"
-                   onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('icons/more services icon.png') ?>';">
+            <div class="solution_icon_wrap" title="<?= \App\Core\View::e($cat['name']) ?>">
+              <?php if ($iconData['type'] === 'fa'): ?>
+                <i class="fa <?= \App\Core\View::e($iconData['class']) ?>" style="font-size: 22px; color: #f25b29;"></i>
+              <?php else: ?>
+                <img src="<?= $iconData['src'] ?>"
+                     alt="<?= \App\Core\View::e($cat['name']) ?> icon"
+                     class="solution_custom_icon"
+                     onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('icons/more services icon.png') ?>';">
+              <?php endif; ?>
             </div>
           </div>
           <div class="solution_body">
-            <h3 class="solution_title"><?= \App\Core\View::e($card['title']) ?></h3>
-            <p class="solution_desc"><?= \App\Core\View::e($card['desc']) ?></p>
+            <h3 class="solution_title"><?= \App\Core\View::e($cat['name']) ?></h3>
+            <p class="solution_desc"><?= \App\Core\View::e($cat['description'] ?? '') ?></p>
             <div class="solution_footer">
               <span class="solution_arrow" aria-hidden="true">
                 <i class="fa fa-angle-right"></i>
@@ -731,34 +695,26 @@ $solutionCards = [
 </section>
 
 <!-- Services Marquee Ticker Strip (Positioned directly below Complete Home Solutions) -->
-<?php
-$marqueeServices = [
-  ['title' => 'Full Home Deep Cleaning', 'url' => \App\Core\View::url("/cleaning-services")],
-  ['title' => 'AC Service & Repair', 'url' => \App\Core\View::url("/ac-services")],
-  ['title' => 'Plumbing & Leak Repair', 'url' => \App\Core\View::url("/plumber-services")],
-  ['title' => 'Fall Ceiling & POP Design', 'url' => \App\Core\View::url("/fall-ceiling-services")],
-  ['title' => 'Carpentry & Woodwork', 'url' => \App\Core\View::url("/carpenter-services")],
-  ['title' => 'Interior & Exterior Painting', 'url' => \App\Core\View::url("/painting-services")],
-  ['title' => 'Electrical Wiring & MCB', 'url' => \App\Core\View::url("/electrician-services")],
-  ['title' => 'Appliance & Washing Machine Repair', 'url' => \App\Core\View::url("/appliance-repair-services")],
-];
-?>
 <div class="services_marquee_strip" aria-label="Available Services">
   <div class="services_marquee_track">
     <div class="services_marquee_group">
-      <?php foreach ($marqueeServices as $m): 
-        $mTarget = $m['url'];
+      <?php foreach ($activeCategories as $m): 
+        $mSlug = $m['slug'];
+        $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
+        $mTarget = \App\Core\View::url("/{$mUrlSlug}");
         $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
       ?>
-        <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= $m['title'] ?></a>
+        <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
       <?php endforeach; ?>
     </div><div class="services_marquee_group" aria-hidden="true">
-      <?php foreach ($marqueeServices as $m): 
-        $mTarget = $m['url'];
+      <?php foreach ($activeCategories as $m): 
+        $mSlug = $m['slug'];
+        $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
+        $mTarget = \App\Core\View::url("/{$mUrlSlug}");
         $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
       ?>
-        <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= $m['title'] ?></a>
+        <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
       <?php endforeach; ?>
     </div>
@@ -3151,21 +3107,26 @@ document.addEventListener('DOMContentLoaded', function () {
   display: flex;
   align-items: center;
 }
-.ref_contact_input.has_loc_btn {
-  padding-right: 125px;
+.ref_loc_label_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.ref_loc_label_row .form_field_label {
+  margin-bottom: 0 !important;
 }
 .btn_input_detect_loc {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static !important;
+  transform: none !important;
   background: #0a1c33;
   color: #ffffff;
   border: none;
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 12px;
-  border-radius: 7px;
+  padding: 4px 10px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -4286,13 +4247,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div class="col-md-6">
                   <div class="form_field_group">
-                    <label class="form_field_label">CHOOSE LOCATION</label>
-                    <div class="ref_location_input_wrap position-relative">
-                      <input type="text" name="location" id="homeContactLocationInput" class="ref_contact_input has_loc_btn" placeholder="Enter street, city or tap Auto-Detect..." required autocomplete="off">
+                    <div class="ref_loc_label_row">
+                      <label class="form_field_label">CHOOSE LOCATION</label>
                       <button type="button" class="btn_input_detect_loc" id="btnInputDetectLoc" title="Detect Exact GPS Location" aria-label="Auto-Detect Location">
                         <i class="fa fa-crosshairs"></i>
                         <span>Auto-Detect</span>
                       </button>
+                    </div>
+                    <div class="ref_location_input_wrap position-relative">
+                      <input type="text" name="location" id="homeContactLocationInput" class="ref_contact_input" placeholder="Enter street, city or tap Auto-Detect..." required autocomplete="off">
                       <div id="contactLocationAutocompleteBox" class="refixel_loc_suggestions_box" style="display: none;"></div>
                     </div>
                   </div>
@@ -4370,11 +4333,6 @@ document.addEventListener('DOMContentLoaded', function () {
           <i class="fa fa-map-marker" style="color: #f25b29;"></i>
           <span id="locationStatusText">No location selected yet.</span>
         </div>
-
-        <!-- Bottom Right Quick Button -->
-        <button type="button" class="map_corner_btn" id="btnCornerLocation">
-          <i class="fa fa-crosshairs"></i> Use My Location
-        </button>
       </div>
     </div>
   </div>
@@ -5277,67 +5235,7 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 </section>
 
-<!-- 08. Pre-Booking Section ("Secure your service with ₹50.") -->
-<section class="home_prebooking_section" id="prebookingSection">
-  <div class="container">
-    <div class="row align-items-center g-5">
-      <!-- Left: Headline, Subtitle, Price & CTA -->
-      <div class="col-lg-6">
-        <span class="prebook_eyebrow"> PRE-BOOKING</span>
-        <h2 class="prebook_title">Secure your service with<br>₹50.</h2>
-        <p class="prebook_sub">Pre-book your request, confirm the details and get your service scheduled.</p>
-        
-        <div class="prebook_price_wrap">
-          <div class="prebook_price_amount">₹50</div>
-          <div class="prebook_price_label">Pre-booking amount</div>
-        </div>
 
-        <a href="<?= \App\Core\View::url('/services') ?>" class="btn_prebook_cta">
-          Pre-book for ₹50 <i class="fa fa-arrow-right"></i>
-        </a>
-      </div>
-
-      <!-- Right: 4 Step Cards -->
-      <div class="col-lg-6">
-        <div class="prebook_steps_list">
-          <div class="prebook_step_card">
-            <span class="prebook_step_num">1</span>
-            <p class="prebook_step_text">Select service</p>
-          </div>
-          <div class="prebook_step_card">
-            <span class="prebook_step_num">2</span>
-            <p class="prebook_step_text">Choose date & time</p>
-          </div>
-          <div class="prebook_step_card">
-            <span class="prebook_step_num">3</span>
-            <p class="prebook_step_text">Confirm details & location</p>
-          </div>
-          <div class="prebook_step_card">
-            <span class="prebook_step_num">4</span>
-            <p class="prebook_step_text">Pay ₹50 and receive confirmation</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 09. Final CTA Section ("Multiple Home Services. One Trusted Brand.") -->
-<section class="home_final_cta_section" id="finalCtaSection">
-  <div class="container">
-    <div class="final_cta_card">
-      <span class="final_cta_eyebrow">FINAL CTA</span>
-      <h2 class="final_cta_title">
-        <span class="white_line">Multiple Home Services.</span>
-        <span class="orange_line">One Trusted Brand.</span>
-      </h2>
-      <p class="final_cta_sub">Professional. Reliable. At Your Doorstep.</p>
-      <a href="<?= \App\Core\View::url('/services') ?>" class="btn_final_cta">
-        Book Your Service <i class="fa fa-arrow-right"></i>
-      </a>
-    </div>
-  </div>
-</section>
 
 
 

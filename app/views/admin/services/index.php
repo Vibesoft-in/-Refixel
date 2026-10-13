@@ -13,7 +13,7 @@ $categories = $categories ?? [];
 
     <div>
       <a href="<?= View::url('/admin/services/categories') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold mr-2">
-        <i class="fa fa-th-large mr-1"></i>Manage Categories
+        <i class="fa fa-th-large mr-1"></i>Homepage Services & Categories
       </a>
       <button type="button" class="btn btn-sm btn-brand font-weight-bold px-3 py-2" data-toggle="modal" data-target="#addServiceModal">
         <i class="fa fa-plus mr-1"></i>Add New Service
@@ -45,8 +45,19 @@ $categories = $categories ?? [];
               <tr>
                 <td class="align-middle">
                   <div class="border rounded overflow-hidden bg-light" style="width: 50px; height: 50px;">
-                    <?php if (!empty($s['image'])): ?>
-                      <img src="<?= View::asset($s['image']) ?>" alt="<?= View::e($s['name']) ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php 
+                      $sImg = trim((string)($s['image'] ?? ''));
+                      $sImgUrl = '';
+                      if (!empty($sImg)) {
+                          if (str_starts_with($sImg, 'http://') || str_starts_with($sImg, 'https://') || str_starts_with($sImg, 'uploads/') || str_starts_with($sImg, 'assets/') || str_starts_with($sImg, 'img/')) {
+                              $sImgUrl = View::asset($sImg);
+                          } else {
+                              $sImgUrl = View::asset('img/' . $sImg);
+                          }
+                      }
+                    ?>
+                    <?php if (!empty($sImgUrl)): ?>
+                      <img src="<?= $sImgUrl ?>" alt="<?= View::e($s['name']) ?>" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= View::asset('img/refixel-cleaning.jpg') ?>';">
                     <?php else: ?>
                       <div class="d-flex align-items-center justify-content-center h-100 text-muted">
                         <i class="fa fa-wrench"></i>

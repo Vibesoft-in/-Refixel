@@ -13,8 +13,11 @@ class RazorpayService implements PaymentGatewayInterface
 
     public function __construct()
     {
-        $this->keyId     = (string)Env::get('RAZORPAY_KEY_ID', '');
-        $this->keySecret = (string)Env::get('RAZORPAY_KEY_SECRET', '');
+        $dbKeyId = (string)\App\Models\Setting::get('razorpay_key_id', '');
+        $dbKeySecret = (string)\App\Models\Setting::get('razorpay_key_secret', '');
+
+        $this->keyId     = !empty($dbKeyId) ? $dbKeyId : (string)Env::get('RAZORPAY_KEY_ID', '');
+        $this->keySecret = !empty($dbKeySecret) ? $dbKeySecret : (string)Env::get('RAZORPAY_KEY_SECRET', '');
     }
 
     public function createOrder(int $bookingId, float $amount, string $currency = 'INR'): array

@@ -26,5 +26,29 @@ class Category extends Model
             ['cid' => $currentCategoryId]
         );
     }
+
+    public static function resolveImage(string $slug, ?string $currentImage = null): string
+    {
+        $map = [
+            'cleaning'              => 'refixel-cleaning.jpg',
+            'painting-services'     => 'refixel-painting.jpg',
+            'fall-ceiling-services' => 'refixel-fall-ceiling.jpg',
+            'fall-ceiling'          => 'refixel-fall-ceiling.jpg',
+            'masonry-services'      => 'refixel-masonry.jpg',
+            'plumbers'              => 'refixel-plumber.jpg',
+            'carpenter'             => 'refixel-carpenter.jpg',
+            'ac-services'           => 'refixel-ac-service.jpg',
+            'electrician'           => 'refixel-electrician.jpg',
+            'appliance-repair'      => 'refixel-appliance-repair.jpg',
+            'pest-control'          => 'refixel-pest-control.jpg',
+        ];
+
+        $cur = trim((string)$currentImage);
+        if (!empty($cur) && !str_contains($cur, 'icon') && !str_ends_with($cur, '.svg')) {
+            return $cur;
+        }
+
+        return $map[$slug] ?? 'refixel-cleaning.jpg';
+    }
 }
 

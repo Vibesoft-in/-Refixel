@@ -644,20 +644,20 @@ foreach ($checklist ?? [] as $item) {
           <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> 24-Hour satisfaction re-clean guarantee</li>
         </ul>
 
-        <div class="d-flex mb-2" style="gap: 10px;">
+        <div class="service-action-btns-wrap mb-2">
           <button type="button" 
                   class="btn btn-add-to-cart desktop-cart-btn" 
                   data-service-id="<?= (int)$service['id'] ?>"
                   title="Add to Cart"
                   aria-label="Add <?= $svcName ?> to cart">
-            <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
+            <i class="fa fa-shopping-cart mr-1"></i> Add to Cart
           </button>
-          <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white py-3 font-weight-bold text-center flex-grow-1" style="background:#f25b29; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);">
+          <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn service-book-visit-btn">
             Book Doorstep Visit
           </a>
         </div>
 
-        <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success py-2 font-weight-bold text-center w-100 small" style="border-radius: 8px;">
+        <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100">
           <i class="fa fa-whatsapp mr-1"></i> Quick Book via WhatsApp
         </a>
       </div>
@@ -797,28 +797,107 @@ foreach ($checklist ?? [] as $item) {
   transform: scale(0.93);
 }
 
-/* Desktop Sidebar Add to Cart Button */
+/* Service Booking Action Buttons Group */
+.service-action-btns-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
 .desktop-cart-btn {
   background: #fff3ec;
   color: #f25b29;
   border: 1.5px solid #ffdacf;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 10px;
+  font-size: 13.5px;
   font-weight: 700;
-  padding: 12px 18px;
+  padding: 10px 14px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(242, 91, 41, 0.1);
+  box-shadow: 0 2px 8px rgba(242, 91, 41, 0.08);
   cursor: pointer;
+  flex: 1 1 44%;
 }
+
 .desktop-cart-btn:hover {
   background: #f25b29 !important;
   color: #ffffff !important;
   border-color: #f25b29 !important;
   box-shadow: 0 4px 14px rgba(242, 91, 41, 0.3) !important;
+}
+
+.service-book-visit-btn {
+  background: #f25b29;
+  color: #ffffff !important;
+  border: none;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 10px 14px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35);
+  text-decoration: none !important;
+  flex: 1 1 56%;
+}
+
+.service-book-visit-btn:hover {
+  background: #d94b1c;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(242, 91, 41, 0.45);
+}
+
+.service-whatsapp-btn {
+  border-radius: 10px;
+  height: 42px;
+  min-height: 42px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 576px) {
+  .service-action-btns-wrap {
+    gap: 8px !important;
+  }
+  .desktop-cart-btn {
+    font-size: 12px !important;
+    padding: 8px 8px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+  }
+  .service-book-visit-btn {
+    font-size: 12px !important;
+    padding: 8px 8px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+  }
+  .service-whatsapp-btn {
+    font-size: 12px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+  }
 }
 
 /* Mobile Sticky Bar Add to Cart Button */

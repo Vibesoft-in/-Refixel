@@ -166,11 +166,166 @@
   text-align: left;
 }
 @media (max-width: 767.98px) {
+  #footer .container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  #footer .row {
+    margin-left: -6px !important;
+    margin-right: -6px !important;
+  }
+  .footer-col-quick,
+  .footer-col-services,
+  .footer-col-contact,
+  .footer-col-hours {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    margin-bottom: 22px !important;
+  }
+
+  /* Center Brand logo, paragraph, and social icons on mobile */
+  .footer-col-brand {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    margin-bottom: 24px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+  .footer-col-brand .footer_links {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+  .footer-col-brand .footer_links a {
+    display: inline-block !important;
+    margin: 0 auto !important;
+  }
+  .footer-col-brand .footer_links img {
+    margin: 0 auto !important;
+  }
+  .footer-col-brand .footer_links p {
+    text-align: center !important;
+    max-width: 380px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+  }
+  .footer_social_icons {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  .footer_social_icons ul {
+    justify-content: center !important;
+    margin: 0 auto !important;
+  }
+
+  /* Section Titles */
+  .footer_links h4,
+  .footer_links h4.footer-title,
+  .footer-title {
+    font-size: 14.5px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Quick links in left 50% column */
+  .footer-quick-links-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    width: 100% !important;
+  }
+  .footer-quick-links-list li {
+    width: 100% !important;
+    margin-bottom: 2px !important;
+  }
+  .footer-quick-links-list .footer-nav-link {
+    font-size: 12px !important;
+    line-height: 1.65 !important;
+    padding: 1px 0 !important;
+    display: inline-block !important;
+  }
+
+  /* Our Services in right 50% column (2 sub-columns of 5 items) */
   .footer-services-section {
-    justify-content: flex-start;
+    justify-content: flex-start !important;
+    display: block !important;
+  }
+  .footer-services-inner {
+    display: block !important;
+    width: 100% !important;
   }
   .footer-services-title {
     margin-left: 0 !important;
+  }
+  .footer-services-wrap {
+    display: flex !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .footer-services-col {
+    flex: 1 1 50% !important;
+    min-width: 0 !important;
+  }
+  .footer-services-col ul {
+    font-size: 11.5px !important;
+    line-height: 1.65 !important;
+  }
+  .footer-services-col ul li {
+    margin-bottom: 2px !important;
+  }
+  .footer-services-col .footer-nav-link {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    padding: 1px 0 !important;
+    display: block !important;
+    letter-spacing: -0.2px !important;
+    word-break: break-word !important;
+  }
+
+  /* Contact Us in left 50% column */
+  .footer-contact-item {
+    gap: 7px !important;
+    margin-bottom: 9px !important;
+  }
+  .footer-icon-box {
+    width: 14px !important;
+    min-width: 14px !important;
+    height: 14px !important;
+    font-size: 12px !important;
+    margin-top: 2px !important;
+  }
+  .footer-contact-text {
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+  }
+  .footer-contact-link {
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+    word-break: break-all !important;
+    white-space: normal !important;
+  }
+
+  /* Working Hours in right 50% column */
+  .footer-hours-box {
+    gap: 7px !important;
+  }
+  .footer-hours-days {
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+  }
+  .footer-hours-time {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  .bottom_footer {
+    padding-bottom: 80px !important;
   }
 }
 @media (min-width: 992px) {
@@ -185,7 +340,7 @@
   <div class="container">
     <div class="row">
       <!-- Col 1: Brand & Social -->
-      <div class="footer-col-brand col-md-6 mb-4">
+      <div class="footer-col-brand col-12 col-md-6 mb-4">
         <div class="footer_links">
           <div class="mb-3">
             <a href="<?= \App\Core\View::url('/') ?>" style="display: inline-block; width: 100%; max-width: 250px; text-decoration: none;">
@@ -208,11 +363,11 @@
         </div>
       </div>
 
-      <!-- Col 2: Quick Links -->
-      <div class="footer-col-quick col-md-6 mb-4">
+      <!-- Col 2: Quick Links (Row 1 Left) -->
+      <div class="footer-col-quick col-6 col-md-6 mb-4">
         <div class="footer_links">
           <h4 class="footer-title" style="color: #ffffff !important;">Quick Links</h4>
-          <ul class="list-unstyled p-0" style="font-size: 13.5px; line-height: 2.2;">
+          <ul class="list-unstyled p-0 footer-quick-links-list" style="font-size: 13.5px; line-height: 2.2;">
             <li><a href="<?= \App\Core\View::url('/about') ?>" class="footer-nav-link">About Us</a></li>
             <li><a href="<?= \App\Core\View::url('/privacy') ?>" class="footer-nav-link">Privacy Policy</a></li>
             <li><a href="<?= \App\Core\View::url('/terms') ?>" class="footer-nav-link">Terms & Conditions</a></li>
@@ -223,8 +378,8 @@
         </div>
       </div>
 
-      <!-- Col 3: Our Services -->
-      <div class="footer-col-services col-md-6 mb-4">
+      <!-- Col 3: Our Services (Row 1 Right) -->
+      <div class="footer-col-services col-6 col-md-6 mb-4">
         <div class="footer_links footer-services-section">
           <div class="footer-services-inner">
             <h4 class="footer-title footer-services-title" style="color: #ffffff !important;">Our Services</h4>
@@ -252,8 +407,8 @@
         </div>
       </div>
 
-      <!-- Col 4: Contact Us -->
-      <div class="footer-col-contact col-md-6 mb-4">
+      <!-- Col 4: Contact Us (Row 2 Left) -->
+      <div class="footer-col-contact col-6 col-md-6 mb-4">
         <div class="footer_links">
           <h4 class="footer-title" style="color: #ffffff !important;">Contact Us</h4>
           <?php
@@ -286,8 +441,8 @@
         </div>
       </div>
 
-      <!-- Col 5: Working Hours -->
-      <div class="footer-col-hours col-md-6 mb-4">
+      <!-- Col 5: Working Hours (Row 2 Right) -->
+      <div class="footer-col-hours col-6 col-md-6 mb-4">
         <div class="footer_links">
           <h4 class="footer-title" style="color: #ffffff !important;">Working Hours</h4>
           <div class="footer-hours-box">

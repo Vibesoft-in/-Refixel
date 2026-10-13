@@ -28,7 +28,7 @@ if ($user) {
         }
     }
 }
-if (!$customerProfile && !empty($_SESSION['customer_profile'])) {
+if (!$user && !$customerProfile && !empty($_SESSION['customer_profile'])) {
     $customerProfile = $_SESSION['customer_profile'];
 }
 $currentCity = \App\Models\ServiceArea::normalizeCity($_GET['city'] ?? ($_SESSION['selected_city'] ?? ($customerProfile['city'] ?? null)));
@@ -57,7 +57,7 @@ if ($user) {
                 'id'           => 0,
                 'label'        => $customerProfile['address_type'] ?? 'Home',
                 'address_type' => $customerProfile['address_type'] ?? 'Home',
-                'house_no'     => $customerProfile['house_no'] ?? 'House No. 1',
+                'house_no'     => $customerProfile['house_no'] ?? '',
                 'street'       => $customerProfile['street'] ?? '',
                 'city'         => $customerProfile['city'] ?? $currentCity,
                 'state'        => $customerProfile['state'] ?? 'Uttarakhand',
@@ -88,7 +88,7 @@ if ($user) {
                     'id'           => 'bk_' . substr(md5($addrText), 0, 8),
                     'label'        => 'Previous Booking',
                     'address_type' => 'Other',
-                    'house_no'     => 'House No. 1',
+                    'house_no'     => '',
                     'street'       => $addrText,
                     'city'         => $customerProfile['city'] ?? $currentCity,
                     'state'        => $customerProfile['state'] ?? 'Uttarakhand',
@@ -100,17 +100,15 @@ if ($user) {
         }
     } catch (\Throwable $e) {}
 }
-if (empty($savedAddresses) && !empty($_SESSION['customer_addresses'])) {
+if (!$user && empty($savedAddresses) && !empty($_SESSION['customer_addresses'])) {
     $savedAddresses = $_SESSION['customer_addresses'];
 }
 
 $hasSavedAddress = !empty($customerProfile) && (
     !empty($customerProfile['street']) ||
-    !empty($customerProfile['address']) ||
-    (!empty($customerProfile['house_no']) && $customerProfile['house_no'] !== 'House No. 1') ||
-    (!empty($customerProfile['city']) && !empty($customerProfile['pincode']))
+    !empty($customerProfile['address'])
 );
-$initialHouseNo = !empty($customerProfile['house_no']) ? $customerProfile['house_no'] : 'House No. 1';
+$initialHouseNo = !empty($customerProfile['house_no']) ? $customerProfile['house_no'] : '';
 $initialStreet = $customerProfile['street'] ?? '';
 $initialCity = $customerProfile['city'] ?? $currentCity;
 $initialState = $customerProfile['state'] ?? (($currentCity === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand');
@@ -784,7 +782,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                   </div>
                   <button type="button" id="cartBtnOpenAddressPicker" class="btn btn-sm btn-choose-address" style="background: #ffffff; color: #f25b29; border: 1.5px solid #f25b29; font-weight: 700; font-size: 11.5px; border-radius: 6px; padding: 4px 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 1px 3px rgba(242, 91, 41, 0.1); transition: all 0.2s ease;">
                     <i class="fa fa-list-ul"></i> <span>Choose Address</span>
-                    <span class="badge badge-pill badge-primary ml-1" id="cartSavedAddressesCountBadge" style="background: #f25b29; color: #fff; font-size: 10.5px; padding: 2px 6px;"><?= count($savedAddresses) ?: 1 ?></span>
+                    <span class="badge badge-pill badge-primary ml-1" id="cartSavedAddressesCountBadge" style="background: #f25b29; color: #fff; font-size: 10.5px; padding: 2px 6px;"><?= count($savedAddresses) ?></span>
                   </button>
                 </div>
 
@@ -852,7 +850,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                     <div class="d-flex justify-content-between align-items-center mb-1" style="min-height: 28px;">
                       <label class="font-weight-bold small mb-0" for="cartInputHouseNo">House / Flat / Office No. <span class="text-danger">*</span></label>
                     </div>
-                    <input type="text" name="house_no" id="cartInputHouseNo" class="form-control" value="<?= \App\Core\View::e(!empty($customerProfile['house_no']) ? $customerProfile['house_no'] : 'House No. 1') ?>" placeholder="e.g. Flat 604 / House No." required>
+                    <input type="text" name="house_no" id="cartInputHouseNo" class="form-control" value="<?= \App\Core\View::e($customerProfile['house_no'] ?? '') ?>" placeholder="e.g. Flat 604 / House No." required>
                   </div>
                   <div class="col-md-6 form-group">
                     <div class="street-label-row">
@@ -1463,7 +1461,7 @@ function initCartPage() {
       'phone'        => $user['phone'] ?? '',
       'email'        => $user['email'] ?? '',
       'address_type' => $customerProfile['address_type'] ?? 'Home',
-      'house_no'     => !empty($customerProfile['house_no']) ? $customerProfile['house_no'] : 'House No. 1',
+      'house_no'     => $customerProfile['house_no'] ?? '',
       'street'       => $customerProfile['street'] ?? '',
       'city'         => $customerProfile['city'] ?? $currentCity,
       'state'        => $customerProfile['state'] ?? (($currentCity === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand'),
@@ -1534,23 +1532,35 @@ function initCartPage() {
   // ══════════════════════════════════════════════════════════════════
   // MULTI-ADDRESS REGISTRY & "CHOOSE SAVED ADDRESS" PICKER
   // ══════════════════════════════════════════════════════════════════
-  var savedAddresses = window.CUSTOMER_SAVED_ADDRESSES || [];
+  var isCustomerLoggedIn = !!(window.REFIXEL_AUTH && window.REFIXEL_AUTH.isLoggedIn);
+  var currentUserId = isCustomerLoggedIn ? window.REFIXEL_AUTH.userId : null;
+  var userStorageKey = isCustomerLoggedIn ? ('refixel_saved_addresses_u' + currentUserId) : 'refixel_guest_saved_addresses';
 
-  // Merge any addresses saved in localStorage for guest/client persistence
+  // For logged-in users, savedAddresses is strictly authoritative from their own server/database account
+  var savedAddresses = Array.isArray(window.CUSTOMER_SAVED_ADDRESSES) ? window.CUSTOMER_SAVED_ADDRESSES.slice() : [];
+
+  // Remove legacy shared unscoped key so old users' addresses never pollute the active session
   try {
-    var localAddresses = JSON.parse(localStorage.getItem('refixel_saved_addresses') || '[]');
-    if (Array.isArray(localAddresses)) {
-      localAddresses.forEach(function(la) {
-        var exists = savedAddresses.some(function(sa) {
-          return (sa.street && sa.street.toLowerCase() === (la.street || '').toLowerCase()) &&
-                 (sa.house_no && sa.house_no.toLowerCase() === (la.house_no || '').toLowerCase());
-        });
-        if (!exists && (la.street || la.address)) {
-          savedAddresses.push(la);
-        }
-      });
-    }
+    localStorage.removeItem('refixel_saved_addresses');
   } catch(e) {}
+
+  // Only merge guest-scoped localStorage for guest users (NEVER for authenticated users)
+  if (!isCustomerLoggedIn) {
+    try {
+      var localAddresses = JSON.parse(localStorage.getItem(userStorageKey) || '[]');
+      if (Array.isArray(localAddresses)) {
+        localAddresses.forEach(function(la) {
+          var exists = savedAddresses.some(function(sa) {
+            return (sa.street && sa.street.toLowerCase() === (la.street || '').toLowerCase()) &&
+                   (sa.house_no && sa.house_no.toLowerCase() === (la.house_no || '').toLowerCase());
+          });
+          if (!exists && (la.street || la.address)) {
+            savedAddresses.push(la);
+          }
+        });
+      }
+    } catch(e) {}
+  }
 
   function syncSavedAddressesBadge() {
     var count = savedAddresses.length;
@@ -1713,7 +1723,7 @@ function initCartPage() {
         var targetAddr = savedAddresses[idx];
         savedAddresses.splice(idx, 1);
         try {
-          localStorage.setItem('refixel_saved_addresses', JSON.stringify(savedAddresses));
+          localStorage.setItem(userStorageKey, JSON.stringify(savedAddresses));
         } catch(err) {}
 
         fetch((window.REFIXEL_BASE_URL || '') + '/api/customer/delete-address', {
@@ -1731,7 +1741,7 @@ function initCartPage() {
             applySelectedSavedAddress(savedAddresses[0]);
           } else {
             if (inputStreet) inputStreet.value = '';
-            if (inputHouseNo) inputHouseNo.value = 'House No. 1';
+            if (inputHouseNo) inputHouseNo.value = '';
             if (inputAddress) inputAddress.value = '';
             var sumText = document.getElementById('cartSavedAddressSummaryText');
             if (sumText) sumText.textContent = 'No saved address selected';
@@ -1796,7 +1806,7 @@ function initCartPage() {
 
   function applySelectedSavedAddress(addr) {
     if (!addr) return;
-    if (inputHouseNo) inputHouseNo.value = addr.house_no || 'House No. 1';
+    if (inputHouseNo) inputHouseNo.value = addr.house_no || '';
     if (inputStreet) inputStreet.value = addr.street || '';
     if (inputCity) inputCity.value = addr.city || '<?= addslashes($currentCity) ?>';
     if (inputState) inputState.value = addr.state || 'Uttarakhand';
@@ -2056,7 +2066,7 @@ function initCartPage() {
     if (inputHouseNo) {
       var resolvedHouseNo = (loc.houseNo || '').trim();
       if (!resolvedHouseNo || resolvedHouseNo === 'Doorstep Visit') {
-        resolvedHouseNo = inputHouseNo.value.trim() || 'House No. 1';
+        resolvedHouseNo = inputHouseNo.value.trim() || '';
       }
       inputHouseNo.value = resolvedHouseNo;
       flashHighlight(inputHouseNo);
@@ -2111,9 +2121,9 @@ function initCartPage() {
 
   // 1. AUTO-FILL ON PAGE LOAD: Saved Customer Profile or LocalStorage
   var profile = window.CUSTOMER_SAVED_PROFILE || null;
-  var hasProfile = profile && (profile.house_no || profile.street || profile.address || (profile.city && profile.pincode));
+  var hasProfile = profile && (profile.street || profile.address);
   if (hasProfile) {
-    var houseVal = (profile.house_no || '').trim() || (inputHouseNo ? inputHouseNo.value.trim() : '') || 'House No. 1';
+    var houseVal = (profile.house_no || '').trim() || (inputHouseNo ? inputHouseNo.value.trim() : '');
     if (inputHouseNo) inputHouseNo.value = houseVal;
     if (inputStreet && !inputStreet.value.trim() && profile.street) inputStreet.value = profile.street;
     if (inputCity && !inputCity.value.trim() && profile.city) inputCity.value = profile.city;
@@ -2126,16 +2136,18 @@ function initCartPage() {
     }
 
     try {
-      localStorage.setItem('refixel_user_location', JSON.stringify({
-        houseNo: inputHouseNo ? inputHouseNo.value : '',
-        street: inputStreet ? inputStreet.value : '',
-        city: inputCity ? inputCity.value : '',
-        state: inputState ? inputState.value : '',
-        pincode: inputPincode ? inputPincode.value : '',
-        fullAddress: inputAddress ? inputAddress.value : '',
-        addressType: profile.address_type || 'Home',
-        timestamp: Date.now()
-      }));
+      if (isCustomerLoggedIn) {
+        localStorage.setItem('refixel_user_location_u' + currentUserId, JSON.stringify({
+          houseNo: inputHouseNo ? inputHouseNo.value : '',
+          street: inputStreet ? inputStreet.value : '',
+          city: inputCity ? inputCity.value : '',
+          state: inputState ? inputState.value : '',
+          pincode: inputPincode ? inputPincode.value : '',
+          fullAddress: inputAddress ? inputAddress.value : '',
+          addressType: profile.address_type || 'Home',
+          timestamp: Date.now()
+        }));
+      }
     } catch (e) {}
 
     if (bookingAutoFillBadge) {
@@ -2156,34 +2168,31 @@ function initCartPage() {
     updateAddressSummaryDisplay();
     if (savedAddressBox) savedAddressBox.style.display = 'block';
   } else {
-    try {
-      var rawLoc = localStorage.getItem('refixel_user_location');
-      if (rawLoc) {
-        var savedLoc = JSON.parse(rawLoc);
-        if (savedLoc && (savedLoc.fullAddress || savedLoc.city || savedLoc.street || savedLoc.houseNo)) {
-          var streetEmpty = (!inputStreet || !inputStreet.value.trim());
-          if (streetEmpty) {
-            applyLocationData(savedLoc, 'Auto-filled from Saved Location');
-            if (window.REFIXEL_AUTH && window.REFIXEL_AUTH.isLoggedIn) {
-              queueAddressPersist();
+    // For logged-in users without a saved profile, do NOT auto-fill stale localStorage from previous users!
+    if (!isCustomerLoggedIn) {
+      try {
+        var rawLoc = localStorage.getItem('refixel_user_location');
+        if (rawLoc) {
+          var savedLoc = JSON.parse(rawLoc);
+          if (savedLoc && (savedLoc.fullAddress || savedLoc.city || savedLoc.street || savedLoc.houseNo)) {
+            var streetEmpty = (!inputStreet || !inputStreet.value.trim());
+            if (streetEmpty) {
+              applyLocationData(savedLoc, 'Auto-filled from Saved Location');
             }
           }
         }
-      }
-      var rawContact = localStorage.getItem('refixel_saved_contact');
-      if (rawContact) {
-        var savedContact = JSON.parse(rawContact);
-        if (savedContact) {
-          if (inputName && !inputName.value.trim() && savedContact.name) inputName.value = savedContact.name;
-          if (inputEmail && !inputEmail.value.trim() && savedContact.email) inputEmail.value = savedContact.email;
-          if (inputPhone && !inputPhone.value.trim() && savedContact.phone) inputPhone.value = savedContact.phone;
+        var rawContact = localStorage.getItem('refixel_saved_contact');
+        if (rawContact) {
+          var savedContact = JSON.parse(rawContact);
+          if (savedContact) {
+            if (inputName && !inputName.value.trim() && savedContact.name) inputName.value = savedContact.name;
+            if (inputEmail && !inputEmail.value.trim() && savedContact.email) inputEmail.value = savedContact.email;
+            if (inputPhone && !inputPhone.value.trim() && savedContact.phone) inputPhone.value = savedContact.phone;
+          }
         }
+      } catch (e) {
+        console.warn('Error reading saved location on cart:', e);
       }
-      if (inputHouseNo && !inputHouseNo.value.trim()) {
-        inputHouseNo.value = 'House No. 1';
-      }
-    } catch (e) {
-      console.warn('Error reading saved location on cart:', e);
     }
   }
 
@@ -2243,7 +2252,7 @@ function initCartPage() {
 
         var p = window.CUSTOMER_SAVED_PROFILE || null;
         if (p) {
-          if (inputHouseNo) inputHouseNo.value = p.house_no || 'House No. 1';
+          if (inputHouseNo) inputHouseNo.value = p.house_no || '';
           if (inputStreet) inputStreet.value = p.street || '';
           if (inputCity) inputCity.value = p.city || '';
           if (inputState) inputState.value = p.state || '';
@@ -2322,9 +2331,8 @@ function initCartPage() {
       var typeRadio = document.querySelector('input[name="address_type"]:checked');
       var typeVal = typeRadio ? typeRadio.value : 'Home';
 
-      if (!houseVal) {
-        houseVal = 'House No. 1';
-        if (inputHouseNo) inputHouseNo.value = houseVal;
+      if (!houseVal && inputHouseNo) {
+        houseVal = inputHouseNo.value.trim();
       }
       if (!streetVal) {
         if (inputStreet) {
@@ -2408,7 +2416,7 @@ function initCartPage() {
           savedAddresses.unshift(newEntry);
         }
         try {
-          localStorage.setItem('refixel_saved_addresses', JSON.stringify(savedAddresses));
+          localStorage.setItem(userStorageKey, JSON.stringify(savedAddresses));
         } catch(e) {}
         syncSavedAddressesBadge();
         var subtext = document.getElementById('cartActiveAddressSubtext');
@@ -2546,7 +2554,7 @@ function initCartPage() {
             var zip = (data.zipCode || '').trim();
             if (city || region || country) {
               var locObj = {
-                houseNo: (inputHouseNo && inputHouseNo.value.trim()) ? inputHouseNo.value.trim() : 'House No. 1',
+                houseNo: (inputHouseNo && inputHouseNo.value.trim()) ? inputHouseNo.value.trim() : '',
                 street: '',
                 area: '',
                 city: city,
@@ -2603,7 +2611,7 @@ function initCartPage() {
 
             var houseNo = addr.house_number || addr.building || addr.flat || addr.house_name || phoProps.housenumber || '';
             if (!houseNo || houseNo === 'Doorstep Visit') {
-              houseNo = (inputHouseNo && inputHouseNo.value.trim()) ? inputHouseNo.value.trim() : 'House No. 1';
+              houseNo = (inputHouseNo && inputHouseNo.value.trim()) ? inputHouseNo.value.trim() : '';
             }
             var locality = addr.city || addr.town || addr.village || addr.municipality || addr.city_district || phoProps.city || '';
             var district = addr.state_district || addr.district || '';
@@ -2678,7 +2686,7 @@ function initCartPage() {
                 var zip = (bdc.postcode || '').trim();
                 var streetVal = (bdc.locality && bdc.locality !== city) ? bdc.locality : '';
                 var locObj = {
-                  houseNo: (inputHouseNo && inputHouseNo.value.trim()) ? inputHouseNo.value.trim() : 'House No. 1',
+                  houseNo: (inputHouseNo && inputHouseNo.value.trim()) ? inputHouseNo.value.trim() : '',
                   street: streetVal,
                   area: streetVal || city,
                   city: city || state,

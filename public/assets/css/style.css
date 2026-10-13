@@ -436,25 +436,44 @@ img {
     letter-spacing: 0.2px;
 }
 
-.menu_header .right_menu2 h6 {
+.menu_header .right_menu2 h6,
+.menu_header .right_menu2 .drawer_user_phone {
     margin: 0;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 14px;
     font-weight: 400;
+    position: static;
+    display: block;
+    text-align: center;
+    width: 100%;
 }
 
+.menu_header .right_menu2 h6 a,
+.menu_header .right_menu2 .drawer_user_phone a,
 .menu_header .right_menu2 a {
-    font-size: 18px;
-    display: block;
-    color: #4f4f4f;
-    position: absolute;
-    right: 15px;
-    top: 22px;
-    text-decoration: underline;
+    font-size: 14px !important;
+    display: inline-block !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    text-decoration: none !important;
+    text-align: center !important;
+    font-weight: 400 !important;
+    line-height: inherit !important;
+}
+
+.menu_header .right_menu2 h6 a:hover,
+.menu_header .right_menu2 .drawer_user_phone a:hover,
+.menu_header .right_menu2 a:hover {
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 .menu_header .right_menu2 a i {
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .btoption_one {

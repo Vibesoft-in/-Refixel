@@ -54,8 +54,15 @@ class StaffEarning extends Model
         ];
     }
 
-    public static function recordJobCommission(int $jobId, int $staffId, float $amount, ?string $month = null): void
-    {
+    public static function recordJobCommission(
+        int $jobId, 
+        int $staffId, 
+        float $amount, 
+        ?string $month = null,
+        float $grossAmount = 0.0,
+        float $materialCost = 0.0,
+        float $adminFee = 0.0
+    ): void {
         $existing = Database::fetchOne(
             "SELECT id FROM staff_earnings WHERE job_id = :jid AND staff_id = :sid LIMIT 1",
             ['jid' => $jobId, 'sid' => $staffId]
@@ -68,13 +75,16 @@ class StaffEarning extends Model
         $month = $month ?? date('Y-m');
 
         Database::query(
-            "INSERT INTO staff_earnings (job_id, staff_id, amount, month, is_settled, created_at)
-             VALUES (:job_id, :staff_id, :amount, :month, 0, NOW())",
+            "INSERT INTO staff_earnings (job_id, staff_id, amount, gross_amount, material_cost, admin_fee, month, is_settled, created_at)
+             VALUES (:job_id, :staff_id, :amount, :gross_amount, :material_cost, :admin_fee, :month, 0, NOW())",
             [
-                'job_id'   => $jobId,
-                'staff_id' => $staffId,
-                'amount'   => $amount,
-                'month'    => $month,
+                'job_id'        => $jobId,
+                'staff_id'      => $staffId,
+                'amount'        => $amount,
+                'gross_amount'  => $grossAmount,
+                'material_cost' => $materialCost,
+                'admin_fee'     => $adminFee,
+                'month'         => $month,
             ]
         );
     }

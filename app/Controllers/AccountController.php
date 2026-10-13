@@ -435,8 +435,8 @@ class AccountController extends Controller
         $lat = ($request->input('lat') !== null && is_numeric($request->input('lat'))) ? (float)$request->input('lat') : null;
         $lng = ($request->input('lng') !== null && is_numeric($request->input('lng'))) ? (float)$request->input('lng') : null;
 
-        if (empty($houseNo)) {
-            $houseNo = 'House No. 1';
+        if ($houseNo === null) {
+            $houseNo = '';
         }
 
         if (!$userId) {
@@ -522,8 +522,8 @@ class AccountController extends Controller
         if (empty($houseNo) && !empty($existing['house_no'])) {
             $houseNo = $existing['house_no'];
         }
-        if (empty($houseNo)) {
-            $houseNo = 'House No. 1';
+        if ($houseNo === null) {
+            $houseNo = '';
         }
 
         if ($existing) {
@@ -600,7 +600,7 @@ class AccountController extends Controller
                         'id'           => 0,
                         'label'        => $profile['address_type'] ?? 'Home',
                         'address_type' => $profile['address_type'] ?? 'Home',
-                        'house_no'     => $profile['house_no'] ?? 'House No. 1',
+                        'house_no'     => $profile['house_no'] ?? '',
                         'street'       => $profile['street'] ?? '',
                         'city'         => $profile['city'] ?? \App\Models\ServiceArea::DEFAULT_CITY,
                         'state'        => $profile['state'] ?? 'Uttarakhand',
@@ -632,7 +632,7 @@ class AccountController extends Controller
                             'id'           => 'bk_' . substr(md5($addrStr), 0, 8),
                             'label'        => 'Previous Booking',
                             'address_type' => 'Other',
-                            'house_no'     => 'House No. 1',
+                            'house_no'     => '',
                             'street'       => $addrStr,
                             'city'         => \App\Models\ServiceArea::DEFAULT_CITY,
                             'state'        => 'Uttarakhand',
@@ -645,7 +645,7 @@ class AccountController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        if (empty($addresses) && !empty($_SESSION['customer_addresses'])) {
+        if (!$userId && empty($addresses) && !empty($_SESSION['customer_addresses'])) {
             $addresses = $_SESSION['customer_addresses'];
         }
 
@@ -692,7 +692,7 @@ class AccountController extends Controller
             $latestBooking = \App\Core\Database::fetchOne("SELECT name, phone, email, address, pincode FROM bookings WHERE customer_id = ? ORDER BY id DESC LIMIT 1", [$userId]);
             if ($latestBooking) {
                 $profile = [
-                    'house_no'     => 'House No. 1',
+                    'house_no'     => '',
                     'street'       => '',
                     'address'      => $latestBooking['address'],
                     'city'         => \App\Models\ServiceArea::DEFAULT_CITY,
@@ -701,8 +701,6 @@ class AccountController extends Controller
                     'address_type' => 'Home',
                 ];
             }
-        } elseif (empty($profile['house_no'])) {
-            $profile['house_no'] = 'House No. 1';
         }
         return Response::json([
             'authenticated' => true,

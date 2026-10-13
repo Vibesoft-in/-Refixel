@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no">
   <title><?= \App\Core\View::e($title ?? 'Professional Home and Commercial Services | REFIXEL') ?></title>
   <meta name="keywords" content="home cleaning services, commercial cleaning services, office cleaning services, professional cleaning company, REFIXEL" />
   <meta name="description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services, including deep cleaning, painting, plumbing, pest control and trusted maintenance solutions. Book Now!') ?>">
@@ -119,6 +120,32 @@
       userId: <?= json_encode(\App\Core\Auth::id() ?? null) ?>
     };
     window.REFIXEL_BASE_URL = '<?= rtrim(\App\Core\View::url(), '/') ?>';
+
+    // Prevent cross-user data leakage and clean up stale addresses on logout / user switch
+    try {
+      if (window.location.search.indexOf('logged_out=1') !== -1) {
+        localStorage.removeItem('refixel_saved_addresses');
+        localStorage.removeItem('refixel_user_location');
+        localStorage.removeItem('refixel_saved_contact');
+        localStorage.removeItem('refixel_last_user_id');
+      }
+      var lastLoggedInUser = localStorage.getItem('refixel_last_user_id');
+      var currentUidStr = window.REFIXEL_AUTH.userId ? String(window.REFIXEL_AUTH.userId) : '';
+      if (lastLoggedInUser && currentUidStr && lastLoggedInUser !== currentUidStr) {
+        // Different user logged in on this browser - clear stale unscoped addresses/location
+        localStorage.removeItem('refixel_saved_addresses');
+        localStorage.removeItem('refixel_user_location');
+      }
+      if (currentUidStr) {
+        localStorage.setItem('refixel_last_user_id', currentUidStr);
+        // Clear legacy unscoped key so it never pollutes logged-in accounts
+        localStorage.removeItem('refixel_saved_addresses');
+      } else if (!window.REFIXEL_AUTH.isLoggedIn && lastLoggedInUser) {
+        localStorage.removeItem('refixel_last_user_id');
+        localStorage.removeItem('refixel_saved_addresses');
+        localStorage.removeItem('refixel_user_location');
+      }
+    } catch(e) {}
   </script>
 </head>
 <body>

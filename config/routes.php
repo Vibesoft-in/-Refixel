@@ -154,6 +154,21 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/categories/{id}/delete', 'Admin\\ServiceController@deleteCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/toggle-status', 'Admin\\ServiceController@toggleCategoryStatus', ['VerifyCsrf']);
 
+    // Payment Gateways & Credentials
+    Router::get('/admin/gateways', 'Admin\\GatewayController@index');
+    Router::post('/admin/gateways/{id}/update', 'Admin\\GatewayController@update', ['VerifyCsrf']);
+    Router::post('/admin/gateways/{id}/toggle', 'Admin\\GatewayController@toggle', ['VerifyCsrf']);
+    Router::post('/admin/gateways/{id}/test', 'Admin\\GatewayController@test', ['VerifyCsrf']);
+
+    // Commissions & Profit Splits
+    Router::get('/admin/commissions', 'Admin\\CommissionController@index');
+    Router::post('/admin/commissions/global', 'Admin\\CommissionController@saveGlobal', ['VerifyCsrf']);
+    Router::post('/admin/commissions/rules', 'Admin\\CommissionController@storeRule', ['VerifyCsrf']);
+    Router::post('/admin/commissions/rules/{id}/update', 'Admin\\CommissionController@updateRule', ['VerifyCsrf']);
+    Router::post('/admin/commissions/rules/{id}/delete', 'Admin\\CommissionController@deleteRule', ['VerifyCsrf']);
+    Router::post('/admin/commissions/settle/{id}', 'Admin\\CommissionController@settleEarning', ['VerifyCsrf']);
+    Router::get('/admin/commissions/simulate', 'Admin\\CommissionController@simulate');
+
     // Payments & Invoices
     Router::get('/admin/payments', 'Admin\\PaymentController@index');
     Router::post('/admin/payments', 'Admin\\PaymentController@recordPayment', ['VerifyCsrf']);

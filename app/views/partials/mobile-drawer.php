@@ -34,6 +34,33 @@ $isServices = (str_starts_with($cleanPathLower, '/services') || str_contains($cl
 $isBlogs = (str_starts_with($cleanPathLower, '/blogs') || str_starts_with($cleanPathLower, '/blog'));
 $isContact = str_starts_with($cleanPathLower, '/contact');
 ?>
+<style>
+  .hometfn_popup .menu_header .right_menu2 h6,
+  .hometfn_popup .menu_header .right_menu2 h6 a,
+  .hometfn_popup .menu_header .right_menu2 .drawer_user_phone,
+  .hometfn_popup .menu_header .right_menu2 .drawer_user_phone a,
+  .hometfn_popup .menu_header .right_menu2 a {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-decoration: none !important;
+    position: static !important;
+    display: inline-block !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    text-align: center !important;
+    margin: 0 !important;
+    float: none !important;
+  }
+  .hometfn_popup .menu_header .right_menu2 h6 a:hover,
+  .hometfn_popup .menu_header .right_menu2 .drawer_user_phone a:hover,
+  .hometfn_popup .menu_header .right_menu2 a:hover {
+    color: #ffffff !important;
+    text-decoration: none !important;
+  }
+</style>
 <div class="hometfn_popup">
   <div class="popup_footer">
     <button class="btnclose_tfn" type="button" aria-label="Close menu">
@@ -46,18 +73,31 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
       <div class="right_menu2">
         <img src="<?= \App\Core\View::asset('img/account.png') ?>" alt="Account">
         <h4><?= \App\Core\View::e($user['name'] ?? 'Welcome Guest') ?></h4>
-        <h6><?= !empty($user['phone']) ? '+91-' . \App\Core\View::e($user['phone']) : 'Sign in to manage bookings' ?></h6>
+        <h6 class="drawer_user_phone" style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 400; position: static !important; display: block !important; text-align: center !important;"><?= !empty($user['phone']) ? '+91-' . \App\Core\View::e($user['phone']) : 'Sign in to manage bookings' ?></h6>
       </div>
     </div>
 
     <?php if ($user): ?>
     <div class="bottom_option" style="padding-top: 5px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px;">
       <ul>
-        <li><a href="<?= \App\Core\View::url('/account') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Dashboard <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/bookings') ?>"><span class="menu_ico"><i class="fa fa-calendar" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> My Bookings <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/invoices') ?>"><span class="menu_ico"><i class="fa fa-file-text-o" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Invoices & Receipts <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/profile') ?>"><span class="menu_ico"><i class="fa fa-user-circle" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Profile & Address <i class="fa fa-angle-right"></i></a></li>
-        <li><a href="<?= \App\Core\View::url('/account/privacy') ?>"><span class="menu_ico"><i class="fa fa-shield" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Privacy & Data Rights <i class="fa fa-angle-right"></i></a></li>
+        <?php if (($user['role'] ?? '') === 'admin'): ?>
+          <li><a href="<?= \App\Core\View::url('/admin') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Admin Dashboard <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/admin/enquiries') ?>"><span class="menu_ico"><i class="fa fa-inbox" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Enquiries <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/admin/bookings') ?>"><span class="menu_ico"><i class="fa fa-calendar-check-o" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Bookings & Jobs <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/admin/calendar') ?>"><span class="menu_ico"><i class="fa fa-calendar" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Dispatch Calendar <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/admin/staff') ?>"><span class="menu_ico"><i class="fa fa-users" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Staff & Techs <i class="fa fa-angle-right"></i></a></li>
+        <?php elseif (($user['role'] ?? '') === 'staff'): ?>
+          <li><a href="<?= \App\Core\View::url('/staff') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Tech Dashboard <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/staff/jobs') ?>"><span class="menu_ico"><i class="fa fa-briefcase" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> My Jobs <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/staff/earnings') ?>"><span class="menu_ico"><i class="fa fa-inr" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Earnings <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/staff/profile') ?>"><span class="menu_ico"><i class="fa fa-user-circle" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Profile & Status <i class="fa fa-angle-right"></i></a></li>
+        <?php else: ?>
+          <li><a href="<?= \App\Core\View::url('/account') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Dashboard <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/account/bookings') ?>"><span class="menu_ico"><i class="fa fa-calendar" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> My Bookings <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/account/invoices') ?>"><span class="menu_ico"><i class="fa fa-file-text-o" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Invoices & Receipts <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/account/profile') ?>"><span class="menu_ico"><i class="fa fa-user-circle" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Profile & Address <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/account/privacy') ?>"><span class="menu_ico"><i class="fa fa-shield" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Privacy & Data Rights <i class="fa fa-angle-right"></i></a></li>
+        <?php endif; ?>
       </ul>
     </div>
     <?php else: ?>

@@ -163,7 +163,7 @@ class ServiceController extends Controller
     {
         $name = trim((string)$request->input('name'));
         $description = trim((string)$request->input('description'));
-        $icon = trim((string)$request->input('icon', 'fa-wrench'));
+        $icon = trim((string)$request->input('icon', 'icons/cleaning icon.png'));
         $sortOrder = (int)$request->input('sort_order', 0);
 
         if (empty($name)) {
@@ -171,18 +171,42 @@ class ServiceController extends Controller
             return $this->redirect('/admin/services/categories');
         }
 
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
+        $slugInput = trim((string)$request->input('slug', ''));
+        $slug = !empty($slugInput)
+            ? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slugInput), '-'))
+            : strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
+
+        $imagePath = 'refixel-cleaning.jpg';
+        $fileImage = $request->file('image');
+        if ($fileImage && ($fileImage['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            try {
+                $imagePath = Upload::process($fileImage, 'categories');
+            } catch (\Throwable $e) {}
+        } elseif ($request->has('image_path')) {
+            $pathVal = trim((string)$request->input('image_path'));
+            if (!empty($pathVal)) {
+                $imagePath = $pathVal;
+            }
+        }
+
+        $fileIcon = $request->file('icon_file');
+        if ($fileIcon && ($fileIcon['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            try {
+                $icon = Upload::process($fileIcon, 'categories');
+            } catch (\Throwable $e) {}
+        }
 
         Category::create([
             'name'        => $name,
             'slug'        => $slug,
             'description' => $description,
+            'image'       => $imagePath,
             'icon'        => $icon,
             'sort_order'  => $sortOrder,
             'is_active'   => 1,
         ]);
 
-        View::setFlash('success', "Category '{$name}' created successfully.");
+        View::setFlash('success', "Category '{$name}' created successfully and is now active on the homepage!");
         return $this->redirect('/admin/services/categories');
     }
 
@@ -196,7 +220,7 @@ class ServiceController extends Controller
 
         $name = trim((string)$request->input('name'));
         $description = trim((string)$request->input('description'));
-        $icon = trim((string)$request->input('icon', 'fa-wrench'));
+        $icon = trim((string)$request->input('icon', $cat['icon'] ?? 'icons/cleaning icon.png'));
         $sortOrder = (int)$request->input('sort_order', 0);
 
         if (empty($name)) {
@@ -204,15 +228,43 @@ class ServiceController extends Controller
             return $this->redirect('/admin/services/categories');
         }
 
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
+        $slugInput = trim((string)$request->input('slug', ''));
+        $slug = !empty($slugInput)
+            ? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $slugInput), '-'))
+            : strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
 
-        Category::update((int)$id, [
+        $data = [
             'name'        => $name,
             'slug'        => $slug,
             'description' => $description,
-            'icon'        => $icon,
             'sort_order'  => $sortOrder,
-        ]);
+        ];
+
+        $fileImage = $request->file('image');
+        if ($fileImage && ($fileImage['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            try {
+                $data['image'] = Upload::process($fileImage, 'categories');
+            } catch (\Throwable $e) {}
+        } elseif ($request->has('image_path')) {
+            $pathVal = trim((string)$request->input('image_path'));
+            if (!empty($pathVal)) {
+                $data['image'] = $pathVal;
+            }
+        }
+
+        $fileIcon = $request->file('icon_file');
+        if ($fileIcon && ($fileIcon['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+            try {
+                $data['icon'] = Upload::process($fileIcon, 'categories');
+            } catch (\Throwable $e) {}
+        } elseif ($request->has('icon')) {
+            $iconVal = trim((string)$request->input('icon'));
+            if (!empty($iconVal)) {
+                $data['icon'] = $iconVal;
+            }
+        }
+
+        Category::update((int)$id, $data);
 
         View::setFlash('success', "Category '{$name}' updated successfully.");
         return $this->redirect('/admin/services/categories');
