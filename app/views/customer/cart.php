@@ -984,7 +984,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                 
                 <div class="position-relative" id="cartTimePickerContainer">
                   <!-- Hidden input for form submission -->
-                  <input type="hidden" name="preferred_time" id="cartPreferredTimeInput" value="02:00 - 04:00 PM" required>
+                  <input type="hidden" name="preferred_time" id="cartPreferredTimeInput" value="" required>
 
                   <!-- Clickable Time Input Trigger -->
                   <div class="cal-input-trigger" id="cartTimeInputTrigger" role="button" tabindex="0">
@@ -992,7 +992,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                       <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
                         <i class="fa fa-clock-o"></i>
                       </div>
-                      <input type="text" id="cartDisplayTimeInput" class="cal-custom-input" readonly value="02:00 - 04:00 PM" placeholder="Click to select time slot...">
+                      <input type="text" id="cartDisplayTimeInput" class="cal-custom-input" readonly value="" placeholder="Click to select time slot...">
                     </div>
                     <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="cartTimeChevronIcon"></i>
                   </div>
@@ -1005,7 +1005,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                         <span class="badge" style="background: #fff3ec; color: #ff5238; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">Doorstep Visit</span>
                       </div>
                       <div class="time-options-list" id="cartTimeSlotsGroup">
-                        <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM">
+                        <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM" data-start-minutes="540">
                           <div class="d-flex align-items-center" style="gap: 12px;">
                             <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
                             <div>
@@ -1016,7 +1016,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                           <i class="fa fa-check time-opt-check"></i>
                         </div>
 
-                        <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM">
+                        <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM" data-start-minutes="660">
                           <div class="d-flex align-items-center" style="gap: 12px;">
                             <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
                             <div>
@@ -1027,7 +1027,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                           <i class="fa fa-check time-opt-check"></i>
                         </div>
 
-                        <div class="time-option-item active" role="button" tabindex="0" data-slot="02:00 - 04:00 PM">
+                        <div class="time-option-item" role="button" tabindex="0" data-slot="02:00 - 04:00 PM" data-start-minutes="840">
                           <div class="d-flex align-items-center" style="gap: 12px;">
                             <div class="time-opt-icon"><i class="fa fa-cloud"></i></div>
                             <div>
@@ -1038,7 +1038,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                           <i class="fa fa-check time-opt-check"></i>
                         </div>
 
-                        <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM">
+                        <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM" data-start-minutes="960">
                           <div class="d-flex align-items-center" style="gap: 12px;">
                             <div class="time-opt-icon"><i class="fa fa-moon-o"></i></div>
                             <div>
@@ -1048,6 +1048,18 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                           </div>
                           <i class="fa fa-check time-opt-check"></i>
                         </div>
+                      </div>
+
+                      <!-- Notice when no slots remain for today -->
+                      <div id="cartTimeSlotsNoAvailableMsg" class="p-3 text-center small mt-2" style="display:none; background:#fff8f5; border:1.5px dashed #ffdacf; border-radius:12px; color:#c2410c;">
+                        <i class="fa fa-clock-o text-danger mb-1" style="font-size:18px;"></i>
+                        <div class="font-weight-bold text-dark" style="font-size: 13px;">No slots available for today</div>
+                        <div class="text-muted mt-1" style="font-size: 11.5px; line-height: 1.4;">
+                          Bookings require at least 30 minutes advance notice. All time slots for today have closed.
+                        </div>
+                        <button type="button" class="btn btn-sm text-white font-weight-bold mt-2" style="background:#f25b29; border-radius:8px; font-size:12px; padding: 6px 14px;" id="btnCartPickTomorrowFromSlot">
+                          <i class="fa fa-calendar mr-1"></i> Pick Tomorrow
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1253,7 +1265,13 @@ function initCartPage() {
     var today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Initial selected date (auto-advance to tomorrow if all slots for today are past +30m cutoff)
+    var realNow = new Date();
+    var currentCutoffMinutes = realNow.getHours() * 60 + realNow.getMinutes() + 30;
     var selectedDate = new Date(today.getTime());
+    if (currentCutoffMinutes > 960) {
+      selectedDate = new Date(today.getTime() + 86400000);
+    }
     var viewYear = selectedDate.getFullYear();
     var viewMonth = selectedDate.getMonth();
 
@@ -1278,8 +1296,68 @@ function initCartPage() {
 
     function updateCartSummary() {
       if (!cartCalSummaryDisplay) return;
-      var slotVal = preferredTimeInput ? preferredTimeInput.value : '02:00 - 04:00 PM';
-      cartCalSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (' + slotVal + ')';
+      var slotVal = preferredTimeInput ? preferredTimeInput.value : '';
+      if (!slotVal) {
+        cartCalSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (No slot selected)';
+      } else {
+        cartCalSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (' + slotVal + ')';
+      }
+    }
+
+    function refreshCartTimeSlots() {
+      var isToday = (
+        selectedDate.getFullYear() === today.getFullYear() &&
+        selectedDate.getMonth() === today.getMonth() &&
+        selectedDate.getDate() === today.getDate()
+      );
+
+      var liveNow = new Date();
+      var cutoff = isToday ? (liveNow.getHours() * 60 + liveNow.getMinutes() + 30) : 0;
+      var visibleOptions = [];
+
+      timeOptionItems.forEach(function(opt) {
+        var startMin = parseInt(opt.getAttribute('data-start-minutes') || '0', 10);
+        if (isToday && startMin < cutoff) {
+          opt.style.display = 'none';
+          opt.classList.remove('active');
+        } else {
+          opt.style.display = 'flex';
+          visibleOptions.push(opt);
+        }
+      });
+
+      var noSlotsMsg = document.getElementById('cartTimeSlotsNoAvailableMsg');
+      if (visibleOptions.length === 0) {
+        if (noSlotsMsg) noSlotsMsg.style.display = 'block';
+        if (preferredTimeInput) preferredTimeInput.value = '';
+        if (displayTimeInput) displayTimeInput.value = 'No slots available today - Pick date';
+        if (cartCalSummaryDisplay) {
+          cartCalSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (No slots available - Please pick tomorrow)';
+        }
+      } else {
+        if (noSlotsMsg) noSlotsMsg.style.display = 'none';
+        var currentSlotVal = preferredTimeInput ? preferredTimeInput.value : '';
+        var matchingVisible = null;
+        for (var i = 0; i < visibleOptions.length; i++) {
+          if (visibleOptions[i].getAttribute('data-slot') === currentSlotVal) {
+            matchingVisible = visibleOptions[i];
+            break;
+          }
+        }
+
+        if (!matchingVisible) {
+          timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
+          var firstOpt = visibleOptions[0];
+          firstOpt.classList.add('active');
+          var firstSlot = firstOpt.getAttribute('data-slot');
+          if (preferredTimeInput) preferredTimeInput.value = firstSlot;
+          if (displayTimeInput) displayTimeInput.value = firstSlot;
+        } else {
+          timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
+          matchingVisible.classList.add('active');
+        }
+        updateCartSummary();
+      }
     }
 
     function toggleTimeDropdown(show) {
@@ -1350,6 +1428,7 @@ function initCartPage() {
     timeOptionItems.forEach(function(opt) {
       opt.addEventListener('click', function(e) {
         e.stopPropagation();
+        if (opt.style.display === 'none') return;
         timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
         this.classList.add('active');
         var slot = this.getAttribute('data-slot');
@@ -1410,7 +1489,7 @@ function initCartPage() {
               calDayNumber.textContent = dayNum;
               calMonthName.textContent = monthNames[selectedDate.getMonth()];
               renderCalendar();
-              updateCartSummary();
+              refreshCartTimeSlots();
               toggleDropdown(false);
             });
           })(cellDate, d);
@@ -1446,13 +1525,25 @@ function initCartPage() {
       });
     }
 
+    // Wire Pick Tomorrow button inside cart time slots dropdown
+    var btnCartPickTomorrow = document.getElementById('btnCartPickTomorrowFromSlot');
+    if (btnCartPickTomorrow) {
+      btnCartPickTomorrow.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectedDate = new Date(today.getTime() + 86400000);
+        viewYear = selectedDate.getFullYear();
+        viewMonth = selectedDate.getMonth();
+        preferredDateInput.value = formatYYYYMMDD(selectedDate);
+        displayDateInput.value = formatInputDate(selectedDate);
+        renderCalendar();
+        refreshCartTimeSlots();
+      });
+    }
+
     preferredDateInput.value = formatYYYYMMDD(selectedDate);
     displayDateInput.value = formatInputDate(selectedDate);
-    if (preferredTimeInput && displayTimeInput) {
-      displayTimeInput.value = preferredTimeInput.value || '02:00 - 04:00 PM';
-    }
     renderCalendar();
-    updateCartSummary();
+    refreshCartTimeSlots();
   }
 
   /* ══════════════════════════════════════════════════════════════════

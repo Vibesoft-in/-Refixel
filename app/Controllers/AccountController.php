@@ -132,6 +132,27 @@ class AccountController extends Controller
             return $this->redirect('/account/bookings/' . $id);
         }
 
+        if ($preferredDate === date('Y-m-d')) {
+            $slotStartMinutes = 0;
+            if (preg_match('/^(\d{1,2}):(\d{2})\s*(AM|PM)?/i', $preferredTime, $m)) {
+                $h = (int)$m[1];
+                $min = (int)$m[2];
+                $ampm = !empty($m[3]) ? strtoupper($m[3]) : null;
+                if ($ampm === null && preg_match('/(AM|PM)$/i', $preferredTime, $endM)) {
+                    if (strtoupper($endM[1]) === 'PM' && $h < 8) $h += 12;
+                } else {
+                    if ($ampm === 'PM' && $h < 12) $h += 12;
+                    elseif ($ampm === 'AM' && $h === 12) $h = 0;
+                }
+                $slotStartMinutes = $h * 60 + $min;
+            }
+            $cutoff = (int)date('H') * 60 + (int)date('i') + 30;
+            if ($slotStartMinutes > 0 && $slotStartMinutes < $cutoff) {
+                \App\Core\View::setFlash('error', "The selected time slot ({$preferredTime}) has passed or is within 30 minutes. Please select an upcoming slot or choose another date.");
+                return $this->redirect('/account/bookings/' . $id);
+            }
+        }
+
         try {
             \App\Core\Database::query(
                 "UPDATE bookings SET preferred_date = :d, preferred_time = :t, updated_at = NOW() WHERE id = :id",

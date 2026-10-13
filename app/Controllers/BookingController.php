@@ -146,293 +146,399 @@ class BookingController extends Controller
         ]);
     }
 
+    /**
+     * Parse time slot string to minutes from midnight for slot start time
+     */
+    public function parseSlotStartMinutes(string $slot): int
+    {
+        $slot = trim($slot);
+        if (preg_match('/^(\d{1,2}):(\d{2})\s*(AM|PM)?/i', $slot, $m)) {
+            $hours = (int)$m[1];
+            $minutes = (int)$m[2];
+            $ampm = !empty($m[3]) ? strtoupper($m[3]) : null;
+
+            if ($ampm === null) {
+                if (preg_match('/(AM|PM)$/i', $slot, $endM)) {
+                    $endAmpm = strtoupper($endM[1]);
+                    if ($endAmpm === 'PM' && $hours < 8) {
+                        $hours += 12;
+                    }
+                }
+            } else {
+                if ($ampm === 'PM' && $hours < 12) {
+                    $hours += 12;
+                } elseif ($ampm === 'AM' && $hours === 12) {
+                    $hours = 0;
+                }
+            }
+            return $hours * 60 + $minutes;
+        }
+        return 0;
+    }
+
     public function submit(Request $request): Response
     {
-        if ($request->input('from_cart') && (int)$request->input('service_id', 0) <= 0) {
-            $cartDetails = Cart::getDetails();
-            if (!empty($cartDetails['items'][0]['service_id'])) {
-                $request->set('service_id', (int)$cartDetails['items'][0]['service_id']);
+        try {
+            if ($request->input('from_cart') && (int)$request->input('service_id', 0) <= 0) {
+                $cartDetails = Cart::getDetails();
+                if (!empty($cartDetails['items'][0]['service_id'])) {
+                    $request->set('service_id', (int)$cartDetails['items'][0]['service_id']);
+                }
             }
-        }
 
-        $addrInput = trim((string)$request->input('address', ''));
-        if (strlen($addrInput) < 5) {
-            $synthParts = array_filter([
-                trim((string)$request->input('house_no')) ?: 'House No. 1',
-                trim((string)$request->input('street')),
-                trim((string)$request->input('city')),
-                trim((string)$request->input('state')),
-                trim((string)$request->input('pincode')),
+            $addrInput = trim((string)$request->input('address', ''));
+            if (strlen($addrInput) < 5) {
+                $synthParts = array_filter([
+                    trim((string)$request->input('house_no')) ?: 'House No. 1',
+                    trim((string)$request->input('street')),
+                    trim((string)$request->input('city')),
+                    trim((string)$request->input('state')),
+                    trim((string)$request->input('pincode')),
+                ]);
+                $composedAddr = implode(', ', $synthParts);
+                $request->set('address', strlen($composedAddr) >= 5 ? $composedAddr : 'Doorstep Service Location, Uttarakhand');
+            }
+
+            $validator = $this->validate($request, [
+                'service_id'     => 'required|numeric',
+                'name'           => 'required|min:2',
+                'phone'          => 'required|phone',
+                'address'        => 'required|min:5',
+                'preferred_date' => 'required',
+                'preferred_time' => 'required',
             ]);
-            $composedAddr = implode(', ', $synthParts);
-            $request->set('address', strlen($composedAddr) >= 5 ? $composedAddr : 'Doorstep Service Location, Uttarakhand');
-        }
 
-        $validator = $this->validate($request, [
-            'service_id'     => 'required|numeric',
-            'name'           => 'required|min:2',
-            'phone'          => 'required|phone',
-            'address'        => 'required|min:5',
-            'preferred_date' => 'required',
-            'preferred_time' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            if ($request->isAjax() || $request->input('is_ajax')) {
-                return Response::json([
-                    'success' => false,
-                    'message' => $validator->firstError(),
-                ], 422);
+            if ($validator->fails()) {
+                if ($request->isAjax() || $request->input('is_ajax')) {
+                    return Response::json([
+                        'success' => false,
+                        'message' => $validator->firstError(),
+                        'error'   => $validator->firstError(),
+                    ], 422);
+                }
+                View::setFlash('error', $validator->firstError());
+                $redirectUrl = $request->input('from_cart') ? '/cart' : '/book?service_id=' . (int)$request->input('service_id');
+                return $this->redirect($redirectUrl);
             }
-            View::setFlash('error', $validator->firstError());
-            $redirectUrl = $request->input('from_cart') ? '/cart' : '/book?service_id=' . (int)$request->input('service_id');
-            return $this->redirect($redirectUrl);
-        }
 
-        $serviceId = (int)$request->input('service_id');
-        $service = Service::find($serviceId);
-        if (!$service || empty($service['is_active'])) {
-            if ($request->isAjax() || $request->input('is_ajax')) {
-                return Response::json([
-                    'success' => false,
-                    'message' => 'The requested service is currently unavailable.',
-                ], 400);
+            $serviceId = (int)$request->input('service_id');
+            $service = Service::find($serviceId);
+            if (!$service || empty($service['is_active'])) {
+                if ($request->isAjax() || $request->input('is_ajax')) {
+                    return Response::json([
+                        'success' => false,
+                        'message' => 'The requested service is currently unavailable.',
+                        'error'   => 'The requested service is currently unavailable.',
+                    ], 400);
+                }
+                View::setFlash('error', 'The requested service is currently unavailable.');
+                return $this->redirect('/services');
             }
-            View::setFlash('error', 'The requested service is currently unavailable.');
-            return $this->redirect('/services');
-        }
 
-        // Pincode validation (optional but verified if supplied)
-        $pincode = $request->input('pincode') ? trim((string)$request->input('pincode')) : null;
-        if ($pincode && !preg_match('/^[0-9]{6}$/', $pincode)) {
-            if ($request->isAjax() || $request->input('is_ajax')) {
-                return Response::json([
-                    'success' => false,
-                    'message' => 'Please enter a valid 6-digit Indian postal pincode.',
-                ], 422);
+            // Validate Preferred Date & Time Slot (30 mins advance booking requirement for today)
+            $prefDate = trim((string)$request->input('preferred_date', ''));
+            $prefTime = trim((string)$request->input('preferred_time', ''));
+            $todayYmd = date('Y-m-d');
+
+            if ($prefDate < $todayYmd) {
+                $dateErr = 'Please select today or an upcoming date for your service.';
+                if ($request->isAjax() || $request->input('is_ajax')) {
+                    return Response::json(['success' => false, 'message' => $dateErr, 'error' => $dateErr], 422);
+                }
+                View::setFlash('error', $dateErr);
+                return $this->redirect('/book?service_id=' . $serviceId);
             }
-            View::setFlash('error', 'Please enter a valid 6-digit Indian postal pincode.');
-            return $this->redirect('/book?service_id=' . $serviceId);
-        }
 
-        $bookingNo = Booking::generateBookingNo();
-        $customerId = Auth::id(); // Null for guest, or user ID if authenticated
-        $phoneInput = preg_replace('/\D/', '', (string)$request->input('phone'));
-        $emailInput = $request->input('email') ? trim((string)$request->input('email')) : null;
-        $nameInput = trim((string)$request->input('name'));
-        
-        $priority = in_array($request->input('priority'), ['high', 'urgent']) ? (string)$request->input('priority') : 'normal';
+            if ($prefDate === $todayYmd) {
+                $slotStartMinutes = $this->parseSlotStartMinutes($prefTime);
+                $currentMinutes = (int)date('H') * 60 + (int)date('i');
+                $cutoffMinutes = $currentMinutes + 30; // 30 minutes in advance required
 
-        $addressInput = trim((string)$request->input('address'));
-        $cityInput = ServiceArea::normalizeCity((string)$request->input('city'));
-        $defaultState = ($cityInput === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand';
-        $stateInput = trim((string)$request->input('state', $defaultState)) ?: $defaultState;
-        $houseNoInput = trim((string)$request->input('house_no'));
-        if (empty($houseNoInput)) {
-            $houseNoInput = 'House No. 1';
-        }
-        $streetInput = trim((string)$request->input('street'));
-        $addressTypeInput = trim((string)$request->input('address_type', 'Home'));
-
-        // Guest Checkout: check if user exists, else create new account
-        if (!$customerId) {
-            $existingUser = null;
-            if (!empty($emailInput)) {
-                $existingUser = \App\Models\User::findBy('email', $emailInput);
+                if ($slotStartMinutes > 0 && $slotStartMinutes < $cutoffMinutes) {
+                    $slotErr = "The selected time slot ({$prefTime}) has passed or is within 30 minutes. Please select an upcoming slot starting at least 30 minutes from now or pick another date.";
+                    if ($request->isAjax() || $request->input('is_ajax')) {
+                        return Response::json(['success' => false, 'message' => $slotErr, 'error' => $slotErr], 422);
+                    }
+                    View::setFlash('error', $slotErr);
+                    return $this->redirect('/book?service_id=' . $serviceId);
+                }
             }
-            if (!$existingUser && !empty($phoneInput)) {
-                $existingUser = \App\Models\User::findBy('phone', $phoneInput);
+
+            // Pincode validation (optional but verified if supplied)
+            $pincode = $request->input('pincode') ? trim((string)$request->input('pincode')) : null;
+            if ($pincode && !preg_match('/^[0-9]{6}$/', $pincode)) {
+                if ($request->isAjax() || $request->input('is_ajax')) {
+                    return Response::json([
+                        'success' => false,
+                        'message' => 'Please enter a valid 6-digit Indian postal pincode.',
+                        'error'   => 'Please enter a valid 6-digit Indian postal pincode.',
+                    ], 422);
+                }
+                View::setFlash('error', 'Please enter a valid 6-digit Indian postal pincode.');
+                return $this->redirect('/book?service_id=' . $serviceId);
             }
+
+            $bookingNo = Booking::generateBookingNo();
+            $customerId = Auth::id(); // Null for guest, or user ID if authenticated
+            $phoneInput = preg_replace('/\D/', '', (string)$request->input('phone'));
+            $emailInput = $request->input('email') ? trim((string)$request->input('email')) : null;
+            $nameInput = trim((string)$request->input('name'));
             
-            if ($existingUser) {
-                $customerId = (int)$existingUser['id'];
-            } else {
-                $generatedPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$"), 0, 8);
-                $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
-                $customerId = (int)\App\Core\Database::execute(
-                    "INSERT INTO users (name, phone, email, password_hash, role) VALUES (?, ?, ?, ?, 'customer')",
-                    [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword],
-                    true // Return last insert ID
-                );
-                $_SESSION['guest_account_created'] = true;
-                $_SESSION['guest_account_password'] = $generatedPassword;
-                $_SESSION['guest_account_identifier'] = $emailInput ?: $phoneInput;
-            }
+            $priority = in_array($request->input('priority'), ['high', 'urgent']) ? (string)$request->input('priority') : 'normal';
 
-            if ($customerId) {
-                $userObj = \App\Models\User::find($customerId);
-                if ($userObj) {
-                    \App\Core\Auth::login($userObj);
-                }
+            $addressInput = trim((string)$request->input('address'));
+            $cityInput = ServiceArea::normalizeCity((string)$request->input('city'));
+            $defaultState = ($cityInput === 'Thakurdwara') ? 'Uttar Pradesh' : 'Uttarakhand';
+            $stateInput = trim((string)$request->input('state', $defaultState)) ?: $defaultState;
+            $houseNoInput = trim((string)$request->input('house_no'));
+            if (empty($houseNoInput)) {
+                $houseNoInput = 'House No. 1';
             }
-        }
+            $streetInput = trim((string)$request->input('street'));
+            $addressTypeInput = trim((string)$request->input('address_type', 'Home'));
 
-        if ($customerId) {
-            $existingProfile = \App\Core\Database::fetchOne("SELECT id FROM customer_profiles WHERE user_id = ?", [$customerId]);
-            if ($existingProfile) {
-                \App\Core\Database::execute("UPDATE customer_profiles SET address = ?, pincode = ?, city = ?, state = ?, house_no = ?, street = ?, address_type = ? WHERE user_id = ?", [$addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput, $customerId]);
-            } else {
-                \App\Core\Database::execute("INSERT INTO customer_profiles (user_id, address, pincode, city, state, house_no, street, address_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [$customerId, $addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput]);
-            }
-
-            // Sync user name and email in users table if provided
-            if (!empty($nameInput) || !empty($emailInput)) {
-                $userUpdates = [];
-                $userParams = [];
-                if (!empty($nameInput)) {
-                    $userUpdates[] = "name = ?";
-                    $userParams[] = $nameInput;
-                }
+            // Guest Checkout: check if user exists, else create new account
+            if (!$customerId) {
+                $existingUser = null;
                 if (!empty($emailInput)) {
-                    $userUpdates[] = "email = ?";
-                    $userParams[] = $emailInput;
+                    $existingUser = \App\Models\User::findBy('email', $emailInput);
                 }
-                $userParams[] = $customerId;
-                \App\Core\Database::execute("UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = ?", $userParams);
-
-                $currUser = Auth::user();
-                if ($currUser && (int)$currUser['id'] === (int)$customerId) {
-                    if (!empty($nameInput)) $currUser['name'] = $nameInput;
-                    if (!empty($emailInput)) $currUser['email'] = $emailInput;
-                    Auth::login($currUser);
+                if (!$existingUser && !empty($phoneInput)) {
+                    $existingUser = \App\Models\User::findBy('phone', $phoneInput);
                 }
-            }
-        }
-
-        $bookingId = Booking::create([
-            'booking_no'     => $bookingNo,
-            'customer_id'    => $customerId,
-            'service_id'     => $service['id'],
-            'name'           => trim((string)$request->input('name')),
-            'phone'          => preg_replace('/\D/', '', (string)$request->input('phone')),
-            'email'          => $request->input('email') ? trim((string)$request->input('email')) : null,
-            'address'        => trim((string)$request->input('address')),
-            'pincode'        => $pincode,
-            'preferred_date' => $request->input('preferred_date'),
-            'preferred_time' => $request->input('preferred_time'),
-            'issue_details'  => $request->input('issue_details') ? trim((string)$request->input('issue_details')) : null,
-            'status'         => 'new',
-            'priority'       => $priority,
-        ]);
-
-        // Process issue photo attachments securely if uploaded
-        $files = $_FILES['photos'] ?? null;
-        if ($files && is_array($files['name'])) {
-            for ($i = 0; $i < count($files['name']); $i++) {
-                if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                
+                if ($existingUser) {
+                    $customerId = (int)$existingUser['id'];
+                } else {
+                    $generatedPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$"), 0, 8);
+                    $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
                     try {
-                        $singleFile = [
-                            'name'     => $files['name'][$i],
-                            'type'     => $files['type'][$i],
-                            'tmp_name' => $files['tmp_name'][$i],
-                            'error'    => $files['error'][$i],
-                            'size'     => $files['size'][$i],
-                        ];
-                        $uploadResult = Upload::processWithMetadata($singleFile, 'issues');
-                        BookingAttachment::create([
-                            'booking_id' => $bookingId,
-                            'file_path'  => $uploadResult['file_path'],
-                            'mime'       => $uploadResult['mime'],
-                            'size'       => $uploadResult['size'],
-                        ]);
+                        $customerId = (int)\App\Core\Database::execute(
+                            "INSERT INTO users (name, phone, email, password_hash, role) VALUES (?, ?, ?, ?, 'customer')",
+                            [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword],
+                            true // Return last insert ID
+                        );
+                        $_SESSION['guest_account_created'] = true;
+                        $_SESSION['guest_account_password'] = $generatedPassword;
+                        $_SESSION['guest_account_identifier'] = $emailInput ?: $phoneInput;
                     } catch (\Throwable $e) {
-                        // Log file upload warning without halting booking creation
-                        error_log("Issue photo upload skipped: " . $e->getMessage());
+                        // Fallback lookup if duplicate was hit
+                        $existingUser = null;
+                        if (!empty($phoneInput)) {
+                            $existingUser = \App\Models\User::findBy('phone', $phoneInput);
+                        }
+                        if (!$existingUser && !empty($emailInput)) {
+                            $existingUser = \App\Models\User::findBy('email', $emailInput);
+                        }
+                        if ($existingUser) {
+                            $customerId = (int)$existingUser['id'];
+                        } else {
+                            throw $e;
+                        }
+                    }
+                }
+
+                if ($customerId) {
+                    $userObj = \App\Models\User::find($customerId);
+                    if ($userObj) {
+                        \App\Core\Auth::login($userObj);
                     }
                 }
             }
-        }
 
-        // Clear cart if booking came from cart checkout
-        if ($request->input('from_cart')) {
-            Cart::clear();
-        }
+            if ($customerId) {
+                $existingProfile = \App\Core\Database::fetchOne("SELECT id FROM customer_profiles WHERE user_id = ?", [$customerId]);
+                if ($existingProfile) {
+                    \App\Core\Database::execute("UPDATE customer_profiles SET address = ?, pincode = ?, city = ?, state = ?, house_no = ?, street = ?, address_type = ? WHERE user_id = ?", [$addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput, $customerId]);
+                } else {
+                    \App\Core\Database::execute("INSERT INTO customer_profiles (user_id, address, pincode, city, state, house_no, street, address_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [$customerId, $addressInput, $pincode, $cityInput, $stateInput, $houseNoInput, $streetInput, $addressTypeInput]);
+                }
 
-        // Record DPDP Act consent for booking processing
-        \App\Models\Consent::record($customerId, 'booking_terms_and_data_processing', $request->getIp());
+                // Sync user name and email in users table if provided
+                if (!empty($nameInput) || !empty($emailInput)) {
+                    try {
+                        $userUpdates = [];
+                        $userParams = [];
+                        if (!empty($nameInput)) {
+                            $userUpdates[] = "name = ?";
+                            $userParams[] = $nameInput;
+                        }
+                        if (!empty($emailInput)) {
+                            $emailOwner = \App\Models\User::findBy('email', $emailInput);
+                            if (!$emailOwner || (int)$emailOwner['id'] === (int)$customerId) {
+                                $userUpdates[] = "email = ?";
+                                $userParams[] = $emailInput;
+                            }
+                        }
+                        if (!empty($userUpdates)) {
+                            $userParams[] = $customerId;
+                            \App\Core\Database::execute("UPDATE users SET " . implode(', ', $userUpdates) . " WHERE id = ?", $userParams);
+                        }
 
-        // Record payment record in payments table
-        $paymentMethodInput = (string)$request->input('payment_method', 'cod');
-        $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
-        
-        $totalServiceAmount = (float)($service['starting_price'] ?? 0);
-        if ($request->input('from_cart')) {
-            $cartData = Cart::getDetails();
-            if (!empty($cartData['total'])) {
-                $totalServiceAmount = (float)$cartData['total'];
+                        $currUser = Auth::user();
+                        if ($currUser && (int)$currUser['id'] === (int)$customerId) {
+                            if (!empty($nameInput)) $currUser['name'] = $nameInput;
+                            if (!empty($emailInput) && (!isset($emailOwner) || !$emailOwner || (int)$emailOwner['id'] === (int)$customerId)) {
+                                $currUser['email'] = $emailInput;
+                            }
+                            Auth::login($currUser);
+                        }
+                    } catch (\Throwable $userSyncErr) {
+                        Logger::warning("Non-fatal: user name/email sync skipped: " . $userSyncErr->getMessage());
+                    }
+                }
             }
-        }
-        if ($totalServiceAmount <= 0) {
-            $totalServiceAmount = 899.00;
-        }
 
-        // COD requires ₹49 pre-booking confirmation online, remaining is due after service
-        $advanceAmount = ($paymentMethod === 'online') ? $totalServiceAmount : 49.00;
-        $dueAmount = max(0.00, round($totalServiceAmount - $advanceAmount, 2));
-        $priority = ($paymentMethod === 'online') ? 'high' : 'normal';
-
-        // Update booking financial tracking columns
-        Database::execute(
-            "UPDATE bookings SET total_amount = ?, advance_amount = ?, due_amount = ?, payment_type = ?, priority = ? WHERE id = ?",
-            [$totalServiceAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority, $bookingId]
-        );
-
-        $rzpOrder = null;
-        try {
-            $rzpGateway = new RazorpayGateway();
-            $rzpOrder = $rzpGateway->createOrder($bookingId, $advanceAmount, 'INR', [
+            $bookingId = Booking::create([
                 'booking_no'     => $bookingNo,
-                'service_name'   => $service['name'] ?? 'Doorstep Service',
-                'customer_id'    => (string)$customerId,
-                'payment_type'   => $paymentMethod,
-                'total_amount'   => (string)$totalServiceAmount,
-                'advance_amount' => (string)$advanceAmount,
-                'due_amount'     => (string)$dueAmount,
+                'customer_id'    => $customerId,
+                'service_id'     => $service['id'],
+                'name'           => trim((string)$request->input('name')),
+                'phone'          => preg_replace('/\D/', '', (string)$request->input('phone')),
+                'email'          => $request->input('email') ? trim((string)$request->input('email')) : null,
+                'address'        => trim((string)$request->input('address')),
+                'pincode'        => $pincode,
+                'preferred_date' => $prefDate,
+                'preferred_time' => $prefTime,
+                'issue_details'  => $request->input('issue_details') ? trim((string)$request->input('issue_details')) : null,
+                'status'         => 'new',
+                'priority'       => $priority,
             ]);
 
-            \App\Models\Payment::create([
-                'booking_id'      => $bookingId,
-                'amount'          => $advanceAmount,
-                'method'          => 'upi',
-                'status'          => 'pending',
-                'transaction_ref' => $rzpOrder['order_id'] ?? null,
-                'paid_at'         => null,
-                'recorded_by'     => $customerId ?: null,
-            ]);
-        } catch (\Throwable $e) {
-            Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
-        }
+            // Process issue photo attachments securely if uploaded
+            $files = $_FILES['photos'] ?? null;
+            if ($files && is_array($files['name'])) {
+                for ($i = 0; $i < count($files['name']); $i++) {
+                    if ($files['error'][$i] === UPLOAD_ERR_OK) {
+                        try {
+                            $singleFile = [
+                                'name'     => $files['name'][$i],
+                                'type'     => $files['type'][$i],
+                                'tmp_name' => $files['tmp_name'][$i],
+                                'error'    => $files['error'][$i],
+                                'size'     => $files['size'][$i],
+                            ];
+                            $uploadResult = Upload::processWithMetadata($singleFile, 'issues');
+                            BookingAttachment::create([
+                                'booking_id' => $bookingId,
+                                'file_path'  => $uploadResult['file_path'],
+                                'mime'       => $uploadResult['mime'],
+                                'size'       => $uploadResult['size'],
+                            ]);
+                        } catch (\Throwable $e) {
+                            error_log("Issue photo upload skipped: " . $e->getMessage());
+                        }
+                    }
+                }
+            }
 
-        if ($request->isAjax() || $request->input('is_ajax')) {
-            $isNewAcc = !empty($_SESSION['guest_account_created']);
-            $genPwd = $_SESSION['guest_account_password'] ?? null;
-            $ident = $_SESSION['guest_account_identifier'] ?? $phoneInput;
+            // Record DPDP Act consent for booking processing
+            \App\Models\Consent::record($customerId, 'booking_terms_and_data_processing', $request->getIp());
 
-            if (!empty($rzpOrder['order_id'])) {
+            // Record payment record in payments table
+            $paymentMethodInput = (string)$request->input('payment_method', 'cod');
+            $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
+            
+            $totalServiceAmount = (float)($service['starting_price'] ?? 0);
+            if ($request->input('from_cart')) {
+                $cartData = Cart::getDetails();
+                if (!empty($cartData['total'])) {
+                    $totalServiceAmount = (float)$cartData['total'];
+                }
+                // Clear cart only AFTER obtaining details
+                Cart::clear();
+            }
+            if ($totalServiceAmount <= 0) {
+                $totalServiceAmount = 899.00;
+            }
+
+            // COD requires ₹49 pre-booking confirmation online, remaining is due after service
+            $advanceAmount = ($paymentMethod === 'online') ? $totalServiceAmount : 49.00;
+            $dueAmount = max(0.00, round($totalServiceAmount - $advanceAmount, 2));
+            $priority = ($paymentMethod === 'online') ? 'high' : 'normal';
+
+            // Update booking financial tracking columns
+            Database::execute(
+                "UPDATE bookings SET total_amount = ?, advance_amount = ?, due_amount = ?, payment_type = ?, priority = ? WHERE id = ?",
+                [$totalServiceAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority, $bookingId]
+            );
+
+            $rzpOrder = null;
+            try {
                 $rzpGateway = new RazorpayGateway();
+                $rzpOrder = $rzpGateway->createOrder($bookingId, $advanceAmount, 'INR', [
+                    'booking_no'     => $bookingNo,
+                    'service_name'   => $service['name'] ?? 'Doorstep Service',
+                    'customer_id'    => (string)$customerId,
+                    'payment_type'   => $paymentMethod,
+                    'total_amount'   => (string)$totalServiceAmount,
+                    'advance_amount' => (string)$advanceAmount,
+                    'due_amount'     => (string)$dueAmount,
+                ]);
+
+                \App\Models\Payment::create([
+                    'booking_id'      => $bookingId,
+                    'amount'          => $advanceAmount,
+                    'method'          => 'upi',
+                    'status'          => 'pending',
+                    'transaction_ref' => $rzpOrder['order_id'] ?? null,
+                    'paid_at'         => null,
+                    'recorded_by'     => $customerId ?: null,
+                ]);
+            } catch (\Throwable $e) {
+                Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
+            }
+
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                $isNewAcc = !empty($_SESSION['guest_account_created']);
+                $genPwd = $_SESSION['guest_account_password'] ?? null;
+                $ident = $_SESSION['guest_account_identifier'] ?? $phoneInput;
+
+                if (!empty($rzpOrder['order_id'])) {
+                    $rzpGateway = new RazorpayGateway();
+                    return Response::json([
+                        'success'            => true,
+                        'requires_payment'   => true,
+                        'razorpay_order_id'  => $rzpOrder['order_id'],
+                        'razorpay_key_id'    => $rzpGateway->getKeyId(),
+                        'amount'             => (int)round($advanceAmount * 100), // paise for Razorpay
+                        'currency'           => 'INR',
+                        'booking_no'         => $bookingNo,
+                        'booking_id'         => $bookingId,
+                        'name'               => $nameInput,
+                        'phone'              => $phoneInput,
+                        'email'              => $emailInput ?? '',
+                        'service_name'       => $service['name'] ?? 'Doorstep Service',
+                        'address'            => $addressInput,
+                        'city'               => $cityInput,
+                        'preferred_date'     => $prefDate,
+                        'preferred_time'     => $prefTime,
+                        'payment_type'       => $paymentMethod,
+                        'total_amount'       => $totalServiceAmount,
+                        'advance_amount'     => $advanceAmount,
+                        'due_amount'         => $dueAmount,
+                        'priority'           => $priority,
+                        'priority_label'     => ($priority === 'high') ? 'High Priority' : 'Medium Priority',
+                        'is_new_customer'    => $isNewAcc,
+                        'generated_password' => $genPwd,
+                        'identifier'         => $ident,
+                        'redirect_url'       => View::url('/account/bookings'),
+                    ]);
+                }
+
                 return Response::json([
                     'success'            => true,
-                    'requires_payment'   => true,
-                    'razorpay_order_id'  => $rzpOrder['order_id'],
-                    'razorpay_key_id'    => $rzpGateway->getKeyId(),
-                    'amount'             => (int)round($advanceAmount * 100), // paise for Razorpay
-                    'currency'           => 'INR',
+                    'requires_payment'   => false,
                     'booking_no'         => $bookingNo,
                     'booking_id'         => $bookingId,
                     'name'               => $nameInput,
                     'phone'              => $phoneInput,
-                    'email'              => $emailInput ?? '',
                     'service_name'       => $service['name'] ?? 'Doorstep Service',
                     'address'            => $addressInput,
                     'city'               => $cityInput,
-                    'preferred_date'     => (string)$request->input('preferred_date'),
-                    'preferred_time'     => (string)$request->input('preferred_time'),
-                    'payment_type'       => $paymentMethod,
-                    'total_amount'       => $totalServiceAmount,
-                    'advance_amount'     => $advanceAmount,
-                    'due_amount'         => $dueAmount,
-                    'priority'           => $priority,
-                    'priority_label'     => ($priority === 'high') ? 'High Priority' : 'Medium Priority',
+                    'preferred_date'     => $prefDate,
+                    'preferred_time'     => $prefTime,
+                    'payment_method'     => 'Cash on Delivery',
                     'is_new_customer'    => $isNewAcc,
                     'generated_password' => $genPwd,
                     'identifier'         => $ident,
@@ -440,27 +546,26 @@ class BookingController extends Controller
                 ]);
             }
 
-            return Response::json([
-                'success'            => true,
-                'requires_payment'   => false,
-                'booking_no'         => $bookingNo,
-                'booking_id'         => $bookingId,
-                'name'               => $nameInput,
-                'phone'              => $phoneInput,
-                'service_name'       => $service['name'] ?? 'Doorstep Service',
-                'address'            => $addressInput,
-                'city'               => $cityInput,
-                'preferred_date'     => (string)$request->input('preferred_date'),
-                'preferred_time'     => (string)$request->input('preferred_time'),
-                'payment_method'     => 'Cash on Delivery',
-                'is_new_customer'    => $isNewAcc,
-                'generated_password' => $genPwd,
-                'identifier'         => $ident,
-                'redirect_url'       => View::url('/account/bookings'),
+            return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));
+        } catch (\Throwable $e) {
+            Logger::error("Booking submission exception: " . $e->getMessage(), [
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
-        }
 
-        return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json([
+                    'success' => false,
+                    'message' => 'Unable to complete booking: ' . $e->getMessage(),
+                    'error'   => 'Unable to complete booking: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            View::setFlash('error', 'Unable to complete booking: ' . $e->getMessage());
+            $redirectServiceId = (int)$request->input('service_id', 0);
+            return $this->redirect($redirectServiceId > 0 ? '/book?service_id=' . $redirectServiceId : '/services');
+        }
     }
 
     public function verifyPayment(Request $request): Response

@@ -250,6 +250,25 @@ function fallbackModalCopy(text, cb) {
     }
   }
 
+  function parseSlotMinutes(slot) {
+    if (!slot || typeof slot !== 'string') return null;
+    var m = slot.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (!m) return null;
+    var hours = parseInt(m[1], 10);
+    var minutes = parseInt(m[2], 10);
+    var ampm = m[3] ? m[3].toUpperCase() : null;
+    if (!ampm) {
+      var endM = slot.match(/(AM|PM)$/i);
+      if (endM && endM[1].toUpperCase() === 'PM' && hours < 8) {
+        hours += 12;
+      }
+    } else {
+      if (ampm === 'PM' && hours < 12) hours += 12;
+      if (ampm === 'AM' && hours === 12) hours = 0;
+    }
+    return hours * 60 + minutes;
+  }
+
   function hidePaymentModal() {
     var modal = getModal();
     if (!modal) return;
@@ -308,7 +327,20 @@ function fallbackModalCopy(text, cb) {
       houseNo.value = 'House No. 1';
     }
 
-    // 2. Safeguard: Ensure preferred date and time have fallback defaults
+    // 2. Validate Service Selection
+    var srvInp = form.querySelector('[name="service_id"]');
+    if (srvInp && (!srvInp.value || srvInp.value === '0')) {
+      var srvSelect = form.querySelector('select[name="service_id"]');
+      if (srvSelect) {
+        e.preventDefault();
+        e.stopPropagation();
+        srvSelect.focus();
+        if (typeof srvSelect.reportValidity === 'function') srvSelect.reportValidity();
+        return false;
+      }
+    }
+
+    // 3. Safeguard & Validate Preferred Schedule
     var prefDate = form.querySelector('[name="preferred_date"]');
     if (prefDate && !prefDate.value.trim()) {
       var today = new Date();
@@ -318,11 +350,35 @@ function fallbackModalCopy(text, cb) {
       prefDate.value = y + '-' + m + '-' + d;
     }
     var prefTime = form.querySelector('[name="preferred_time"]');
-    if (prefTime && !prefTime.value.trim()) {
-      prefTime.value = '02:00 - 04:00 PM';
+    if (!prefTime || !prefTime.value.trim()) {
+      e.preventDefault();
+      e.stopPropagation();
+      alert('Please select an available time slot for your appointment or pick another date.');
+      var timeTrigger = document.getElementById('timeInputTrigger') || document.getElementById('cartTimeInputTrigger');
+      if (timeTrigger) timeTrigger.click();
+      return false;
     }
 
-    // 3. Prevent hidden collapsed inputs from failing HTML5 validation
+    // Safeguard: Validate that selected slot is at least 30 min in advance for today
+    if (prefDate && prefTime && prefTime.value.trim()) {
+      var selDate = prefDate.value.trim();
+      var now = new Date();
+      var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+      if (selDate === todayStr) {
+        var slotMins = parseSlotMinutes(prefTime.value.trim());
+        var cutoffMins = now.getHours() * 60 + now.getMinutes() + 30;
+        if (slotMins !== null && slotMins < cutoffMins) {
+          e.preventDefault();
+          e.stopPropagation();
+          alert('The selected time slot (' + prefTime.value + ') has already passed or is within 30 minutes. Please select an upcoming slot starting at least 30 minutes from now or pick another date.');
+          var timeTrigger = document.getElementById('timeInputTrigger') || document.getElementById('cartTimeInputTrigger');
+          if (timeTrigger) timeTrigger.click();
+          return false;
+        }
+      }
+    }
+
+    // 4. Prevent hidden collapsed inputs from failing HTML5 validation
     var hiddenBoxes = form.querySelectorAll('[style*="display: none"], [style*="display:none"], [style*="display: none;"]');
     hiddenBoxes.forEach(function(box) {
       box.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(inp) {
@@ -330,7 +386,7 @@ function fallbackModalCopy(text, cb) {
       });
     });
 
-    // 4. Validate visible critical inputs explicitly
+    // 5. Validate visible critical inputs explicitly
     var nameInp = form.querySelector('[name="name"]');
     if (nameInp && !nameInp.value.trim()) {
       e.preventDefault();
@@ -352,7 +408,7 @@ function fallbackModalCopy(text, cb) {
       }
     }
 
-    // 5. Ensure address composite exists
+    // 6. Ensure address composite exists
     var streetInp = form.querySelector('[name="street"]');
     var addrInp = form.querySelector('[name="address"]');
     var cityInp = form.querySelector('[name="city"]');
@@ -471,6 +527,42 @@ function fallbackModalCopy(text, cb) {
         var radioOnline = document.querySelector('input[name="modal_payment_method"][value="online"]');
         var selectedMethod = (radioOnline && radioOnline.checked) ? 'online' : 'cod';
 
+        // Check preferred_time is present before sending
+        var prefTimeInForm = activeBookingForm.querySelector('[name="preferred_time"]');
+        if (!prefTimeInForm || !prefTimeInForm.value.trim()) {
+          var errorAlert = document.getElementById('rfxModalErrorAlert');
+          if (errorAlert) {
+            errorAlert.innerText = 'Please choose an available time slot for your service appointment.';
+            errorAlert.style.display = 'block';
+          } else {
+            alert('Please choose an available time slot for your appointment.');
+          }
+          return;
+        }
+
+        // Check preferred_time is valid for today (30 min buffer)
+        var prefDateInForm = activeBookingForm.querySelector('[name="preferred_date"]');
+        if (prefDateInForm && prefTimeInForm && prefTimeInForm.value.trim()) {
+          var selDate = prefDateInForm.value.trim();
+          var now = new Date();
+          var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+          if (selDate === todayStr) {
+            var slotMins = parseSlotMinutes(prefTimeInForm.value.trim());
+            var cutoffMins = now.getHours() * 60 + now.getMinutes() + 30;
+            if (slotMins !== null && slotMins < cutoffMins) {
+              var errorAlert = document.getElementById('rfxModalErrorAlert');
+              var slotWarn = 'The selected time slot (' + prefTimeInForm.value + ') has passed or is within 30 minutes. Please choose a later slot or select another date.';
+              if (errorAlert) {
+                errorAlert.innerText = slotWarn;
+                errorAlert.style.display = 'block';
+              } else {
+                alert(slotWarn);
+              }
+              return;
+            }
+          }
+        }
+
         var originalBtnHtml = btnConfirm.innerHTML;
         btnConfirm.disabled = true;
         btnConfirm.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Processing Booking...';
@@ -487,21 +579,32 @@ function fallbackModalCopy(text, cb) {
           formData.set('address', addrInput.value);
         }
 
+        // Get CSRF Token value
+        var csrfVal = '';
+        var csrfEl = activeBookingForm.querySelector('[name="_csrf"]') || document.querySelector('input[name="_csrf"]');
+        if (csrfEl && csrfEl.value) {
+          csrfVal = csrfEl.value;
+          formData.set('_csrf', csrfVal);
+        }
+
         var actionUrl = activeBookingForm.getAttribute('action') || (window.REFIXEL_BASE_URL ? window.REFIXEL_BASE_URL + '/book' : '/book');
 
         fetch(actionUrl, {
           method: 'POST',
           headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfVal
           },
           body: formData
         })
         .then(function(res) {
-          return res.json().then(function(data) {
-            return { ok: res.ok, status: res.status, data: data };
-          }).catch(function() {
-            return { ok: res.ok, status: res.status, data: null };
+          return res.text().then(function(text) {
+            var data = null;
+            try {
+              data = JSON.parse(text);
+            } catch(e) {}
+            return { ok: res.ok, status: res.status, data: data, rawText: text };
           });
         })
         .then(function(result) {
@@ -509,10 +612,30 @@ function fallbackModalCopy(text, cb) {
           btnConfirm.innerHTML = originalBtnHtml;
 
           if (!result.ok || !result.data || !result.data.success) {
-            var errMsg = (result.data && result.data.message) ? result.data.message : 'Unable to complete booking. Please verify all details and try again.';
+            var errMsg = '';
+            if (result.data) {
+              errMsg = result.data.message || result.data.error;
+              if (!errMsg && result.data.errors) {
+                var firstKey = Object.keys(result.data.errors)[0];
+                errMsg = Array.isArray(result.data.errors[firstKey]) ? result.data.errors[firstKey][0] : result.data.errors[firstKey];
+              }
+            }
+            if (!errMsg) {
+              if (result.status === 419) {
+                errMsg = 'Session expired. Please refresh the page and try again.';
+              } else if (result.status === 422) {
+                errMsg = 'Please verify all booking details (name, phone, address, and slot) and try again.';
+              } else if (result.status >= 500) {
+                errMsg = 'Unable to complete booking due to a server error. Please try again.';
+              } else {
+                errMsg = 'Unable to complete booking. Please verify all details and try again.';
+              }
+            }
+
             if (errorAlert) {
               errorAlert.innerText = errMsg;
               errorAlert.style.display = 'block';
+              try { errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch(e) {}
             } else {
               alert(errMsg);
             }

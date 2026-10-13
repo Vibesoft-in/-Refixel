@@ -24,10 +24,17 @@ class VerifyCsrf
             ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null);
 
         if (!Csrf::validate($token)) {
-            if ($request->isAjax() || $request->isJson()) {
+            $isAjax = $request->isAjax()
+                || $request->isJson()
+                || (string)$request->input('is_ajax') === '1'
+                || (string)$request->post('is_ajax') === '1'
+                || !empty($_SERVER['HTTP_X_REQUESTED_WITH']);
+
+            if ($isAjax) {
                 return Response::json([
+                    'success' => false,
                     'status'  => 'error',
-                    'message' => 'CSRF token mismatch. Please reload the page and try again.',
+                    'message' => 'Your session has expired or security token mismatch. Please reload the page and try again.',
                 ], 419);
             }
 

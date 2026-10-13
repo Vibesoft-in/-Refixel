@@ -357,11 +357,11 @@ foreach ($payments as $p) {
           </div>
           <div class="form-group mb-3">
             <label class="small font-weight-bold">Preferred Time Slot <span class="text-danger">*</span></label>
-            <select name="preferred_time" class="form-control" required>
-              <option value="09:00 AM - 12:00 PM" <?= $booking['preferred_time'] === '09:00 AM - 12:00 PM' ? 'selected' : '' ?>>09:00 AM - 12:00 PM (Morning)</option>
-              <option value="12:00 PM - 03:00 PM" <?= $booking['preferred_time'] === '12:00 PM - 03:00 PM' ? 'selected' : '' ?>>12:00 PM - 03:00 PM (Afternoon)</option>
-              <option value="03:00 PM - 06:00 PM" <?= $booking['preferred_time'] === '03:00 PM - 06:00 PM' ? 'selected' : '' ?>>03:00 PM - 06:00 PM (Evening)</option>
-              <option value="06:00 PM - 08:00 PM" <?= $booking['preferred_time'] === '06:00 PM - 08:00 PM' ? 'selected' : '' ?>>06:00 PM - 08:00 PM (Late)</option>
+            <select name="preferred_time" id="reschedPreferredTime" class="form-control" required>
+              <option value="09:00 AM - 12:00 PM" data-start-minutes="540" <?= $booking['preferred_time'] === '09:00 AM - 12:00 PM' ? 'selected' : '' ?>>09:00 AM - 12:00 PM (Morning)</option>
+              <option value="12:00 PM - 03:00 PM" data-start-minutes="720" <?= $booking['preferred_time'] === '12:00 PM - 03:00 PM' ? 'selected' : '' ?>>12:00 PM - 03:00 PM (Afternoon)</option>
+              <option value="03:00 PM - 06:00 PM" data-start-minutes="900" <?= $booking['preferred_time'] === '03:00 PM - 06:00 PM' ? 'selected' : '' ?>>03:00 PM - 06:00 PM (Evening)</option>
+              <option value="06:00 PM - 08:00 PM" data-start-minutes="1080" <?= $booking['preferred_time'] === '06:00 PM - 08:00 PM' ? 'selected' : '' ?>>06:00 PM - 08:00 PM (Late)</option>
             </select>
           </div>
         </div>
@@ -563,12 +563,44 @@ document.addEventListener('DOMContentLoaded', function() {
               calDayNumber.textContent = dayNum;
               calMonthName.textContent = monthNames[selectedDate.getMonth()];
               renderCalendar();
+              refreshReschedSlots();
               toggleDropdown(false);
             });
           })(cellDate, d);
         }
 
         calDaysGrid.appendChild(cell);
+      }
+    }
+
+    function refreshReschedSlots() {
+      var timeSelect = document.getElementById('reschedPreferredTime');
+      if (!timeSelect) return;
+      var isToday = (
+        selectedDate.getFullYear() === today.getFullYear() &&
+        selectedDate.getMonth() === today.getMonth() &&
+        selectedDate.getDate() === today.getDate()
+      );
+      var now = new Date();
+      var cutoff = isToday ? (now.getHours() * 60 + now.getMinutes() + 30) : 0;
+      var hasValid = false;
+
+      for (var i = 0; i < timeSelect.options.length; i++) {
+        var opt = timeSelect.options[i];
+        var sMin = parseInt(opt.getAttribute('data-start-minutes') || '0', 10);
+        if (isToday && sMin < cutoff) {
+          opt.disabled = true;
+          opt.style.display = 'none';
+        } else {
+          opt.disabled = false;
+          opt.style.display = '';
+          if (!hasValid && !opt.disabled) {
+            hasValid = true;
+            if (timeSelect.selectedOptions.length === 0 || timeSelect.selectedOptions[0].disabled) {
+              opt.selected = true;
+            }
+          }
+        }
       }
     }
 
@@ -601,6 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
     preferredDateInput.value = formatYYYYMMDD(selectedDate);
     displayDateInput.value = formatInputDate(selectedDate);
     renderCalendar();
+    refreshReschedSlots();
   }
 });
 </script>

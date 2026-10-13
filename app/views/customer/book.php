@@ -488,7 +488,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
               
               <!-- Hidden inputs for backend form processing -->
               <input type="hidden" name="preferred_date" id="preferredDateInput" value="<?= date('Y-m-d') ?>" required>
-              <input type="hidden" name="preferred_time" id="preferredTimeInput" value="02:00 - 04:00 PM" required>
+              <input type="hidden" name="preferred_time" id="preferredTimeInput" value="" required>
 
               <div class="row mb-4">
                 <!-- Calendar Input with Popover Dropdown (Matching reference image) -->
@@ -589,7 +589,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                         <div class="cal-trigger-icon" style="color: #ff5238; font-size: 16px;">
                           <i class="fa fa-clock-o"></i>
                         </div>
-                        <input type="text" id="displayTimeInput" class="cal-custom-input" readonly value="02:00 - 04:00 PM" placeholder="Click to select time slot...">
+                        <input type="text" id="displayTimeInput" class="cal-custom-input" readonly value="" placeholder="Click to select time slot...">
                       </div>
                       <i class="fa fa-chevron-down text-muted cal-trigger-chevron" id="timeChevronIcon"></i>
                     </div>
@@ -602,7 +602,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                           <span class="badge" style="background: #fff3ec; color: #ff5238; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">Doorstep Visit</span>
                         </div>
                         <div class="time-options-list" id="timeSlotsGroup">
-                          <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM" data-start-minutes="540">
                             <div class="d-flex align-items-center" style="gap: 12px;">
                               <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
                               <div>
@@ -613,7 +613,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                             <i class="fa fa-check time-opt-check"></i>
                           </div>
 
-                          <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM" data-start-minutes="660">
                             <div class="d-flex align-items-center" style="gap: 12px;">
                               <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
                               <div>
@@ -624,7 +624,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                             <i class="fa fa-check time-opt-check"></i>
                           </div>
 
-                          <div class="time-option-item active" role="button" tabindex="0" data-slot="02:00 - 04:00 PM">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="02:00 - 04:00 PM" data-start-minutes="840">
                             <div class="d-flex align-items-center" style="gap: 12px;">
                               <div class="time-opt-icon"><i class="fa fa-cloud"></i></div>
                               <div>
@@ -635,7 +635,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                             <i class="fa fa-check time-opt-check"></i>
                           </div>
 
-                          <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="04:00 - 06:00 PM" data-start-minutes="960">
                             <div class="d-flex align-items-center" style="gap: 12px;">
                               <div class="time-opt-icon"><i class="fa fa-moon-o"></i></div>
                               <div>
@@ -645,6 +645,18 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                             </div>
                             <i class="fa fa-check time-opt-check"></i>
                           </div>
+                        </div>
+
+                        <!-- Notice when no slots remain for today -->
+                        <div id="timeSlotsNoAvailableMsg" class="p-3 text-center small mt-2" style="display:none; background:#fff8f5; border:1.5px dashed #ffdacf; border-radius:12px; color:#c2410c;">
+                          <i class="fa fa-clock-o text-danger mb-1" style="font-size:18px;"></i>
+                          <div class="font-weight-bold text-dark" style="font-size: 13px;">No slots available for today</div>
+                          <div class="text-muted mt-1" style="font-size: 11.5px; line-height: 1.4;">
+                            Bookings require at least 30 minutes advance notice. All time slots for today have closed.
+                          </div>
+                          <button type="button" class="btn btn-sm text-white font-weight-bold mt-2" style="background:#f25b29; border-radius:8px; font-size:12px; padding: 6px 14px;" id="btnPickTomorrowFromSlot">
+                            <i class="fa fa-calendar mr-1"></i> Pick Tomorrow
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1131,8 +1143,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Initial selected date (defaults to today)
+    // Initial selected date (auto-advance to tomorrow if all slots for today are already past +30m cutoff)
+    var realNow = new Date();
+    var currentCutoffMinutes = realNow.getHours() * 60 + realNow.getMinutes() + 30;
     var selectedDate = new Date(today.getTime());
+    if (currentCutoffMinutes > 960) {
+      // 04:00 PM (960 min) is the last slot start. Past 03:30 PM, today has 0 valid slots.
+      selectedDate = new Date(today.getTime() + 86400000);
+    }
     var viewYear = selectedDate.getFullYear();
     var viewMonth = selectedDate.getMonth();
 
@@ -1158,7 +1176,67 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSummary() {
       if (!calSummaryDisplay) return;
       var timeSlot = preferredTimeInput ? preferredTimeInput.value : '';
-      calSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (' + timeSlot + ')';
+      if (!timeSlot) {
+        calSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (No slot selected)';
+      } else {
+        calSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (' + timeSlot + ')';
+      }
+    }
+
+    function refreshTimeSlots() {
+      var isToday = (
+        selectedDate.getFullYear() === today.getFullYear() &&
+        selectedDate.getMonth() === today.getMonth() &&
+        selectedDate.getDate() === today.getDate()
+      );
+
+      var liveNow = new Date();
+      var cutoff = isToday ? (liveNow.getHours() * 60 + liveNow.getMinutes() + 30) : 0;
+      var visibleOptions = [];
+
+      timeOptionItems.forEach(function(opt) {
+        var startMin = parseInt(opt.getAttribute('data-start-minutes') || '0', 10);
+        if (isToday && startMin < cutoff) {
+          opt.style.display = 'none';
+          opt.classList.remove('active');
+        } else {
+          opt.style.display = 'flex';
+          visibleOptions.push(opt);
+        }
+      });
+
+      var noSlotsMsg = document.getElementById('timeSlotsNoAvailableMsg');
+      if (visibleOptions.length === 0) {
+        if (noSlotsMsg) noSlotsMsg.style.display = 'block';
+        if (preferredTimeInput) preferredTimeInput.value = '';
+        if (displayTimeInput) displayTimeInput.value = 'No slots available today - Pick date';
+        if (calSummaryDisplay) {
+          calSummaryDisplay.textContent = formatDisplayDate(selectedDate) + ' (No slots available - Please pick tomorrow)';
+        }
+      } else {
+        if (noSlotsMsg) noSlotsMsg.style.display = 'none';
+        var currentSlotVal = preferredTimeInput ? preferredTimeInput.value : '';
+        var matchingVisible = null;
+        for (var i = 0; i < visibleOptions.length; i++) {
+          if (visibleOptions[i].getAttribute('data-slot') === currentSlotVal) {
+            matchingVisible = visibleOptions[i];
+            break;
+          }
+        }
+
+        if (!matchingVisible) {
+          timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
+          var firstOpt = visibleOptions[0];
+          firstOpt.classList.add('active');
+          var firstSlot = firstOpt.getAttribute('data-slot');
+          if (preferredTimeInput) preferredTimeInput.value = firstSlot;
+          if (displayTimeInput) displayTimeInput.value = firstSlot;
+        } else {
+          timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
+          matchingVisible.classList.add('active');
+        }
+        updateSummary();
+      }
     }
 
     function toggleTimeDropdown(show) {
@@ -1281,8 +1359,7 @@ document.addEventListener('DOMContentLoaded', function() {
               calDayNumber.textContent = dayNum;
               calMonthName.textContent = monthNames[selectedDate.getMonth()];
               renderCalendar();
-              updateSummary();
-              // Close dropdown after selecting date
+              refreshTimeSlots();
               toggleDropdown(false);
             });
           })(cellDate, d);
@@ -1322,6 +1399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     timeOptionItems.forEach(function(opt) {
       opt.addEventListener('click', function(e) {
         e.stopPropagation();
+        if (opt.style.display === 'none') return;
         timeOptionItems.forEach(function(b) { b.classList.remove('active'); });
         this.classList.add('active');
         var slot = this.getAttribute('data-slot');
@@ -1332,14 +1410,26 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
+    // Wire Pick Tomorrow button inside time slots dropdown
+    var btnPickTomorrow = document.getElementById('btnPickTomorrowFromSlot');
+    if (btnPickTomorrow) {
+      btnPickTomorrow.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectedDate = new Date(today.getTime() + 86400000);
+        viewYear = selectedDate.getFullYear();
+        viewMonth = selectedDate.getMonth();
+        preferredDateInput.value = formatYYYYMMDD(selectedDate);
+        displayDateInput.value = formatInputDate(selectedDate);
+        renderCalendar();
+        refreshTimeSlots();
+      });
+    }
+
     // Initial setup
     preferredDateInput.value = formatYYYYMMDD(selectedDate);
     displayDateInput.value = formatInputDate(selectedDate);
-    if (preferredTimeInput && displayTimeInput) {
-      displayTimeInput.value = preferredTimeInput.value || '02:00 - 04:00 PM';
-    }
     renderCalendar();
-    updateSummary();
+    refreshTimeSlots();
   }
 
   /* ══════════════════════════════════════════════════════════════════
