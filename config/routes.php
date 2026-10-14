@@ -231,6 +231,8 @@ Router::group(['middleware' => ['RequireRole:staff']], function () {
     Router::post('/staff/jobs/{id}/photos', 'Staff\\JobController@uploadPhoto', ['VerifyCsrf']);
     Router::get('/staff/jobs/{id}/complete', 'Staff\\JobController@complete');
     Router::post('/staff/jobs/{id}/complete', 'Staff\\JobController@processComplete', ['VerifyCsrf']);
+    Router::post('/staff/jobs/{id}/record-payment', 'Staff\\JobController@recordPayment', ['VerifyCsrf']);
+    Router::post('/staff/jobs/{id}/create-payment-order', 'Staff\\JobController@createPaymentOrder', ['VerifyCsrf']);
 
     Router::get('/staff/earnings', 'Staff\\EarningsController@index');
 

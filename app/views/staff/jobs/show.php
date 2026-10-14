@@ -198,9 +198,27 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
       <div class="alert alert-primary py-2 px-3 small font-weight-bold mb-3">
         <i class="fa fa-wrench mr-1"></i>Work is in progress. Remember to take Before and After photos!
       </div>
-      <a href="<?= View::url('/staff/jobs/' . $job['id'] . '/complete') ?>" class="btn btn-success btn-block py-2 font-weight-bold">
-        <i class="fa fa-check-square-o mr-1"></i>Complete This Job
-      </a>
+
+      <?php if (($dueAmt ?? 0) > 0 && empty($job['is_prepaid'])): ?>
+        <div class="p-3 bg-white rounded border mb-3" style="border-left: 4px solid #f25b29 !important;">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small font-weight-bold text-dark"><i class="fa fa-credit-card mr-1 text-danger"></i>Customer Payment Due:</span>
+            <span class="font-weight-bold text-danger" style="font-size: 19px;">₹<?= number_format($dueAmt, 0) ?></span>
+          </div>
+          <div class="small text-muted mb-2">Total Service Fee ₹<?= round($totAmt ?? 0) ?> &bull; Advance Paid ₹<?= round($advAmt ?? 0) ?></div>
+          <button type="button" class="btn btn-success btn-block py-2 font-weight-bold shadow-sm" data-toggle="modal" data-target="#staffPaymentModal">
+            <i class="fa fa-qrcode mr-1"></i>Collect Payment (Online QR / Cash)
+          </button>
+        </div>
+
+        <a href="<?= View::url('/staff/jobs/' . $job['id'] . '/complete') ?>" class="btn btn-outline-success btn-block py-2 font-weight-bold">
+          <i class="fa fa-check-square-o mr-1"></i>Complete This Job
+        </a>
+      <?php else: ?>
+        <a href="<?= View::url('/staff/jobs/' . $job['id'] . '/complete') ?>" class="btn btn-success btn-block py-2 font-weight-bold">
+          <i class="fa fa-check-square-o mr-1"></i>Complete This Job
+        </a>
+      <?php endif; ?>
 
     <?php elseif ($job['status'] === 'completed'): ?>
       <div class="alert alert-success py-2 px-3 small font-weight-bold mb-2">
@@ -304,4 +322,11 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
     <?php endif; ?>
   </div>
 </div>
+
+<?= View::partial('staff-payment-modal', [
+    'job'    => $job,
+    'totAmt' => $totAmt ?? 0,
+    'advAmt' => $advAmt ?? 0,
+    'dueAmt' => $dueAmt ?? 0
+]) ?>
 

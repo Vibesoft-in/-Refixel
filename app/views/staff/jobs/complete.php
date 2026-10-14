@@ -20,6 +20,29 @@ $afterPhotos = $afterPhotos ?? [];
     </div>
   </div>
 
+  <?php if (($dueAmt ?? 0) > 0 && empty($job['is_prepaid'])): ?>
+    <div class="card border-0 shadow-sm rounded-lg mb-3" style="background: #fff8f5; border-left: 4px solid #dc2626 !important;">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 8px;">
+          <div>
+            <span class="badge badge-danger font-weight-bold mb-1"><i class="fa fa-exclamation-triangle mr-1"></i>Customer Payment Pending</span>
+            <h6 class="font-weight-bold text-dark mb-0">Balance to Collect: ₹<?= number_format($dueAmt, 0) ?></h6>
+            <div class="small text-muted">Total: ₹<?= round($totAmt ?? 0) ?> &bull; Advance Paid: ₹<?= round($advAmt ?? 0) ?></div>
+          </div>
+          <div>
+            <button type="button" class="btn btn-sm btn-success font-weight-bold px-3 py-2 shadow-sm" data-toggle="modal" data-target="#staffPaymentModal">
+              <i class="fa fa-qrcode mr-1"></i>Pay via Online QR / Cash
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <?php else: ?>
+    <div class="alert alert-success py-2 px-3 small font-weight-bold mb-3">
+      <i class="fa fa-check-circle mr-1"></i>Customer Payment Settled &bull; 100% Fully Paid
+    </div>
+  <?php endif; ?>
+
   <!-- Job Details Summary Card -->
   <div class="job-card mb-3">
     <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap" style="gap: 6px;">
@@ -108,6 +131,30 @@ $afterPhotos = $afterPhotos ?? [];
         <small class="form-text text-muted">Upload photos of the completed service/work area.</small>
       </div>
 
+      <!-- Customer Payment Settlement Row (if not settled earlier) -->
+      <?php if (($dueAmt ?? 0) > 0 && empty($job['is_prepaid'])): ?>
+        <div class="p-3 bg-light rounded border mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="font-weight-bold text-dark small"><i class="fa fa-money text-success mr-1"></i>Customer Payment Settlement</span>
+            <span class="badge badge-warning text-dark font-weight-bold">Due: ₹<?= number_format($dueAmt, 0) ?></span>
+          </div>
+          <div class="form-row">
+            <div class="col-6">
+              <label class="small text-muted font-weight-bold mb-1">Collection Method</label>
+              <select name="settle_payment_method" class="form-control form-control-sm">
+                <option value="cash">💵 Cash Received</option>
+                <option value="upi">📱 Online (UPI / QR Code)</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="small text-muted font-weight-bold mb-1">Amount Received (₹)</label>
+              <input type="number" step="1" name="settle_payment_amount" value="<?= round($dueAmt) ?>" class="form-control form-control-sm font-weight-bold text-success" required>
+            </div>
+          </div>
+          <small class="form-text text-muted mt-1">If not already recorded via the popup, confirm the collected amount here to finish.</small>
+        </div>
+      <?php endif; ?>
+
       <div class="border-top pt-3">
         <button type="submit" class="btn btn-success btn-block py-2 font-weight-bold" style="font-size: 15px;">
           <i class="fa fa-check-circle mr-1"></i>Submit & Mark as Completed
@@ -119,4 +166,11 @@ $afterPhotos = $afterPhotos ?? [];
     </form>
   </div>
 </div>
+
+<?= View::partial('staff-payment-modal', [
+    'job'    => $job,
+    'totAmt' => $totAmt ?? 0,
+    'advAmt' => $advAmt ?? 0,
+    'dueAmt' => $dueAmt ?? 0
+]) ?>
 
