@@ -70,9 +70,25 @@ $isAvailable = !empty($profile['is_available']);
     <?php $activeJob = $inProgressJobs[0]; ?>
     <div class="card border-0 shadow-sm rounded-lg mb-3" style="border-left: 4px solid #1d4ed8 !important; background: #eff6ff;">
       <div class="card-body p-3">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <span class="badge badge-status-in_progress"><i class="fa fa-play mr-1"></i>Active Job In Progress</span>
-          <span class="font-weight-bold text-primary">#<?= View::e($activeJob['booking_no']) ?></span>
+        <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap" style="gap: 6px;">
+          <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+            <span class="badge badge-status-in_progress"><i class="fa fa-play mr-1"></i>In Progress</span>
+            <span class="font-weight-bold text-primary">#<?= View::e($activeJob['booking_no']) ?></span>
+            <?php if (!empty($activeJob['is_prepaid'])): ?>
+              <span class="badge font-weight-bold px-2 py-1" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11px;">
+                <i class="fa fa-credit-card mr-1"></i>Prepaid
+              </span>
+            <?php else: ?>
+              <span class="badge font-weight-bold px-2 py-1" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px;">
+                <i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked
+              </span>
+            <?php endif; ?>
+            <?php if (($activeJob['priority_key'] ?? '') === 'urgent'): ?>
+              <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 11px;">Urgent Priority</span>
+            <?php elseif (($activeJob['priority_key'] ?? '') === 'high'): ?>
+              <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size: 11px;">High Priority</span>
+            <?php endif; ?>
+          </div>
         </div>
         <h6 class="font-weight-bold mb-1 text-dark"><?= View::e($activeJob['service_name']) ?></h6>
         <p class="text-muted small mb-2"><i class="fa fa-map-marker text-danger mr-1"></i><?= View::e($activeJob['address']) ?></p>
@@ -104,10 +120,28 @@ $isAvailable = !empty($profile['is_available']);
   <?php else: ?>
     <?php foreach ($todayJobs as $job): ?>
       <div class="job-card">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
+        <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap" style="gap: 6px;">
+          <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
             <span class="font-weight-bold text-dark">#<?= View::e($job['booking_no']) ?></span>
-            <span class="badge badge-status-<?= View::e($job['status']) ?> ml-1"><?= ucfirst(str_replace('_', ' ', $job['status'])) ?></span>
+            <span class="badge badge-status-<?= View::e($job['status']) ?>"><?= ucfirst(str_replace('_', ' ', $job['status'])) ?></span>
+            <?php if (!empty($job['is_prepaid'])): ?>
+              <span class="badge font-weight-bold px-2 py-1" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 10px;">
+                <i class="fa fa-credit-card mr-1"></i>Prepaid
+              </span>
+            <?php else: ?>
+              <span class="badge font-weight-bold px-2 py-1" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 10px;">
+                <i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked
+              </span>
+            <?php endif; ?>
+            <?php if (($job['priority_key'] ?? '') === 'urgent'): ?>
+              <span class="badge font-weight-bold px-2 py-1" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 10px;">
+                Urgent Priority
+              </span>
+            <?php elseif (($job['priority_key'] ?? '') === 'high'): ?>
+              <span class="badge font-weight-bold px-2 py-1" style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; font-size: 10px;">
+                High Priority
+              </span>
+            <?php endif; ?>
           </div>
           <div class="text-right">
             <span class="small font-weight-bold text-dark"><i class="fa fa-clock-o text-muted mr-1"></i><?= View::e($job['preferred_time'] ?? 'Flexible') ?></span>

@@ -33,7 +33,39 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
     <div class="d-flex justify-content-between align-items-start mb-2">
       <div>
         <span class="text-muted small text-uppercase font-weight-bold">Booking ID</span>
-        <h5 class="font-weight-bold text-dark mb-0">#<?= View::e($job['booking_no']) ?></h5>
+        <h5 class="font-weight-bold text-dark mb-1">#<?= View::e($job['booking_no']) ?></h5>
+        
+        <div class="d-flex flex-wrap align-items-center mt-1" style="gap: 6px;">
+          <!-- Prepaid / Pre-Booked Badge -->
+          <?php if (!empty($job['is_prepaid'])): ?>
+            <span class="badge font-weight-bold px-2 py-1" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11px;">
+              <i class="fa fa-credit-card mr-1"></i>Prepaid (Fully Paid)
+            </span>
+          <?php else: ?>
+            <span class="badge font-weight-bold px-2 py-1" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px;">
+              <i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked
+            </span>
+          <?php endif; ?>
+
+          <!-- Priority Badge -->
+          <?php if (($job['priority_key'] ?? '') === 'urgent'): ?>
+            <span class="badge font-weight-bold px-2 py-1" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 11px;">
+              <i class="fa fa-fire mr-1"></i>Urgent Priority
+            </span>
+          <?php elseif (($job['priority_key'] ?? '') === 'high'): ?>
+            <span class="badge font-weight-bold px-2 py-1" style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; font-size: 11px;">
+              <i class="fa fa-bolt mr-1"></i>High Priority
+            </span>
+          <?php elseif (($job['priority_key'] ?? '') === 'low'): ?>
+            <span class="badge font-weight-bold px-2 py-1" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; font-size: 11px;">
+              <i class="fa fa-arrow-down mr-1"></i>Low Priority
+            </span>
+          <?php else: ?>
+            <span class="badge font-weight-bold px-2 py-1" style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-size: 11px;">
+              Normal Priority
+            </span>
+          <?php endif; ?>
+        </div>
       </div>
       <div class="text-right">
         <span class="text-muted small text-uppercase font-weight-bold">Labour Income</span>
@@ -122,7 +154,17 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
           <span class="text-muted small font-weight-bold">Offered Labour Income:</span>
           <span class="font-weight-bold text-success" style="font-size: 20px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></span>
         </div>
-        <p class="small text-muted mb-0">Check the service requirement and location above to decide if you want to take this job.</p>
+        <div class="d-flex flex-wrap align-items-center mt-2 mb-2" style="gap: 6px;">
+          <?php if (!empty($job['is_prepaid'])): ?>
+            <span class="badge badge-success px-2 py-1"><i class="fa fa-check-circle mr-1"></i>Prepaid (Fully Paid) - No Cash Collection</span>
+          <?php else: ?>
+            <span class="badge badge-primary px-2 py-1"><i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked - Collect on Visit</span>
+          <?php endif; ?>
+          <span class="badge badge-light border text-dark px-2 py-1 font-weight-bold">
+            <?= View::e($job['priority_label'] ?? 'Normal Priority') ?>
+          </span>
+        </div>
+        <p class="small text-muted mb-0">Check the service requirement, priority and location to decide if you want to take this job.</p>
       </div>
       <form method="POST" action="<?= View::url('/staff/jobs/' . $job['id'] . '/accept') ?>">
         <?= View::csrfField() ?>

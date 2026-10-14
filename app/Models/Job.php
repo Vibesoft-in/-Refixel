@@ -13,7 +13,8 @@ class Job extends Model
     {
         $sql = "SELECT j.*, b.booking_no, b.address, b.pincode, b.preferred_date, b.preferred_time,
                        b.issue_details, b.name as customer_name, b.phone as customer_phone,
-                       b.service_id, s.category_id, b.total_amount,
+                       b.service_id, s.category_id, b.total_amount, b.advance_amount, b.due_amount,
+                       b.payment_type, b.priority,
                        s.name as service_name, s.starting_price
                 FROM jobs j
                 JOIN bookings b ON j.booking_id = b.id
@@ -46,7 +47,8 @@ class Job extends Model
         $job = Database::fetchOne(
             "SELECT j.*, b.booking_no, b.address, b.pincode, b.preferred_date, b.preferred_time,
                     b.issue_details, b.name as customer_name, b.phone as customer_phone, b.email as customer_email,
-                    b.service_id, s.category_id, b.total_amount,
+                    b.service_id, s.category_id, b.total_amount, b.advance_amount, b.due_amount,
+                    b.payment_type, b.priority,
                     s.name as service_name, s.starting_price, s.description as service_description
              FROM jobs j
              JOIN bookings b ON j.booking_id = b.id
@@ -74,6 +76,29 @@ class Job extends Model
         );
         $job['technician_payout'] = (float)$split['worker_total_payout'];
         $job['worker_percent'] = (float)$split['worker_percent'];
+
+        // Determine Prepaid (Fully Paid) vs Pre-Booked (COD / Pay on site)
+        $paymentType = strtolower(trim((string)($job['payment_type'] ?? 'cod')));
+        $dueAmount = (float)($job['due_amount'] ?? 0);
+        $advanceAmount = (float)($job['advance_amount'] ?? 0);
+
+        // A booking is Prepaid (Fully Paid) if online or due is 0 with advance/full payment made
+        $isPrepaid = ($paymentType === 'online' || ($dueAmount <= 0 && $advanceAmount > 0));
+        $job['is_prepaid'] = $isPrepaid;
+        $job['booking_type_label'] = $isPrepaid ? 'Prepaid (Fully Paid)' : 'Pre-Booked';
+
+        // Determine Priority (urgent, high, normal, low)
+        $prio = strtolower(trim((string)($job['priority'] ?? 'normal')));
+        if ($isPrepaid && $prio === 'normal') {
+            $prio = 'high'; // Prepaid online bookings default to High Priority
+        }
+        $job['priority_key'] = $prio;
+        $job['priority_label'] = match($prio) {
+            'urgent' => 'Urgent Priority',
+            'high'   => 'High Priority',
+            'low'    => 'Low Priority',
+            default  => 'Normal Priority',
+        };
 
         // If job completed, pull settled/recorded earning amount
         if (($job['status'] ?? '') === 'completed' && !empty($job['id'])) {

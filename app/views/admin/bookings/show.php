@@ -266,8 +266,18 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
             <span>Admin Share: ₹<?= number_format((float)$previewSplit['admin_share'], 0) ?></span>
             <span class="badge badge-light border text-muted">Rule: <?= View::e($previewSplit['rule_applied'] ?? 'Split') ?></span>
           </div>
-          <div class="text-muted mt-2 pt-2 border-top border-light" style="font-size: 11px; line-height: 1.3;">
-            <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format((float)$previewSplit['worker_total_payout'], 0) ?></strong> (their labour earnings) to decide whether to accept or decline this job.
+          <div class="d-flex align-items-center mt-2 pt-2 border-top border-light" style="gap: 6px;">
+            <?php if ($dueAmt <= 0 && ($totAmt > 0 || ($booking['payment_type'] ?? '') === 'online')): ?>
+              <span class="badge badge-success px-2 py-1"><i class="fa fa-credit-card mr-1"></i>Prepaid (Fully Paid)</span>
+            <?php else: ?>
+              <span class="badge badge-primary px-2 py-1"><i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked (Pay on Visit)</span>
+            <?php endif; ?>
+            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">
+              Priority: <?= ucfirst(View::e($booking['priority'] ?? 'normal')) ?>
+            </span>
+          </div>
+          <div class="text-muted mt-2 pt-1" style="font-size: 11px; line-height: 1.3;">
+            <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format((float)$previewSplit['worker_total_payout'], 0) ?></strong> (labour earnings), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
           </div>
         </div>
         
@@ -290,6 +300,16 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
                   <?= View::e($s['name']) ?> (★ <?= number_format((float)($s['rating_avg'] ?? 5.0), 1) ?>) <?= !empty($s['is_available']) ? '🟢' : '🔴' ?>
                 </option>
               <?php endforeach; ?>
+            </select>
+          </div>
+
+          <div class="form-group mb-2">
+            <label class="font-weight-bold small text-dark">Job Priority</label>
+            <select name="priority" class="form-control form-control-sm">
+              <option value="high" <?= ($booking['priority'] ?? '') === 'high' ? 'selected' : '' ?>>🔥 High Priority</option>
+              <option value="urgent" <?= ($booking['priority'] ?? '') === 'urgent' ? 'selected' : '' ?>>⚡ Urgent Priority</option>
+              <option value="normal" <?= ($booking['priority'] ?? 'normal') === 'normal' ? 'selected' : '' ?>>⭐ Normal Priority</option>
+              <option value="low" <?= ($booking['priority'] ?? '') === 'low' ? 'selected' : '' ?>>🟢 Low Priority</option>
             </select>
           </div>
 

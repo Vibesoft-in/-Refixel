@@ -22,8 +22,24 @@ $afterPhotos = $afterPhotos ?? [];
 
   <!-- Job Details Summary Card -->
   <div class="job-card mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-1">
-      <span class="font-weight-bold text-dark">#<?= View::e($job['booking_no']) ?></span>
+    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap" style="gap: 6px;">
+      <div class="d-flex align-items-center" style="gap: 6px;">
+        <span class="font-weight-bold text-dark">#<?= View::e($job['booking_no']) ?></span>
+        <?php if (!empty($job['is_prepaid'])): ?>
+          <span class="badge font-weight-bold px-2 py-1" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11px;">
+            <i class="fa fa-credit-card mr-1"></i>Prepaid (Fully Paid)
+          </span>
+        <?php else: ?>
+          <span class="badge font-weight-bold px-2 py-1" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px;">
+            <i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked
+          </span>
+        <?php endif; ?>
+        <?php if (($job['priority_key'] ?? '') === 'urgent'): ?>
+          <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 10px;">Urgent Priority</span>
+        <?php elseif (($job['priority_key'] ?? '') === 'high'): ?>
+          <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size: 10px;">High Priority</span>
+        <?php endif; ?>
+      </div>
       <div class="text-right">
         <span class="text-muted small">Your Labour Payout:</span>
         <span class="text-success font-weight-bold ml-1" style="font-size: 16px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></span>

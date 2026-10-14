@@ -151,7 +151,12 @@ class BookingController extends Controller
             );
         }
 
-        Booking::update((int)$id, ['status' => 'assigned']);
+        $priority = $request->input('priority');
+        $bookingUpdate = ['status' => 'assigned'];
+        if ($priority && in_array($priority, ['low', 'normal', 'high', 'urgent'], true)) {
+            $bookingUpdate['priority'] = $priority;
+        }
+        Booking::update((int)$id, $bookingUpdate);
 
         // Notify technician of assignment
         try {
