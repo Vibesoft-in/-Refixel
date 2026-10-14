@@ -13,7 +13,7 @@
 
   <meta property="og:title" content="<?= \App\Core\View::e($title ?? 'Professional Home & Commercial Services | REFIXEL') ?>">
   <meta property="og:description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services. Book Now!') ?>">
-  <meta property="og:image" content="<?= \App\Core\View::e($ogImage ?? \App\Core\View::asset('img/logo.svg')) ?>">
+  <meta property="og:image" content="<?= \App\Core\View::e($ogImage ?? \App\Core\View::asset('img/refixel-logo-horizontal.png')) ?>">
   <meta property="og:url" content="<?= \App\Core\View::e($canonicalUrl ?? \App\Core\View::url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
   <meta property="og:type" content="website">
 

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="format-detection" content="telephone=no">
   <title><?= \App\Core\View::e($title ?? 'Technician Portal | REFIXEL') ?></title>
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="shortcut icon" type="image/png" />
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="shortcut icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="icon" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -167,7 +167,7 @@
   ?>
   <div class="staff-header">
     <a href="<?= \App\Core\View::url('/staff') ?>" class="brand-title">
-      <img src="<?= \App\Core\View::asset('img/favicon.png') ?>" alt="REFIXEL" style="height: 22px;">
+      <img src="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" alt="REFIXEL" style="height: 22px; width: 22px; object-fit: contain;">
       <span>REFIXEL Field Ops</span>
     </a>
     <div class="d-flex align-items-center">

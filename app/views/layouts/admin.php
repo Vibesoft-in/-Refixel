@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
   <title><?= \App\Core\View::e($title ?? 'Admin Panel | REFIXEL') ?></title>
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="shortcut icon" type="image/png" />
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="shortcut icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="icon" type="image/png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -52,17 +52,24 @@
       border-right: 1px solid rgba(255, 255, 255, 0.07); 
     }
     .admin-sidebar .brand { 
-      padding: 18px 20px; 
+      padding: 16px 18px; 
       font-weight: 700; 
       font-size: 17px; 
       border-bottom: 1px solid rgba(255,255,255,0.08); 
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
+      gap: 10px;
       flex-shrink: 0; 
       background: #0a1c33; 
     }
-    .admin-sidebar .brand img { height: 26px; }
+    .admin-sidebar .brand img { 
+      height: 30px; 
+      max-width: 148px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
     .admin-nav { 
       list-style: none; 
       padding: 14px 0 40px; 
@@ -261,11 +268,12 @@
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div class="admin-sidebar">
       <div class="brand">
-        <a href="<?= \App\Core\View::url('/admin') ?>" class="text-white text-decoration-none d-flex align-items-center">
-          <img src="<?= \App\Core\View::asset('img/favicon.png') ?>" alt="REFIXEL" style="height: 26px; width: 26px; object-fit: contain; margin-right: 10px;">
-          <span style="font-weight: 800; font-size: 17px; letter-spacing: -0.2px; color: #fff;">REFIXEL</span>
+        <a href="<?= \App\Core\View::url('/admin') ?>" class="text-white text-decoration-none d-flex align-items-center" title="REFIXEL Admin Panel">
+          <img src="<?= \App\Core\View::asset('img/refixel-logo-white-orange.png') ?>?v=3" 
+               alt="REFIXEL" 
+               onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-logo.png') ?>';">
         </a>
-        <span class="badge" style="background: rgba(242, 91, 41, 0.2); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.35); font-weight: 700; font-size: 10.5px; padding: 3px 8px; border-radius: 6px;">ADMIN</span>
+        <span class="badge" style="background: rgba(242, 91, 41, 0.2); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.35); font-weight: 700; font-size: 10.5px; padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px;">ADMIN</span>
       </div>
 
       <ul class="admin-nav">
