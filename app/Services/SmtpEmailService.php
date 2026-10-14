@@ -89,12 +89,20 @@ class SmtpEmailService implements EmailProviderInterface
     {
         $timeout = 6;
         $hostPrefix = ($this->encryption === 'ssl' || $this->port === 465) ? 'ssl://' : '';
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+            ]
+        ]);
         $socket = @stream_socket_client(
             $hostPrefix . $this->host . ':' . $this->port,
             $errno,
             $errstr,
             $timeout,
-            STREAM_CLIENT_CONNECT
+            STREAM_CLIENT_CONNECT,
+            $context
         );
 
         if (!$socket) {
