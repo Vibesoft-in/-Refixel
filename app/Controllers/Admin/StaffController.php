@@ -49,6 +49,7 @@ class StaffController extends Controller
         $validator = $this->validate($request, [
             'name'     => 'required|min:2',
             'phone'    => 'required|phone',
+            'email'    => 'required|email',
             'password' => 'required|min:6',
         ]);
 

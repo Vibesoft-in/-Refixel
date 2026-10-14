@@ -217,6 +217,8 @@ class SmtpEmailService implements EmailProviderInterface
             'password_reset'              => 'Reset your REFIXEL Password',
             'admin_alert'                 => 'REFIXEL Platform Alert: ' . ($data['title'] ?? 'Attention Required'),
             'booking_reminder'            => 'Upcoming Service Visit Reminder - #' . ($data['booking_no'] ?? ''),
+            'partner_welcome'             => 'Welcome to REFIXEL Partner Network - Your Technician Portal Access',
+            'admin_new_partner'           => '👷 New Service Partner Registered: ' . ($data['name'] ?? 'Technician') . ' (' . ($data['trade'] ?? 'Trade') . ')',
             default                       => 'Notification from REFIXEL',
         };
 
@@ -442,6 +444,50 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<p>You requested a password reset for your REFIXEL account.</p>";
                 $body .= "<p style='margin: 20px 0;'><a href='" . htmlspecialchars($data['reset_link'] ?? '#') . "' style='display:inline-block; padding: 12px 24px; background: #f25b29; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold;'>Reset Password &rarr;</a></p>";
                 $body .= "<p style='font-size: 12px; color: #64748b;'>This link expires in 60 minutes. If you did not make this request, you can safely ignore this email.</p>";
+                break;
+
+            case 'partner_welcome':
+                $body .= "<div style='margin-bottom: 20px;'>";
+                $body .= "<span style='background: #ffedd5; color: #c2410c; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase;'>Partner Onboarding</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 20px; margin: 10px 0 6px;'>Welcome to REFIXEL, " . htmlspecialchars($data['name'] ?? 'Partner') . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>Your technician registration has been received and activated. When new jobs are assigned to you by admin, all job details and dispatch alerts will be delivered immediately to this email.</p>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #0a1c33; border-radius: 10px; padding: 18px 20px; margin-bottom: 22px; color: #ffffff;'>";
+                $body .= "<div style='font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;'>Technician Portal Credentials</div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Mobile / Login ID:</span><span style='font-weight: 700; font-family: monospace; color: #38bdf8;'>" . htmlspecialchars($data['phone'] ?? '') . "</span></div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Registered Email:</span><span style='font-weight: 700; color: #ffffff;'>" . htmlspecialchars($data['email'] ?? '') . "</span></div>";
+                if (!empty($data['password'])) {
+                    $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Password:</span><span style='font-family: monospace; font-weight: 700; color: #fde047; letter-spacing: 1px;'>" . htmlspecialchars($data['password']) . "</span></div>";
+                }
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Primary Trade:</span><span style='font-weight: 600; color: #ffffff;'>" . htmlspecialchars($data['trade'] ?? '') . "</span></div>";
+                $body .= "<div style='display: flex; justify-content: space-between; font-size: 13px;'><span style='color: #94a3b8;'>City:</span><span style='font-weight: 600; color: #ffffff;'>" . htmlspecialchars($data['city'] ?? '') . "</span></div>";
+                $body .= "</div>";
+
+                $body .= "<div style='text-align: center; margin: 24px 0;'>";
+                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(242,91,41,0.3);'>Log In to Technician Portal &rarr;</a>";
+                $body .= "</div>";
+                break;
+
+            case 'admin_new_partner':
+                $body .= "<div style='margin-bottom: 18px;'>";
+                $body .= "<span style='background: #fef3c7; color: #b45309; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase;'>New Partner Registered</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 20px; margin: 10px 0 6px;'>New Technician Application Received</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>A new service technician has joined through the partner registration form:</p>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 22px; font-size: 14px;'>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Technician Name:</strong> " . htmlspecialchars($data['name'] ?? '') . "</div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Email:</strong> <a href='mailto:" . htmlspecialchars($data['email'] ?? '') . "' style='color: #0284c7;'>" . htmlspecialchars($data['email'] ?? '') . "</a></div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Phone:</strong> " . htmlspecialchars($data['phone'] ?? '') . "</div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Primary Trade:</strong> " . htmlspecialchars($data['trade'] ?? '') . "</div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>City:</strong> " . htmlspecialchars($data['city'] ?? '') . "</div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Experience:</strong> " . htmlspecialchars($data['experience'] ?? '') . " Years</div>";
+                $body .= "</div>";
+
+                $body .= "<div style='text-align: center; margin: 24px 0;'>";
+                $body .= "<a href='" . htmlspecialchars(View::fullUrl('/admin/staff')) . "' style='background: #0a1c33; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 8px; display: inline-block;'>View in Admin Staff Directory &rarr;</a>";
+                $body .= "</div>";
                 break;
 
             default:

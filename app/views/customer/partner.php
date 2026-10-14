@@ -314,10 +314,36 @@ use App\Core\View;
             <p class="text-muted small">Fill out your details and we will call you back within 24 hours.</p>
           </div>
 
+          <?php if (!empty($_SESSION['flash_success']) || View::hasFlash('success')): ?>
+            <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" style="border-radius: 12px; font-size: 14px; background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981 !important;">
+              <i class="fa fa-check-circle mr-2 text-success"></i>
+              <?= View::e($_SESSION['flash_success'] ?? View::flash('success')) ?>
+              <?php unset($_SESSION['flash_success']); ?>
+            </div>
+          <?php endif; ?>
+
+          <?php if (!empty($_SESSION['flash_error']) || View::hasFlash('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm" style="border-radius: 12px; font-size: 14px; background: #fef2f2; color: #991b1b; border-left: 4px solid #ef4444 !important;">
+              <i class="fa fa-exclamation-circle mr-2 text-danger"></i>
+              <?= View::e($_SESSION['flash_error'] ?? View::flash('error')) ?>
+              <?php unset($_SESSION['flash_error']); ?>
+            </div>
+          <?php endif; ?>
+
           <form action="<?= View::url('/partner') ?>" method="POST">
+            <?= View::csrfField() ?>
+
             <div class="form-group mb-3">
               <label class="font-weight-bold small text-muted">Full Name <span class="text-danger">*</span></label>
               <input type="text" name="name" class="form-control form-control-lg" placeholder="e.g. Rahul Kumar" required>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="font-weight-bold small text-muted">Email Address <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control form-control-lg" placeholder="e.g. technician@gmail.com" required>
+              <small class="form-text text-muted" style="font-size: 11.5px;">
+                <i class="fa fa-envelope-o mr-1 text-primary"></i>Assigned jobs, booking details and dispatch alerts will be sent to this email.
+              </small>
             </div>
 
             <div class="row">

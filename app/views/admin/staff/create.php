@@ -29,8 +29,9 @@ $categories = $categories ?? [];
         </div>
 
         <div class="col-md-6 form-group mb-3">
-          <label class="font-weight-bold small text-dark">Email Address (Optional)</label>
-          <input type="email" name="email" class="form-control" placeholder="technician@REFIXEL.com">
+          <label class="font-weight-bold small text-dark">Email Address <span class="text-danger">*</span></label>
+          <input type="email" name="email" class="form-control" required placeholder="technician@gmail.com">
+          <small class="form-text text-muted">Required so assigned jobs & alerts reach this technician.</small>
         </div>
       </div>
 

@@ -3,11 +3,15 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Core\Database;
+use App\Core\Notifier;
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\View;
 use App\Models\Faq;
 use App\Models\GalleryItem;
 use App\Models\ServiceArea;
+use App\Models\User;
 
 class PageController extends Controller
 {
@@ -280,12 +284,112 @@ class PageController extends Controller
 
     public function submitPartner(Request $request): Response
     {
-        $name = $request->post('name');
-        $phone = $request->post('phone');
-        $trade = $request->post('trade');
-        
-        // Normally, save this to DB or send email.
-        $_SESSION['flash_success'] = "Thank you, $name! Your application for $trade has been received. Our team will contact you shortly.";
+        $name = trim((string)$request->input('name'));
+        $rawEmail = trim((string)$request->input('email'));
+        $rawPhone = trim((string)$request->input('phone'));
+        $city = trim((string)$request->input('city'));
+        $trade = trim((string)$request->input('trade'));
+        $experience = trim((string)$request->input('experience', '0-1'));
+
+        // Basic validation
+        if (empty($name)) {
+            $_SESSION['flash_error'] = 'Please enter your full name.';
+            return $this->redirect('/partner');
+        }
+
+        $cleanPhone = preg_replace('/\D/', '', $rawPhone);
+        if (str_starts_with($cleanPhone, '91') && strlen($cleanPhone) === 12) {
+            $cleanPhone = substr($cleanPhone, 2);
+        }
+        if (empty($cleanPhone) || strlen($cleanPhone) < 10) {
+            $_SESSION['flash_error'] = 'Please enter a valid 10-digit mobile phone number.';
+            return $this->redirect('/partner');
+        }
+
+        $cleanEmail = strtolower(filter_var($rawEmail, FILTER_VALIDATE_EMAIL) ?: '');
+        if (empty($cleanEmail)) {
+            $_SESSION['flash_error'] = 'Please enter a valid email address so assigned job alerts can reach you.';
+            return $this->redirect('/partner');
+        }
+
+        try {
+            // Check if user already exists with this phone or email
+            $existingUser = Database::fetchOne(
+                "SELECT * FROM users WHERE phone = ? OR (email = ? AND email IS NOT NULL AND email != '') LIMIT 1",
+                [$cleanPhone, $cleanEmail]
+            );
+
+            $defaultDigits = substr($cleanPhone, -4) ?: '1234';
+            $generatedPassword = 'Refixel@' . $defaultDigits;
+            $passwordHash = password_hash($generatedPassword, PASSWORD_BCRYPT);
+
+            if ($existingUser) {
+                $staffUserId = (int)$existingUser['id'];
+                // Update to staff role, active status, and synchronize email & phone
+                Database::execute(
+                    "UPDATE users SET role = 'staff', status = 'active', email = ?, phone = ?, name = IF(name IS NULL OR name = '', ?, name), password_hash = ? WHERE id = ?",
+                    [$cleanEmail, $cleanPhone, $name, $passwordHash, $staffUserId]
+                );
+            } else {
+                $staffUserId = (int)Database::execute(
+                    "INSERT INTO users (role, name, email, phone, password_hash, status, must_change_password) VALUES ('staff', ?, ?, ?, ?, 'active', 0)",
+                    [$name, $cleanEmail, $cleanPhone, $passwordHash],
+                    true
+                );
+            }
+
+            // Ensure staff_profiles record exists with city, skill, and availability
+            $profile = Database::fetchOne("SELECT id FROM staff_profiles WHERE user_id = ? LIMIT 1", [$staffUserId]);
+            $note = "City: {$city} | Skill: {$trade} | Exp: {$experience} Yrs";
+            if ($profile) {
+                Database::execute(
+                    "UPDATE staff_profiles SET is_available = 1, availability_note = ? WHERE id = ?",
+                    [$note, $profile['id']]
+                );
+            } else {
+                Database::execute(
+                    "INSERT INTO staff_profiles (user_id, rating_avg, rating_count, is_available, availability_note, created_at) VALUES (?, 5.00, 0, 1, ?, NOW())",
+                    [$staffUserId, $note]
+                );
+            }
+
+            // Map trade category to staff_skills if matching category found
+            if (!empty($trade) && $trade !== 'Other') {
+                $category = Database::fetchOne("SELECT id FROM categories WHERE name LIKE ? LIMIT 1", ["%{$trade}%"]);
+                if ($category) {
+                    Database::execute(
+                        "INSERT IGNORE INTO staff_skills (staff_id, category_id, created_at) VALUES (?, ?, NOW())",
+                        [$staffUserId, (int)$category['id']]
+                    );
+                }
+            }
+
+            // Send notification emails
+            $staffPayload = [
+                'staff_id'   => $staffUserId,
+                'name'       => $name,
+                'email'      => $cleanEmail,
+                'phone'      => $cleanPhone,
+                'password'   => $generatedPassword,
+                'trade'      => $trade,
+                'city'       => $city,
+                'experience' => $experience,
+                'login_url'  => View::fullUrl('/login'),
+            ];
+
+            try {
+                Notifier::notifyPartnerWelcome($staffPayload);
+                Notifier::notifyAdminNewPartner($staffPayload);
+            } catch (\Throwable $ne) {
+                \App\Core\Logger::warning("Partner registration notification skipped: " . $ne->getMessage());
+            }
+
+            $_SESSION['flash_success'] = "Thank you, {$name}! Your partner profile has been registered. You will receive assigned job alerts on {$cleanEmail}. Your technician portal login password is {$generatedPassword}.";
+        } catch (\Throwable $e) {
+            \App\Core\Logger::error("Partner registration error: " . $e->getMessage());
+            $_SESSION['flash_error'] = "Unable to process application: " . $e->getMessage();
+        }
+
         return $this->redirect('/partner');
     }
 

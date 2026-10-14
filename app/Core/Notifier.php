@@ -406,4 +406,25 @@ class Notifier
             self::send('sms', $phone, 'booking_reminder_sms', $data);
         }
     }
+
+    /**
+     * Event 13: Partner/Technician Registration Welcome
+     */
+    public static function notifyPartnerWelcome(array $staffData): void
+    {
+        if (!empty($staffData['email'])) {
+            self::send('email', $staffData['email'], 'partner_welcome', $staffData);
+        }
+    }
+
+    /**
+     * Event 14: New Partner Registration Alert to Admin
+     */
+    public static function notifyAdminNewPartner(array $staffData): void
+    {
+        $adminEmail = Setting::get('admin_notification_email') ?: (Setting::get('company_email') ?: 'contact@refixel.com');
+        if (!empty($adminEmail)) {
+            self::send('email', $adminEmail, 'admin_new_partner', $staffData);
+        }
+    }
 }
