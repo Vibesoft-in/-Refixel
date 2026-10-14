@@ -351,9 +351,42 @@ class ContentController extends Controller
             $params
         );
 
+        // Group items by service for 2-div rendering (Included & Excluded)
+        $groupedByService = [];
+        foreach ($items as $it) {
+            $sid = (int)$it['service_id'];
+            if (!isset($groupedByService[$sid])) {
+                $groupedByService[$sid] = [
+                    'service_id'   => $sid,
+                    'service_name' => $it['service_name'],
+                    'included'     => [],
+                    'excluded'     => [],
+                ];
+            }
+            if (!empty($it['is_included'])) {
+                $groupedByService[$sid]['included'][] = $it;
+            } else {
+                $groupedByService[$sid]['excluded'][] = $it;
+            }
+        }
+
+        // If a specific service is filtered or services exist but have no items yet, ensure they are represented
+        if ($serviceId > 0 && !isset($groupedByService[$serviceId])) {
+            $selectedSvc = Service::find($serviceId);
+            if ($selectedSvc) {
+                $groupedByService[$serviceId] = [
+                    'service_id'   => $serviceId,
+                    'service_name' => $selectedSvc['name'],
+                    'included'     => [],
+                    'excluded'     => [],
+                ];
+            }
+        }
+
         return $this->render('admin.content.checklists', [
-            'title'            => 'Service Checklists | REFIXEL Admin',
+            'title'            => 'Service Checklists & Scope | REFIXEL Admin',
             'items'            => $items,
+            'groupedByService' => $groupedByService,
             'services'         => $services,
             'currentServiceId' => $serviceId,
         ], 'admin');
@@ -367,11 +400,14 @@ class ContentController extends Controller
         $sortOrder = (int)$request->input('sort_order', 0);
 
         if ($serviceId <= 0 || empty($label)) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json(['success' => false, 'message' => 'Service and item description are required.'], 422);
+            }
             View::setFlash('error', 'Service and checklist item label are required.');
             return $this->redirect('/admin/content/checklists');
         }
 
-        Database::query(
+        $newId = Database::execute(
             "INSERT INTO service_checklist_items (service_id, label, is_included, sort_order)
              VALUES (:sid, :label, :inc, :sort)",
             [
@@ -379,17 +415,134 @@ class ContentController extends Controller
                 'label' => $label,
                 'inc'   => $isIncluded,
                 'sort'  => $sortOrder,
-            ]
+            ],
+            true
         );
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            $service = Service::find($serviceId);
+            return Response::json([
+                'success' => true,
+                'message' => 'Checklist item added successfully.',
+                'item'    => [
+                    'id'           => $newId,
+                    'service_id'   => $serviceId,
+                    'service_name' => $service['name'] ?? '',
+                    'label'        => $label,
+                    'is_included'  => $isIncluded,
+                    'sort_order'   => $sortOrder,
+                ],
+            ]);
+        }
 
         View::setFlash('success', 'Checklist item added successfully.');
         return $this->redirect('/admin/content/checklists?service_id=' . $serviceId);
     }
 
+    public function updateChecklist(Request $request, string $id): Response
+    {
+        $itemId = (int)$id;
+        $label = trim((string)$request->input('label'));
+        $item = Database::fetchOne("SELECT * FROM service_checklist_items WHERE id = :id", ['id' => $itemId]);
+
+        if (!$item) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json(['success' => false, 'message' => 'Checklist item not found.'], 404);
+            }
+            View::setFlash('error', 'Checklist item not found.');
+            return $this->redirect('/admin/content/checklists');
+        }
+
+        if (empty($label)) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json(['success' => false, 'message' => 'Checklist item description cannot be empty.'], 422);
+            }
+            View::setFlash('error', 'Item description cannot be empty.');
+            return $this->redirect('/admin/content/checklists?service_id=' . $item['service_id']);
+        }
+
+        $isIncluded = $request->has('is_included') ? (int)$request->input('is_included') : (int)$item['is_included'];
+        $sortOrder = $request->has('sort_order') ? (int)$request->input('sort_order') : (int)$item['sort_order'];
+
+        Database::execute(
+            "UPDATE service_checklist_items SET label = :label, is_included = :inc, sort_order = :sort WHERE id = :id",
+            [
+                'label' => $label,
+                'inc'   => $isIncluded,
+                'sort'  => $sortOrder,
+                'id'    => $itemId,
+            ]
+        );
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            return Response::json([
+                'success' => true,
+                'message' => 'Checklist item updated successfully.',
+                'item'    => [
+                    'id'          => $itemId,
+                    'service_id'  => (int)$item['service_id'],
+                    'label'       => $label,
+                    'is_included' => $isIncluded,
+                    'sort_order'  => $sortOrder,
+                ],
+            ]);
+        }
+
+        View::setFlash('success', 'Checklist item updated successfully.');
+        return $this->redirect('/admin/content/checklists?service_id=' . $item['service_id']);
+    }
+
     public function deleteChecklist(Request $request, string $id): Response
     {
-        Database::query("DELETE FROM service_checklist_items WHERE id = :id", ['id' => $id]);
+        $itemId = (int)$id;
+        $item = Database::fetchOne("SELECT * FROM service_checklist_items WHERE id = :id", ['id' => $itemId]);
+        Database::query("DELETE FROM service_checklist_items WHERE id = :id", ['id' => $itemId]);
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            return Response::json(['success' => true, 'message' => 'Checklist item deleted successfully.']);
+        }
+
         View::setFlash('success', 'Checklist item deleted.');
+        $redirectServiceId = $item ? (int)$item['service_id'] : 0;
+        return $this->redirect('/admin/content/checklists' . ($redirectServiceId > 0 ? '?service_id=' . $redirectServiceId : ''));
+    }
+
+    public function reorderChecklists(Request $request): Response
+    {
+        $orderedIds = $request->input('order', []);
+        $isIncluded = $request->has('is_included') ? (int)$request->input('is_included') : null;
+
+        if (!is_array($orderedIds) || empty($orderedIds)) {
+            if ($request->isAjax() || $request->input('is_ajax')) {
+                return Response::json(['success' => false, 'message' => 'No items provided for reordering.'], 400);
+            }
+            return $this->redirect('/admin/content/checklists');
+        }
+
+        foreach ($orderedIds as $index => $id) {
+            $itemId = (int)$id;
+            $sortOrder = $index + 1;
+            if ($isIncluded !== null) {
+                Database::query(
+                    "UPDATE service_checklist_items SET sort_order = :sort, is_included = :inc WHERE id = :id",
+                    ['sort' => $sortOrder, 'inc' => $isIncluded, 'id' => $itemId]
+                );
+            } else {
+                Database::query(
+                    "UPDATE service_checklist_items SET sort_order = :sort WHERE id = :id",
+                    ['sort' => $sortOrder, 'id' => $itemId]
+                );
+            }
+        }
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            return Response::json([
+                'success' => true,
+                'message' => 'Checklist item order updated successfully.',
+            ]);
+        }
+
+        View::setFlash('success', 'Checklist items reordered successfully.');
         return $this->redirect('/admin/content/checklists');
     }
 }

@@ -207,6 +207,8 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
 
     Router::get('/admin/content/checklists', 'Admin\\ContentController@checklists');
     Router::post('/admin/content/checklists', 'Admin\\ContentController@storeChecklist', ['VerifyCsrf']);
+    Router::post('/admin/content/checklists/reorder', 'Admin\\ContentController@reorderChecklists', ['VerifyCsrf']);
+    Router::post('/admin/content/checklists/{id}/update', 'Admin\\ContentController@updateChecklist', ['VerifyCsrf']);
     Router::post('/admin/content/checklists/{id}/delete', 'Admin\\ContentController@deleteChecklist', ['VerifyCsrf']);
 
     // Settings
