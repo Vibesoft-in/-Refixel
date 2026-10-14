@@ -66,16 +66,9 @@ class Job extends Model
     public static function attachPayout(array &$job): void
     {
         $basePrice = (float)(($job['total_amount'] ?? 0) > 0 ? $job['total_amount'] : ($job['starting_price'] ?? 0));
-        $split = CommissionRule::calculateSplit(
-            $basePrice > 0 ? $basePrice : 500.0,
-            0.0,
-            isset($job['service_id']) ? (int)$job['service_id'] : null,
-            isset($job['category_id']) ? (int)$job['category_id'] : null,
-            'standard',
-            'worker'
-        );
-        $job['technician_payout'] = (float)$split['worker_total_payout'];
-        $job['worker_percent'] = (float)$split['worker_percent'];
+        // Payout to labour: Pure full amount minus 49 (Platform fee ₹49 deducted, rest is labour income)
+        $job['technician_payout'] = max(0.0, round($basePrice - 49.0, 2));
+        $job['worker_percent'] = ($basePrice > 0) ? round(($job['technician_payout'] / $basePrice) * 100, 1) : 100.0;
 
         // Determine Prepaid (Fully Paid) vs Pre-Booked (COD / Pay on site)
         $paymentType = strtolower(trim((string)($job['payment_type'] ?? 'cod')));

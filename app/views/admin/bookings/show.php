@@ -242,14 +242,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
     <div class="col-lg-4">
       <?php
         $bookingBasePrice = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 0);
-        $previewSplit = \App\Models\CommissionRule::calculateSplit(
-            $bookingBasePrice > 0 ? $bookingBasePrice : 500.0,
-            0.0,
-            isset($booking['service_id']) ? (int)$booking['service_id'] : null,
-            isset($booking['category_id']) ? (int)$booking['category_id'] : null,
-            'standard',
-            'worker'
-        );
+        $previewWorkerPayout = max(0.0, round($bookingBasePrice - 49.0, 2));
       ?>
 
       <!-- Assign / Reassign Staff Card -->
@@ -260,11 +253,11 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
         <div class="p-3 mb-3 rounded" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.4);">
           <div class="d-flex justify-content-between align-items-center">
             <span class="small font-weight-bold text-dark"><i class="fa fa-money text-success mr-1"></i>Technician Labour Payout:</span>
-            <span class="font-weight-bold text-success" style="font-size: 17px;">₹<?= number_format((float)$previewSplit['worker_total_payout'], 0) ?></span>
+            <span class="font-weight-bold text-success" style="font-size: 17px;">₹<?= number_format($previewWorkerPayout, 0) ?></span>
           </div>
           <div class="d-flex justify-content-between align-items-center mt-1 text-muted small">
-            <span>Admin Share: ₹<?= number_format((float)$previewSplit['admin_share'], 0) ?></span>
-            <span class="badge badge-light border text-muted">Rule: <?= View::e($previewSplit['rule_applied'] ?? 'Split') ?></span>
+            <span>Platform Fee: ₹49</span>
+            <span class="badge badge-light border text-muted">Total - ₹49 Fee</span>
           </div>
           <div class="d-flex align-items-center mt-2 pt-2 border-top border-light" style="gap: 6px;">
             <?php if ($dueAmt <= 0 && ($totAmt > 0 || ($booking['payment_type'] ?? '') === 'online')): ?>
@@ -277,7 +270,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
             </span>
           </div>
           <div class="text-muted mt-2 pt-1" style="font-size: 11px; line-height: 1.3;">
-            <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format((float)$previewSplit['worker_total_payout'], 0) ?></strong> (labour earnings), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
+            <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format($previewWorkerPayout, 0) ?></strong> (Labour Income: Total - ₹49), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
           </div>
         </div>
         
