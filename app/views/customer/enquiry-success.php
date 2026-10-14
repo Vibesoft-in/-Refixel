@@ -230,17 +230,29 @@
         </div>
       </div>
 
-      <!-- Mobile / ID & Password -->
+      <!-- Mobile Number, Email & Password Credentials -->
       <div class="rfx-cred-box">
         <div class="rfx-cred-row">
-          <span class="rfx-cred-lbl">Mobile / ID</span>
+          <span class="rfx-cred-lbl">Mobile Number</span>
           <span class="rfx-cred-val">
-            <?= \App\Core\View::e($enquiry['identifier'] ?? $enquiry['phone'] ?? '') ?>
-            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($enquiry['identifier'] ?? $enquiry['phone'] ?? '') ?>', this)" title="Copy Mobile">
+            <?= \App\Core\View::e($enquiry['phone'] ?? $enquiry['identifier'] ?? '') ?>
+            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($enquiry['phone'] ?? $enquiry['identifier'] ?? '') ?>', this)" title="Copy Mobile">
               <i class="fa fa-copy"></i>
             </button>
           </span>
         </div>
+
+        <?php if (!empty($enquiry['email'])): ?>
+        <div class="rfx-cred-row">
+          <span class="rfx-cred-lbl">Email</span>
+          <span class="rfx-cred-val" style="font-size: 11px;">
+            <?= \App\Core\View::e($enquiry['email']) ?>
+            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($enquiry['email']) ?>', this)" title="Copy Email">
+              <i class="fa fa-copy"></i>
+            </button>
+          </span>
+        </div>
+        <?php endif; ?>
 
         <div class="rfx-cred-row">
           <span class="rfx-cred-lbl">Password</span>

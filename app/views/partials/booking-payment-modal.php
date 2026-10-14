@@ -128,7 +128,7 @@
         <!-- Credentials Box (Mobile / ID + Password) -->
         <div class="p-2 mb-3 rounded" style="background: #0a1c33; color: #ffffff;">
           <div class="d-flex align-items-center justify-content-between py-1" style="font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-            <span style="color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700;">Mobile / ID</span>
+            <span style="color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700;">Mobile Number</span>
             <span class="font-weight-bold d-flex align-items-center text-white" style="gap: 5px;">
               <span id="rfxSuccessPhone">+91-XXXXXXXXXX</span>
               <button type="button" class="btn btn-xs py-0 px-1 border-0 rounded text-white" style="background: rgba(255,255,255,0.18); font-size: 9.5px;" onclick="rfxModalCopyText(document.getElementById('rfxSuccessPhone').innerText, this)">
@@ -648,7 +648,7 @@ function fallbackModalCopy(text, cb) {
             stepSuccess.style.display = 'block';
 
             document.getElementById('rfxSuccessBookingNo').innerText = d.booking_no || 'BK-CONFIRMED';
-            document.getElementById('rfxSuccessPhone').innerText = '+91-' + (d.identifier || d.phone || '');
+            document.getElementById('rfxSuccessPhone').innerText = '+91-' + (d.phone || d.identifier || '');
             
             var pwdElem = document.getElementById('rfxSuccessPassword');
             var pwdBtn = document.getElementById('rfxSuccessPasswordCopyBtn');

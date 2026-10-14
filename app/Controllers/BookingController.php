@@ -1026,7 +1026,7 @@ class BookingController extends Controller
             'location'           => $location ?: 'Uttarakhand Service Area',
             'message'            => $message,
             'is_new_customer'    => $isNewCustomer,
-            'identifier'         => !empty($rawEmail) ? $rawEmail : $cleanPhone,
+            'identifier'         => $cleanPhone,
             'generated_password' => $generatedPassword,
         ];
 
@@ -1050,7 +1050,7 @@ class BookingController extends Controller
             ];
             if ($isNewCustomer && $generatedPassword) {
                 $record['generated_password'] = $generatedPassword;
-                $record['identifier'] = !empty($rawEmail) ? $rawEmail : $cleanPhone;
+                $record['identifier'] = $cleanPhone;
             }
             Notifier::notifyNewBookingAdmin($record);
             Notifier::notifyBookingConfirmationCustomer($record);
@@ -1082,6 +1082,7 @@ class BookingController extends Controller
                     'booking_id'         => $row['id'],
                     'name'               => $row['name'],
                     'phone'              => $row['phone'],
+                    'email'              => $row['email'] ?? null,
                     'service_name'       => $row['service_name'] ?? 'Home Service',
                     'location'           => $row['address'],
                     'message'            => $row['issue_details'],
