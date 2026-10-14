@@ -67,6 +67,15 @@ class Request
         return $this->path;
     }
 
+    public function uri(): string
+    {
+        $uri = $this->path;
+        if (!empty($this->query)) {
+            $uri .= '?' . http_build_query($this->query);
+        }
+        return $uri;
+    }
+
     public function isMethod(string $method): bool
     {
         return $this->method === strtoupper($method);

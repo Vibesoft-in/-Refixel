@@ -20,7 +20,9 @@ class RequireRole
                 ], 401);
             }
             View::setFlash('error', 'Please log in to continue.');
-            return Response::redirect('/login');
+            $targetUri = $request->uri();
+            $redirectParam = (!empty($targetUri) && $targetUri !== '/') ? '?redirect=' . urlencode($targetUri) : '';
+            return Response::redirect('/login' . $redirectParam);
         }
 
         $userRole = Auth::role();

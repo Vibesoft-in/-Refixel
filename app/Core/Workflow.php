@@ -172,7 +172,16 @@ class Workflow
                 if (!empty($job['booking_id'])) {
                     $bDetails = \App\Models\Booking::findWithDetails((int)$job['booking_id']);
                     if ($bDetails) {
-                        if ($newStatus === self::STATUS_COMPLETED) {
+                        if ($newStatus === self::STATUS_ACCEPTED) {
+                            $staffUser = \App\Models\User::find($changedByUserId);
+                            if (!$staffUser && !empty($bDetails['staff_id'])) {
+                                $staffUser = \App\Models\User::find((int)$bDetails['staff_id']);
+                            }
+                            Notifier::notifyTechnicianAccepted($bDetails, $staffUser ?: [
+                                'name'  => $bDetails['staff_name'] ?? 'Technician',
+                                'phone' => $bDetails['staff_phone'] ?? '',
+                            ]);
+                        } elseif ($newStatus === self::STATUS_COMPLETED) {
                             $sDetails = !empty($bDetails['staff_name']) ? ['name' => $bDetails['staff_name']] : null;
                             Notifier::notifyJobCompleted($bDetails, $sDetails);
                         } else {
@@ -239,7 +248,16 @@ class Workflow
             try {
                 $bDetails = \App\Models\Booking::findWithDetails($bookingId);
                 if ($bDetails) {
-                    if ($newStatus === self::STATUS_COMPLETED) {
+                    if ($newStatus === self::STATUS_ACCEPTED) {
+                        $staffUser = \App\Models\User::find($changedByUserId);
+                        if (!$staffUser && !empty($bDetails['staff_id'])) {
+                            $staffUser = \App\Models\User::find((int)$bDetails['staff_id']);
+                        }
+                        Notifier::notifyTechnicianAccepted($bDetails, $staffUser ?: [
+                            'name'  => $bDetails['staff_name'] ?? 'Technician',
+                            'phone' => $bDetails['staff_phone'] ?? '',
+                        ]);
+                    } elseif ($newStatus === self::STATUS_COMPLETED) {
                         $sDetails = !empty($bDetails['staff_name']) ? ['name' => $bDetails['staff_name']] : null;
                         Notifier::notifyJobCompleted($bDetails, $sDetails);
                     } else {

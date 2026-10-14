@@ -316,6 +316,51 @@ class JobController extends Controller
                 49.00
             );
 
+            // Dispatch Final GST Invoice to customer upon job completion
+            try {
+                $bDetails = \App\Models\Booking::findWithDetails((int)$job['booking_id']);
+                $latestPayment = Database::fetchOne(
+                    "SELECT * FROM payments WHERE booking_id = :bid AND status = 'paid' ORDER BY id DESC LIMIT 1",
+                    ['bid' => (int)$job['booking_id']]
+                );
+
+                $finalInvoice = null;
+                if ($latestPayment) {
+                    $finalInvoice = Database::fetchOne("SELECT * FROM invoices WHERE payment_id = :pid LIMIT 1", ['pid' => (int)$latestPayment['id']]);
+                    if (!$finalInvoice) {
+                        $subtotal = round($totAmt / 1.18, 2);
+                        $finalInvoice = \App\Core\InvoiceBuilder::createForPayment((int)$latestPayment['id'], $subtotal, 18.00, $totAmt, 0.00);
+                    } else {
+                        Database::query(
+                            "UPDATE invoices SET due_amount = 0.00, advance_paid = :adv WHERE id = :invid",
+                            ['adv' => $totAmt, 'invid' => (int)$finalInvoice['id']]
+                        );
+                        $finalInvoice['due_amount'] = 0.00;
+                        $finalInvoice['advance_paid'] = $totAmt;
+                    }
+                } else {
+                    $pId = (int)Payment::create([
+                        'booking_id'      => (int)$job['booking_id'],
+                        'amount'          => $totAmt,
+                        'method'          => 'cash',
+                        'status'          => 'paid',
+                        'transaction_ref' => 'COMPLETION-AUTO-' . time(),
+                        'paid_at'         => date('Y-m-d H:i:s'),
+                        'recorded_by'     => $staffId,
+                    ]);
+                    $subtotal = round($totAmt / 1.18, 2);
+                    $finalInvoice = \App\Core\InvoiceBuilder::createForPayment($pId, $subtotal, 18.00, $totAmt, 0.00);
+                }
+
+                if ($finalInvoice && $bDetails) {
+                    $staffUser = Database::fetchOne("SELECT name, email, phone FROM users WHERE id = :sid", ['sid' => $staffId]);
+                    $bDetails['work_summary'] = $workSummary;
+                    \App\Core\Notifier::notifyFinalCompletedInvoice($finalInvoice, $bDetails, $staffUser ?: ['name' => $job['staff_name'] ?? 'Technician']);
+                }
+            } catch (\Throwable $invEx) {
+                \App\Core\Logger::error("Completion invoice dispatch error: " . $invEx->getMessage());
+            }
+
             View::setFlash('success', "Job #{$id} marked as completed successfully! Payout credited to your earnings.");
             return $this->redirect('/staff/jobs/' . $id);
         } catch (\Throwable $e) {

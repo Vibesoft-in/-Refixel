@@ -4232,6 +4232,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div class="col-md-6">
                   <div class="form_field_group">
+                    <label class="form_field_label">EMAIL ADDRESS</label>
+                    <input type="email" name="email" class="ref_contact_input" placeholder="name@example.com" value="<?= !empty($user['email']) ? \App\Core\View::e($user['email']) : '' ?>" required>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form_field_group">
                     <label class="form_field_label">SERVICE</label>
                     <select name="service" class="ref_contact_select" required>
                       <option value="" disabled selected>Select a service</option>
@@ -4245,7 +4251,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </select>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                   <div class="form_field_group">
                     <div class="ref_loc_label_row">
                       <label class="form_field_label">CHOOSE LOCATION</label>

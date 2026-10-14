@@ -32,6 +32,7 @@ class Booking extends Model
             "SELECT b.*, s.name as service_name, s.starting_price, c.name as category_name,
                     u.name as customer_name, u.phone as customer_phone, u.email as customer_email,
                     j.id as job_id, j.status as job_status, j.staff_id, st.name as staff_name,
+                    st.phone as staff_phone, st.email as staff_email,
                     (SELECT p.status FROM payments p WHERE p.booking_id = b.id AND p.status = 'paid' ORDER BY p.id DESC LIMIT 1) as payment_paid_status,
                     (SELECT p.amount FROM payments p WHERE p.booking_id = b.id AND p.status = 'paid' ORDER BY p.id DESC LIMIT 1) as payment_paid_amount
              FROM bookings b

@@ -21,7 +21,9 @@ class RequireLogin
             }
 
             View::setFlash('error', 'Please log in to access this page.');
-            return Response::redirect('/login');
+            $targetUri = $request->uri();
+            $redirectParam = (!empty($targetUri) && $targetUri !== '/') ? '?redirect=' . urlencode($targetUri) : '';
+            return Response::redirect('/login' . $redirectParam);
         }
 
         return null;

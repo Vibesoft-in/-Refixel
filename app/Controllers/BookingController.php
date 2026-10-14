@@ -626,6 +626,39 @@ class BookingController extends Controller
                     ]);
                 }
 
+                // If direct booking without online payment requirement, dispatch notifications:
+                try {
+                    $directRecord = [
+                        'id'             => $bookingId,
+                        'booking_id'     => $bookingId,
+                        'booking_no'     => $bookingNo,
+                        'service_name'   => $service['name'] ?? 'Doorstep Service',
+                        'name'           => $nameInput,
+                        'phone'          => $phoneInput,
+                        'email'          => $emailInput ?? null,
+                        'address'        => $addressInput,
+                        'city'           => $cityInput,
+                        'preferred_date' => $prefDate,
+                        'preferred_time' => $prefTime,
+                        'total_amount'   => $totalServiceAmount,
+                        'advance_amount' => 0.00,
+                        'due_amount'     => $totalServiceAmount,
+                        'payment_type'   => 'cod',
+                        'priority'       => $priority,
+                        'is_new_customer'=> $isNewAcc,
+                        'login_url'      => View::fullUrl('/login'),
+                        'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
+                    ];
+                    if ($isNewAcc && $genPwd) {
+                        $directRecord['generated_password'] = $genPwd;
+                        $directRecord['identifier'] = $ident;
+                    }
+                    Notifier::notifyNewBookingAdmin($directRecord);
+                    Notifier::notifyBookingConfirmationCustomer($directRecord);
+                } catch (\Throwable $ne) {
+                    Logger::error("Direct booking notification error: " . $ne->getMessage());
+                }
+
                 return Response::json([
                     'success'            => true,
                     'requires_payment'   => false,
@@ -645,6 +678,37 @@ class BookingController extends Controller
                     'redirect_url'       => View::url('/account/bookings'),
                 ]);
             }
+
+            // Direct non-AJAX booking fallback notification:
+            try {
+                $directRecord = [
+                    'id'             => $bookingId,
+                    'booking_id'     => $bookingId,
+                    'booking_no'     => $bookingNo,
+                    'service_name'   => $service['name'] ?? 'Doorstep Service',
+                    'name'           => $nameInput,
+                    'phone'          => $phoneInput,
+                    'email'          => $emailInput ?? null,
+                    'address'        => $addressInput,
+                    'city'           => $cityInput,
+                    'preferred_date' => $prefDate,
+                    'preferred_time' => $prefTime,
+                    'total_amount'   => $totalServiceAmount,
+                    'advance_amount' => 0.00,
+                    'due_amount'     => $totalServiceAmount,
+                    'payment_type'   => 'cod',
+                    'priority'       => $priority,
+                    'is_new_customer'=> !empty($_SESSION['guest_account_created']),
+                    'login_url'      => View::fullUrl('/login'),
+                    'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
+                ];
+                if (!empty($_SESSION['guest_account_created'])) {
+                    $directRecord['generated_password'] = $_SESSION['guest_account_password'] ?? null;
+                    $directRecord['identifier'] = $_SESSION['guest_account_identifier'] ?? $phoneInput;
+                }
+                Notifier::notifyNewBookingAdmin($directRecord);
+                Notifier::notifyBookingConfirmationCustomer($directRecord);
+            } catch (\Throwable $ne) {}
 
             return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));
         } catch (\Throwable $e) {
@@ -731,11 +795,14 @@ class BookingController extends Controller
         }
 
         // Generate GST Invoice with total, advance_paid and due_amount
+        $invoiceRecord = null;
         try {
-            $existingInvoice = Database::fetchOne("SELECT id FROM invoices WHERE payment_id = ? LIMIT 1", [$paymentIdDb]);
+            $existingInvoice = Database::fetchOne("SELECT * FROM invoices WHERE payment_id = ? LIMIT 1", [$paymentIdDb]);
             if (!$existingInvoice && $paymentIdDb > 0) {
                 $subtotal = round($totalAmount / 1.18, 2);
-                InvoiceBuilder::createForPayment($paymentIdDb, $subtotal, 18.00, $advanceAmount, $dueAmount);
+                $invoiceRecord = InvoiceBuilder::createForPayment($paymentIdDb, $subtotal, 18.00, $advanceAmount, $dueAmount);
+            } else {
+                $invoiceRecord = $existingInvoice;
             }
         } catch (\Throwable $e) {
             Logger::error("Invoice generation skipped: " . $e->getMessage());
@@ -747,7 +814,10 @@ class BookingController extends Controller
 
         // Send booking confirmation notifications
         try {
+            $isNewAcc = !empty($_SESSION['guest_account_created']);
             $bookingRecord = [
+                'id'             => $bookingId,
+                'booking_id'     => $bookingId,
                 'booking_no'     => $booking['booking_no'],
                 'service_name'   => $request->input('service_name', 'Doorstep Service'),
                 'name'           => $booking['name'],
@@ -762,15 +832,23 @@ class BookingController extends Controller
                 'due_amount'     => $dueAmount,
                 'payment_type'   => $paymentType,
                 'priority'       => $prio,
+                'is_new_customer'=> $isNewAcc,
+                'login_url'      => View::fullUrl('/login'),
+                'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
             ];
 
-            if (isset($_SESSION['guest_account_created']) && $_SESSION['guest_account_created'] === true) {
-                $bookingRecord['generated_password'] = $_SESSION['guest_account_password'];
-                $bookingRecord['identifier'] = $_SESSION['guest_account_identifier'];
+            if ($isNewAcc) {
+                $bookingRecord['generated_password'] = $_SESSION['guest_account_password'] ?? null;
+                $bookingRecord['identifier'] = $_SESSION['guest_account_identifier'] ?? $booking['phone'];
             }
 
             Notifier::notifyNewBookingAdmin($bookingRecord);
             Notifier::notifyBookingConfirmationCustomer($bookingRecord);
+
+            // If prepaid online full payment was made, also send the Advance Payment Receipt noting "Work is Due"
+            if ($paymentType === 'online' && $invoiceRecord) {
+                Notifier::notifyPrepaidInvoiceWorkDue($invoiceRecord, $bookingRecord);
+            }
         } catch (\Throwable $e) {
             Logger::error("Booking notification error post-payment: " . $e->getMessage());
         }
@@ -830,6 +908,7 @@ class BookingController extends Controller
     {
         $name         = trim((string)$request->input('name', ''));
         $rawPhone     = trim((string)$request->input('phone', ''));
+        $rawEmail     = trim((string)$request->input('email', ''));
         $serviceInput = trim((string)$request->input('service', ''));
         $location     = trim((string)($request->input('location') ?? $request->input('detected_location') ?? ''));
         $message      = trim((string)$request->input('message', ''));
@@ -861,14 +940,22 @@ class BookingController extends Controller
         $generatedPassword = null;
 
         if (!$customerId) {
-            // Check if user already exists with this phone
+            // Check if user already exists with this phone or email
             $existingUser = User::findBy('phone', $cleanPhone);
+            if (!$existingUser && !empty($rawEmail)) {
+                $existingUser = User::findBy('email', $rawEmail);
+            }
+
             if ($existingUser) {
                 $customerId = (int)$existingUser['id'];
-                // Update name if previously empty or placeholder
+                // Update name or email if previously empty
                 if (!empty($name) && empty($existingUser['name'])) {
                     Database::execute("UPDATE users SET name = ? WHERE id = ?", [$name, $customerId]);
                     $existingUser['name'] = $name;
+                }
+                if (!empty($rawEmail) && empty($existingUser['email'])) {
+                    Database::execute("UPDATE users SET email = ? WHERE id = ?", [$rawEmail, $customerId]);
+                    $existingUser['email'] = $rawEmail;
                 }
                 Auth::login($existingUser);
             } else {
@@ -879,7 +966,7 @@ class BookingController extends Controller
 
                 $customerId = (int)Database::execute(
                     "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
-                    [$name, $cleanPhone, null, $hashedPassword],
+                    [$name, $cleanPhone, !empty($rawEmail) ? $rawEmail : null, $hashedPassword],
                     true
                 );
 
@@ -918,7 +1005,7 @@ class BookingController extends Controller
             'service_id'     => $serviceId,
             'name'           => $name,
             'phone'          => $cleanPhone,
-            'email'          => null,
+            'email'          => !empty($rawEmail) ? $rawEmail : null,
             'address'        => $location ?: 'Uttarakhand Service Area',
             'pincode'        => null,
             'preferred_date' => date('Y-m-d'),
@@ -934,28 +1021,36 @@ class BookingController extends Controller
             'booking_id'         => $bookingId,
             'name'               => $name,
             'phone'              => $cleanPhone,
+            'email'              => $rawEmail,
             'service_name'       => $service ? $service['name'] : ($serviceInput ?: 'Home Maintenance Service'),
             'location'           => $location ?: 'Uttarakhand Service Area',
             'message'            => $message,
             'is_new_customer'    => $isNewCustomer,
-            'identifier'         => $cleanPhone,
+            'identifier'         => !empty($rawEmail) ? $rawEmail : $cleanPhone,
             'generated_password' => $generatedPassword,
         ];
 
         // Trigger Notifications
         try {
             $record = [
+                'id'             => $bookingId,
+                'booking_id'     => $bookingId,
                 'booking_no'     => $bookingNo,
                 'service_name'   => $service ? $service['name'] : ($serviceInput ?: 'Home Service'),
                 'name'           => $name,
                 'phone'          => $cleanPhone,
+                'email'          => !empty($rawEmail) ? $rawEmail : null,
                 'address'        => $location ?: 'Service Area',
                 'preferred_date' => date('Y-m-d'),
                 'preferred_time' => 'Immediate / ASAP',
+                'message'        => $message,
+                'is_new_customer'=> $isNewCustomer,
+                'login_url'      => View::fullUrl('/login'),
+                'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
             ];
             if ($isNewCustomer && $generatedPassword) {
                 $record['generated_password'] = $generatedPassword;
-                $record['identifier'] = $cleanPhone;
+                $record['identifier'] = !empty($rawEmail) ? $rawEmail : $cleanPhone;
             }
             Notifier::notifyNewBookingAdmin($record);
             Notifier::notifyBookingConfirmationCustomer($record);

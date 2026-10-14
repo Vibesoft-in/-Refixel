@@ -77,6 +77,20 @@ class View
         return $cleanPath;
     }
 
+    public static function fullUrl(string $path = '/'): string
+    {
+        $appUrl = rtrim((string)Env::get('APP_URL', 'https://v1.refixel.com'), '/');
+        $cleanPath = '/' . ltrim($path, '/');
+        $basePath = parse_url($appUrl, PHP_URL_PATH) ?? '';
+
+        if ($basePath !== '' && str_starts_with($cleanPath, $basePath)) {
+            $rootDomain = (string)preg_replace('#' . preg_quote($basePath, '#') . '$#', '', $appUrl);
+            return $rootDomain . $cleanPath;
+        }
+
+        return $appUrl . $cleanPath;
+    }
+
     public static function asset(string $path): string
     {
         $path = trim($path);

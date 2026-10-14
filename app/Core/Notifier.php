@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Models\Setting;
 use App\Services\EmailProviderInterface;
 use App\Services\MetaWhatsAppService;
 use App\Services\Msg91SmsService;
@@ -102,46 +103,71 @@ class Notifier
         return $status === 'sent';
     }
 
+    protected static function getAdminEmail(): string
+    {
+        return (string)(
+            Setting::get('admin_notification_email')
+            ?: Setting::get('company_email')
+            ?: Env::get('ADMIN_NOTIFICATION_EMAIL')
+            ?: Env::get('MAIL_FROM_ADDRESS')
+            ?: 'wearerefixel@gmail.com'
+        );
+    }
+
     // ==========================================
-    // LIFECYCLE NOTIFICATION EVENTS (Prompt 11)
+    // LIFECYCLE NOTIFICATION EVENTS
     // ==========================================
 
     /**
-     * Event 1: New Booking -> Admin Alert
+     * Event 1: New Booking -> Admin Alert with Direct Dashboard Link
      */
     public static function notifyNewBookingAdmin(array $booking): void
     {
-        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@REFIXEL.com'));
+        $adminEmail = self::getAdminEmail();
+        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
+        $adminUrl = !empty($booking['admin_url']) ? $booking['admin_url'] : View::fullUrl('/admin/bookings/' . $bId);
+
         self::send('email', $adminEmail, 'admin_new_booking', [
             'booking_no'    => $booking['booking_no'] ?? '',
             'service_name'  => $booking['service_name'] ?? 'Home Service',
-            'customer_name' => $booking['name'] ?? '',
-            'phone'         => $booking['phone'] ?? '',
-            'city'          => $booking['city'] ?? '',
-            'preferred_date'=> $booking['preferred_date'] ?? '',
-            'preferred_time'=> $booking['preferred_time'] ?? '',
+            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
+            'phone'         => $booking['phone'] ?? ($booking['customer_phone'] ?? ''),
+            'email'         => $booking['email'] ?? ($booking['customer_email'] ?? ''),
+            'city'          => $booking['city'] ?? 'Service Area',
+            'preferred_date'=> $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time'=> $booking['preferred_time'] ?? 'Flexible',
             'address'       => $booking['address'] ?? '',
+            'message'       => $booking['message'] ?? ($booking['issue_details'] ?? ''),
+            'admin_url'     => $adminUrl,
         ]);
     }
 
     /**
-     * Event 2: Booking Confirmation -> Customer
+     * Event 2: Booking Confirmation -> Customer (Welcome Credentials if New User)
      */
     public static function notifyBookingConfirmationCustomer(array $booking): void
     {
+        $isNew = !empty($booking['generated_password']) || !empty($booking['is_new_customer']);
+        $template = $isNew ? 'customer_welcome_booking' : 'booking_confirmation';
+        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
+
         $data = [
-            'booking_no'    => $booking['booking_no'] ?? '',
-            'customer_name' => $booking['name'] ?? 'Customer',
-            'service_name'  => $booking['service_name'] ?? 'Home Service',
-            'preferred_date'=> $booking['preferred_date'] ?? '',
-            'preferred_time'=> $booking['preferred_time'] ?? '',
-            'address'       => $booking['address'] ?? '',
+            'booking_no'         => $booking['booking_no'] ?? '',
+            'customer_name'      => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
+            'service_name'       => $booking['service_name'] ?? 'Home Service',
+            'preferred_date'     => $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time'     => $booking['preferred_time'] ?? 'Flexible',
+            'address'            => $booking['address'] ?? '',
+            'phone'              => $booking['phone'] ?? '',
+            'email'              => $booking['email'] ?? null,
             'generated_password' => $booking['generated_password'] ?? null,
-            'identifier'    => $booking['identifier'] ?? null,
+            'identifier'         => $booking['identifier'] ?? ($booking['email'] ?? $booking['phone'] ?? null),
+            'login_url'          => !empty($booking['login_url']) ? $booking['login_url'] : View::fullUrl('/login'),
+            'booking_url'        => View::fullUrl('/account/bookings/' . $bId),
         ];
 
         if (!empty($booking['email'])) {
-            self::send('email', $booking['email'], 'booking_confirmation', $data);
+            self::send('email', $booking['email'], $template, $data);
         }
 
         if (!empty($booking['phone'])) {
@@ -154,17 +180,23 @@ class Notifier
     }
 
     /**
-     * Event 3: Staff Assignment -> Technician
+     * Event 3: Staff Assignment -> Technician Email with Job Details & Payout
      */
     public static function notifyStaffAssigned(array $booking, array $staff): void
     {
+        $jobId = $booking['job_id'] ?? '';
+        $baseAmt = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 899);
+        $expectedPayout = max(0.0, round($baseAmt - 49.0, 2));
+
         $data = [
-            'booking_no'    => $booking['booking_no'] ?? '',
-            'staff_name'    => $staff['name'] ?? 'Technician',
-            'service_name'  => $booking['service_name'] ?? 'Home Service',
-            'preferred_date'=> $booking['preferred_date'] ?? '',
-            'preferred_time'=> $booking['preferred_time'] ?? '',
-            'address'       => $booking['address'] ?? '',
+            'booking_no'        => $booking['booking_no'] ?? '',
+            'staff_name'        => $staff['name'] ?? 'Technician',
+            'service_name'      => $booking['service_name'] ?? 'Home Service',
+            'preferred_date'    => $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time'    => $booking['preferred_time'] ?? 'Flexible',
+            'address'           => $booking['address'] ?? '',
+            'technician_payout' => $expectedPayout,
+            'staff_job_url'     => View::fullUrl('/staff/jobs/' . $jobId),
         ];
 
         if (!empty($staff['email'])) {
@@ -181,44 +213,130 @@ class Notifier
     }
 
     /**
-     * Event 4: Booking Status Change -> Customer
+     * Event 4: Technician Accepts Job -> Notify Both Customer and Admin
+     */
+    public static function notifyTechnicianAccepted(array $booking, array $staff): void
+    {
+        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
+        $data = [
+            'booking_no'     => $booking['booking_no'] ?? '',
+            'customer_name'  => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
+            'customer_phone' => $booking['phone'] ?? ($booking['customer_phone'] ?? ''),
+            'service_name'   => $booking['service_name'] ?? 'Home Service',
+            'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Technician'),
+            'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
+            'preferred_date' => $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time' => $booking['preferred_time'] ?? 'Flexible',
+            'address'        => $booking['address'] ?? '',
+            'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
+            'admin_url'      => View::fullUrl('/admin/bookings/' . $bId),
+        ];
+
+        // 1. Notify Customer
+        $customerEmail = $booking['email'] ?? ($booking['customer_email'] ?? null);
+        if (!empty($customerEmail)) {
+            self::send('email', $customerEmail, 'technician_accepted_customer', $data);
+        }
+
+        // 2. Notify Admin
+        $adminEmail = self::getAdminEmail();
+        self::send('email', $adminEmail, 'technician_accepted_admin', $data);
+    }
+
+    /**
+     * Event 5: Prepaid Online Booking Receipt with "Work is Due" Notice
+     */
+    public static function notifyPrepaidInvoiceWorkDue(array $invoice, array $booking): void
+    {
+        $customerEmail = $booking['email'] ?? ($booking['customer_email'] ?? null);
+        if (empty($customerEmail)) {
+            return;
+        }
+
+        $invId = $invoice['id'] ?? '';
+        $data = [
+            'invoice_no'    => $invoice['invoice_no'] ?? 'INV-PREPAID',
+            'booking_no'    => $booking['booking_no'] ?? '',
+            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
+            'service_name'  => $booking['service_name'] ?? 'Home Service',
+            'total'         => (float)($invoice['total'] ?? ($booking['total_amount'] ?? 0)),
+            'preferred_date'=> $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time'=> $booking['preferred_time'] ?? 'Flexible',
+            'invoice_url'   => View::fullUrl('/account/invoices/' . $invId),
+        ];
+
+        self::send('email', $customerEmail, 'invoice_prepaid_work_due', $data);
+    }
+
+    /**
+     * Event 6: Service Completed -> Final GST Tax Invoice to Customer
+     */
+    public static function notifyFinalCompletedInvoice(array $invoice, array $booking, ?array $staff = null): void
+    {
+        $customerEmail = $booking['email'] ?? ($booking['customer_email'] ?? null);
+        if (empty($customerEmail)) {
+            return;
+        }
+
+        $invId = $invoice['id'] ?? '';
+        $data = [
+            'invoice_no'    => $invoice['invoice_no'] ?? 'INV-FINAL',
+            'booking_no'    => $booking['booking_no'] ?? '',
+            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
+            'service_name'  => $booking['service_name'] ?? 'Home Service',
+            'staff_name'    => $staff['name'] ?? ($booking['staff_name'] ?? 'Technician'),
+            'work_summary'  => $booking['work_summary'] ?? 'Service completed satisfactorily on site.',
+            'total'         => (float)($invoice['total'] ?? ($booking['total_amount'] ?? 0)),
+            'advance_paid'  => (float)($invoice['advance_paid'] ?? ($booking['advance_amount'] ?? 0)),
+            'due_amount'    => (float)($invoice['due_amount'] ?? 0),
+            'invoice_url'   => View::fullUrl('/account/invoices/' . $invId),
+        ];
+
+        self::send('email', $customerEmail, 'invoice_final_completed', $data);
+    }
+
+    /**
+     * Event 7: Booking Status Change -> Customer
      */
     public static function notifyBookingStatusChange(array $booking, string $newStatus, ?string $notes = null): void
     {
         $data = [
             'booking_no'    => $booking['booking_no'] ?? '',
-            'customer_name' => $booking['name'] ?? 'Customer',
+            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
             'status'        => $newStatus,
             'notes'         => $notes ?? '',
         ];
 
-        if (!empty($booking['email'])) {
-            self::send('email', $booking['email'], 'status_updated', $data);
+        $email = $booking['email'] ?? ($booking['customer_email'] ?? null);
+        if (!empty($email)) {
+            self::send('email', $email, 'status_updated', $data);
         }
 
-        if (!empty($booking['phone'])) {
-            self::send('sms', $booking['phone'], 'status_updated_sms', $data);
+        $phone = $booking['phone'] ?? ($booking['customer_phone'] ?? null);
+        if (!empty($phone)) {
+            self::send('sms', $phone, 'status_updated_sms', $data);
         }
     }
 
     /**
-     * Event 5: Job Completed -> Customer & Admin
+     * Event 8: Job Completed -> Customer & Admin (General Alert)
      */
     public static function notifyJobCompleted(array $booking, ?array $staff = null): void
     {
         $data = [
             'booking_no'    => $booking['booking_no'] ?? '',
-            'customer_name' => $booking['name'] ?? 'Customer',
+            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
             'service_name'  => $booking['service_name'] ?? 'Home Service',
-            'staff_name'    => $staff['name'] ?? 'Technician',
+            'staff_name'    => $staff['name'] ?? ($booking['staff_name'] ?? 'Technician'),
         ];
 
-        if (!empty($booking['email'])) {
-            self::send('email', $booking['email'], 'job_completed', $data);
+        $email = $booking['email'] ?? ($booking['customer_email'] ?? null);
+        if (!empty($email)) {
+            self::send('email', $email, 'job_completed', $data);
         }
 
         // Alert Admin
-        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@REFIXEL.com'));
+        $adminEmail = self::getAdminEmail();
         self::send('email', $adminEmail, 'admin_alert', [
             'title'   => "Job Completed: Booking #{$booking['booking_no']}",
             'message' => "Technician {$data['staff_name']} completed service for {$data['customer_name']}.",
@@ -226,7 +344,7 @@ class Notifier
     }
 
     /**
-     * Event 6: GST Invoice Created -> Customer
+     * Event 9: GST Invoice Created -> Customer
      */
     public static function notifyInvoiceCreated(array $invoice, array $customer): void
     {
@@ -242,7 +360,7 @@ class Notifier
     }
 
     /**
-     * Event 7: Password Reset -> Customer / Staff
+     * Event 10: Password Reset -> Customer / Staff
      */
     public static function notifyPasswordReset(string $email, string $resetLink): void
     {
@@ -252,11 +370,11 @@ class Notifier
     }
 
     /**
-     * Event 8: Important Admin Alert
+     * Event 11: Important Admin Alert
      */
     public static function notifyAdminAlert(string $title, string $message, array $context = []): void
     {
-        $adminEmail = (string)Env::get('ADMIN_NOTIFICATION_EMAIL', Env::get('MAIL_FROM_ADDRESS', 'admin@REFIXEL.com'));
+        $adminEmail = self::getAdminEmail();
         self::send('email', $adminEmail, 'admin_alert', [
             'title'   => $title,
             'message' => $message,
@@ -265,26 +383,27 @@ class Notifier
     }
 
     /**
-     * Event 9: Upcoming Booking Reminder (Cron trigger)
+     * Event 12: Upcoming Booking Reminder (Cron trigger)
      */
     public static function notifyUpcomingReminder(array $booking): void
     {
         $data = [
             'booking_no'    => $booking['booking_no'] ?? '',
-            'customer_name' => $booking['name'] ?? 'Customer',
+            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
             'service_name'  => $booking['service_name'] ?? 'Home Service',
             'preferred_date'=> $booking['preferred_date'] ?? '',
             'preferred_time'=> $booking['preferred_time'] ?? '',
             'address'       => $booking['address'] ?? '',
         ];
 
-        if (!empty($booking['email'])) {
-            self::send('email', $booking['email'], 'booking_reminder', $data);
+        $email = $booking['email'] ?? ($booking['customer_email'] ?? null);
+        if (!empty($email)) {
+            self::send('email', $email, 'booking_reminder', $data);
         }
 
-        if (!empty($booking['phone'])) {
-            self::send('sms', $booking['phone'], 'booking_reminder_sms', $data);
+        $phone = $booking['phone'] ?? ($booking['customer_phone'] ?? null);
+        if (!empty($phone)) {
+            self::send('sms', $phone, 'booking_reminder_sms', $data);
         }
     }
 }
-
