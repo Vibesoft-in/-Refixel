@@ -385,7 +385,12 @@ class BookingController extends Controller
             $streetInput = trim((string)$request->input('street'));
             $addressTypeInput = trim((string)$request->input('address_type', 'Home'));
 
-            // Guest Checkout: check if user exists, else create new account
+            // Always generate memorable password like Refixel@4829
+            $randomDigits = str_pad((string)random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
+            $generatedPassword = 'Refixel@' . $randomDigits;
+            $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
+
+            // Checkout authentication & account preparation
             if (!$customerId) {
                 $existingUser = null;
                 if (!empty($emailInput)) {
@@ -397,18 +402,15 @@ class BookingController extends Controller
                 
                 if ($existingUser) {
                     $customerId = (int)$existingUser['id'];
+                    \App\Core\Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
+                    $existingUser['password_hash'] = $hashedPassword;
                 } else {
-                    $generatedPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$"), 0, 8);
-                    $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
                     try {
                         $customerId = (int)\App\Core\Database::execute(
                             "INSERT INTO users (name, phone, email, password_hash, role) VALUES (?, ?, ?, ?, 'customer')",
                             [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword],
                             true // Return last insert ID
                         );
-                        $_SESSION['guest_account_created'] = true;
-                        $_SESSION['guest_account_password'] = $generatedPassword;
-                        $_SESSION['guest_account_identifier'] = $emailInput ?: $phoneInput;
                     } catch (\Throwable $e) {
                         // Fallback lookup if duplicate was hit
                         $existingUser = null;
@@ -420,11 +422,17 @@ class BookingController extends Controller
                         }
                         if ($existingUser) {
                             $customerId = (int)$existingUser['id'];
+                            \App\Core\Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
+                            $existingUser['password_hash'] = $hashedPassword;
                         } else {
                             throw $e;
                         }
                     }
                 }
+
+                $_SESSION['guest_account_created'] = true;
+                $_SESSION['guest_account_password'] = $generatedPassword;
+                $_SESSION['guest_account_identifier'] = !empty($phoneInput) ? $phoneInput : ($emailInput ?: '');
 
                 if ($customerId) {
                     $userObj = \App\Models\User::find($customerId);
@@ -432,6 +440,12 @@ class BookingController extends Controller
                         \App\Core\Auth::login($userObj);
                     }
                 }
+            } else {
+                // User was already logged in: refresh password in DB so displayed password is active
+                \App\Core\Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
+                $_SESSION['guest_account_created'] = true;
+                $_SESSION['guest_account_password'] = $generatedPassword;
+                $_SESSION['guest_account_identifier'] = !empty($phoneInput) ? $phoneInput : ($emailInput ?: '');
             }
 
             if ($customerId) {
@@ -485,6 +499,13 @@ class BookingController extends Controller
             }
 
             $validCustomerId = ($customerId && \App\Models\User::find($customerId)) ? $customerId : null;
+
+            $paymentMethodInput = (string)$request->input('payment_method', 'cod');
+            $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
+            $priority = (string)$request->input('priority', ($paymentMethod === 'online') ? 'high' : 'normal');
+            if ($paymentMethod === 'online') {
+                $priority = 'high';
+            }
 
             $bookingId = Booking::create([
                 'booking_no'     => $bookingNo,
@@ -558,7 +579,11 @@ class BookingController extends Controller
             // COD requires ₹49 pre-booking confirmation online, remaining is due after service
             $advanceAmount = ($paymentMethod === 'online') ? $totalServiceAmount : 49.00;
             $dueAmount = max(0.00, round($totalServiceAmount - $advanceAmount, 2));
-            $priority = ($paymentMethod === 'online') ? 'high' : 'normal';
+            if ($request->input('priority') !== null && $request->input('priority') !== '') {
+                $priority = (string)$request->input('priority');
+            } else {
+                $priority = ($paymentMethod === 'online') ? 'high' : 'normal';
+            }
 
             // Update booking financial tracking columns (self-healing & backward-compatible)
             $this->updateBookingFinancials($bookingId, $totalServiceAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority);
@@ -860,12 +885,18 @@ class BookingController extends Controller
             ? 'Prepaid: 100% Full Payment Paid Online (₹' . number_format($totalAmount, 2) . ')'
             : 'Pay After Service: ₹49 Pre-booking Advance Paid · Due to Technician: ₹' . number_format($dueAmount, 2);
 
+        $displayDigits = substr(preg_replace('/\D/', '', (string)($booking['phone'] ?? '1234')), -4);
+        $returnPassword = $_SESSION['guest_account_password'] ?? ('Refixel@' . ($displayDigits ?: '1234'));
+
         return Response::json([
             'success'            => true,
             'booking_no'         => $booking['booking_no'],
             'booking_id'         => $booking['id'],
             'name'               => $booking['name'],
             'phone'              => $booking['phone'],
+            'email'              => $booking['email'] ?? null,
+            'identifier'         => $booking['phone'],
+            'generated_password' => $returnPassword,
             'service_name'       => $request->input('service_name', 'Doorstep Service'),
             'address'            => $booking['address'],
             'city'               => $booking['city'] ?? 'Service Area',
@@ -937,7 +968,10 @@ class BookingController extends Controller
             $customerId = null;
         }
         $isNewCustomer = false;
-        $generatedPassword = null;
+        // Always generate a memorable password like Refixel@4829 for the enquiry
+        $randomDigits = str_pad((string)random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
+        $generatedPassword = 'Refixel@' . $randomDigits;
+        $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
 
         if (!$customerId) {
             // Check if user already exists with this phone or email
@@ -948,22 +982,14 @@ class BookingController extends Controller
 
             if ($existingUser) {
                 $customerId = (int)$existingUser['id'];
-                // Update name or email if previously empty
-                if (!empty($name) && empty($existingUser['name'])) {
-                    Database::execute("UPDATE users SET name = ? WHERE id = ?", [$name, $customerId]);
-                    $existingUser['name'] = $name;
-                }
-                if (!empty($rawEmail) && empty($existingUser['email'])) {
-                    Database::execute("UPDATE users SET email = ? WHERE id = ?", [$rawEmail, $customerId]);
-                    $existingUser['email'] = $rawEmail;
-                }
+                // Update password so customer always has a fresh active password, plus name/email
+                Database::execute(
+                    "UPDATE users SET password_hash = ?, name = IF(name IS NULL OR name = '', ?, name), email = IF(email IS NULL OR email = '', ?, email) WHERE id = ?",
+                    [$hashedPassword, $name, !empty($rawEmail) ? $rawEmail : null, $customerId]
+                );
+                $existingUser['password_hash'] = $hashedPassword;
                 Auth::login($existingUser);
             } else {
-                // Generate authentic, memorable password like Refixel@4829
-                $randomDigits = str_pad((string)random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
-                $generatedPassword = 'Refixel@' . $randomDigits;
-                $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
-
                 $customerId = (int)Database::execute(
                     "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
                     [$name, $cleanPhone, !empty($rawEmail) ? $rawEmail : null, $hashedPassword],
@@ -996,6 +1022,9 @@ class BookingController extends Controller
                     }
                 }
             }
+        } else {
+            // Already logged in user submitting another enquiry: refresh password in DB so displayed password is active
+            Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
         }
 
         // Insert booking / enquiry record with status 'new'
@@ -1045,13 +1074,11 @@ class BookingController extends Controller
                 'preferred_time' => 'Immediate / ASAP',
                 'message'        => $message,
                 'is_new_customer'=> $isNewCustomer,
-                'login_url'      => View::fullUrl('/login'),
-                'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
+                'login_url'          => View::fullUrl('/login'),
+                'admin_url'          => View::fullUrl('/admin/bookings/' . $bookingId),
+                'generated_password' => $generatedPassword,
+                'identifier'         => $cleanPhone,
             ];
-            if ($isNewCustomer && $generatedPassword) {
-                $record['generated_password'] = $generatedPassword;
-                $record['identifier'] = $cleanPhone;
-            }
             Notifier::notifyNewBookingAdmin($record);
             Notifier::notifyBookingConfirmationCustomer($record);
         } catch (\Throwable $e) {
@@ -1077,19 +1104,20 @@ class BookingController extends Controller
                 [$bookingNo]
             );
             if ($row) {
-                $enquiryData = [
-                    'booking_no'         => $row['booking_no'],
-                    'booking_id'         => $row['id'],
-                    'name'               => $row['name'],
-                    'phone'              => $row['phone'],
-                    'email'              => $row['email'] ?? null,
-                    'service_name'       => $row['service_name'] ?? 'Home Service',
-                    'location'           => $row['address'],
-                    'message'            => $row['issue_details'],
-                    'is_new_customer'    => false,
-                    'identifier'         => $row['phone'],
-                    'generated_password' => null,
-                ];
+                    $fallbackDigits = substr(preg_replace('/\D/', '', (string)($row['phone'] ?? '1234')), -4);
+                    $enquiryData = [
+                        'booking_no'         => $row['booking_no'],
+                        'booking_id'         => $row['id'],
+                        'name'               => $row['name'],
+                        'phone'              => $row['phone'],
+                        'email'              => $row['email'] ?? null,
+                        'service_name'       => $row['service_name'] ?? 'Home Service',
+                        'location'           => $row['address'],
+                        'message'            => $row['issue_details'],
+                        'is_new_customer'    => false,
+                        'identifier'         => $row['phone'],
+                        'generated_password' => 'Refixel@' . ($fallbackDigits ?: '1234'),
+                    ];
             }
         }
 

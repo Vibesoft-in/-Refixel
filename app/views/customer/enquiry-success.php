@@ -257,14 +257,15 @@
         <div class="rfx-cred-row">
           <span class="rfx-cred-lbl">Password</span>
           <span class="rfx-cred-val">
-            <?php if (!empty($enquiry['generated_password'])): ?>
-              <span style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"><?= \App\Core\View::e($enquiry['generated_password']) ?></span>
-              <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($enquiry['generated_password']) ?>', this)" title="Copy Password">
-                <i class="fa fa-copy"></i> Copy
-              </button>
-            <?php else: ?>
-              <span style="color: #34d399; font-size: 11px;"><i class="fa fa-check-circle mr-1"></i> Logged In</span>
-            <?php endif; ?>
+            <?php 
+              $displayPassword = !empty($enquiry['generated_password']) 
+                ? $enquiry['generated_password'] 
+                : ('Refixel@' . substr(preg_replace('/\D/', '', (string)($enquiry['phone'] ?? '1234')), -4));
+            ?>
+            <span style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"><?= \App\Core\View::e($displayPassword) ?></span>
+            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($displayPassword) ?>', this)" title="Copy Password">
+              <i class="fa fa-copy"></i> Copy
+            </button>
           </span>
         </div>
       </div>

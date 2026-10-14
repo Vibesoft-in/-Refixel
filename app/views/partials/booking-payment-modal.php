@@ -130,8 +130,17 @@
           <div class="d-flex align-items-center justify-content-between py-1" style="font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
             <span style="color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700;">Mobile Number</span>
             <span class="font-weight-bold d-flex align-items-center text-white" style="gap: 5px;">
-              <span id="rfxSuccessPhone">+91-XXXXXXXXXX</span>
+              <span id="rfxSuccessPhone">7017853715</span>
               <button type="button" class="btn btn-xs py-0 px-1 border-0 rounded text-white" style="background: rgba(255,255,255,0.18); font-size: 9.5px;" onclick="rfxModalCopyText(document.getElementById('rfxSuccessPhone').innerText, this)">
+                <i class="fa fa-copy"></i>
+              </button>
+            </span>
+          </div>
+          <div id="rfxSuccessEmailRow" class="d-flex align-items-center justify-content-between py-1" style="display: none; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <span style="color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700;">Email</span>
+            <span class="font-weight-bold d-flex align-items-center text-white" style="gap: 5px; font-size: 11px;">
+              <span id="rfxSuccessEmail" style="word-break: break-all;">-</span>
+              <button type="button" class="btn btn-xs py-0 px-1 border-0 rounded text-white" style="background: rgba(255,255,255,0.18); font-size: 9.5px;" onclick="rfxModalCopyText(document.getElementById('rfxSuccessEmail').innerText, this)">
                 <i class="fa fa-copy"></i>
               </button>
             </span>
@@ -648,17 +657,29 @@ function fallbackModalCopy(text, cb) {
             stepSuccess.style.display = 'block';
 
             document.getElementById('rfxSuccessBookingNo').innerText = d.booking_no || 'BK-CONFIRMED';
-            document.getElementById('rfxSuccessPhone').innerText = '+91-' + (d.phone || d.identifier || '');
+            var rawDigits = String(d.phone || d.identifier || '').replace(/\D/g, '');
+            if (rawDigits.length === 12 && rawDigits.startsWith('91')) rawDigits = rawDigits.slice(2);
+            document.getElementById('rfxSuccessPhone').innerText = rawDigits || 'Customer';
+
+            var emailRow = document.getElementById('rfxSuccessEmailRow');
+            var emailElem = document.getElementById('rfxSuccessEmail');
+            if (d.email && emailRow && emailElem) {
+              emailElem.innerText = d.email;
+              emailRow.style.display = 'flex';
+            } else if (emailRow) {
+              emailRow.style.display = 'none';
+            }
             
             var pwdElem = document.getElementById('rfxSuccessPassword');
             var pwdBtn = document.getElementById('rfxSuccessPasswordCopyBtn');
-            if (d.generated_password) {
-              pwdElem.innerText = d.generated_password;
+            var shownPwd = d.generated_password || ('Refixel@' + (rawDigits ? rawDigits.slice(-4) : '1234'));
+            if (pwdElem) {
+              pwdElem.innerText = shownPwd;
               pwdElem.style.color = '#fde047';
-              if (pwdBtn) pwdBtn.style.display = 'inline-block';
-            } else {
-              pwdElem.innerHTML = '<span style="color:#34d399; font-size:11px;"><i class="fa fa-check-circle mr-1"></i> Active / Logged In</span>';
-              if (pwdBtn) pwdBtn.style.display = 'none';
+            }
+            if (pwdBtn) {
+              pwdBtn.style.display = 'inline-block';
+              pwdBtn.onclick = function() { rfxModalCopyText(shownPwd, pwdBtn); };
             }
 
             document.getElementById('rfxSuccessService').innerText = d.service_name || 'Doorstep Service';

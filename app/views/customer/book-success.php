@@ -230,36 +230,50 @@
         </div>
       </div>
 
-      <!-- Mobile / ID & Password -->
+      <!-- Credentials Box: Mobile Number, Email & Password -->
       <?php 
         $hasGuestAcc = isset($_SESSION['guest_account_created']) && $_SESSION['guest_account_created'] === true;
         $guestId = $_SESSION['guest_account_identifier'] ?? ($booking['phone'] ?? '');
         $guestPwd = $_SESSION['guest_account_password'] ?? null;
+        $cleanPhone = preg_replace('/\D/', '', (string)($guestId ?: ($booking['phone'] ?? '')));
+        if (str_starts_with($cleanPhone, '91') && strlen($cleanPhone) === 12) {
+            $cleanPhone = substr($cleanPhone, 2);
+        }
+        $customerEmail = !empty($booking['email']) ? $booking['email'] : null;
+        $displayPassword = !empty($guestPwd) ? $guestPwd : ('Refixel@' . substr($cleanPhone ?: '1234', -4));
       ?>
       <div class="rfx-cred-box">
         <div class="rfx-cred-row">
-          <span class="rfx-cred-lbl">Mobile / ID</span>
+          <span class="rfx-cred-lbl">Mobile Number</span>
           <span class="rfx-cred-val">
-            <?= \App\Core\View::e($guestId ?: ($booking['phone'] ?? 'Registered User')) ?>
-            <?php if (!empty($guestId)): ?>
-            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($guestId) ?>', this)" title="Copy Mobile">
+            <?= \App\Core\View::e($cleanPhone ?: 'Registered User') ?>
+            <?php if (!empty($cleanPhone)): ?>
+            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($cleanPhone) ?>', this)" title="Copy Mobile">
               <i class="fa fa-copy"></i>
             </button>
             <?php endif; ?>
           </span>
         </div>
 
+        <?php if (!empty($customerEmail)): ?>
+        <div class="rfx-cred-row">
+          <span class="rfx-cred-lbl">Email</span>
+          <span class="rfx-cred-val" style="font-size: 11px;">
+            <?= \App\Core\View::e($customerEmail) ?>
+            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($customerEmail) ?>', this)" title="Copy Email">
+              <i class="fa fa-copy"></i>
+            </button>
+          </span>
+        </div>
+        <?php endif; ?>
+
         <div class="rfx-cred-row">
           <span class="rfx-cred-lbl">Password</span>
           <span class="rfx-cred-val">
-            <?php if (!empty($guestPwd)): ?>
-              <span style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"><?= \App\Core\View::e($guestPwd) ?></span>
-              <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($guestPwd) ?>', this)" title="Copy Password">
-                <i class="fa fa-copy"></i> Copy
-              </button>
-            <?php else: ?>
-              <span style="color: #34d399; font-size: 11px;"><i class="fa fa-check-circle mr-1"></i> Logged In</span>
-            <?php endif; ?>
+            <span style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"><?= \App\Core\View::e($displayPassword) ?></span>
+            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($displayPassword) ?>', this)" title="Copy Password">
+              <i class="fa fa-copy"></i> Copy
+            </button>
           </span>
         </div>
       </div>
