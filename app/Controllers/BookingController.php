@@ -671,7 +671,7 @@ class BookingController extends Controller
                     'city'               => $cityInput,
                     'preferred_date'     => $prefDate,
                     'preferred_time'     => $prefTime,
-                    'payment_method'     => 'Cash on Delivery',
+                    'payment_method'     => 'Pay After Service',
                     'is_new_customer'    => $isNewAcc,
                     'generated_password' => $genPwd,
                     'identifier'         => $ident,
@@ -857,8 +857,8 @@ class BookingController extends Controller
         Cart::clear();
 
         $paymentSummaryText = ($paymentType === 'online')
-            ? '100% Full Payment Paid Online (₹' . number_format($totalAmount, 2) . ')'
-            : 'Pre-booking Advance Paid: ₹' . number_format($advanceAmount, 2) . ' · Due to Technician: ₹' . number_format($dueAmount, 2);
+            ? 'Prepaid: 100% Full Payment Paid Online (₹' . number_format($totalAmount, 2) . ')'
+            : 'Pay After Service: ₹49 Pre-booking Advance Paid · Due to Technician: ₹' . number_format($dueAmount, 2);
 
         return Response::json([
             'success'            => true,

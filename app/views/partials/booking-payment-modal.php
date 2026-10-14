@@ -41,12 +41,12 @@
           <!-- Payment Options -->
           <div class="rfx-payment-options d-flex flex-column" style="gap: 10px;">
 
-            <!-- Option 1: Cash on Delivery (COD) -->
+            <!-- Option 1: Pay After Service -->
             <label class="rfx-pay-card active d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardCod" style="cursor: pointer; border: 2px solid #f25b29; background: #fffbf9; transition: all 0.2s ease;">
               <input type="radio" name="modal_payment_method" value="cod" checked style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
-                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Cash on Delivery (COD)</span>
+                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Pay After Service</span>
                   <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 10px; font-weight: 700; padding: 2px 6px;">
                     <i class="fa fa-clock-o mr-1"></i>Medium Priority
                   </span>
@@ -61,12 +61,12 @@
               </div>
             </label>
 
-            <!-- Option 2: Pay Online -->
+            <!-- Option 2: Prepaid -->
             <label class="rfx-pay-card d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardOnline" style="cursor: pointer; border: 1.5px solid #e2e8f0; background: #ffffff; transition: all 0.2s ease;">
               <input type="radio" name="modal_payment_method" value="online" style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
-                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">100% Online Payment</span>
+                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Prepaid</span>
                   <span class="badge" style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; font-size: 10px; font-weight: 700; padding: 2px 6px;">
                     <i class="fa fa-bolt mr-1"></i>High Priority
                   </span>
@@ -172,7 +172,7 @@
           </div>
           <div class="d-flex justify-content-between pt-1">
             <span class="text-muted">Payment Mode:</span>
-            <strong class="text-dark" id="rfxSuccessPayment">Cash on Delivery</strong>
+            <strong class="text-dark" id="rfxSuccessPayment">Pay After Service</strong>
           </div>
         </div>
 
@@ -311,9 +311,9 @@ function fallbackModalCopy(text, cb) {
     } else if (radioOnline && radioOnline.checked) {
       if (cardOnline) { cardOnline.style.borderColor = '#f25b29'; cardOnline.style.background = '#fffbf9'; }
       if (cardCod) { cardCod.style.borderColor = '#e2e8f0'; cardCod.style.background = '#ffffff'; }
-      if (advDisplay) advDisplay.innerText = '₹' + Math.round(totalVal) + ' (100% Full)';
+      if (advDisplay) advDisplay.innerText = '₹' + Math.round(totalVal) + ' (Prepaid Full)';
       if (dueDisplay) dueDisplay.innerText = '₹0 (Fully Paid)';
-      if (btnText) btnText.innerHTML = 'Pay Full ₹' + Math.round(totalVal) + ' Online (High Priority) &rarr;';
+      if (btnText) btnText.innerHTML = 'Pay Prepaid ₹' + Math.round(totalVal) + ' (High Priority) &rarr;';
     }
   }
 
@@ -686,7 +686,7 @@ function fallbackModalCopy(text, cb) {
               dueElem.innerText = '₹' + dueVal + (dueVal > 0 ? ' (Due to Technician)' : ' (Zero Due)');
             }
 
-            document.getElementById('rfxSuccessPayment').innerText = paymentText || (isCod ? 'Cash on Delivery (Advance Paid)' : '100% Paid Online');
+            document.getElementById('rfxSuccessPayment').innerText = paymentText || (isCod ? 'Pay After Service (₹49 Advance Paid)' : 'Prepaid (100% Online)');
 
             var targetUrl = d.redirect_url || (window.REFIXEL_BASE_URL ? window.REFIXEL_BASE_URL + '/account/bookings' : '/account/bookings');
             var dashBtn = document.getElementById('rfxSuccessDashboardBtn');
@@ -763,7 +763,7 @@ function fallbackModalCopy(text, cb) {
                   if (errorAlert) {
                     errorAlert.innerText = isCodMode
                       ? 'Pre-booking advance payment was closed. Please complete the ₹49 online payment to confirm your booking.'
-                      : 'Online payment was closed. You can retry paying online or choose Cash on Delivery.';
+                      : 'Online payment was closed. You can retry paying online or choose Pay After Service.';
                     errorAlert.style.display = 'block';
                   }
                 }
@@ -847,7 +847,7 @@ function fallbackModalCopy(text, cb) {
           }
 
           // COD or standard non-payment flow
-          showSuccessCard(result.data, (selectedMethod === 'online') ? 'Online Paid (Instant)' : 'Cash on Delivery (Pay After Service)');
+          showSuccessCard(result.data, (selectedMethod === 'online') ? 'Prepaid (100% Online)' : 'Pay After Service');
         })
         .catch(function(err) {
           console.error('Booking submission error:', err);

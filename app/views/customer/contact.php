@@ -316,7 +316,7 @@
                 </button>
                 <div class="contact-faq-answer">
                   <div class="faq-answer-inner">
-                    We accept all convenient payment options including UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, and Cash on Delivery (COD) once the work is completed to your satisfaction.
+                    We accept all convenient payment options including UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, Prepaid online options, and Pay After Service once the work is completed to your satisfaction.
                   </div>
                 </div>
               </div>
