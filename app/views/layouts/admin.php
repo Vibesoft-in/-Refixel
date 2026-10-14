@@ -227,6 +227,8 @@
     .badge-status-in_progress { background-color: #dbeafe; color: #1e40af; font-weight: 600; padding: 4px 8px; border-radius: 5px; }
     .badge-status-completed { background-color: #d1fae5; color: #065f46; font-weight: 600; padding: 4px 8px; border-radius: 5px; }
     .badge-status-cancelled { background-color: #fee2e2; color: #991b1b; font-weight: 600; padding: 4px 8px; border-radius: 5px; }
+    .badge-pay-paid { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700; padding: 3px 8px; border-radius: 5px; font-size: 11px; letter-spacing: 0.3px; display: inline-flex; align-items: center; }
+    .badge-pay-pre { background-color: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; padding: 3px 8px; border-radius: 5px; font-size: 11px; letter-spacing: 0.3px; display: inline-flex; align-items: center; }
   </style>
 </head>
 <body>

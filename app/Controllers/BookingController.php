@@ -228,8 +228,8 @@ class BookingController extends Controller
         try {
             if ($status !== null) {
                 Database::execute(
-                    "UPDATE bookings SET priority = ?, status = ?, total_amount = ?, advance_amount = ?, due_amount = ? WHERE id = ?",
-                    [$priority, $status, $totalAmount, $advanceAmount, $dueAmount, $bookingId]
+                    "UPDATE bookings SET priority = ?, status = ?, total_amount = ?, advance_amount = ?, due_amount = ?, payment_type = ? WHERE id = ?",
+                    [$priority, $status, $totalAmount, $advanceAmount, $dueAmount, $paymentMethod, $bookingId]
                 );
             } else {
                 Database::execute(

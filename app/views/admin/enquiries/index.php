@@ -83,9 +83,45 @@ $counts = $counts ?? ['new' => 0, 'all' => 0];
                   <span class="badge <?= $prioClass ?>"><?= strtoupper(View::e($e['priority'] ?? 'normal')) ?></span>
                 </td>
                 <td>
-                  <span class="badge badge-status-<?= View::e($e['status']) ?>">
-                    <?= ucfirst(str_replace('_', ' ', $e['status'])) ?>
-                  </span>
+                  <div class="d-inline-flex align-items-center flex-wrap" style="gap: 5px;">
+                    <span class="badge badge-status-<?= View::e($e['status']) ?>">
+                      <?= ucfirst(str_replace('_', ' ', $e['status'])) ?>
+                    </span>
+                    <?php
+                      $payType = strtolower(trim((string)($e['payment_type'] ?? '')));
+                      $advAmt  = (float)($e['advance_amount'] ?? 0);
+                      $dueAmt  = (float)($e['due_amount'] ?? 0);
+                      $pPaidStatus = (string)($e['payment_paid_status'] ?? '');
+                      $priority = strtolower(trim((string)($e['priority'] ?? '')));
+
+                      $isFullPaid = false;
+                      $isPrePaid  = false;
+
+                      if ($pPaidStatus === 'paid') {
+                          if ($payType === 'online' || $dueAmt <= 0) {
+                              $isFullPaid = true;
+                          } else {
+                              $isPrePaid = true;
+                          }
+                      } else {
+                          // Fallback matching customer selected mode
+                          if ($payType === 'online' || $priority === 'high') {
+                              $isFullPaid = true;
+                          } elseif ($payType === 'cod' || $advAmt == 49.0 || $priority === 'normal') {
+                              $isPrePaid = true;
+                          }
+                      }
+                    ?>
+                    <?php if ($isFullPaid): ?>
+                      <span class="badge badge-pay-paid" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="100% Full Payment Paid Online">
+                        <i class="fa fa-check mr-1"></i>Paid
+                      </span>
+                    <?php elseif ($isPrePaid): ?>
+                      <span class="badge badge-pay-pre" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pre-booking Advance ₹49 Paid (COD Remaining)">
+                        Pre
+                      </span>
+                    <?php endif; ?>
+                  </div>
                 </td>
                 <td class="text-right">
                   <a href="<?= View::url('/admin/enquiries/' . $e['id']) ?>" class="btn btn-sm btn-brand px-3 font-weight-bold">

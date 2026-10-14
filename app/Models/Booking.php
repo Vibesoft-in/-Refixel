@@ -31,7 +31,9 @@ class Booking extends Model
         return Database::fetchOne(
             "SELECT b.*, s.name as service_name, s.starting_price, c.name as category_name,
                     u.name as customer_name, u.phone as customer_phone, u.email as customer_email,
-                    j.id as job_id, j.status as job_status, j.staff_id, st.name as staff_name
+                    j.id as job_id, j.status as job_status, j.staff_id, st.name as staff_name,
+                    (SELECT p.status FROM payments p WHERE p.booking_id = b.id AND p.status = 'paid' ORDER BY p.id DESC LIMIT 1) as payment_paid_status,
+                    (SELECT p.amount FROM payments p WHERE p.booking_id = b.id AND p.status = 'paid' ORDER BY p.id DESC LIMIT 1) as payment_paid_amount
              FROM bookings b
              JOIN services s ON b.service_id = s.id
              JOIN categories c ON s.category_id = c.id

@@ -135,9 +135,20 @@ $search = $search ?? '';
                   <?php endif; ?>
                 </td>
                 <td>
-                  <span class="badge badge-status-<?= View::e($b['status']) ?>">
-                    <?= ucfirst(str_replace('_', ' ', $b['status'])) ?>
-                  </span>
+                  <div class="d-inline-flex align-items-center flex-wrap" style="gap: 5px;">
+                    <span class="badge badge-status-<?= View::e($b['status']) ?>">
+                      <?= ucfirst(str_replace('_', ' ', $b['status'])) ?>
+                    </span>
+                    <?php if ($isBHigh && $bDue <= 0): ?>
+                      <span class="badge badge-pay-paid" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="100% Full Payment Paid Online">
+                        <i class="fa fa-check mr-1"></i>Paid
+                      </span>
+                    <?php else: ?>
+                      <span class="badge badge-pay-pre" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pre-booking Advance ₹49 Paid (COD Remaining)">
+                        Pre
+                      </span>
+                    <?php endif; ?>
+                  </div>
                 </td>
                 <td class="text-right">
                   <a href="<?= View::url('/admin/bookings/' . $b['id']) ?>" class="btn btn-sm btn-brand px-3 font-weight-bold">

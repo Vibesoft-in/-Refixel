@@ -17,7 +17,9 @@ class EnquiryController extends Controller
     public function index(Request $request): Response
     {
         $status = $request->query('status', 'new');
-        $sql = "SELECT b.*, s.name as service_name, s.starting_price, u.name as customer_name
+        $sql = "SELECT b.*, s.name as service_name, s.starting_price, u.name as customer_name,
+                       (SELECT p.status FROM payments p WHERE p.booking_id = b.id AND p.status = 'paid' ORDER BY p.id DESC LIMIT 1) as payment_paid_status,
+                       (SELECT p.amount FROM payments p WHERE p.booking_id = b.id AND p.status = 'paid' ORDER BY p.id DESC LIMIT 1) as payment_paid_amount
                 FROM bookings b
                 JOIN services s ON b.service_id = s.id
                 LEFT JOIN users u ON b.customer_id = u.id";

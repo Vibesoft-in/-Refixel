@@ -13,10 +13,42 @@ $attachments = $attachments ?? [];
       </a>
       <h4 class="font-weight-bold text-dark mb-0">Enquiry #<?= View::e($booking['booking_no']) ?></h4>
     </div>
-    <div>
+    <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
       <span class="badge badge-status-<?= View::e($booking['status']) ?> px-3 py-2 font-weight-bold" style="font-size: 13px;">
         STATUS: <?= strtoupper(str_replace('_', ' ', $booking['status'])) ?>
       </span>
+      <?php
+        $bPayType = strtolower(trim((string)($booking['payment_type'] ?? '')));
+        $bAdvAmt  = (float)($booking['advance_amount'] ?? 0);
+        $bDueAmt  = (float)($booking['due_amount'] ?? 0);
+        $bPaidStatus = (string)($booking['payment_paid_status'] ?? '');
+        $bPriority = strtolower(trim((string)($booking['priority'] ?? '')));
+
+        $bIsFullPaid = false;
+        $bIsPrePaid  = false;
+        if ($bPaidStatus === 'paid') {
+            if ($bPayType === 'online' || $bDueAmt <= 0) {
+                $bIsFullPaid = true;
+            } else {
+                $bIsPrePaid = true;
+            }
+        } else {
+            if ($bPayType === 'online' || $bPriority === 'high') {
+                $bIsFullPaid = true;
+            } elseif ($bPayType === 'cod' || $bAdvAmt == 49.0 || $bPriority === 'normal') {
+                $bIsPrePaid = true;
+            }
+        }
+      ?>
+      <?php if ($bIsFullPaid): ?>
+        <span class="badge badge-pay-paid px-3 py-2 font-weight-bold" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 13px;" title="100% Full Payment Paid Online">
+          <i class="fa fa-check-circle mr-1"></i>PAID (Full Online)
+        </span>
+      <?php elseif ($bIsPrePaid): ?>
+        <span class="badge badge-pay-pre px-3 py-2 font-weight-bold" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 13px;" title="Pre-booking Advance ₹49 Paid">
+          PRE (₹49 Advance Paid &bull; COD)
+        </span>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -96,6 +128,31 @@ $attachments = $attachments ?? [];
             </div>
           </div>
         <?php endif; ?>
+      </div>
+
+      <!-- Payment & Financial Status -->
+      <div class="stat-card mb-3">
+        <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-credit-card text-success mr-2"></i>Payment & Financial Status</h6>
+        <div class="row text-center">
+          <div class="col-4">
+            <div class="text-muted small">Total Value</div>
+            <div class="font-weight-bold text-dark" style="font-size: 16px;">
+              ₹<?= number_format((float)(($booking['total_amount'] ?? 0) > 0 ? $booking['total_amount'] : ($booking['starting_price'] ?? 0)), 2) ?>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="text-muted small"><?= $bIsFullPaid ? 'Paid Online' : 'Advance Paid' ?></div>
+            <div class="font-weight-bold text-success" style="font-size: 16px;">
+              ₹<?= number_format((float)(($booking['advance_amount'] ?? 0) > 0 ? $booking['advance_amount'] : ($bIsPrePaid ? 49 : 0)), 2) ?>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="text-muted small">Due After Service</div>
+            <div class="font-weight-bold <?= $bDueAmt > 0 ? 'text-danger' : 'text-muted' ?>" style="font-size: 16px;">
+              ₹<?= number_format($bDueAmt, 2) ?>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
