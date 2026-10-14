@@ -127,7 +127,12 @@ $isAvailable = !empty($profile['is_available']);
         <?php endif; ?>
 
         <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-          <span class="text-muted small">Est. ₹<?= number_format((float)($job['starting_price'] ?? 0), 0) ?></span>
+          <div>
+            <span class="text-muted" style="font-size: 11px; display: block; line-height: 1.1;">Labour Income:</span>
+            <span class="font-weight-bold text-success" style="font-size: 15px;">
+              ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>
+            </span>
+          </div>
           <div>
             <a href="<?= View::url('/staff/jobs/' . $job['id']) ?>" class="btn btn-sm btn-brand px-3">
               View Details <i class="fa fa-arrow-right ml-1"></i>
@@ -158,6 +163,7 @@ $isAvailable = !empty($profile['is_available']);
             <div class="font-weight-bold text-dark small"><?= View::e($job['service_name']) ?></div>
             <div class="text-muted" style="font-size: 11px;">
               <i class="fa fa-calendar mr-1"></i><?= View::e($job['preferred_date'] ?? 'Upcoming') ?> &bull; <?= View::e($job['preferred_time'] ?? '') ?>
+              &bull; <strong class="text-success">Income: ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></strong>
             </div>
           </div>
           <div>

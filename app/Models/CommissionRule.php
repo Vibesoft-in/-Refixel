@@ -9,42 +9,81 @@ class CommissionRule extends Model
 {
     protected static string $table = 'commission_rules';
 
+    public static function ensureSchema(): void
+    {
+        static $checked = false;
+        if ($checked) return;
+        $checked = true;
+        try {
+            Database::query("ALTER TABLE commission_rules ADD COLUMN service_id INT(10) UNSIGNED NULL AFTER category_id, ADD INDEX idx_service_id (service_id)");
+        } catch (\Throwable $e) {}
+    }
+
     public static function getAllWithCategories(): array
     {
+        self::ensureSchema();
         return Database::fetchAll("
-            SELECT cr.*, c.name as category_name, c.slug as category_slug
+            SELECT cr.*, 
+                   c.name as category_name, c.slug as category_slug,
+                   s.name as service_name, s.starting_price as service_price
             FROM commission_rules cr
             LEFT JOIN categories c ON cr.category_id = c.id
-            ORDER BY cr.category_id IS NULL ASC, cr.id ASC
+            LEFT JOIN services s ON cr.service_id = s.id
+            ORDER BY cr.service_id IS NOT NULL DESC, cr.category_id IS NOT NULL DESC, cr.id DESC
         ");
     }
 
-    public static function findApplicableRule(?int $categoryId = null, string $workerTier = 'all'): ?array
+    public static function findApplicableRule(?int $serviceId = null, ?int $categoryId = null, string $workerTier = 'all'): ?array
     {
-        // 1. Try Category + Tier specific rule
+        self::ensureSchema();
+
+        // 1. Try Service-specific rule (Highest Priority)
+        if ($serviceId) {
+            $rule = Database::fetchOne("
+                SELECT cr.*, s.name as service_name, s.starting_price as service_price, c.name as category_name
+                FROM commission_rules cr
+                LEFT JOIN services s ON cr.service_id = s.id
+                LEFT JOIN categories c ON s.category_id = c.id
+                WHERE cr.service_id = :sid AND (cr.worker_tier = :tier OR cr.worker_tier = 'all') AND cr.is_active = 1
+                ORDER BY (cr.worker_tier = :tier2) DESC, cr.id DESC LIMIT 1
+            ", ['sid' => $serviceId, 'tier' => $workerTier, 'tier2' => $workerTier]);
+            if ($rule) return $rule;
+
+            // If categoryId wasn't passed, find category from service
+            if (!$categoryId) {
+                $svc = Database::fetchOne("SELECT category_id FROM services WHERE id = :sid", ['sid' => $serviceId]);
+                if ($svc && !empty($svc['category_id'])) {
+                    $categoryId = (int)$svc['category_id'];
+                }
+            }
+        }
+
+        // 2. Try Category + Tier specific rule
         if ($categoryId) {
             $rule = Database::fetchOne("
-                SELECT * FROM commission_rules 
-                WHERE category_id = :cid AND (worker_tier = :tier OR worker_tier = 'all') AND is_active = 1
-                ORDER BY (worker_tier = :tier2) DESC, id DESC LIMIT 1
+                SELECT cr.*, c.name as category_name
+                FROM commission_rules cr
+                LEFT JOIN categories c ON cr.category_id = c.id
+                WHERE cr.category_id = :cid AND cr.service_id IS NULL AND (cr.worker_tier = :tier OR cr.worker_tier = 'all') AND cr.is_active = 1
+                ORDER BY (cr.worker_tier = :tier2) DESC, cr.id DESC LIMIT 1
             ", ['cid' => $categoryId, 'tier' => $workerTier, 'tier2' => $workerTier]);
             if ($rule) return $rule;
         }
 
-        // 2. Try Tier specific rule
+        // 3. Try Tier specific rule
         if ($workerTier !== 'all') {
             $rule = Database::fetchOne("
                 SELECT * FROM commission_rules 
-                WHERE category_id IS NULL AND worker_tier = :tier AND is_active = 1
+                WHERE service_id IS NULL AND category_id IS NULL AND worker_tier = :tier AND is_active = 1
                 LIMIT 1
             ", ['tier' => $workerTier]);
             if ($rule) return $rule;
         }
 
-        // 3. Fallback to Global Rule
+        // 4. Fallback to Global Rule
         return Database::fetchOne("
             SELECT * FROM commission_rules 
-            WHERE category_id IS NULL AND worker_tier = 'all' AND is_active = 1
+            WHERE service_id IS NULL AND category_id IS NULL AND worker_tier = 'all' AND is_active = 1
             LIMIT 1
         ");
     }
@@ -55,11 +94,12 @@ class CommissionRule extends Model
     public static function calculateSplit(
         float $grossCharge,
         float $materialCost = 0.0,
+        ?int $serviceId = null,
         ?int $categoryId = null,
         string $workerTier = 'standard',
         string $materialPayer = 'worker'
     ): array {
-        $rule = self::findApplicableRule($categoryId, $workerTier);
+        $rule = self::findApplicableRule($serviceId, $categoryId, $workerTier);
 
         $adminPct = $rule ? (float)$rule['admin_percent'] : (float)Setting::get('global_admin_commission_pct', 25.0);
         $workerPct = $rule ? (float)$rule['worker_percent'] : (float)Setting::get('global_worker_commission_pct', 75.0);
@@ -101,6 +141,21 @@ class CommissionRule extends Model
             $companyRetained = max(0.0, $companyRetained - $diff);
         }
 
+        $ruleApplied = 'Global Standard Default (' . $adminPct . '% Admin / ' . $workerPct . '% Tech)';
+        $ruleScope = 'global';
+        if ($rule) {
+            if (!empty($rule['service_id'])) {
+                $ruleScope = 'service';
+                $ruleApplied = 'Service Rule: ' . ($rule['service_name'] ?? 'Service #' . $rule['service_id']) . ' (' . $adminPct . '% Admin / ' . $workerPct . '% Tech)';
+            } elseif (!empty($rule['category_id'])) {
+                $ruleScope = 'category';
+                $ruleApplied = 'Category Rule: ' . ($rule['category_name'] ?? 'Category #' . $rule['category_id']) . ' (' . $adminPct . '% Admin / ' . $workerPct . '% Tech)';
+            } elseif (!empty($rule['notes'])) {
+                $ruleScope = 'custom';
+                $ruleApplied = $rule['notes'];
+            }
+        }
+
         return [
             'gross_charge'        => $grossCharge,
             'material_cost'       => $materialCost,
@@ -112,8 +167,9 @@ class CommissionRule extends Model
             'material_payer'      => $materialPayer,
             'worker_total_payout' => $workerTotalPayout,
             'company_retained'    => $companyRetained,
-            'rule_applied'        => $rule ? ($rule['notes'] ?? 'Custom Commission Rule') : 'Global Standard Default (25% Admin / 75% Tech)',
+            'rule_applied'        => $ruleApplied,
             'rule_id'             => $rule['id'] ?? null,
+            'rule_scope'          => $ruleScope,
         ];
     }
 }

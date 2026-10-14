@@ -36,8 +36,9 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
         <h5 class="font-weight-bold text-dark mb-0">#<?= View::e($job['booking_no']) ?></h5>
       </div>
       <div class="text-right">
-        <span class="text-muted small text-uppercase font-weight-bold">Est. Fee</span>
-        <h5 class="font-weight-bold text-success mb-0">₹<?= number_format((float)($job['starting_price'] ?? 0), 0) ?></h5>
+        <span class="text-muted small text-uppercase font-weight-bold">Labour Income</span>
+        <h5 class="font-weight-bold text-success mb-0" style="font-size: 22px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></h5>
+        <span class="badge badge-success px-2 py-0" style="font-size: 10px;">Your Payout</span>
       </div>
     </div>
     <div class="border-top pt-2 mt-2">
@@ -116,11 +117,17 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
     <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-tasks mr-2" style="color:#f25b29;"></i>Job Actions</h6>
 
     <?php if ($job['status'] === 'assigned'): ?>
-      <p class="small text-muted mb-3">This job has been assigned to you. Please accept it to confirm you are taking charge.</p>
+      <div class="p-3 bg-white rounded border mb-3" style="border-left: 4px solid #10b981 !important;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted small font-weight-bold">Offered Labour Income:</span>
+          <span class="font-weight-bold text-success" style="font-size: 20px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></span>
+        </div>
+        <p class="small text-muted mb-0">Check the service requirement and location above to decide if you want to take this job.</p>
+      </div>
       <form method="POST" action="<?= View::url('/staff/jobs/' . $job['id'] . '/accept') ?>">
         <?= View::csrfField() ?>
-        <button type="submit" class="btn btn-brand btn-block py-2 font-weight-bold">
-          <i class="fa fa-check-circle mr-1"></i>Accept Assignment
+        <button type="submit" class="btn btn-brand btn-block py-2 font-weight-bold shadow-sm" style="font-size: 15px;">
+          <i class="fa fa-check-circle mr-1"></i>Accept Job (Earn ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>)
         </button>
       </form>
 

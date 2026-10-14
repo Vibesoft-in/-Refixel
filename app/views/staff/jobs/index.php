@@ -70,18 +70,24 @@ $counts = $counts ?? ['today' => 0, 'upcoming' => 0, 'in_progress' => 0, 'comple
           <div><i class="fa fa-map-marker text-danger mr-1"></i><?= View::e($job['address']) ?><?= !empty($job['pincode']) ? ' - ' . View::e($job['pincode']) : '' ?></div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-2">
-          <div class="small">
-            <span class="text-muted">Slot:</span> 
-            <strong><?= View::e($job['preferred_time'] ?? 'Flexible') ?></strong>
+        <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-2 flex-wrap" style="gap: 8px;">
+          <div>
+            <div class="small text-muted mb-1">
+              <i class="fa fa-clock-o mr-1"></i>Slot: <strong><?= View::e($job['preferred_time'] ?? 'Flexible') ?></strong>
+            </div>
+            <div class="d-inline-flex align-items-center px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
+              <i class="fa fa-money text-success mr-1"></i>
+              <span class="small text-muted mr-1">Labour Income:</span>
+              <strong class="text-success font-weight-bold" style="font-size: 15px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></strong>
+            </div>
           </div>
 
           <div class="d-flex gap-2">
             <?php if ($job['status'] === 'assigned'): ?>
               <form method="POST" action="<?= View::url('/staff/jobs/' . $job['id'] . '/accept') ?>" class="d-inline mr-1">
                 <?= View::csrfField() ?>
-                <button type="submit" class="btn btn-sm btn-success font-weight-bold px-3">
-                  <i class="fa fa-check mr-1"></i>Accept
+                <button type="submit" class="btn btn-sm btn-success font-weight-bold px-3 shadow-sm">
+                  <i class="fa fa-check mr-1"></i>Accept (₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>)
                 </button>
               </form>
             <?php elseif ($job['status'] === 'accepted'): ?>

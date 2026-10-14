@@ -24,7 +24,10 @@ $afterPhotos = $afterPhotos ?? [];
   <div class="job-card mb-3">
     <div class="d-flex justify-content-between align-items-center mb-1">
       <span class="font-weight-bold text-dark">#<?= View::e($job['booking_no']) ?></span>
-      <span class="text-success font-weight-bold">₹<?= number_format((float)($job['starting_price'] ?? 0), 0) ?></span>
+      <div class="text-right">
+        <span class="text-muted small">Your Labour Payout:</span>
+        <span class="text-success font-weight-bold ml-1" style="font-size: 16px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></span>
+      </div>
     </div>
     <div class="font-weight-bold text-dark mb-1"><?= View::e($job['service_name']) ?></div>
     <div class="small text-muted">

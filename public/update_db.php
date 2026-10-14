@@ -22,6 +22,14 @@ try {
     echo "[SKIP] customer_profiles: " . $e->getMessage() . "\n";
 }
 
+// 1a. Commission Rules service_id column
+try {
+    \App\Core\Database::query("ALTER TABLE commission_rules ADD COLUMN service_id INT(10) UNSIGNED NULL AFTER category_id, ADD INDEX idx_service_id (service_id);");
+    echo "[OK] commission_rules service_id added\n";
+} catch (Exception $e) {
+    echo "[SKIP] commission_rules service_id: " . $e->getMessage() . "\n";
+}
+
 // 1b. Multiple Customer Addresses Table
 try {
     \App\Core\Database::query("

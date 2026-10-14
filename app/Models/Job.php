@@ -13,6 +13,7 @@ class Job extends Model
     {
         $sql = "SELECT j.*, b.booking_no, b.address, b.pincode, b.preferred_date, b.preferred_time,
                        b.issue_details, b.name as customer_name, b.phone as customer_phone,
+                       b.service_id, s.category_id, b.total_amount,
                        s.name as service_name, s.starting_price
                 FROM jobs j
                 JOIN bookings b ON j.booking_id = b.id
@@ -33,14 +34,19 @@ class Job extends Model
 
         $sql .= " ORDER BY j.scheduled_at DESC, j.id DESC";
 
-        return Database::fetchAll($sql, $params);
+        $jobs = Database::fetchAll($sql, $params);
+        foreach ($jobs as &$job) {
+            self::attachPayout($job);
+        }
+        return $jobs;
     }
 
     public static function findWithDetailsForStaff(int $jobId, int $staffId): ?array
     {
-        return Database::fetchOne(
+        $job = Database::fetchOne(
             "SELECT j.*, b.booking_no, b.address, b.pincode, b.preferred_date, b.preferred_time,
                     b.issue_details, b.name as customer_name, b.phone as customer_phone, b.email as customer_email,
+                    b.service_id, s.category_id, b.total_amount,
                     s.name as service_name, s.starting_price, s.description as service_description
              FROM jobs j
              JOIN bookings b ON j.booking_id = b.id
@@ -49,6 +55,35 @@ class Job extends Model
              LIMIT 1",
             ['jid' => $jobId, 'sid' => $staffId]
         );
+        if ($job) {
+            self::attachPayout($job);
+        }
+        return $job;
+    }
+
+    public static function attachPayout(array &$job): void
+    {
+        $basePrice = (float)(($job['total_amount'] ?? 0) > 0 ? $job['total_amount'] : ($job['starting_price'] ?? 0));
+        $split = CommissionRule::calculateSplit(
+            $basePrice > 0 ? $basePrice : 500.0,
+            0.0,
+            isset($job['service_id']) ? (int)$job['service_id'] : null,
+            isset($job['category_id']) ? (int)$job['category_id'] : null,
+            'standard',
+            'worker'
+        );
+        $job['technician_payout'] = (float)$split['worker_total_payout'];
+        $job['worker_percent'] = (float)$split['worker_percent'];
+
+        // If job completed, pull settled/recorded earning amount
+        if (($job['status'] ?? '') === 'completed' && !empty($job['id'])) {
+            try {
+                $earning = Database::fetchOne("SELECT amount FROM staff_earnings WHERE job_id = :jid LIMIT 1", ['jid' => (int)$job['id']]);
+                if ($earning && (float)$earning['amount'] > 0) {
+                    $job['technician_payout'] = (float)$earning['amount'];
+                }
+            } catch (\Throwable $e) {}
+        }
     }
 
     public static function getCustomerAttachments(int $bookingId): array

@@ -244,6 +244,7 @@ class JobController extends Controller
             $split = \App\Models\CommissionRule::calculateSplit(
                 $basePrice > 0 ? $basePrice : 500.00,
                 $materialCost,
+                isset($job['service_id']) ? (int)$job['service_id'] : null,
                 isset($job['category_id']) ? (int)$job['category_id'] : null,
                 'standard',
                 'worker'
