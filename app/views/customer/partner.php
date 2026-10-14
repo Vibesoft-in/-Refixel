@@ -314,19 +314,22 @@ use App\Core\View;
             <p class="text-muted small">Fill out your details and we will call you back within 24 hours.</p>
           </div>
 
-          <?php if (!empty($_SESSION['flash_success']) || View::hasFlash('success')): ?>
+          <?php 
+            $flashSuccess = $_SESSION['flash_success'] ?? \App\Core\View::flash('success'); 
+            $flashError = $_SESSION['flash_error'] ?? \App\Core\View::flash('error'); 
+            unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+          ?>
+          <?php if (!empty($flashSuccess)): ?>
             <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" style="border-radius: 12px; font-size: 14px; background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981 !important;">
               <i class="fa fa-check-circle mr-2 text-success"></i>
-              <?= View::e($_SESSION['flash_success'] ?? View::flash('success')) ?>
-              <?php unset($_SESSION['flash_success']); ?>
+              <?= \App\Core\View::e($flashSuccess) ?>
             </div>
           <?php endif; ?>
 
-          <?php if (!empty($_SESSION['flash_error']) || View::hasFlash('error')): ?>
+          <?php if (!empty($flashError)): ?>
             <div class="alert alert-danger alert-dismissible fade show mb-4 border-0 shadow-sm" style="border-radius: 12px; font-size: 14px; background: #fef2f2; color: #991b1b; border-left: 4px solid #ef4444 !important;">
               <i class="fa fa-exclamation-circle mr-2 text-danger"></i>
-              <?= View::e($_SESSION['flash_error'] ?? View::flash('error')) ?>
-              <?php unset($_SESSION['flash_error']); ?>
+              <?= \App\Core\View::e($flashError) ?>
             </div>
           <?php endif; ?>
 

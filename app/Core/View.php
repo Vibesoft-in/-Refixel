@@ -141,4 +141,12 @@ class View
         }
         $_SESSION['_flash'][$key] = $message;
     }
+
+    public static function hasFlash(string $key): bool
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            @session_start();
+        }
+        return isset($_SESSION['_flash'][$key]) || isset($_SESSION['flash_' . $key]);
+    }
 }
