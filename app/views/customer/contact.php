@@ -51,7 +51,7 @@
       <!-- 3 Horizontally Aligned Items with Vertical Separators -->
       <div class="contact-items-row">
         <?php
-          $contactPhone = \App\Models\Setting::get('support_phone', '+91 94581 82006');
+          $contactPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
           $contactCleanPhone = preg_replace('/[^0-9+]/', '', $contactPhone);
           $contactEmail = \App\Models\Setting::get('support_email', 'wearerefixel@gmail.com');
           $contactLandmark = \App\Models\Setting::get('office_landmark', 'Jaspur - Kashipur Road');

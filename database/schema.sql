@@ -37,7 +37,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 1. Users Table (Core authentication registry for all three roles)
 CREATE TABLE users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    role ENUM('customer','admin','staff') NOT NULL,
+    role ENUM('customer','admin','staff','super_admin') NOT NULL,
     name VARCHAR(120) NOT NULL,
     email VARCHAR(160) NULL UNIQUE,
     phone VARCHAR(15) NULL UNIQUE,

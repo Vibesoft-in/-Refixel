@@ -117,9 +117,14 @@ class Auth
         return self::role() === $role;
     }
 
+    public static function isSuperAdmin(): bool
+    {
+        return self::hasRole('super_admin');
+    }
+
     public static function isAdmin(): bool
     {
-        return self::hasRole('admin');
+        return self::hasRole('admin') || self::hasRole('super_admin');
     }
 
     public static function isStaff(): bool

@@ -27,7 +27,18 @@ class RequireRole
 
         $userRole = Auth::role();
 
-        if ($requiredRole !== null && $userRole !== $requiredRole) {
+        $isAllowed = true;
+        if ($requiredRole !== null) {
+            if ($requiredRole === 'admin') {
+                $isAllowed = ($userRole === 'admin' || $userRole === 'super_admin');
+            } elseif ($requiredRole === 'super_admin') {
+                $isAllowed = ($userRole === 'super_admin');
+            } else {
+                $isAllowed = ($userRole === $requiredRole);
+            }
+        }
+
+        if (!$isAllowed) {
             if ($request->isAjax() || $request->isJson()) {
                 return Response::json([
                     'status'  => 'error',
@@ -37,10 +48,11 @@ class RequireRole
 
             // Redirect to appropriate portal based on actual role
             $redirectPath = match ($userRole) {
-                'admin'    => '/admin',
-                'staff'    => '/staff',
-                'customer' => '/account',
-                default    => '/login',
+                'super_admin' => '/superadmin',
+                'admin'       => '/admin',
+                'staff'       => '/staff',
+                'customer'    => '/account',
+                default       => '/login',
             };
 
             View::setFlash('error', 'Access denied. You do not have permission to view that page.');

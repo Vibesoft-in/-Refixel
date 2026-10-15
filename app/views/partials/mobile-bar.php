@@ -54,7 +54,8 @@ $currentCitySlug = strtolower($currentCity ?: 'kashipur');
       </a>
     </li>
     <li>
-      <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hello%20Refixel%20Support" target="_blank" rel="noopener" data-nav="whatsapp">
+      <?php $waNum = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
+      <a href="https://api.whatsapp.com/send?phone=<?= $waNum ?>&text=Hello%20Refixel%20Support" target="_blank" rel="noopener" data-nav="whatsapp">
         <span class="bm-icon-circle">
           <img src="<?= \App\Core\View::asset('img/whatsapp_icons_1.png') ?>" alt="WhatsApp" width="22" height="22" loading="lazy" decoding="async">
         </span>
@@ -425,6 +426,60 @@ $currentCitySlug = strtolower($currentCity ?: 'kashipur');
 .refixel-ms-float.keyboard-open .ms-float-arrow {
   display: none !important;
 }
+
+/* Floating WhatsApp Chat Button - Desktop */
+.whatsapchat {
+  position: fixed !important;
+  width: 52px !important;
+  height: 52px !important;
+  bottom: 30px !important;
+  right: 30px !important;
+  background-color: #25d366 !important;
+  border-radius: 50% !important;
+  text-align: center !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 18px rgba(37, 211, 102, 0.45) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease !important;
+  text-decoration: none !important;
+}
+
+.whatsapchat:hover {
+  transform: scale(1.08) !important;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.6) !important;
+}
+
+.whatsapchat a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+.whatsapchat i {
+  font-size: 30px !important;
+  color: #ffffff !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 991px) {
+  .whatsapchat {
+    display: none !important;
+  }
+}
+
+body.modal-open .whatsapchat,
+body.drawer-open .whatsapchat {
+  display: none !important;
+}
 </style>
 
 <!-- Floating Search Bar (Only search bar, lifts on keyboard focus) -->
@@ -464,7 +519,7 @@ $currentCitySlug = strtolower($currentCity ?: 'kashipur');
 </div>
 <!-- Floating WhatsApp Chat -->
 <div class="whatsapchat">
-  <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hello%20Refixel%20Support" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <a href="https://api.whatsapp.com/send?phone=<?= $waNum ?>&text=Hello%20Refixel%20Support" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
     <i class="fa fa-whatsapp"></i>
   </a>
 </div>

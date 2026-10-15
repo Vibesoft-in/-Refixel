@@ -414,7 +414,7 @@
           <?php
             $fAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand');
             $fEmail = \App\Models\Setting::get('support_email', 'wearerefixel@gmail.com');
-            $fPhone = \App\Models\Setting::get('support_phone', '+91 94581 82006');
+            $fPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
             $fCleanPhone = preg_replace('/[^0-9+]/', '', $fPhone);
             $fHours = \App\Models\Setting::get('operating_hours', 'Mon - Sun: 08:00 AM - 09:00 PM');
           ?>

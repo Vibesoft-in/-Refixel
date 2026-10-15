@@ -256,7 +256,8 @@ foreach ($payments as $p) {
           </div>
         <?php endif; ?>
 
-        <a href="https://api.whatsapp.com/send?phone=+919953358855&text=Inquiry%20regarding%20booking%20<?= urlencode($bNo) ?>" target="_blank" class="btn btn-outline-success py-2 font-weight-bold w-100 small mt-2" style="border-radius: 8px;">
+        <?php $bkWa = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
+        <a href="https://api.whatsapp.com/send?phone=<?= $bkWa ?>&text=Inquiry%20regarding%20booking%20<?= urlencode($bNo) ?>" target="_blank" class="btn btn-outline-success py-2 font-weight-bold w-100 small mt-2" style="border-radius: 8px;">
           <i class="fa fa-whatsapp mr-1"></i> Need Help with this Booking?
         </a>
       </div>

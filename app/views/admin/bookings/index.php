@@ -13,15 +13,22 @@ $search = $search ?? '';
       <p class="text-muted small mb-0">Manage customer bookings, technician job dispatches, and work order lifecycles.</p>
     </div>
 
-    <!-- Search form -->
-    <form method="GET" action="<?= View::url('/admin/bookings') ?>" class="form-inline mt-2 mt-md-0">
-      <div class="input-group input-group-sm">
-        <input type="text" name="q" class="form-control" placeholder="Search BK#, customer, phone..." value="<?= View::e($search) ?>">
-        <div class="input-group-append">
-          <button class="btn btn-brand" type="submit"><i class="fa fa-search"></i></button>
+    <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-md-0">
+      <!-- Search form -->
+      <form method="GET" action="<?= View::url('/admin/bookings') ?>" class="form-inline">
+        <div class="input-group input-group-sm">
+          <input type="text" name="q" class="form-control" placeholder="Search BK#, customer, phone..." value="<?= View::e($search) ?>">
+          <div class="input-group-append">
+            <button class="btn btn-brand" type="submit"><i class="fa fa-search"></i></button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+      <?php if (\App\Core\Auth::isSuperAdmin()): ?>
+        <button type="button" class="btn btn-sm btn-danger font-weight-bold ml-2" data-toggle="modal" data-target="#modalBulkDeleteBookings">
+          <i class="fa fa-trash mr-1"></i>Delete All Bookings (<?= (int)($counts['all'] ?? 0) ?>)
+        </button>
+      <?php endif; ?>
+    </div>
   </div>
 
   <!-- Status Filter Tabs -->
@@ -150,10 +157,19 @@ $search = $search ?? '';
                     <?php endif; ?>
                   </div>
                 </td>
-                <td class="text-right">
-                  <a href="<?= View::url('/admin/bookings/' . $b['id']) ?>" class="btn btn-sm btn-brand px-3 font-weight-bold">
+                <td class="text-right text-nowrap">
+                  <a href="<?= View::url('/admin/bookings/' . $b['id']) ?>" class="btn btn-sm btn-brand px-2 px-sm-3 font-weight-bold">
                     Manage &rarr;
                   </a>
+                  <?php if (\App\Core\Auth::isSuperAdmin()): ?>
+                    <form action="<?= View::url('/superadmin/bookings/' . $b['id'] . '/delete') ?>" method="POST" class="d-inline ml-1" onsubmit="return confirm('Super Admin: Permanently delete booking #<?= View::e($b['booking_no']) ?>?');">
+                      <?= View::csrfField() ?>
+                      <input type="hidden" name="redirect" value="/admin/bookings">
+                      <button type="submit" class="btn btn-sm btn-outline-danger px-2 font-weight-bold" title="Delete Booking (Super Admin)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </form>
+                  <?php endif; ?>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -163,3 +179,34 @@ $search = $search ?? '';
     </div>
   </div>
 </div>
+
+<?php if (\App\Core\Auth::isSuperAdmin()): ?>
+<!-- Modal: Delete All Bookings & Jobs -->
+<div class="modal fade" id="modalBulkDeleteBookings" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title font-weight-bold"><i class="fa fa-exclamation-triangle mr-2"></i>Delete All Bookings & Jobs?</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+      </div>
+      <form action="<?= View::url('/superadmin/bookings/delete-all') ?>" method="POST">
+        <?= View::csrfField() ?>
+        <input type="hidden" name="redirect" value="/admin/bookings">
+        <div class="modal-body p-4 text-center">
+          <div class="text-danger mb-3"><i class="fa fa-trash fa-4x"></i></div>
+          <h5 class="font-weight-bold text-dark">Delete all <?= (int)($counts['all'] ?? 0) ?> Bookings & Jobs?</h5>
+          <p class="text-muted small mb-0">
+            This will permanently wipe all customer service bookings, field jobs, job attachments, invoices, and payment records across the marketplace. This action cannot be reversed.
+          </p>
+        </div>
+        <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger font-weight-bold px-4">
+            <i class="fa fa-trash mr-1"></i> Yes, Delete All Bookings & Jobs
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php endif; ?>

@@ -118,6 +118,56 @@ Router::group(['middleware' => ['RequireRole:customer']], function () {
 });
 
 // ==========================================
+// SUPER ADMIN PORTAL (/superadmin)
+// ==========================================
+Router::group(['middleware' => ['RequireRole:super_admin']], function () {
+    Router::get('/superadmin', 'SuperAdmin\\DashboardController@index');
+    Router::get('/superadmin/dashboard', 'SuperAdmin\\DashboardController@index');
+
+    // Bulk & Single Deletion - Enquiries
+    Router::get('/superadmin/enquiries', 'SuperAdmin\\DashboardController@enquiries');
+    Router::post('/superadmin/enquiries/delete-all', 'SuperAdmin\\DashboardController@deleteAllEnquiries', ['VerifyCsrf']);
+    Router::post('/superadmin/enquiries/{id}/delete', 'SuperAdmin\\DashboardController@deleteEnquiry', ['VerifyCsrf']);
+
+    // Bulk & Single Deletion - Technicians (Staff)
+    Router::get('/superadmin/staff', 'SuperAdmin\\DashboardController@staff');
+    Router::post('/superadmin/staff/delete-all', 'SuperAdmin\\DashboardController@deleteAllStaff', ['VerifyCsrf']);
+    Router::post('/superadmin/staff/{id}/delete', 'SuperAdmin\\DashboardController@deleteStaff', ['VerifyCsrf']);
+
+    // Bulk & Single Deletion - Customers
+    Router::get('/superadmin/customers', 'SuperAdmin\\DashboardController@customers');
+    Router::post('/superadmin/customers/delete-all', 'SuperAdmin\\DashboardController@deleteAllCustomers', ['VerifyCsrf']);
+    Router::post('/superadmin/customers/{id}/delete', 'SuperAdmin\\DashboardController@deleteCustomer', ['VerifyCsrf']);
+
+    // Bulk & Single Deletion - Bookings & Jobs
+    Router::post('/superadmin/bookings/delete-all', 'SuperAdmin\\DashboardController@deleteAllBookings', ['VerifyCsrf']);
+    Router::post('/superadmin/bookings/{id}/delete', 'SuperAdmin\\DashboardController@deleteBooking', ['VerifyCsrf']);
+
+    // Bulk Deletion - Dispatch Calendar
+    Router::post('/superadmin/calendar/delete-all', 'SuperAdmin\\DashboardController@deleteAllCalendar', ['VerifyCsrf']);
+
+    // Operations Admin Governance
+    Router::get('/superadmin/admins', 'SuperAdmin\\DashboardController@admins');
+    Router::post('/superadmin/admins', 'SuperAdmin\\DashboardController@storeAdmin', ['VerifyCsrf']);
+    Router::post('/superadmin/admins/{id}/delete', 'SuperAdmin\\DashboardController@deleteAdmin', ['VerifyCsrf']);
+
+    // Payment Gateways & API Credentials (Exclusively Super Admin)
+    Router::get('/superadmin/gateways', 'SuperAdmin\\GatewayController@index');
+    Router::post('/superadmin/gateways/{id}/update', 'SuperAdmin\\GatewayController@update', ['VerifyCsrf']);
+    Router::post('/superadmin/gateways/{id}/toggle', 'SuperAdmin\\GatewayController@toggle', ['VerifyCsrf']);
+    Router::post('/superadmin/gateways/{id}/test', 'SuperAdmin\\GatewayController@test', ['VerifyCsrf']);
+
+    // Commissions & Profit Splits (Exclusively Super Admin)
+    Router::get('/superadmin/commissions', 'SuperAdmin\\CommissionController@index');
+    Router::post('/superadmin/commissions/global', 'SuperAdmin\\CommissionController@saveGlobal', ['VerifyCsrf']);
+    Router::post('/superadmin/commissions/rules', 'SuperAdmin\\CommissionController@storeRule', ['VerifyCsrf']);
+    Router::post('/superadmin/commissions/rules/{id}/update', 'SuperAdmin\\CommissionController@updateRule', ['VerifyCsrf']);
+    Router::post('/superadmin/commissions/rules/{id}/delete', 'SuperAdmin\\CommissionController@deleteRule', ['VerifyCsrf']);
+    Router::post('/superadmin/commissions/settle/{id}', 'SuperAdmin\\CommissionController@settleEarning', ['VerifyCsrf']);
+    Router::get('/superadmin/commissions/simulate', 'SuperAdmin\\CommissionController@simulate');
+});
+
+// ==========================================
 // ADMIN PORTAL (/admin)
 // ==========================================
 Router::group(['middleware' => ['RequireRole:admin']], function () {

@@ -224,7 +224,7 @@ class PageController extends Controller
         $cities = ServiceArea::getActiveCities();
         return $this->render('customer.contact', [
             'title'       => 'Contact Us | REFIXEL HOME SERVICES',
-            'description' => 'Get in touch with REFIXEL Home Services for trusted home maintenance, repair, and cleaning. Call +91 94581 82006 or visit our office.',
+            'description' => 'Get in touch with REFIXEL Home Services for trusted home maintenance, repair, and cleaning. Call +91 87911 54730 or visit our office.',
             'cities'      => $cities
         ], 'customer');
     }

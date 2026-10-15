@@ -57,7 +57,7 @@ $settings = $settings ?? [];
           <div class="form-row">
             <div class="col-md-6 form-group mb-3">
               <label class="font-weight-bold small text-dark">Customer Support Helpline Phone</label>
-              <input type="text" name="support_phone" class="form-control" value="<?= View::e($settings['support_phone'] ?? '+91 94581 82006') ?>">
+              <input type="text" name="support_phone" class="form-control" value="<?= View::e($settings['support_phone'] ?? '+91 87911 54730') ?>">
               <small class="form-text text-muted">Displayed on Header, Contact Us, and Footer.</small>
             </div>
 
@@ -236,8 +236,8 @@ $settings = $settings ?? [];
 
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">Live WhatsApp Chat Number</label>
-            <input type="text" name="whatsapp_number" class="form-control" value="<?= View::e($settings['whatsapp_number'] ?? '919458182006') ?>">
-            <small class="form-text text-muted">Used for the floating WhatsApp button on the public website (Format: 919458182006).</small>
+            <input type="text" name="whatsapp_number" class="form-control" value="<?= View::e($settings['whatsapp_number'] ?? '918791154730') ?>">
+            <small class="form-text text-muted">Used for the floating WhatsApp button on the public website (Format: 918791154730).</small>
           </div>
 
           <div class="form-group mb-3">

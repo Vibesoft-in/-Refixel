@@ -27,7 +27,7 @@ ksort($jobsByDate);
     </div>
 
     <!-- Month Navigation -->
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex align-items-center flex-wrap gap-2">
       <a href="<?= View::url('/admin/calendar?month=' . $prevMonth) ?>" class="btn btn-sm btn-light border font-weight-bold">
         <i class="fa fa-chevron-left mr-1"></i>Prev
       </a>
@@ -40,6 +40,11 @@ ksort($jobsByDate);
       <a href="<?= View::url('/admin/calendar?month=' . date('Y-m')) ?>" class="btn btn-sm btn-brand ml-2 font-weight-bold">
         Current Month
       </a>
+      <?php if (\App\Core\Auth::isSuperAdmin()): ?>
+        <button type="button" class="btn btn-sm btn-danger font-weight-bold ml-2" data-toggle="modal" data-target="#modalBulkDeleteCalendar">
+          <i class="fa fa-trash mr-1"></i>Delete Calendar Dispatches
+        </button>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -114,3 +119,50 @@ ksort($jobsByDate);
     <?php endforeach; ?>
   <?php endif; ?>
 </div>
+
+<?php if (\App\Core\Auth::isSuperAdmin()): ?>
+<!-- Modal: Purge Dispatch Calendar -->
+<div class="modal fade" id="modalBulkDeleteCalendar" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title font-weight-bold"><i class="fa fa-calendar-times-o mr-2"></i>Delete Calendar Dispatches?</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+      </div>
+      <form action="<?= View::url('/superadmin/calendar/delete-all') ?>" method="POST">
+        <?= View::csrfField() ?>
+        <input type="hidden" name="redirect" value="/admin/calendar?month=<?= View::e($month) ?>">
+        <div class="modal-body p-4 text-center">
+          <div class="text-danger mb-3"><i class="fa fa-calendar-times-o fa-4x"></i></div>
+          <h5 class="font-weight-bold text-dark">Purge Dispatch Appointments?</h5>
+          <p class="text-muted small mb-3">
+            Choose whether to delete only appointments in the currently viewed month (<strong><?= View::e($monthTitle) ?></strong>) or wipe the entire dispatch calendar across all dates.
+          </p>
+
+          <div class="text-left bg-light p-3 rounded border mb-3">
+            <div class="custom-control custom-radio mb-2">
+              <input type="radio" id="scopeMonth" name="scope" value="month" class="custom-control-input" checked>
+              <label class="custom-control-label font-weight-bold text-dark" for="scopeMonth">
+                Delete only appointments in <?= View::e($monthTitle) ?> (<?= count($jobs) ?> bookings)
+              </label>
+              <input type="hidden" name="month" value="<?= View::e($month) ?>">
+            </div>
+            <div class="custom-control custom-radio">
+              <input type="radio" id="scopeAll" name="scope" value="all" class="custom-control-input">
+              <label class="custom-control-label font-weight-bold text-danger" for="scopeAll">
+                Delete ALL scheduled calendar appointments across all months
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger font-weight-bold px-4">
+            <i class="fa fa-trash mr-1"></i> Yes, Delete Dispatches
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<?php endif; ?>

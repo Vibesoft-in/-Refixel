@@ -39,7 +39,8 @@
       <div class="text-center p-4 mt-5 rounded bg-light border">
         <h4 class="font-weight-bold" style="font-size: 20px;">Still have questions?</h4>
         <p class="text-muted mb-3">Our customer support specialists are ready to help you 7 days a week.</p>
-        <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hello%20Refixel%2C%20I%20have%20a%20question." target="_blank" class="btn text-white px-4 py-2 font-weight-bold" style="background:#f25b29; border-radius: 8px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);">
+        <?php $faqWa = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
+        <a href="https://api.whatsapp.com/send?phone=<?= $faqWa ?>&text=Hello%20Refixel%2C%20I%20have%20a%20question." target="_blank" class="btn text-white px-4 py-2 font-weight-bold" style="background:#f25b29; border-radius: 8px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);">
           <i class="fa fa-whatsapp mr-1"></i> Chat with Us on WhatsApp
         </a>
       </div>

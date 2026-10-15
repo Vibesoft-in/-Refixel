@@ -657,7 +657,8 @@ foreach ($checklist ?? [] as $item) {
           </a>
         </div>
 
-        <a href="https://api.whatsapp.com/send?phone=+919458182006&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100">
+        <?php $swNum = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
+        <a href="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100">
           <i class="fa fa-whatsapp mr-1"></i> Quick Book via WhatsApp
         </a>
       </div>

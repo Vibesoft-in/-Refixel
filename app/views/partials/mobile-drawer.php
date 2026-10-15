@@ -80,7 +80,12 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
     <?php if ($user): ?>
     <div class="bottom_option" style="padding-top: 5px; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px;">
       <ul>
-        <?php if (($user['role'] ?? '') === 'admin'): ?>
+        <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+          <li><a href="<?= \App\Core\View::url('/superadmin') ?>"><span class="menu_ico"><i class="fa fa-shield" style="font-size:18px; width:20px; text-align:center; color:#dc2626;"></i></span> Super Admin Dashboard <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/superadmin/gateways') ?>"><span class="menu_ico"><i class="fa fa-credit-card" style="font-size:18px; width:20px; text-align:center; color:#dc2626;"></i></span> Payment Gateways <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/superadmin/commissions') ?>"><span class="menu_ico"><i class="fa fa-percent" style="font-size:18px; width:20px; text-align:center; color:#dc2626;"></i></span> Commissions <i class="fa fa-angle-right"></i></a></li>
+          <li><a href="<?= \App\Core\View::url('/admin') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Operations Admin <i class="fa fa-angle-right"></i></a></li>
+        <?php elseif (($user['role'] ?? '') === 'admin'): ?>
           <li><a href="<?= \App\Core\View::url('/admin') ?>"><span class="menu_ico"><i class="fa fa-dashboard" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Admin Dashboard <i class="fa fa-angle-right"></i></a></li>
           <li><a href="<?= \App\Core\View::url('/admin/enquiries') ?>"><span class="menu_ico"><i class="fa fa-inbox" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Enquiries <i class="fa fa-angle-right"></i></a></li>
           <li><a href="<?= \App\Core\View::url('/admin/bookings') ?>"><span class="menu_ico"><i class="fa fa-calendar-check-o" style="font-size:18px; width:20px; text-align:center; color:#f25b29;"></i></span> Bookings & Jobs <i class="fa fa-angle-right"></i></a></li>

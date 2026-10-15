@@ -725,7 +725,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
         </div>
 
         <small class="text-muted text-center d-block">
-          Need immediate assistance? Call <a href="tel:+919458182006" class="text-dark font-weight-bold">+91 94581 82006</a>
+          Need immediate assistance? Call <a href="tel:+918791154730" class="text-dark font-weight-bold">+91 87911 54730</a>
         </small>
       </div>
     </div>

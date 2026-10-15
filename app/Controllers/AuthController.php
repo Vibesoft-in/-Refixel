@@ -289,9 +289,10 @@ class AuthController extends Controller
     protected function redirectAfterLogin(string $role): Response
     {
         return match ($role) {
-            'admin' => $this->redirect('/admin'),
-            'staff' => $this->redirect('/staff'),
-            default => $this->redirect('/account'),
+            'super_admin' => $this->redirect('/superadmin'),
+            'admin'       => $this->redirect('/admin'),
+            'staff'       => $this->redirect('/staff'),
+            default       => $this->redirect('/account'),
         };
     }
 

@@ -14,12 +14,11 @@ class GatewayController extends Controller
 {
     public function index(Request $request): Response
     {
-        $gateways = PaymentGateway::getAll();
-
-        return $this->render('admin.gateways.index', [
-            'title'    => 'Payment Gateways & API Credentials | REFIXEL Admin',
-            'gateways' => $gateways,
-        ], 'admin');
+        if (\App\Core\Auth::isSuperAdmin()) {
+            return $this->redirect('/superadmin/gateways');
+        }
+        View::setFlash('error', 'Access Denied: Payment Gateways and API credentials are restricted to Super Admin.');
+        return $this->redirect('/admin');
     }
 
     public function update(Request $request, string $id): Response

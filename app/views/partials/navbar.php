@@ -73,6 +73,11 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
     </a>
 
     <style>
+      nav.navbar.main_menu {
+        background: #ffffff !important;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+        border-bottom: 1px solid #eef2f6 !important;
+      }
       .navbar-toggler {
         display: none !important;
       }
@@ -303,16 +308,33 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
       <div class="our_cart">
       <ul>
         <?php if ($user): ?>
+          <?php
+            $dashUrl = match($user['role'] ?? '') {
+              'super_admin' => '/superadmin',
+              'admin'       => '/admin',
+              'staff'       => '/staff',
+              default       => '/account',
+            };
+          ?>
           <li class="position-relative">
-            <a href="<?= \App\Core\View::url($user['role'] === 'admin' ? '/admin' : ($user['role'] === 'staff' ? '/staff' : '/account')) ?>" class="d-flex align-items-center">
+            <a href="<?= \App\Core\View::url($dashUrl) ?>" class="d-flex align-items-center">
               <img src="<?= \App\Core\View::asset('img/account.webp') ?>" alt="Account">
               <strong><?= \App\Core\View::e($user['name']) ?></strong>
               <i class="fa fa-angle-down ml-2 mr-2" style="font-size: 13px; opacity: 0.85;"></i>
             </a>
             <div class="account_dropdown">
-              <a href="<?= \App\Core\View::url($user['role'] === 'admin' ? '/admin' : ($user['role'] === 'staff' ? '/staff' : '/account')) ?>">
-                <i class="fa fa-dashboard mr-2 text-success"></i> Dashboard
-              </a>
+              <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+                <a href="<?= \App\Core\View::url('/superadmin') ?>" style="font-weight: 600; color: #4338ca;">
+                  <i class="fa fa-shield mr-2 text-danger"></i> Super Admin Panel
+                </a>
+                <a href="<?= \App\Core\View::url('/admin') ?>">
+                  <i class="fa fa-dashboard mr-2 text-primary"></i> Operations Admin
+                </a>
+              <?php else: ?>
+                <a href="<?= \App\Core\View::url($dashUrl) ?>">
+                  <i class="fa fa-dashboard mr-2 text-success"></i> Dashboard
+                </a>
+              <?php endif; ?>
               <?php if ($user['role'] === 'customer'): ?>
                 <a href="<?= \App\Core\View::url('/account/bookings') ?>">
                   <i class="fa fa-calendar mr-2 text-success"></i> My Bookings

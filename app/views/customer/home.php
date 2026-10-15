@@ -75,7 +75,7 @@ $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $curren
 }
 .home_banners {
   position: relative !important;
-  z-index: 1050 !important;
+  z-index: 25 !important;
   overflow: visible !important;
 }
 .search_service {
@@ -139,7 +139,7 @@ $currentCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $curren
   .home_banners {
     min-height: auto;
     position: relative !important;
-    z-index: 1050 !important;
+    z-index: 25 !important;
     overflow: visible !important;
   }
   .search_service {

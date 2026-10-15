@@ -16,10 +16,15 @@ class CommissionController extends Controller
 {
     public function index(Request $request): Response
     {
-        $categories = Category::all('name ASC');
-        $rules      = CommissionRule::getAllWithCategories();
-        $settings   = Setting::getAllKeyValue();
+        if (\App\Core\Auth::isSuperAdmin()) {
+            return $this->redirect('/superadmin/commissions');
+        }
+        View::setFlash('error', 'Access Denied: Commission rates and profit splits are restricted to Super Admin.');
+        return $this->redirect('/admin');
+    }
 
+    public function fallback(Request $request): Response
+    {
         // Fetch all active services with their category info and starting prices
         $services = Database::fetchAll("
             SELECT s.id, s.name, s.starting_price, s.category_id, c.name as category_name, c.slug as category_slug

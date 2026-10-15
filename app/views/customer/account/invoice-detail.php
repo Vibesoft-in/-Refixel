@@ -24,7 +24,7 @@ $invoice = $invoice ?? [];
         <h3 class="font-weight-bold mb-1" style="color: #f25b29; font-size: 26px;">REFIXEL</h3>
         <p class="text-muted small mb-0 font-weight-bold">Professional Home Care & Maintenance Services</p>
         <p class="text-muted small mb-0">GSTIN: <strong>07AAAAA0000A1Z5</strong> &bull; SAC Code: 9987</p>
-        <p class="text-muted small mb-0">Support: wearerefixel@gmail.com &bull; +91 94581 82006</p>
+        <p class="text-muted small mb-0">Support: wearerefixel@gmail.com &bull; +91 87911 54730</p>
       </div>
       <div class="col-sm-5 text-sm-right mt-3 mt-sm-0">
         <?php 

@@ -18,6 +18,11 @@ class Csrf
         return $_SESSION['_csrf_token'];
     }
 
+    public static function field(): string
+    {
+        return '<input type="hidden" name="_csrf" value="' . htmlspecialchars(self::token(), ENT_QUOTES, 'UTF-8') . '">';
+    }
+
     public static function validate(?string $token): bool
     {
         if (session_status() === PHP_SESSION_NONE) {

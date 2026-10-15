@@ -9,162 +9,182 @@ $filter = $filter ?? 'all';
 
 <div class="admin-dashboard-page">
   <!-- Top bar with Filter & Quick Action Buttons -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-    <div>
-      <h4 class="font-weight-bold mb-1 text-dark">Operations & Dispatch Dashboard</h4>
-      <p class="text-muted small mb-0">Real-time marketplace monitoring, service queues, and workforce status.</p>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-      <!-- Date Filter Buttons -->
-      <div class="btn-group mr-2" role="group">
-        <a href="<?= View::url('/admin?filter=all') ?>" class="btn btn-sm <?= $filter === 'all' ? 'btn-brand' : 'btn-light border' ?> font-weight-bold">
-          All Time
-        </a>
-        <a href="<?= View::url('/admin?filter=month') ?>" class="btn btn-sm <?= $filter === 'month' ? 'btn-brand' : 'btn-light border' ?> font-weight-bold">
-          This Month
-        </a>
-        <a href="<?= View::url('/admin?filter=today') ?>" class="btn btn-sm <?= $filter === 'today' ? 'btn-brand' : 'btn-light border' ?> font-weight-bold">
-          Today
-        </a>
+  <div class="mb-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+      <div class="mb-2 mb-md-0">
+        <h4 class="font-weight-bold mb-1 text-dark" style="font-size: clamp(17px, 3.8vw, 22px);">Operations & Dispatch Dashboard</h4>
+        <p class="text-muted small mb-0">Real-time marketplace monitoring, service queues, and workforce status.</p>
       </div>
 
-      <a href="<?= View::url('/admin/staff/create') ?>" class="btn btn-sm btn-outline-success font-weight-bold mr-2">
-        <i class="fa fa-user-plus mr-1"></i>Add Staff
-      </a>
-      <a href="<?= View::url('/admin/payments') ?>" class="btn btn-sm btn-brand font-weight-bold">
-        <i class="fa fa-credit-card mr-1"></i>Record Payment
-      </a>
+      <div class="d-flex flex-wrap align-items-center gap-2 w-100 w-md-auto justify-content-start justify-content-md-end" style="gap: 8px;">
+        <!-- Date Filter Buttons -->
+        <div class="btn-group" role="group" aria-label="Date Filters">
+          <a href="<?= View::url('/admin?filter=all') ?>" class="btn btn-sm <?= $filter === 'all' ? 'btn-brand' : 'btn-light border' ?> font-weight-bold px-2 px-sm-3" style="font-size: 12px;">
+            All Time
+          </a>
+          <a href="<?= View::url('/admin?filter=month') ?>" class="btn btn-sm <?= $filter === 'month' ? 'btn-brand' : 'btn-light border' ?> font-weight-bold px-2 px-sm-3" style="font-size: 12px;">
+            This Month
+          </a>
+          <a href="<?= View::url('/admin?filter=today') ?>" class="btn btn-sm <?= $filter === 'today' ? 'btn-brand' : 'btn-light border' ?> font-weight-bold px-2 px-sm-3" style="font-size: 12px;">
+            Today
+          </a>
+        </div>
+
+        <div class="d-inline-flex gap-2" style="gap: 6px;">
+          <a href="<?= View::url('/admin/staff/create') ?>" class="btn btn-sm btn-outline-success font-weight-bold px-2 py-1" style="font-size: 12px; white-space: nowrap;">
+            <i class="fa fa-user-plus mr-1"></i><span class="d-none d-sm-inline">Add </span>Staff
+          </a>
+          <a href="<?= View::url('/admin/payments') ?>" class="btn btn-sm btn-brand font-weight-bold px-2 py-1" style="font-size: 12px; white-space: nowrap;">
+            <i class="fa fa-credit-card mr-1"></i><span class="d-none d-sm-inline">Record </span>Payment
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- 8-Card KPI Matrix -->
-  <div class="row">
+  <!-- 8-Card KPI Matrix (2-col on Mobile, 2-col on Tablet, 4-col on Desktop) -->
+  <div class="row mx-n1 mx-sm-n2 mb-3">
     <!-- 1. New Enquiries -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #f59e0b !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label text-warning">New Enquiries</div>
-            <div class="stat-value text-dark"><?= (int)($summary['enquiries_count'] ?? 0) ?></div>
-            <a href="<?= View::url('/admin/enquiries') ?>" class="small font-weight-bold text-warning">Review enquiries &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle text-warning">
-            <i class="fa fa-inbox fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #f59e0b !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-warning text-truncate pr-1" title="New Enquiries">New Enquiries</div>
+          <div class="stat-icon-circle" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+            <i class="fa fa-inbox"></i>
           </div>
         </div>
+        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+          <?= (int)($summary['enquiries_count'] ?? 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/enquiries') ?>" class="small font-weight-bold text-warning text-truncate d-inline-block" style="font-size: 11px; max-width: 100%;">
+          Review enquiries &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 2. Assigned Jobs -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #0284c7 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label text-info">Assigned Jobs</div>
-            <div class="stat-value text-dark"><?= (int)($summary['assigned_jobs'] ?? 0) ?></div>
-            <a href="<?= View::url('/admin/bookings?status=assigned') ?>" class="small font-weight-bold text-info">View assigned &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle text-info">
-            <i class="fa fa-briefcase fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #0284c7 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-info text-truncate pr-1" title="Assigned Jobs">Assigned Jobs</div>
+          <div class="stat-icon-circle" style="background: rgba(2, 132, 199, 0.12); color: #0284c7;">
+            <i class="fa fa-briefcase"></i>
           </div>
         </div>
+        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+          <?= (int)($summary['assigned_jobs'] ?? 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/bookings?status=assigned') ?>" class="small font-weight-bold text-info text-truncate d-inline-block" style="font-size: 11px; max-width: 100%;">
+          View assigned &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 3. Active / In Progress -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #3b82f6 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label text-primary">Active Field Jobs</div>
-            <div class="stat-value text-dark"><?= (int)($summary['active_jobs'] ?? 0) ?></div>
-            <a href="<?= View::url('/admin/bookings?status=in_progress') ?>" class="small font-weight-bold text-primary">Track active &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle text-primary">
-            <i class="fa fa-cogs fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #3b82f6 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-primary text-truncate pr-1" title="Active Field Jobs">Active Field Jobs</div>
+          <div class="stat-icon-circle" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+            <i class="fa fa-cogs"></i>
           </div>
         </div>
+        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+          <?= (int)($summary['active_jobs'] ?? 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/bookings?status=in_progress') ?>" class="small font-weight-bold text-primary text-truncate d-inline-block" style="font-size: 11px; max-width: 100%;">
+          Track active &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 4. Completed Jobs -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #10b981 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label text-success">Completed Jobs</div>
-            <div class="stat-value text-dark"><?= (int)($summary['completed_jobs'] ?? 0) ?></div>
-            <a href="<?= View::url('/admin/bookings?status=completed') ?>" class="small font-weight-bold text-success">Completed list &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle text-success">
-            <i class="fa fa-check-circle fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #10b981 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-success text-truncate pr-1" title="Completed Jobs">Completed Jobs</div>
+          <div class="stat-icon-circle" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+            <i class="fa fa-check-circle"></i>
           </div>
         </div>
+        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+          <?= (int)($summary['completed_jobs'] ?? 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/bookings?status=completed') ?>" class="small font-weight-bold text-success text-truncate d-inline-block" style="font-size: 11px; max-width: 100%;">
+          Completed list &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 5. Revenue Collected -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #059669 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label text-success">Revenue Collected</div>
-            <div class="stat-value text-dark" style="font-size: 24px;">₹<?= number_format((float)($summary['total_revenue'] ?? 0), 2) ?></div>
-            <a href="<?= View::url('/admin/payments') ?>" class="small font-weight-bold text-success">View receipts &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle text-success">
-            <i class="fa fa-money fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #059669 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-success text-truncate pr-1" title="Revenue Collected">Revenue</div>
+          <div class="stat-icon-circle" style="background: rgba(5, 150, 105, 0.12); color: #059669;">
+            <i class="fa fa-money"></i>
           </div>
         </div>
+        <div class="stat-value text-dark text-truncate" style="font-size: clamp(16px, 3.8vw, 22px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;" title="₹<?= number_format((float)($summary['total_revenue'] ?? 0), 2) ?>">
+          ₹<?= number_format((float)($summary['total_revenue'] ?? 0), 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/payments') ?>" class="small font-weight-bold text-success text-truncate d-inline-block" style="font-size: 11px; max-width: 100%;">
+          View receipts &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 6. Pending Payments -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #ef4444 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label text-danger">Pending Payments</div>
-            <div class="stat-value text-danger" style="font-size: 24px;">₹<?= number_format((float)($summary['pending_payments'] ?? 0), 2) ?></div>
-            <a href="<?= View::url('/admin/payments') ?>" class="small font-weight-bold text-danger">Collect payments &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle text-danger">
-            <i class="fa fa-clock-o fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #ef4444 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-danger text-truncate pr-1" title="Pending Payments">Pending Due</div>
+          <div class="stat-icon-circle" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+            <i class="fa fa-clock-o"></i>
           </div>
         </div>
+        <div class="stat-value text-danger text-truncate" style="font-size: clamp(16px, 3.8vw, 22px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;" title="₹<?= number_format((float)($summary['pending_payments'] ?? 0), 2) ?>">
+          ₹<?= number_format((float)($summary['pending_payments'] ?? 0), 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/payments') ?>" class="small font-weight-bold text-danger text-truncate d-inline-block" style="font-size: 11px; max-width: 100%;">
+          Collect payments &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 7. Active Staff -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #6366f1 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label" style="color: #6366f1;">Technicians Online</div>
-            <div class="stat-value text-dark"><?= (int)($summary['staff_count'] ?? 0) ?></div>
-            <a href="<?= View::url('/admin/staff') ?>" class="small font-weight-bold" style="color: #6366f1;">Manage technicians &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle" style="color: #6366f1;">
-            <i class="fa fa-users fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #6366f1 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-truncate pr-1" style="color: #6366f1;" title="Technicians">Technicians</div>
+          <div class="stat-icon-circle" style="background: rgba(99, 102, 241, 0.12); color: #6366f1;">
+            <i class="fa fa-users"></i>
           </div>
         </div>
+        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+          <?= (int)($summary['staff_count'] ?? 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/staff') ?>" class="small font-weight-bold text-truncate d-inline-block" style="color: #6366f1; font-size: 11px; max-width: 100%;">
+          Manage team &rarr;
+        </a>
       </div>
     </div>
 
     <!-- 8. Active Services -->
-    <div class="col-xl-3 col-md-6">
-      <div class="stat-card" style="border-left: 4px solid #14b8a6 !important;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <div class="stat-label" style="color: #0d9488;">Active Services</div>
-            <div class="stat-value text-dark"><?= (int)($summary['services_count'] ?? 0) ?></div>
-            <a href="<?= View::url('/admin/services') ?>" class="small font-weight-bold" style="color: #0d9488;">Catalog services &rarr;</a>
-          </div>
-          <div class="p-3 bg-light rounded-circle" style="color: #0d9488;">
-            <i class="fa fa-wrench fa-2x"></i>
+    <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
+      <div class="dash-stat-card" style="border-left: 4px solid #14b8a6 !important;">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div class="stat-label text-truncate pr-1" style="color: #0d9488;" title="Active Services">Services</div>
+          <div class="stat-icon-circle" style="background: rgba(20, 184, 166, 0.12); color: #0d9488;">
+            <i class="fa fa-wrench"></i>
           </div>
         </div>
+        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+          <?= (int)($summary['services_count'] ?? 0) ?>
+        </div>
+        <a href="<?= View::url('/admin/services') ?>" class="small font-weight-bold text-truncate d-inline-block" style="color: #0d9488; font-size: 11px; max-width: 100%;">
+          Catalog &rarr;
+        </a>
       </div>
     </div>
   </div>
@@ -172,26 +192,26 @@ $filter = $filter ?? 'all';
   <!-- Interactive Charts Row -->
   <div class="row mb-4">
     <!-- Revenue Trend Chart -->
-    <div class="col-lg-8 mb-3 mb-lg-0">
-      <div class="stat-card h-100 mb-0">
+    <div class="col-12 col-lg-8 mb-3 mb-lg-0">
+      <div class="stat-card h-100 mb-0 p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="font-weight-bold text-dark mb-0"><i class="fa fa-line-chart text-success mr-2"></i>Revenue Collection Trend</h6>
-          <span class="badge badge-light border text-muted">Last 6 Months</span>
+          <h6 class="font-weight-bold text-dark mb-0" style="font-size: 13.5px;"><i class="fa fa-line-chart text-success mr-2"></i>Revenue Collection Trend</h6>
+          <span class="badge badge-light border text-muted" style="font-size: 11px;">Last 6 Months</span>
         </div>
-        <div style="height: 240px; position: relative;">
+        <div style="height: 220px; position: relative;">
           <canvas id="revenueChart"></canvas>
         </div>
       </div>
     </div>
 
     <!-- Job Status Distribution Doughnut -->
-    <div class="col-lg-4">
-      <div class="stat-card h-100 mb-0">
+    <div class="col-12 col-lg-4">
+      <div class="stat-card h-100 mb-0 p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="font-weight-bold text-dark mb-0"><i class="fa fa-pie-chart text-primary mr-2"></i>Job Distribution</h6>
-          <span class="badge badge-light border text-muted">By Status</span>
+          <h6 class="font-weight-bold text-dark mb-0" style="font-size: 13.5px;"><i class="fa fa-pie-chart text-primary mr-2"></i>Job Distribution</h6>
+          <span class="badge badge-light border text-muted" style="font-size: 11px;">By Status</span>
         </div>
-        <div style="height: 240px; position: relative;">
+        <div style="height: 220px; position: relative;">
           <canvas id="statusChart"></canvas>
         </div>
       </div>
@@ -200,19 +220,19 @@ $filter = $filter ?? 'all';
 
   <!-- Recent Bookings & Dispatch Table -->
   <div class="stat-card p-0 overflow-hidden mb-4">
-    <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+    <div class="p-3 border-bottom d-flex flex-wrap justify-content-between align-items-center bg-white gap-2">
       <div>
-        <h6 class="font-weight-bold mb-0 text-dark"><i class="fa fa-clock-o text-muted mr-2"></i>Recent Bookings & Assignment Queue</h6>
+        <h6 class="font-weight-bold mb-0 text-dark" style="font-size: 14px;"><i class="fa fa-clock-o text-muted mr-2"></i>Recent Bookings & Assignment Queue</h6>
       </div>
-      <a href="<?= View::url('/admin/bookings') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold">
+      <a href="<?= View::url('/admin/bookings') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold mt-1 mt-sm-0" style="font-size: 12px;">
         View All Bookings (<?= count($recentBookings) ?>+)
       </a>
     </div>
 
     <div class="table-responsive">
-      <table class="table table-hover mb-0">
+      <table class="table table-hover mb-0 admin-table-min">
         <thead>
-          <tr>
+          <tr class="text-nowrap">
             <th>Booking #</th>
             <th>Customer</th>
             <th>Service Requested</th>

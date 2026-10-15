@@ -146,7 +146,7 @@ $settingsReq = new Request([
     'promo_strip_text' => 'Festival Special • Flat 20% off all deep cleaning services',
     'stat_rating'      => '4.9★',
     'stat_rating_note' => 'Based on 1500+ Verified Doorstep Services',
-    'company_phone'    => '+91 99533 58855',
+    'company_phone'    => '+91 87911 54730',
 ], [], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/admin/settings']);
 
 $settingsRes = $adminSettingsCtrl->save($settingsReq);

@@ -8,7 +8,8 @@
 INSERT INTO users (id, role, name, email, phone, password_hash, status, must_change_password) VALUES
 (1, 'admin', 'System Administrator', 'admin@primodomus.com', '9876543210', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
 (2, 'staff', 'Rajesh Sharma (Demo Tech)', 'tech@primodomus.com', '9876543211', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
-(3, 'customer', 'Ananya Verma (Demo Customer)', 'customer@primodomus.com', '9876543212', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0);
+(3, 'customer', 'Ananya Verma (Demo Customer)', 'customer@primodomus.com', '9876543212', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
+(4, 'super_admin', 'Master Super Admin', 'superadmin@refixel.com', '9876543200', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0);
 
 -- 2. Customer Profile
 INSERT INTO customer_profiles (user_id, address, city, pincode, lat, lng) VALUES

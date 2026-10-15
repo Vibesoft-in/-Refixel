@@ -52,20 +52,28 @@
       border-right: 1px solid rgba(255, 255, 255, 0.07); 
     }
     .admin-sidebar .brand { 
-      padding: 16px 18px; 
+      padding: 12px 14px; 
       font-weight: 700; 
       font-size: 17px; 
       border-bottom: 1px solid rgba(255,255,255,0.08); 
       display: flex; 
       align-items: center; 
       justify-content: space-between; 
-      gap: 10px;
+      gap: 8px;
       flex-shrink: 0; 
       background: #0a1c33; 
+      min-height: 56px;
+    }
+    .admin-sidebar .brand a.brand-logo {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      flex: 1;
+      text-decoration: none;
     }
     .admin-sidebar .brand img { 
-      height: 30px; 
-      max-width: 148px;
+      height: 24px; 
+      max-width: 112px;
       width: auto;
       object-fit: contain;
       display: block;
@@ -190,8 +198,10 @@
       .admin-sidebar {
         position: fixed;
         top: 0;
-        left: -260px;
+        left: -270px;
         bottom: 0;
+        width: 270px;
+        max-width: 85vw;
         z-index: 1040;
         transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
@@ -206,7 +216,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(2px);
         z-index: 1030;
       }
@@ -217,6 +227,56 @@
         height: auto;
         max-height: none;
         overflow-y: visible;
+      }
+      .admin-topbar { padding: 0 16px; }
+      .admin-body { padding: 18px 14px; }
+    }
+
+    @media (max-width: 575.98px) {
+      .admin-topbar { padding: 0 8px; height: 54px; }
+      .admin-body { padding: 10px 8px; }
+      .stat-card { padding: 10px; margin-bottom: 10px; border-radius: 8px; }
+    }
+
+    .admin-table-min { min-width: 680px; }
+    .admin-table-min-lg { min-width: 820px; }
+    .dash-stat-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 14px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    .dash-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .dash-stat-card .stat-icon-circle {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    @media (max-width: 575.98px) {
+      .dash-stat-card {
+        padding: 10px 8px;
+        margin-bottom: 8px;
+      }
+      .dash-stat-card .stat-icon-circle {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        font-size: 12px;
       }
     }
     .stat-card { background: #fff; border-radius: 10px; border: 1px solid var(--border-color); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 18px; }
@@ -268,12 +328,16 @@
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
     <div class="admin-sidebar">
       <div class="brand">
-        <a href="<?= \App\Core\View::url('/admin') ?>" class="text-white text-decoration-none d-flex align-items-center" title="REFIXEL Admin Panel">
+        <a href="<?= \App\Core\View::url('/admin') ?>" class="brand-logo" title="REFIXEL Admin Panel">
           <img src="<?= \App\Core\View::asset('img/refixel-logo-white-orange.png') ?>?v=3" 
                alt="REFIXEL" 
                onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-logo.png') ?>';">
         </a>
-        <span class="badge" style="background: rgba(242, 91, 41, 0.2); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.35); font-weight: 700; font-size: 10.5px; padding: 4px 8px; border-radius: 6px; letter-spacing: 0.5px;">ADMIN</span>
+        <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+          <a href="<?= \App\Core\View::url('/superadmin') ?>" class="badge badge-danger flex-shrink-0" style="font-weight: 800; font-size: 9px; padding: 3px 6px; border-radius: 5px; letter-spacing: 0.3px; text-decoration: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 2px 6px rgba(239, 68, 68, 0.45); white-space: nowrap;" title="Switch to Super Admin"><i class="fa fa-shield mr-1"></i>SUPER ADMIN</a>
+        <?php else: ?>
+          <span class="badge flex-shrink-0" style="background: rgba(242, 91, 41, 0.2); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.35); font-weight: 700; font-size: 9.5px; padding: 3px 6px; border-radius: 5px; letter-spacing: 0.4px;">ADMIN</span>
+        <?php endif; ?>
       </div>
 
       <ul class="admin-nav">
@@ -318,17 +382,14 @@
           </a>
         </li>
 
-        <li class="nav-heading">Gateways & Commissions</li>
-        <li class="<?= str_contains($uri, '/admin/gateways') ? 'active' : '' ?>">
-          <a href="<?= \App\Core\View::url('/admin/gateways') ?>">
-            <span class="nav-text"><i class="fa fa-credit-card"></i> Payment Gateways</span>
+        <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+        <li class="nav-heading" style="color: #818cf8;">Super Admin</li>
+        <li>
+          <a href="<?= \App\Core\View::url('/superadmin') ?>" style="background: rgba(99, 102, 241, 0.15); color: #c7d2fe; border-left: 3.5px solid #6366f1;">
+            <span class="nav-text"><i class="fa fa-shield" style="color: #818cf8;"></i> Super Admin Center &rarr;</span>
           </a>
         </li>
-        <li class="<?= str_contains($uri, '/admin/commissions') ? 'active' : '' ?>">
-          <a href="<?= \App\Core\View::url('/admin/commissions') ?>">
-            <span class="nav-text"><i class="fa fa-percent"></i> Commissions & Splits</span>
-          </a>
-        </li>
+        <?php endif; ?>
 
         <li class="nav-heading">Finance & Invoices</li>
         <li class="<?= str_contains($uri, '/admin/payments') ? 'active' : '' ?>">
@@ -393,17 +454,27 @@
     <div class="admin-content">
       <div class="admin-topbar">
         <div class="d-flex align-items-center">
-          <button type="button" class="btn btn-sm btn-outline-secondary mr-2 d-lg-none" id="sidebarToggle" aria-label="Toggle navigation" style="border-radius: 6px; padding: 4px 9px;">
+          <button type="button" class="btn btn-sm btn-outline-secondary mr-2 d-lg-none" id="sidebarToggle" aria-label="Toggle navigation" style="border-radius: 6px; padding: 4px 8px;">
             <i class="fa fa-bars text-dark"></i>
           </button>
-          <strong class="text-dark" style="font-size: 15px;"><i class="fa fa-shield mr-2" style="color: #f25b29;"></i>REFIXEL Operations Hub</strong>
+          <strong class="text-dark d-none d-sm-inline" style="font-size: 14.5px; white-space: nowrap;">
+            <i class="fa fa-cubes mr-1" style="color: #f25b29;"></i>REFIXEL Operations Hub
+          </strong>
+          <strong class="text-dark d-sm-none" style="font-size: 13.5px; white-space: nowrap;">
+            <i class="fa fa-cubes mr-1" style="color: #f25b29;"></i>Ops Hub
+          </strong>
         </div>
-        <div class="d-flex align-items-center">
-          <span class="mr-3 text-muted small">
-            <i class="fa fa-user-circle mr-1" style="color: #f25b29;"></i><?= \App\Core\View::e($user['name'] ?? 'Super Admin') ?>
+        <div class="d-flex align-items-center flex-shrink-0">
+          <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+            <a href="<?= \App\Core\View::url('/superadmin') ?>" class="btn btn-sm btn-danger font-weight-bold mr-1 mr-sm-2 px-2 py-1" style="border-radius: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35); white-space: nowrap; font-size: 11.5px;" title="Super Admin Control Center">
+              <i class="fa fa-shield mr-1"></i><span class="d-none d-sm-inline">Super Admin</span><span class="d-sm-none">Super</span>
+            </a>
+          <?php endif; ?>
+          <span class="mr-2 mr-sm-3 text-muted small d-none d-lg-inline text-truncate" style="max-width: 140px;">
+            <i class="fa fa-user-circle mr-1" style="color: #f25b29;"></i><?= \App\Core\View::e($user['name'] ?? 'Admin') ?>
           </span>
-          <a href="<?= \App\Core\View::url('/') ?>" target="_blank" class="btn btn-sm btn-outline-secondary font-weight-bold" style="border-radius: 6px;">
-            <i class="fa fa-external-link mr-1"></i>Live Site
+          <a href="<?= \App\Core\View::url('/') ?>" target="_blank" class="btn btn-sm btn-outline-secondary font-weight-bold px-2 py-1" style="border-radius: 6px; white-space: nowrap; font-size: 11.5px;" title="View Live Website">
+            <i class="fa fa-external-link"></i><span class="d-none d-sm-inline ml-1">Live Site</span>
           </a>
         </div>
       </div>

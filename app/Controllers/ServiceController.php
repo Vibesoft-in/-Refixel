@@ -181,7 +181,7 @@ class ServiceController extends Controller
                         'name'    => $cityName,
                     ],
                     'priceRange'  => '₹₹',
-                    'telephone'   => '+919953358855',
+                    'telephone'   => '+91 87911 54730',
                 ],
                 [
                     '@type'           => 'BreadcrumbList',
