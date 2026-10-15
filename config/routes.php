@@ -135,6 +135,11 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::post('/superadmin/staff/{id}/delete', 'SuperAdmin\\DashboardController@deleteStaff', ['VerifyCsrf']);
     Router::post('/superadmin/staff/{id}/approve', 'SuperAdmin\\DashboardController@approveStaff', ['VerifyCsrf']);
 
+    // Partner Applications Review (Super Admin)
+    Router::get('/superadmin/partner-applications', 'SuperAdmin\\DashboardController@partnerApplications');
+    Router::post('/superadmin/partner-applications/{id}/approve', 'SuperAdmin\\DashboardController@approvePartnerApplication', ['VerifyCsrf']);
+    Router::post('/superadmin/partner-applications/{id}/reject', 'SuperAdmin\\DashboardController@rejectPartnerApplication', ['VerifyCsrf']);
+
     // Bulk & Single Deletion - Customers
     Router::get('/superadmin/customers', 'SuperAdmin\\DashboardController@customers');
     Router::post('/superadmin/customers/delete-all', 'SuperAdmin\\DashboardController@deleteAllCustomers', ['VerifyCsrf']);
@@ -196,6 +201,12 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/staff/{id}/approve', 'Admin\\StaffController@approve', ['VerifyCsrf']);
     Router::post('/admin/staff/{id}/toggle-status', 'Admin\\StaffController@toggleStatus', ['VerifyCsrf']);
     Router::post('/admin/staff/{id}/skills', 'Admin\\StaffController@updateSkills', ['VerifyCsrf']);
+
+    // Partner Applications & Job Submissions
+    Router::get('/admin/partner-applications', 'Admin\\PartnerApplicationController@index');
+    Router::post('/admin/partner-applications/{id}/approve', 'Admin\\PartnerApplicationController@approve', ['VerifyCsrf']);
+    Router::post('/admin/partner-applications/{id}/reject', 'Admin\\PartnerApplicationController@reject', ['VerifyCsrf']);
+    Router::post('/admin/partner-applications/{id}/delete', 'Admin\\PartnerApplicationController@delete', ['VerifyCsrf']);
 
     // Services & Categories
     Router::get('/admin/services', 'Admin\\ServiceController@index');

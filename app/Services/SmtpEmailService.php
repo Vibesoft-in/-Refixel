@@ -219,6 +219,7 @@ class SmtpEmailService implements EmailProviderInterface
             'booking_reminder'            => 'Upcoming Service Visit Reminder - #' . ($data['booking_no'] ?? ''),
             'partner_application_received'=> 'Technician Application Received - Under Review | REFIXEL Partner Network',
             'partner_approved'            => '🎉 Congratulations! Your REFIXEL Partner Profile is Approved',
+            'partner_rejected'            => 'Update on Your REFIXEL Partner Application',
             'partner_welcome'             => 'Welcome to REFIXEL Partner Network - Your Technician Portal Access',
             'admin_new_partner'           => '👷 New Service Partner Registered: ' . ($data['name'] ?? 'Technician') . ' (' . ($data['trade'] ?? 'Trade') . ')',
             default                       => 'Notification from REFIXEL',
@@ -491,6 +492,23 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div style='text-align: center; margin: 24px 0;'>";
                 $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(242,91,41,0.3);'>Log In to Technician Portal &rarr;</a>";
                 $body .= "</div>";
+                break;
+
+            case 'partner_rejected':
+                $body .= "<div style='margin-bottom: 20px; text-align: center;'>";
+                $body .= "<span style='background: #fee2e2; color: #b91c1c; font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;'>Application Status Update</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 20px; margin: 12px 0 6px;'>Partner Application Update</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0; line-height: 1.6;'>Dear " . htmlspecialchars($data['name'] ?? 'Applicant') . ", thank you for your interest in partnering with REFIXEL.</p>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; color: #991b1b; font-size: 13.5px; line-height: 1.6;'>";
+                $body .= "<p style='margin: 0 0 10px 0;'>After reviewing your profile and credentials, we regret to inform you that we are unable to approve your technician application at this time.</p>";
+                if (!empty($data['reason'])) {
+                    $body .= "<p style='margin: 0; padding-top: 10px; border-top: 1px dashed #fca5a5;'><strong>Feedback / Reason:</strong> " . htmlspecialchars($data['reason']) . "</p>";
+                }
+                $body .= "</div>";
+
+                $body .= "<p style='font-size: 13px; color: #64748b; line-height: 1.5; text-align: center;'>If you have questions or would like to submit updated credentials, please contact our support team at <a href='mailto:contact@refixel.com' style='color:#f25b29; text-decoration: none; font-weight: 600;'>contact@refixel.com</a>.</p>";
                 break;
 
             case 'admin_new_partner':

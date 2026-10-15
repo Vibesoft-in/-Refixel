@@ -10,12 +10,33 @@ $staff = $staff ?? [];
       <p class="text-muted small mb-0">Manage workforce profiles, active field assignments, trade skills, and duty status.</p>
     </div>
 
-    <div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="<?= View::url('/admin/partner-applications') ?>" class="btn btn-sm btn-outline-warning text-dark font-weight-bold px-3 mr-2" style="background: #fffbeb; border: 1.5px solid #fde68a;">
+        <i class="fa fa-id-card-o mr-1 text-warning"></i>Partner Applications
+        <?php if (!empty($pendingAppsCount) && $pendingAppsCount > 0): ?>
+          <span class="badge badge-warning text-dark ml-1"><?= (int)$pendingAppsCount ?></span>
+        <?php endif; ?>
+      </a>
       <a href="<?= View::url('/admin/staff/create') ?>" class="btn btn-sm btn-brand font-weight-bold px-3">
         <i class="fa fa-user-plus mr-1"></i>Add New Technician
       </a>
     </div>
   </div>
+
+  <?php if (!empty($pendingAppsCount) && $pendingAppsCount > 0): ?>
+    <div class="alert alert-warning mb-3 border-0 shadow-sm d-flex align-items-center justify-content-between flex-wrap" style="border-radius: 12px; background: #fffbeb; color: #92400e; border-left: 4px solid #f59e0b !important; padding: 14px 18px;">
+      <div class="d-flex align-items-center mb-2 mb-md-0">
+        <i class="fa fa-id-card-o text-warning mr-3" style="font-size: 24px;"></i>
+        <div>
+          <strong class="d-block" style="font-size: 14.5px;">You have <?= (int)$pendingAppsCount ?> new partner application(s) awaiting verification!</strong>
+          <span class="small" style="color: #78350f;">New technicians submitted online do not appear in this active workforce directory until you approve them.</span>
+        </div>
+      </div>
+      <a href="<?= View::url('/admin/partner-applications') ?>" class="btn btn-sm font-weight-bold shadow-sm" style="background: #f59e0b; color: #ffffff; border-radius: 8px; padding: 6px 16px;">
+        Review & Approve Applications &rarr;
+      </a>
+    </div>
+  <?php endif; ?>
 
   <div class="stat-card p-0 overflow-hidden">
     <div class="table-responsive">

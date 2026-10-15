@@ -315,24 +315,27 @@
 
     // Quick counts for Super Admin badges
     $saCounts = [
-        'enquiries' => 0,
-        'staff'     => 0,
-        'customers' => 0,
-        'gateways'  => 0,
+        'enquiries'       => 0,
+        'partner_pending' => 0,
+        'staff'           => 0,
+        'customers'       => 0,
+        'gateways'        => 0,
     ];
     try {
         $cRow = \App\Core\Database::fetchOne(
             "SELECT 
                 (SELECT COUNT(id) FROM bookings WHERE status = 'new') as enquiries,
-                (SELECT COUNT(id) FROM users WHERE role = 'staff') as staff,
+                (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending,
+                (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status IN ('active', 'disabled')) as staff,
                 (SELECT COUNT(id) FROM users WHERE role = 'customer') as customers,
                 (SELECT COUNT(id) FROM payment_gateways WHERE is_active = 1) as gateways"
         );
         if ($cRow) {
-            $saCounts['enquiries'] = (int)($cRow['enquiries'] ?? 0);
-            $saCounts['staff']     = (int)($cRow['staff'] ?? 0);
-            $saCounts['customers'] = (int)($cRow['customers'] ?? 0);
-            $saCounts['gateways']  = (int)($cRow['gateways'] ?? 0);
+            $saCounts['enquiries']       = (int)($cRow['enquiries'] ?? 0);
+            $saCounts['partner_pending'] = (int)($cRow['partner_pending'] ?? 0);
+            $saCounts['staff']           = (int)($cRow['staff'] ?? 0);
+            $saCounts['customers']       = (int)($cRow['customers'] ?? 0);
+            $saCounts['gateways']        = (int)($cRow['gateways'] ?? 0);
         }
     } catch (\Throwable $e) {}
   ?>
@@ -366,6 +369,14 @@
             <span class="d-flex align-items-center"><i class="fa fa-inbox"></i> Enquiries</span>
             <?php if ($saCounts['enquiries'] > 0): ?>
               <span class="badge badge-pill badge-warning" style="font-size: 11px;"><?= $saCounts['enquiries'] ?></span>
+            <?php endif; ?>
+          </a>
+        </li>
+        <li class="<?= str_contains($uri, '/superadmin/partner-applications') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/superadmin/partner-applications') ?>">
+            <span class="d-flex align-items-center"><i class="fa fa-id-card-o"></i> Partner Applications</span>
+            <?php if (!empty($saCounts['partner_pending']) && $saCounts['partner_pending'] > 0): ?>
+              <span class="badge badge-pill badge-warning" style="font-size: 11px;"><?= $saCounts['partner_pending'] ?> Pending</span>
             <?php endif; ?>
           </a>
         </li>

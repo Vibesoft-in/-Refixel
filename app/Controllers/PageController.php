@@ -375,14 +375,21 @@ class PageController extends Controller
                 'trade'      => $trade,
                 'city'       => $city,
                 'experience' => $experience,
-                'admin_url'  => View::fullUrl('/admin/staff'),
+                'admin_url'  => View::fullUrl('/admin/partner-applications'),
             ];
 
+            // 1. Send application acknowledgment email to applicant
             try {
                 Notifier::notifyPartnerApplicationReceived($staffPayload);
-                Notifier::notifyAdminNewPartner($staffPayload);
             } catch (\Throwable $ne) {
-                \App\Core\Logger::warning("Partner registration notification skipped: " . $ne->getMessage());
+                \App\Core\Logger::error("Partner acknowledgment email error: " . $ne->getMessage());
+            }
+
+            // 2. Send new partner alert email to admin
+            try {
+                Notifier::notifyAdminNewPartner($staffPayload);
+            } catch (\Throwable $ane) {
+                \App\Core\Logger::warning("Admin new partner alert error: " . $ane->getMessage());
             }
 
             // Save submission details for modal popup and reassuring message

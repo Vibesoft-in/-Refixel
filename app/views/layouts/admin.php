@@ -308,6 +308,7 @@
         'enquiries_new'    => 0,
         'bookings_pending' => 0,
         'reviews_pending'  => 0,
+        'partner_pending'  => 0,
     ];
 
     try {
@@ -315,12 +316,14 @@
             "SELECT 
                 (SELECT COUNT(id) FROM bookings WHERE status = 'new') as enquiries_new,
                 (SELECT COUNT(id) FROM bookings WHERE status = 'accepted') as bookings_pending,
-                (SELECT COUNT(id) FROM reviews WHERE is_approved = 0) as reviews_pending"
+                (SELECT COUNT(id) FROM reviews WHERE is_approved = 0) as reviews_pending,
+                (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending"
         );
         if ($statsRow) {
             $sidebarCounts['enquiries_new']    = (int)($statsRow['enquiries_new'] ?? 0);
             $sidebarCounts['bookings_pending'] = (int)($statsRow['bookings_pending'] ?? 0);
             $sidebarCounts['reviews_pending']  = (int)($statsRow['reviews_pending'] ?? 0);
+            $sidebarCounts['partner_pending']  = (int)($statsRow['partner_pending'] ?? 0);
         }
     } catch (\Throwable $e) {}
   ?>
@@ -372,6 +375,14 @@
         <li class="<?= str_contains($uri, '/admin/staff') ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/admin/staff') ?>">
             <span class="nav-text"><i class="fa fa-users"></i> Staff & Techs</span>
+          </a>
+        </li>
+        <li class="<?= str_contains($uri, '/admin/partner-applications') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/partner-applications') ?>">
+            <span class="nav-text"><i class="fa fa-id-card-o"></i> Partner Applications</span>
+            <?php if (!empty($sidebarCounts['partner_pending']) && $sidebarCounts['partner_pending'] > 0): ?>
+              <span class="nav-count-badge nav-badge-orange" title="<?= $sidebarCounts['partner_pending'] ?> Pending Partner Applications"><?= $sidebarCounts['partner_pending'] ?></span>
+            <?php endif; ?>
           </a>
         </li>
 

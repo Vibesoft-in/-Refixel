@@ -26,14 +26,17 @@ class StaffController extends Controller
              FROM users u
              LEFT JOIN staff_profiles sp ON u.id = sp.user_id
              LEFT JOIN jobs j ON u.id = j.staff_id
-             WHERE u.role = 'staff'
+             WHERE u.role = 'staff' AND u.status IN ('active', 'disabled')
              GROUP BY u.id
              ORDER BY u.status ASC, u.name ASC"
         );
 
+        $pendingAppsCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM users WHERE role = 'staff' AND status = 'pending'")['c'] ?? 0);
+
         return $this->render('admin.staff.index', [
-            'title' => 'Field Workforce & Technicians | REFIXEL Admin',
-            'staff' => $staff,
+            'title'            => 'Field Workforce & Technicians | REFIXEL Admin',
+            'staff'            => $staff,
+            'pendingAppsCount' => $pendingAppsCount,
         ], 'admin');
     }
 

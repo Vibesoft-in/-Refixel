@@ -32,6 +32,7 @@ class Database
 
             try {
                 self::$instance = new PDO($dsn, (string)$user, (string)$pass, $options);
+                self::ensurePartnerSchema(self::$instance);
             } catch (PDOException $e) {
                 Logger::error('Database connection failed: ' . $e->getMessage());
                 if (Env::get('APP_DEBUG', false)) {
@@ -42,6 +43,48 @@ class Database
         }
 
         return self::$instance;
+    }
+
+    protected static bool $schemaChecked = false;
+
+    protected static function ensurePartnerSchema(PDO $pdo): void
+    {
+        if (self::$schemaChecked) {
+            return;
+        }
+        self::$schemaChecked = true;
+        try {
+            // Check if users.status is enum and convert to VARCHAR(30)
+            $colInfo = $pdo->query("SHOW COLUMNS FROM users LIKE 'status'")->fetch(PDO::FETCH_ASSOC);
+            if ($colInfo && str_starts_with(strtolower((string)($colInfo['Type'] ?? '')), 'enum')) {
+                $pdo->exec("ALTER TABLE users MODIFY COLUMN status VARCHAR(30) NOT NULL DEFAULT 'active'");
+            }
+
+            // Check staff_profiles columns
+            $cols = $pdo->query("SHOW COLUMNS FROM staff_profiles")->fetchAll(PDO::FETCH_COLUMN);
+            if (!in_array('approved_at', $cols, true)) {
+                $pdo->exec("ALTER TABLE staff_profiles ADD COLUMN approved_at DATETIME NULL AFTER availability_note");
+            }
+            if (!in_array('approved_by', $cols, true)) {
+                $pdo->exec("ALTER TABLE staff_profiles ADD COLUMN approved_by INT UNSIGNED NULL AFTER approved_at");
+            }
+            if (!in_array('rejection_reason', $cols, true)) {
+                $pdo->exec("ALTER TABLE staff_profiles ADD COLUMN rejection_reason TEXT NULL AFTER approved_by");
+            }
+
+            // Fix any recent technician who got disabled status due to previous enum restriction
+            $pdo->exec(
+                "UPDATE users u 
+                 JOIN staff_profiles sp ON u.id = sp.user_id 
+                 SET u.status = 'pending' 
+                 WHERE u.role = 'staff' 
+                   AND u.status = 'disabled' 
+                   AND sp.approved_at IS NULL 
+                   AND sp.availability_note LIKE 'City:%'"
+            );
+        } catch (\Throwable $e) {
+            // Silently continue if schema already migrated
+        }
     }
 
     public static function query(string $sql, array $params = []): \PDOStatement

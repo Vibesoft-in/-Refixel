@@ -431,6 +431,17 @@ class Notifier
     }
 
     /**
+     * Event 14b: Partner/Technician Application Rejected by Admin
+     */
+    public static function notifyPartnerRejected(array $staffData, string $reason = ''): void
+    {
+        $staffData['reason'] = $reason;
+        if (!empty($staffData['email'])) {
+            self::send('email', $staffData['email'], 'partner_rejected', $staffData);
+        }
+    }
+
+    /**
      * Legacy / Direct Welcome
      */
     public static function notifyPartnerWelcome(array $staffData): void

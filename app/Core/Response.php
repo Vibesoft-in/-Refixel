@@ -47,6 +47,11 @@ class Response
         return $this->content;
     }
 
+    public function getBody(): string
+    {
+        return $this->content;
+    }
+
     public function applySecurityHeaders(): self
     {
         $defaultHeaders = [
