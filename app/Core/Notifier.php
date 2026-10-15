@@ -408,7 +408,30 @@ class Notifier
     }
 
     /**
-     * Event 13: Partner/Technician Registration Welcome
+     * Event 13: Partner/Technician Application Received (Under Review)
+     */
+    public static function notifyPartnerApplicationReceived(array $staffData): void
+    {
+        if (!empty($staffData['email'])) {
+            self::send('email', $staffData['email'], 'partner_application_received', $staffData);
+        }
+    }
+
+    /**
+     * Event 14: Partner/Technician Approved by Admin
+     */
+    public static function notifyPartnerApproved(array $staffData, ?string $plainPassword = null): void
+    {
+        if ($plainPassword !== null) {
+            $staffData['password'] = $plainPassword;
+        }
+        if (!empty($staffData['email'])) {
+            self::send('email', $staffData['email'], 'partner_approved', $staffData);
+        }
+    }
+
+    /**
+     * Legacy / Direct Welcome
      */
     public static function notifyPartnerWelcome(array $staffData): void
     {
@@ -418,7 +441,7 @@ class Notifier
     }
 
     /**
-     * Event 14: New Partner Registration Alert to Admin
+     * Event 15: New Partner Registration Alert to Admin
      */
     public static function notifyAdminNewPartner(array $staffData): void
     {

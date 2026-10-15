@@ -133,6 +133,7 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::get('/superadmin/staff', 'SuperAdmin\\DashboardController@staff');
     Router::post('/superadmin/staff/delete-all', 'SuperAdmin\\DashboardController@deleteAllStaff', ['VerifyCsrf']);
     Router::post('/superadmin/staff/{id}/delete', 'SuperAdmin\\DashboardController@deleteStaff', ['VerifyCsrf']);
+    Router::post('/superadmin/staff/{id}/approve', 'SuperAdmin\\DashboardController@approveStaff', ['VerifyCsrf']);
 
     // Bulk & Single Deletion - Customers
     Router::get('/superadmin/customers', 'SuperAdmin\\DashboardController@customers');
@@ -192,6 +193,7 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::get('/admin/staff/create', 'Admin\\StaffController@create');
     Router::post('/admin/staff', 'Admin\\StaffController@store', ['VerifyCsrf']);
     Router::get('/admin/staff/{id}', 'Admin\\StaffController@show');
+    Router::post('/admin/staff/{id}/approve', 'Admin\\StaffController@approve', ['VerifyCsrf']);
     Router::post('/admin/staff/{id}/toggle-status', 'Admin\\StaffController@toggleStatus', ['VerifyCsrf']);
     Router::post('/admin/staff/{id}/skills', 'Admin\\StaffController@updateSkills', ['VerifyCsrf']);
 

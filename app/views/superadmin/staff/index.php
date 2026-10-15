@@ -66,12 +66,22 @@
                 <td style="white-space: nowrap;">
                   <?php if ($s['status'] === 'active'): ?>
                     <span class="badge badge-success px-2 py-1">Active</span>
+                  <?php elseif ($s['status'] === 'pending'): ?>
+                    <span class="badge badge-warning text-dark font-weight-bold px-2 py-1"><i class="fa fa-clock-o mr-1"></i>Pending Review</span>
                   <?php else: ?>
                     <span class="badge badge-secondary px-2 py-1">Disabled</span>
                   <?php endif; ?>
                 </td>
                 <td class="text-muted small" style="white-space: nowrap;"><?= date('d M Y', strtotime($s['created_at'])) ?></td>
                 <td class="text-right" style="white-space: nowrap;">
+                  <?php if ($s['status'] === 'pending'): ?>
+                    <form action="<?= \App\Core\View::url('/superadmin/staff/' . $s['id'] . '/approve') ?>" method="POST" class="d-inline mr-1" onsubmit="return confirm('Approve partner <?= \App\Core\View::e($s['name']) ?>? This will generate their password and send an approval email to <?= \App\Core\View::e($s['email']) ?>.');">
+                      <?= \App\Core\View::csrfField() ?>
+                      <button type="submit" class="btn btn-sm btn-success font-weight-bold shadow-sm" title="Approve & Send Credentials">
+                        <i class="fa fa-check-circle mr-1"></i> Approve
+                      </button>
+                    </form>
+                  <?php endif; ?>
                   <a href="<?= \App\Core\View::url('/admin/staff/' . $s['id']) ?>" class="btn btn-sm btn-outline-secondary mr-1" title="View Technician Details">
                     <i class="fa fa-eye"></i> View
                   </a>

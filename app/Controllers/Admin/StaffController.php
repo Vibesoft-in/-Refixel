@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace App\Controllers\Admin;
 
 use App\Controllers\Controller;
+use App\Core\Auth;
 use App\Core\Database;
+use App\Core\Notifier;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
@@ -178,6 +180,51 @@ class StaffController extends Controller
         }
 
         View::setFlash('success', "Skills updated successfully for {$user['name']}.");
+        return $this->redirect('/admin/staff/' . $id);
+    }
+
+    public function approve(Request $request, string $id): Response
+    {
+        $user = User::find((int)$id);
+        if (!$user || $user['role'] !== 'staff') {
+            View::setFlash('error', 'Technician record not found.');
+            return $this->redirect('/admin/staff');
+        }
+
+        $plainPassword = 'Refixel@' . random_int(1000, 9999);
+        $passwordHash = password_hash($plainPassword, PASSWORD_BCRYPT);
+
+        User::update((int)$id, [
+            'status'               => 'active',
+            'password_hash'        => $passwordHash,
+            'must_change_password' => 1,
+        ]);
+
+        Database::query(
+            "UPDATE staff_profiles 
+             SET is_available = 1, 
+                 availability_note = 'Approved by admin, ready for dispatch', 
+                 approved_at = NOW(), 
+                 approved_by = :admin_id 
+             WHERE user_id = :uid",
+            [
+                'admin_id' => Auth::id(),
+                'uid'      => (int)$id,
+            ]
+        );
+
+        // Send approval email with login credentials
+        $skill = Database::fetchOne("SELECT c.name FROM staff_skills ss JOIN categories c ON ss.category_id = c.id WHERE ss.staff_id = :uid LIMIT 1", ['uid' => $id]);
+        $user['trade'] = $skill['name'] ?? 'Home Services Technician';
+        $user['city'] = 'Refixel Service Area';
+        Notifier::notifyPartnerApproved($user, $plainPassword);
+
+        View::setFlash('success', "Technician '{$user['name']}' has been approved! Login ID & Password have been sent to {$user['email']}.");
+        
+        $redirect = $request->input('redirect');
+        if ($redirect && is_string($redirect)) {
+            return $this->redirect($redirect);
+        }
         return $this->redirect('/admin/staff/' . $id);
     }
 }

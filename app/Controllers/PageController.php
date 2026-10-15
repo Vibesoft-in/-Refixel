@@ -319,36 +319,38 @@ class PageController extends Controller
                 [$cleanPhone, $cleanEmail]
             );
 
+            // Generate initial password hash (kept secure and unrevealed until admin approval)
             $defaultDigits = substr($cleanPhone, -4) ?: '1234';
-            $generatedPassword = 'Refixel@' . $defaultDigits;
-            $passwordHash = password_hash($generatedPassword, PASSWORD_BCRYPT);
+            $initialPassword = 'Refixel@' . $defaultDigits;
+            $passwordHash = password_hash($initialPassword, PASSWORD_BCRYPT);
 
             if ($existingUser) {
                 $staffUserId = (int)$existingUser['id'];
-                // Update to staff role, active status, and synchronize email & phone
+                // Keep active if already active staff; otherwise set to pending review
+                $newStatus = ($existingUser['role'] === 'staff' && $existingUser['status'] === 'active') ? 'active' : 'pending';
                 Database::execute(
-                    "UPDATE users SET role = 'staff', status = 'active', email = ?, phone = ?, name = IF(name IS NULL OR name = '', ?, name), password_hash = ? WHERE id = ?",
-                    [$cleanEmail, $cleanPhone, $name, $passwordHash, $staffUserId]
+                    "UPDATE users SET role = 'staff', status = ?, email = ?, phone = ?, name = IF(name IS NULL OR name = '', ?, name), password_hash = ? WHERE id = ?",
+                    [$newStatus, $cleanEmail, $cleanPhone, $name, $passwordHash, $staffUserId]
                 );
             } else {
                 $staffUserId = (int)Database::execute(
-                    "INSERT INTO users (role, name, email, phone, password_hash, status, must_change_password) VALUES ('staff', ?, ?, ?, ?, 'active', 0)",
+                    "INSERT INTO users (role, name, email, phone, password_hash, status, must_change_password) VALUES ('staff', ?, ?, ?, ?, 'pending', 0)",
                     [$name, $cleanEmail, $cleanPhone, $passwordHash],
                     true
                 );
             }
 
-            // Ensure staff_profiles record exists with city, skill, and availability
+            // Ensure staff_profiles record exists with city, skill, and availability (off-duty until admin approves)
             $profile = Database::fetchOne("SELECT id FROM staff_profiles WHERE user_id = ? LIMIT 1", [$staffUserId]);
             $note = "City: {$city} | Skill: {$trade} | Exp: {$experience} Yrs";
             if ($profile) {
                 Database::execute(
-                    "UPDATE staff_profiles SET is_available = 1, availability_note = ? WHERE id = ?",
+                    "UPDATE staff_profiles SET is_available = 0, availability_note = ? WHERE id = ?",
                     [$note, $profile['id']]
                 );
             } else {
                 Database::execute(
-                    "INSERT INTO staff_profiles (user_id, rating_avg, rating_count, is_available, availability_note, created_at) VALUES (?, 5.00, 0, 1, ?, NOW())",
+                    "INSERT INTO staff_profiles (user_id, rating_avg, rating_count, is_available, availability_note, created_at) VALUES (?, 5.00, 0, 0, ?, NOW())",
                     [$staffUserId, $note]
                 );
             }
@@ -364,27 +366,35 @@ class PageController extends Controller
                 }
             }
 
-            // Send notification emails
+            // Send notification emails: Application received confirmation to partner, and new partner alert to admin
             $staffPayload = [
                 'staff_id'   => $staffUserId,
                 'name'       => $name,
                 'email'      => $cleanEmail,
                 'phone'      => $cleanPhone,
-                'password'   => $generatedPassword,
                 'trade'      => $trade,
                 'city'       => $city,
                 'experience' => $experience,
-                'login_url'  => View::fullUrl('/login'),
+                'admin_url'  => View::fullUrl('/admin/staff'),
             ];
 
             try {
-                Notifier::notifyPartnerWelcome($staffPayload);
+                Notifier::notifyPartnerApplicationReceived($staffPayload);
                 Notifier::notifyAdminNewPartner($staffPayload);
             } catch (\Throwable $ne) {
                 \App\Core\Logger::warning("Partner registration notification skipped: " . $ne->getMessage());
             }
 
-            $_SESSION['flash_success'] = "Thank you, {$name}! Your partner profile has been registered. You will receive assigned job alerts on {$cleanEmail}. Your technician portal login password is {$generatedPassword}.";
+            // Save submission details for modal popup and reassuring message
+            $_SESSION['partner_app_submitted'] = [
+                'name'  => $name,
+                'email' => $cleanEmail,
+                'phone' => $cleanPhone,
+                'trade' => $trade,
+                'city'  => $city,
+            ];
+
+            $_SESSION['flash_success'] = "Your application has been submitted successfully! Please be patient while our administration team reviews your profile. Once approved by admin, you will receive an official approval email with your technician portal login credentials.";
         } catch (\Throwable $e) {
             \App\Core\Logger::error("Partner registration error: " . $e->getMessage());
             $_SESSION['flash_error'] = "Unable to process application: " . $e->getMessage();

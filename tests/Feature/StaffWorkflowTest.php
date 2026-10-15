@@ -69,6 +69,12 @@ echo "Test 4: Technician Dashboard rendering - PASSED\n";
 // Setup Test Jobs for Workflow
 // Ensure we have a dedicated clean test job for technician 2
 $existingTestJob = Database::fetchOne("SELECT id FROM jobs WHERE staff_id = :sid ORDER BY id ASC LIMIT 1", ['sid' => $techId]);
+if (!$existingTestJob) {
+    Database::query("INSERT INTO bookings (booking_no, service_id, name, phone, address, status, created_at) VALUES ('BK-TEST-WF-01', 1, 'Workflow Cust', '9876543210', '123 Test Rd', 'assigned', NOW())");
+    $bId = (int)Database::lastInsertId();
+    Database::query("INSERT INTO jobs (booking_id, staff_id, status, created_at) VALUES (:bid, :sid, 'assigned', NOW())", ['bid' => $bId, 'sid' => $techId]);
+    $existingTestJob = Database::fetchOne("SELECT id FROM jobs WHERE staff_id = :sid ORDER BY id ASC LIMIT 1", ['sid' => $techId]);
+}
 $testJobId = (int)$existingTestJob['id'];
 
 // Reset test job status to 'assigned' for deterministic testing
@@ -159,9 +165,11 @@ echo "Test 9: Before & after photo capture & metadata storage - PASSED\n";
 Database::query("DELETE FROM staff_earnings WHERE job_id = :jid", ['jid' => $testJobId]);
 
 $completeReq = new Request([], [
-    '_csrf'        => Csrf::token(),
-    'work_summary' => 'Comprehensive 3-BHK deep cleaning executed with hospital-grade disinfectant.',
-    'final_notes'  => 'Customer advised to keep doors ventilated for 1 hour.',
+    '_csrf'                 => Csrf::token(),
+    'work_summary'          => 'Comprehensive 3-BHK deep cleaning executed with hospital-grade disinfectant.',
+    'final_notes'           => 'Customer advised to keep doors ventilated for 1 hour.',
+    'settle_payment_method' => 'cash',
+    'settle_payment_amount' => 899,
 ], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => "/staff/jobs/{$testJobId}/complete"]);
 
 $completeResp = $jobCtrl->processComplete($completeReq, (string)$testJobId);

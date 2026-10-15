@@ -217,6 +217,8 @@ class SmtpEmailService implements EmailProviderInterface
             'password_reset'              => 'Reset your REFIXEL Password',
             'admin_alert'                 => 'REFIXEL Platform Alert: ' . ($data['title'] ?? 'Attention Required'),
             'booking_reminder'            => 'Upcoming Service Visit Reminder - #' . ($data['booking_no'] ?? ''),
+            'partner_application_received'=> 'Technician Application Received - Under Review | REFIXEL Partner Network',
+            'partner_approved'            => '🎉 Congratulations! Your REFIXEL Partner Profile is Approved',
             'partner_welcome'             => 'Welcome to REFIXEL Partner Network - Your Technician Portal Access',
             'admin_new_partner'           => '👷 New Service Partner Registered: ' . ($data['name'] ?? 'Technician') . ' (' . ($data['trade'] ?? 'Trade') . ')',
             default                       => 'Notification from REFIXEL',
@@ -446,19 +448,41 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<p style='font-size: 12px; color: #64748b;'>This link expires in 60 minutes. If you did not make this request, you can safely ignore this email.</p>";
                 break;
 
+            case 'partner_application_received':
+                $body .= "<div style='margin-bottom: 20px; text-align: center;'>";
+                $body .= "<span style='background: #fef3c7; color: #b45309; font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;'>Application Under Review</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 20px; margin: 12px 0 6px;'>Thank you for applying, " . htmlspecialchars($data['name'] ?? 'Partner') . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0; line-height: 1.6;'>Your partner application has been submitted to the REFIXEL Network and is currently <strong>under review / under process</strong> by our administration team.</p>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;'>";
+                $body .= "<div style='font-size: 12px; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;'>Submitted Application Summary</div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #64748b;'>Full Name:</span><span style='font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['name'] ?? '') . "</span></div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #64748b;'>Contact Phone:</span><span style='font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['phone'] ?? '') . "</span></div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #64748b;'>Email Address:</span><span style='font-weight: 600; color: #0284c7;'>" . htmlspecialchars($data['email'] ?? '') . "</span></div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #64748b;'>Specialized Trade:</span><span style='font-weight: 600; color: #0f172a;'>" . htmlspecialchars($data['trade'] ?? '') . "</span></div>";
+                $body .= "<div style='display: flex; justify-content: space-between; font-size: 13px;'><span style='color: #64748b;'>Operational City:</span><span style='font-weight: 600; color: #0f172a;'>" . htmlspecialchars($data['city'] ?? '') . "</span></div>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #fff7ed; border-left: 4px solid #f97316; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 13.5px; color: #9a3412; line-height: 1.5;'>";
+                $body .= "<strong>Next Steps:</strong> Please be patient while our verification team reviews your application. As soon as your profile is approved by the admin, you will receive an official approval email with your <strong>Technician Portal Login ID & Password</strong>.";
+                $body .= "</div>";
+                break;
+
+            case 'partner_approved':
             case 'partner_welcome':
-                $body .= "<div style='margin-bottom: 20px;'>";
-                $body .= "<span style='background: #ffedd5; color: #c2410c; font-weight: 700; font-size: 12px; padding: 4px 10px; border-radius: 6px; text-transform: uppercase;'>Partner Onboarding</span>";
-                $body .= "<h2 style='color: #0a1c33; font-size: 20px; margin: 10px 0 6px;'>Welcome to REFIXEL, " . htmlspecialchars($data['name'] ?? 'Partner') . "!</h2>";
-                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>Your technician registration has been received and activated. When new jobs are assigned to you by admin, all job details and dispatch alerts will be delivered immediately to this email.</p>";
+                $body .= "<div style='margin-bottom: 20px; text-align: center;'>";
+                $body .= "<span style='background: #dcfce7; color: #15803d; font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;'>Profile Approved & Activated</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 20px; margin: 12px 0 6px;'>Congratulations, " . htmlspecialchars($data['name'] ?? 'Partner') . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0; line-height: 1.6;'>Your partner application has been approved by the REFIXEL administration. Your technician portal access is now active and ready for dispatch orders.</p>";
                 $body .= "</div>";
 
                 $body .= "<div style='background: #0a1c33; border-radius: 10px; padding: 18px 20px; margin-bottom: 22px; color: #ffffff;'>";
-                $body .= "<div style='font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;'>Technician Portal Credentials</div>";
-                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Mobile / Login ID:</span><span style='font-weight: 700; font-family: monospace; color: #38bdf8;'>" . htmlspecialchars($data['phone'] ?? '') . "</span></div>";
+                $body .= "<div style='font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;'>Technician Portal Login Credentials</div>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Login ID (Phone):</span><span style='font-weight: 700; font-family: monospace; color: #38bdf8;'>" . htmlspecialchars($data['phone'] ?? '') . "</span></div>";
                 $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Registered Email:</span><span style='font-weight: 700; color: #ffffff;'>" . htmlspecialchars($data['email'] ?? '') . "</span></div>";
                 if (!empty($data['password'])) {
-                    $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Password:</span><span style='font-family: monospace; font-weight: 700; color: #fde047; letter-spacing: 1px;'>" . htmlspecialchars($data['password']) . "</span></div>";
+                    $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Portal Password:</span><span style='font-family: monospace; font-weight: 700; color: #fde047; letter-spacing: 1px;'>" . htmlspecialchars($data['password']) . "</span></div>";
                 }
                 $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Primary Trade:</span><span style='font-weight: 600; color: #ffffff;'>" . htmlspecialchars($data['trade'] ?? '') . "</span></div>";
                 $body .= "<div style='display: flex; justify-content: space-between; font-size: 13px;'><span style='color: #94a3b8;'>City:</span><span style='font-weight: 600; color: #ffffff;'>" . htmlspecialchars($data['city'] ?? '') . "</span></div>";

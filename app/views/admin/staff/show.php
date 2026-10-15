@@ -21,20 +21,48 @@ $skillIds = array_column($skills, 'id');
       <h4 class="font-weight-bold text-dark mb-0"><?= View::e($user['name']) ?></h4>
     </div>
 
-    <!-- Toggle Status Button -->
-    <form method="POST" action="<?= View::url('/admin/staff/' . $user['id'] . '/toggle-status') ?>">
-      <?= View::csrfField() ?>
-      <?php if ($user['status'] === 'active'): ?>
-        <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold" onclick="return confirm('Are you sure you want to deactivate this technician?')">
-          <i class="fa fa-ban mr-1"></i>Deactivate Account
-        </button>
-      <?php else: ?>
-        <button type="submit" class="btn btn-sm btn-success font-weight-bold">
-          <i class="fa fa-check mr-1"></i>Activate Account
-        </button>
+    <div class="d-flex align-items-center gap-2">
+      <?php if ($user['status'] === 'pending'): ?>
+        <form method="POST" action="<?= View::url('/admin/staff/' . $user['id'] . '/approve') ?>" class="mr-2" onsubmit="return confirm('Approve technician <?= View::e($user['name']) ?> and send portal login password to <?= View::e($user['email']) ?>?');">
+          <?= View::csrfField() ?>
+          <button type="submit" class="btn btn-sm btn-success font-weight-bold shadow-sm">
+            <i class="fa fa-check-circle mr-1"></i>Approve & Send Password
+          </button>
+        </form>
       <?php endif; ?>
-    </form>
+
+      <!-- Toggle Status Button -->
+      <form method="POST" action="<?= View::url('/admin/staff/' . $user['id'] . '/toggle-status') ?>">
+        <?= View::csrfField() ?>
+        <?php if ($user['status'] === 'active'): ?>
+          <button type="submit" class="btn btn-sm btn-outline-danger font-weight-bold" onclick="return confirm('Are you sure you want to deactivate this technician?')">
+            <i class="fa fa-ban mr-1"></i>Deactivate Account
+          </button>
+        <?php elseif ($user['status'] === 'pending'): ?>
+          <span class="badge badge-warning text-dark font-weight-bold px-2 py-1"><i class="fa fa-clock-o mr-1"></i>Pending Review</span>
+        <?php else: ?>
+          <button type="submit" class="btn btn-sm btn-success font-weight-bold">
+            <i class="fa fa-check mr-1"></i>Activate Account
+          </button>
+        <?php endif; ?>
+      </form>
+    </div>
   </div>
+
+  <?php if ($user['status'] === 'pending'): ?>
+    <div class="alert alert-warning mb-3 border-0 shadow-sm d-flex align-items-center justify-content-between flex-wrap" style="border-radius: 12px; background: #fffbeb; color: #92400e; border-left: 4px solid #f59e0b !important; padding: 14px 18px;">
+      <div class="mb-2 mb-md-0">
+        <strong class="d-block" style="font-size: 15px;"><i class="fa fa-clock-o mr-1 text-warning"></i> Partner Application Pending Admin Approval</strong>
+        <span class="small" style="line-height: 1.5; display: inline-block;">This technician submitted their application online. They currently cannot log in until approved. Approving will generate a password, activate their account, and automatically send credentials to <strong><?= View::e($user['email']) ?></strong>.</span>
+      </div>
+      <form method="POST" action="<?= View::url('/admin/staff/' . $user['id'] . '/approve') ?>" onsubmit="return confirm('Approve technician <?= View::e($user['name']) ?> and send portal login password to <?= View::e($user['email']) ?>?');">
+        <?= View::csrfField() ?>
+        <button type="submit" class="btn btn-success font-weight-bold shadow-sm text-nowrap">
+          <i class="fa fa-check-circle mr-1"></i>Approve Application Now
+        </button>
+      </form>
+    </div>
+  <?php endif; ?>
 
   <div class="row">
     <!-- Left Column: Profile Card & Skills -->

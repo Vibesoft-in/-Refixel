@@ -48,6 +48,11 @@ class AuthController extends Controller
 
         $user = User::findByEmailOrPhone($identifier);
 
+        if ($user && in_array($user['status'] ?? '', ['pending', 'under_review', 'under_process'])) {
+            View::setFlash('warning', 'Your partner application is currently under process & review by our admin team. Please be patient. You will receive an approval email with your login credentials once verified.');
+            return $this->redirect('/login');
+        }
+
         if (!$user || !password_verify($password, $user['password_hash'])) {
             // Log failed attempt
             $this->recordFailedAttempt($ip, $identifier);

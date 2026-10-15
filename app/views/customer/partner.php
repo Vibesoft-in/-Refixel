@@ -315,14 +315,21 @@ use App\Core\View;
           </div>
 
           <?php 
+            $partnerAppSubmitted = $_SESSION['partner_app_submitted'] ?? null;
+            unset($_SESSION['partner_app_submitted']);
             $flashSuccess = $_SESSION['flash_success'] ?? \App\Core\View::flash('success'); 
             $flashError = $_SESSION['flash_error'] ?? \App\Core\View::flash('error'); 
             unset($_SESSION['flash_success'], $_SESSION['flash_error']);
           ?>
           <?php if (!empty($flashSuccess)): ?>
             <div class="alert alert-success alert-dismissible fade show mb-4 border-0 shadow-sm" style="border-radius: 12px; font-size: 14px; background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981 !important;">
-              <i class="fa fa-check-circle mr-2 text-success"></i>
-              <?= \App\Core\View::e($flashSuccess) ?>
+              <div class="d-flex align-items-start">
+                <i class="fa fa-clock-o mr-2 text-warning mt-1" style="font-size: 18px;"></i>
+                <div>
+                  <strong class="d-block mb-1" style="color: #065f46; font-size: 15px;">Application Submitted — Under Review</strong>
+                  <?= \App\Core\View::e($flashSuccess) ?>
+                </div>
+              </div>
             </div>
           <?php endif; ?>
 
@@ -399,3 +406,118 @@ use App\Core\View;
     </div>
   </div>
 </div>
+
+<!-- Partner Application Submitted Success Popup Modal -->
+<div id="partnerSuccessModal" class="refixel-modal-overlay" style="display: <?= !empty($partnerAppSubmitted) ? 'flex' : 'none' ?>; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 18px; box-sizing: border-box;">
+  <div class="refixel-modal-card" style="background: #ffffff; width: 100%; max-width: 540px; border-radius: 24px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35); overflow: hidden; position: relative; animation: refixelPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- Top decorative accent -->
+    <div style="height: 6px; background: linear-gradient(90deg, #f25b29, #fb923c, #10b981);"></div>
+
+    <!-- Close button -->
+    <button type="button" onclick="closePartnerModal()" aria-label="Close modal" style="position: absolute; top: 16px; right: 18px; border: none; background: #f1f5f9; color: #64748b; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+      <i class="fa fa-times"></i>
+    </button>
+
+    <div style="padding: 32px 28px 28px 28px; text-align: center;">
+      <!-- Glowing Success Icon -->
+      <div style="width: 74px; height: 74px; border-radius: 50%; background: #ecfdf5; border: 2.5px solid #10b981; color: #10b981; display: inline-flex; align-items: center; justify-content: center; font-size: 34px; margin-bottom: 20px; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.12);">
+        <i class="fa fa-check"></i>
+      </div>
+
+      <h3 style="font-weight: 800; color: #0f172a; margin: 0 0 8px 0; font-size: 23px; letter-spacing: -0.3px;">
+        Application Submitted Successfully!
+      </h3>
+      
+      <p style="color: #64748b; font-size: 15px; margin: 0 0 22px 0; line-height: 1.5;">
+        Thank you, <strong style="color: #0f172a;"><?= View::e($partnerAppSubmitted['name'] ?? 'Partner') ?></strong>. Your technician registration has been received by REFIXEL.
+      </p>
+
+      <!-- Status Card -->
+      <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 16px; padding: 18px 20px; text-align: left; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25);"></span>
+            <strong style="color: #92400e; font-size: 13.5px; text-transform: uppercase; letter-spacing: 0.5px;">Application Status</strong>
+          </div>
+          <span style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 20px; border: 1px solid #fde68a;">
+            Under Process & Review
+          </span>
+        </div>
+
+        <p style="color: #78350f; font-size: 13.5px; line-height: 1.6; margin: 0 0 10px 0;">
+          <strong>Please be patient.</strong> Our administration team is currently reviewing your application, documents, and trade credentials.
+        </p>
+
+        <?php if (!empty($partnerAppSubmitted['email'])): ?>
+          <div style="font-size: 12.5px; color: #92400e; padding-top: 10px; border-top: 1px dashed #fcd34d; display: flex; align-items: center; gap: 8px;">
+            <i class="fa fa-envelope-o" style="font-size: 14px;"></i>
+            <span>Acknowledgment email sent to <strong><?= View::e($partnerAppSubmitted['email']) ?></strong></span>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- What happens next box -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 18px; text-align: left; margin-bottom: 24px; font-size: 13px; color: #475569; line-height: 1.55;">
+        <div style="font-weight: 700; color: #1e293b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <i class="fa fa-shield text-primary" style="font-size: 14px;"></i>
+          <span>What happens next?</span>
+        </div>
+        Once your application is <strong>verified & approved by the Admin</strong>, you will receive a new confirmation email containing your official <strong>Technician Portal Login ID & Password</strong>. Until approved, your login remains under review.
+      </div>
+
+      <!-- Action Button -->
+      <button type="button" onclick="closePartnerModal()" class="btn btn-block text-white font-weight-bold py-3" style="background: #f25b29; border: none; border-radius: 12px; font-size: 15px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.35); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+        Understood, Thank You
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes refixelPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.refixel-modal-overlay button:hover {
+  transform: translateY(-1px);
+}
+</style>
+
+<script>
+function closePartnerModal() {
+  var modal = document.getElementById('partnerSuccessModal');
+  if (modal) {
+    modal.style.opacity = '0';
+    modal.style.transition = 'opacity 0.2s ease';
+    setTimeout(function() {
+      modal.style.display = 'none';
+    }, 200);
+  }
+}
+
+// Close when clicking outside modal card
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('partnerSuccessModal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closePartnerModal();
+      }
+    });
+  }
+});
+
+// Close on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' || e.key === 'Esc') {
+    closePartnerModal();
+  }
+});
+</script>

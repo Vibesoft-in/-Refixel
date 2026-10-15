@@ -80,15 +80,28 @@ $staff = $staff ?? [];
                 </td>
                 <td>
                   <?php if ($s['status'] === 'active'): ?>
-                    <span class="badge badge-success">Active</span>
+                    <span class="badge badge-success px-2 py-1">Active</span>
+                  <?php elseif ($s['status'] === 'pending'): ?>
+                    <span class="badge badge-warning text-dark font-weight-bold px-2 py-1"><i class="fa fa-clock-o mr-1"></i>Pending Review</span>
                   <?php else: ?>
-                    <span class="badge badge-danger">Disabled</span>
+                    <span class="badge badge-danger px-2 py-1">Disabled</span>
                   <?php endif; ?>
                 </td>
                 <td class="text-right">
-                  <a href="<?= View::url('/admin/staff/' . $s['id']) ?>" class="btn btn-sm btn-brand-outline px-2 py-1 font-weight-bold">
-                    Profile &rarr;
-                  </a>
+                  <div class="d-inline-flex align-items-center">
+                    <?php if ($s['status'] === 'pending'): ?>
+                      <form action="<?= View::url('/admin/staff/' . $s['id'] . '/approve') ?>" method="POST" class="d-inline mr-1" onsubmit="return confirm('Approve this partner? This will generate credentials and send an approval email to <?= View::e($s['email']) ?>.');">
+                        <?= View::csrfField() ?>
+                        <input type="hidden" name="redirect" value="<?= View::url('/admin/staff') ?>">
+                        <button type="submit" class="btn btn-sm btn-success px-2 py-1 font-weight-bold" title="Approve application and send login details">
+                          <i class="fa fa-check-circle mr-1"></i>Approve
+                        </button>
+                      </form>
+                    <?php endif; ?>
+                    <a href="<?= View::url('/admin/staff/' . $s['id']) ?>" class="btn btn-sm btn-brand-outline px-2 py-1 font-weight-bold">
+                      Profile &rarr;
+                    </a>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; ?>

@@ -7,6 +7,7 @@ use App\Controllers\Controller;
 use App\Core\Auth;
 use App\Core\Database;
 use App\Core\Logger;
+use App\Core\Notifier;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
@@ -225,6 +226,49 @@ class DashboardController extends Controller
             Database::rollBack();
             View::setFlash('error', "Failed to delete technician: " . $e->getMessage());
         }
+        return $this->redirect('/superadmin/staff');
+    }
+
+    public function approveStaff(Request $request, string $id): Response
+    {
+        $staffId = (int)$id;
+        $user = User::find($staffId);
+        if (!$user || $user['role'] !== 'staff') {
+            View::setFlash('error', 'Technician record not found.');
+            return $this->redirect('/superadmin/staff');
+        }
+
+        $plainPassword = 'Refixel@' . random_int(1000, 9999);
+        $passwordHash = password_hash($plainPassword, PASSWORD_BCRYPT);
+
+        User::update($staffId, [
+            'status'               => 'active',
+            'password_hash'        => $passwordHash,
+            'must_change_password' => 1,
+        ]);
+
+        Database::query(
+            "UPDATE staff_profiles 
+             SET is_available = 1, 
+                 availability_note = 'Approved by Super Admin, ready for dispatch', 
+                 approved_at = NOW(), 
+                 approved_by = :admin_id 
+             WHERE user_id = :uid",
+            [
+                'admin_id' => Auth::id(),
+                'uid'      => $staffId,
+            ]
+        );
+
+        // Send approval email with login credentials
+        $skill = Database::fetchOne("SELECT c.name FROM staff_skills ss JOIN categories c ON ss.category_id = c.id WHERE ss.staff_id = :uid LIMIT 1", ['uid' => $staffId]);
+        $user['trade'] = $skill['name'] ?? 'Home Services Technician';
+        $user['city'] = 'Refixel Service Area';
+        Notifier::notifyPartnerApproved($user, $plainPassword);
+
+        Logger::info("Super Admin (ID: " . Auth::id() . ") approved technician #{$staffId} ({$user['name']})");
+        View::setFlash('success', "Technician '{$user['name']}' has been approved successfully! Credentials sent to {$user['email']}.");
+
         return $this->redirect('/superadmin/staff');
     }
 
