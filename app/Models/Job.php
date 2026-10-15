@@ -66,9 +66,48 @@ class Job extends Model
     public static function attachPayout(array &$job): void
     {
         $basePrice = (float)(($job['total_amount'] ?? 0) > 0 ? $job['total_amount'] : ($job['starting_price'] ?? 0));
-        // Payout to labour: Pure full amount minus 49 (Platform fee ₹49 deducted, rest is labour income)
-        $job['technician_payout'] = max(0.0, round($basePrice - 49.0, 2));
-        $job['worker_percent'] = ($basePrice > 0) ? round(($job['technician_payout'] / $basePrice) * 100, 1) : 100.0;
+
+        // 1. If job has a recorded earning in staff_earnings, pull the exact normalized split
+        $hasRecordedEarning = false;
+        if (!empty($job['id'])) {
+            try {
+                $earning = Database::fetchOne(
+                    "SELECT id, amount, gross_amount, admin_fee, material_cost FROM staff_earnings WHERE job_id = :jid LIMIT 1",
+                    ['jid' => (int)$job['id']]
+                );
+                if ($earning) {
+                    $earning['booking_total'] = $basePrice;
+                    $earning['starting_price'] = (float)($job['starting_price'] ?? 0);
+                    $earning['service_id'] = (int)($job['service_id'] ?? 0);
+                    $earning['category_id'] = (int)($job['category_id'] ?? 0);
+                    StaffEarning::normalizeEarningBreakdown($earning);
+
+                    $job['technician_payout'] = (float)$earning['amount'];
+                    $job['gross_amount']      = (float)$earning['gross_amount'];
+                    $job['company_split']     = (float)$earning['admin_fee'];
+                    $job['admin_percent']     = (float)$earning['admin_percent'];
+                    $job['worker_percent']    = (float)$earning['worker_percent'];
+                    $job['material_cost']     = (float)($earning['material_cost'] ?? 0);
+                    $hasRecordedEarning = true;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 2. If not recorded yet, calculate split in real-time per CommissionRule
+        if (!$hasRecordedEarning) {
+            $split = CommissionRule::calculateSplit(
+                $basePrice,
+                0.0,
+                (int)($job['service_id'] ?? 0),
+                (int)($job['category_id'] ?? 0)
+            );
+            $job['technician_payout'] = (float)$split['worker_total_payout'];
+            $job['gross_amount']      = $basePrice;
+            $job['company_split']     = (float)$split['admin_share'];
+            $job['admin_percent']     = (float)$split['admin_percent'];
+            $job['worker_percent']    = (float)$split['worker_percent'];
+            $job['material_cost']     = 0.0;
+        }
 
         // Determine Prepaid (Fully Paid) vs Pre-Booked (COD / Pay on site)
         $paymentType = strtolower(trim((string)($job['payment_type'] ?? 'cod')));
@@ -92,16 +131,6 @@ class Job extends Model
             'low'    => 'Low Priority',
             default  => 'Normal Priority',
         };
-
-        // If job completed, pull settled/recorded earning amount
-        if (($job['status'] ?? '') === 'completed' && !empty($job['id'])) {
-            try {
-                $earning = Database::fetchOne("SELECT amount FROM staff_earnings WHERE job_id = :jid LIMIT 1", ['jid' => (int)$job['id']]);
-                if ($earning && (float)$earning['amount'] > 0) {
-                    $job['technician_payout'] = (float)$earning['amount'];
-                }
-            } catch (\Throwable $e) {}
-        }
     }
 
     public static function getCustomerAttachments(int $bookingId): array

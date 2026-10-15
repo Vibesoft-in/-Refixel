@@ -105,10 +105,16 @@ $counts = $counts ?? ['today' => 0, 'upcoming' => 0, 'in_progress' => 0, 'comple
             <div class="small text-muted mb-1">
               <i class="fa fa-clock-o mr-1"></i>Slot: <strong><?= View::e($job['preferred_time'] ?? 'Flexible') ?></strong>
             </div>
-            <div class="d-inline-flex align-items-center px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);">
-              <i class="fa fa-money text-success mr-1"></i>
-              <span class="small text-muted mr-1">Labour Income:</span>
-              <strong class="text-success font-weight-bold" style="font-size: 15px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></strong>
+            <div class="d-inline-flex flex-column px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);">
+              <div>
+                <i class="fa fa-money text-success mr-1"></i>
+                <span class="small text-muted mr-1">Your Net:</span>
+                <strong class="text-success font-weight-bold" style="font-size: 15px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></strong>
+                <span class="badge badge-success px-1 py-0 ml-1" style="font-size: 9px;"><?= (float)($job['worker_percent'] ?? 75) ?>%</span>
+              </div>
+              <div class="text-muted" style="font-size: 10px;">
+                Total: ₹<?= number_format((float)($job['gross_amount'] ?? 0), 0) ?> &bull; Split: -₹<?= number_format((float)($job['company_split'] ?? 0), 0) ?>
+              </div>
             </div>
           </div>
 

@@ -301,10 +301,17 @@ class JobController extends Controller
             // Execute workflow status transition
             Workflow::transition((int)$id, Workflow::STATUS_COMPLETED, $staffId, 'staff', $workSummary);
 
-            // Calculate technician earnings: pure total amount minus 49 platform fee
+            // Calculate actual technician earnings and company split using CommissionRule
             $totAmt = (float)(($job['total_amount'] ?? 0) > 0 ? $job['total_amount'] : ($job['starting_price'] ?? 0));
             $materialCost = (float)($request->input('material_cost') ?? 0);
-            $technicianPayout = max(0.0, round($totAmt - 49.0 + $materialCost, 2));
+            $split = \App\Models\CommissionRule::calculateSplit(
+                $totAmt,
+                $materialCost,
+                (int)($job['service_id'] ?? 0),
+                (int)($job['category_id'] ?? 0)
+            );
+            $technicianPayout = (float)$split['worker_total_payout'];
+            $adminFee = (float)$split['admin_share'];
 
             StaffEarning::recordJobCommission(
                 (int)$id,
@@ -313,7 +320,7 @@ class JobController extends Controller
                 null,
                 $totAmt,
                 $materialCost,
-                49.00
+                $adminFee
             );
 
             // Dispatch Final GST Invoice to customer upon job completion

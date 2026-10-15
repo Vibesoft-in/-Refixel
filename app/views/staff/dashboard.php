@@ -53,6 +53,7 @@ $isAvailable = !empty($profile['is_available']);
       <div class="card border-0 shadow-sm rounded-lg h-100 p-3 bg-white text-center">
         <span class="text-muted small font-weight-bold">THIS MONTH</span>
         <h3 class="font-weight-bold text-dark my-1">₹<?= number_format((float)$earningsSummary['this_month'], 0) ?></h3>
+        <span class="text-muted small d-block mb-1" style="font-size: 10px;">(Net After Split)</span>
         <a href="<?= View::url('/staff/earnings') ?>" class="small font-weight-bold text-success">Payouts &rarr;</a>
       </div>
     </div>
@@ -92,6 +93,11 @@ $isAvailable = !empty($profile['is_available']);
         </div>
         <h6 class="font-weight-bold mb-1 text-dark"><?= View::e($activeJob['service_name']) ?></h6>
         <p class="text-muted small mb-2"><i class="fa fa-map-marker text-danger mr-1"></i><?= View::e($activeJob['address']) ?></p>
+        <div class="d-flex align-items-center justify-content-between mb-2 small text-muted flex-wrap p-2 rounded" style="background: #ffffff; border: 1px solid #bfdbfe; font-size: 11.5px; gap: 8px;">
+          <div>Total: <strong>₹<?= number_format((float)($activeJob['gross_amount'] ?? 0), 0) ?></strong></div>
+          <div>Refixel Split: <span class="text-danger font-weight-bold">-₹<?= number_format((float)($activeJob['company_split'] ?? 0), 0) ?></span> (<?= (float)($activeJob['admin_percent'] ?? 25) ?>%)</div>
+          <div>Your Net: <strong class="text-success" style="font-size: 13.5px;">₹<?= number_format((float)($activeJob['technician_payout'] ?? 0), 0) ?></strong> (<?= (float)($activeJob['worker_percent'] ?? 75) ?>%)</div>
+        </div>
         <div class="d-flex gap-2">
           <a href="<?= View::url('/staff/jobs/' . $activeJob['id']) ?>" class="btn btn-sm btn-primary flex-fill mr-1 font-weight-bold">
             <i class="fa fa-eye mr-1"></i>Open Job Details
@@ -160,17 +166,28 @@ $isAvailable = !empty($profile['is_available']);
           </div>
         <?php endif; ?>
 
-        <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-          <div>
-            <span class="text-muted" style="font-size: 11px; display: block; line-height: 1.1;">Labour Income:</span>
-            <span class="font-weight-bold text-success" style="font-size: 15px;">
-              ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>
-            </span>
-          </div>
-          <div>
-            <a href="<?= View::url('/staff/jobs/' . $job['id']) ?>" class="btn btn-sm btn-brand px-3">
-              View Details <i class="fa fa-arrow-right ml-1"></i>
-            </a>
+        <div class="pt-2 border-top">
+          <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px;">
+            <div>
+              <span class="text-muted small" style="font-size: 11px; display: block; line-height: 1.1;">Your Net Earning:</span>
+              <div class="d-flex align-items-center" style="gap: 6px;">
+                <span class="font-weight-bold text-success" style="font-size: 16px;">
+                  ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>
+                </span>
+                <span class="badge badge-success px-1 py-0" style="font-size: 10px;">
+                  <?= (float)($job['worker_percent'] ?? 75) ?>% Share
+                </span>
+              </div>
+              <div class="text-muted" style="font-size: 11px; margin-top: 2px;">
+                Total: <strong>₹<?= number_format((float)($job['gross_amount'] ?? 0), 0) ?></strong>
+                &bull; Company Split: <span class="text-danger font-weight-bold">-₹<?= number_format((float)($job['company_split'] ?? 0), 0) ?></span> (<?= (float)($job['admin_percent'] ?? 25) ?>%)
+              </div>
+            </div>
+            <div>
+              <a href="<?= View::url('/staff/jobs/' . $job['id']) ?>" class="btn btn-sm btn-brand px-3">
+                View Details <i class="fa fa-arrow-right ml-1"></i>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -197,7 +214,8 @@ $isAvailable = !empty($profile['is_available']);
             <div class="font-weight-bold text-dark small"><?= View::e($job['service_name']) ?></div>
             <div class="text-muted" style="font-size: 11px;">
               <i class="fa fa-calendar mr-1"></i><?= View::e($job['preferred_date'] ?? 'Upcoming') ?> &bull; <?= View::e($job['preferred_time'] ?? '') ?>
-              &bull; <strong class="text-success">Income: ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></strong>
+              &bull; <strong class="text-success">Net Earning: ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></strong> (<?= (float)($job['worker_percent'] ?? 75) ?>%)
+              &bull; <span>Total: ₹<?= number_format((float)($job['gross_amount'] ?? 0), 0) ?></span>
             </div>
           </div>
           <div>

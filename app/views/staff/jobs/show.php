@@ -68,15 +68,22 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
         </div>
       </div>
       <div class="text-right">
-        <span class="text-muted small text-uppercase font-weight-bold">Labour Income</span>
+        <span class="text-muted small text-uppercase font-weight-bold">Your Net Payout</span>
         <h5 class="font-weight-bold text-success mb-0" style="font-size: 22px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></h5>
-        <span class="badge badge-success px-2 py-0" style="font-size: 10px;">Your Payout</span>
+        <span class="badge badge-success px-2 py-0" style="font-size: 10px;"><?= (float)($job['worker_percent'] ?? 75) ?>% Share</span>
       </div>
     </div>
     <div class="border-top pt-2 mt-2">
       <div class="font-weight-bold text-dark" style="font-size: 16px;"><?= View::e($job['service_name']) ?></div>
       <div class="small text-muted mt-1">
         <i class="fa fa-calendar-check-o text-success mr-1"></i><strong>Scheduled:</strong> <?= View::e($job['preferred_date'] ?? 'As soon as possible') ?> &bull; <?= View::e($job['preferred_time'] ?? 'Flexible') ?>
+      </div>
+      <div class="mt-2 p-2 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 12px;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 6px;">
+          <span class="text-muted">Total Service Value: <strong class="text-dark">₹<?= number_format((float)($job['gross_amount'] ?? 0), 0) ?></strong></span>
+          <span class="text-muted">Company Split: <strong class="text-danger">-₹<?= number_format((float)($job['company_split'] ?? 0), 0) ?></strong> (<?= (float)($job['admin_percent'] ?? 25) ?>%)</span>
+          <span class="text-success font-weight-bold">Net Tech Share: ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?> (<?= (float)($job['worker_percent'] ?? 75) ?>%)</span>
+        </div>
       </div>
     </div>
   </div>
@@ -151,8 +158,12 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
     <?php if ($job['status'] === 'assigned'): ?>
       <div class="p-3 bg-white rounded border mb-3" style="border-left: 4px solid #10b981 !important;">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="text-muted small font-weight-bold">Offered Labour Income:</span>
+          <span class="text-muted small font-weight-bold">Your Net Payout (After Split):</span>
           <span class="font-weight-bold text-success" style="font-size: 20px;">₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?></span>
+        </div>
+        <div class="small text-muted mb-2">
+          Service Total: <strong>₹<?= number_format((float)($job['gross_amount'] ?? 0), 0) ?></strong> &bull;
+          Refixel Split (<?= (float)($job['admin_percent'] ?? 25) ?>%): <span class="text-danger font-weight-bold">-₹<?= number_format((float)($job['company_split'] ?? 0), 0) ?></span>
         </div>
         <div class="d-flex flex-wrap align-items-center mt-2 mb-2" style="gap: 6px;">
           <?php if (!empty($job['is_prepaid'])): ?>
@@ -169,7 +180,7 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
       <form method="POST" action="<?= View::url('/staff/jobs/' . $job['id'] . '/accept') ?>">
         <?= View::csrfField() ?>
         <button type="submit" class="btn btn-brand btn-block py-2 font-weight-bold shadow-sm" style="font-size: 15px;">
-          <i class="fa fa-check-circle mr-1"></i>Accept Job (Earn ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>)
+          <i class="fa fa-check-circle mr-1"></i>Accept Job (Net Payout: ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?>)
         </button>
       </form>
 
