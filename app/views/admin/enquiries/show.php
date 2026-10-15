@@ -191,6 +191,9 @@ $attachments = $attachments ?? [];
           <button type="submit" class="btn btn-brand btn-block font-weight-bold py-2">
             <i class="fa fa-check-circle mr-1"></i>Confirm & Assign Technician
           </button>
+          <div class="text-muted mt-2 text-center" style="font-size: 11px; line-height: 1.3;">
+            <i class="fa fa-envelope text-success mr-1"></i>Both technician & customer will automatically receive assignment confirmation emails.
+          </div>
         </form>
       </div>
 

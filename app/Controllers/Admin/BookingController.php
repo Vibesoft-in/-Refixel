@@ -158,10 +158,11 @@ class BookingController extends Controller
         }
         Booking::update((int)$id, $bookingUpdate);
 
-        // Notify technician of assignment
+        $staffUser = Database::fetchOne("SELECT id, name, email, phone FROM users WHERE id = :sid", ['sid' => $staffId]);
+        $bookingWithDetails = Booking::findWithDetails((int)$id);
+
+        // 1. Notify technician of assignment
         try {
-            $staffUser = Database::fetchOne("SELECT name, email, phone FROM users WHERE id = :sid", ['sid' => $staffId]);
-            $bookingWithDetails = Booking::findWithDetails((int)$id);
             if ($staffUser && $bookingWithDetails) {
                 \App\Core\Notifier::notifyStaffAssigned($bookingWithDetails, $staffUser);
             }
@@ -169,7 +170,16 @@ class BookingController extends Controller
             \App\Core\Logger::error("Staff assignment notification error: " . $e->getMessage());
         }
 
-        View::setFlash('success', 'Technician successfully assigned to booking.');
+        // 2. Notify customer that technician has been assigned
+        try {
+            if ($staffUser && $bookingWithDetails) {
+                \App\Core\Notifier::notifyTechnicianAssignedCustomer($bookingWithDetails, $staffUser);
+            }
+        } catch (\Throwable $e) {
+            \App\Core\Logger::error("Customer technician assignment notification error: " . $e->getMessage());
+        }
+
+        View::setFlash('success', 'Technician successfully assigned. Confirmation emails dispatched to customer and technician.');
 
         return $this->redirect('/admin/bookings/' . $id);
     }

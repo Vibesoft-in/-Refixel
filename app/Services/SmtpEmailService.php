@@ -207,6 +207,7 @@ class SmtpEmailService implements EmailProviderInterface
             'booking_confirmation'        => 'Your REFIXEL Booking is Confirmed - #' . ($data['booking_no'] ?? ''),
             'admin_new_booking'           => '🚨 New Booking Received: #' . ($data['booking_no'] ?? '') . ' (' . ($data['service_name'] ?? 'Home Service') . ')',
             'staff_assigned'              => '🔧 New Job Assigned: #' . ($data['booking_no'] ?? '') . ' - ' . ($data['service_name'] ?? 'Service'),
+            'technician_assigned_customer'=> '🔧 Technician Assigned: Your Service Visit is Scheduled - Booking #' . ($data['booking_no'] ?? ''),
             'technician_accepted_customer'=> '✅ Technician Confirmed: Your Service is Scheduled - #' . ($data['booking_no'] ?? ''),
             'technician_accepted_admin'   => '✅ Technician Accepted Job: #' . ($data['booking_no'] ?? '') . ' - ' . ($data['staff_name'] ?? 'Technician'),
             'invoice_prepaid_work_due'    => '📄 Payment Receipt: Work Scheduled - Booking #' . ($data['booking_no'] ?? ''),
@@ -349,6 +350,48 @@ class SmtpEmailService implements EmailProviderInterface
 
                 $body .= "<div style='text-align: center; margin: 24px 0;'>";
                 $body .= "<a href='" . htmlspecialchars($staffUrl) . "' style='background: #10b981; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 30px; border-radius: 8px; display: inline-block;'>View & Accept Job &rarr;</a>";
+                $body .= "</div>";
+                break;
+
+            case 'technician_assigned_customer':
+                $body .= "<div style='text-align: center; margin-bottom: 20px;'>";
+                $body .= "<span style='background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 20px; display: inline-block; letter-spacing: 0.3px;'>🔧 Verified Technician Assigned</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Technician Assigned to Your Service Request</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;'>Dear " . htmlspecialchars($data['customer_name'] ?? 'Customer') . ", a certified REFIXEL service specialist has been assigned to your booking <strong>#" . htmlspecialchars($data['booking_no'] ?? '') . "</strong>.</p>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px;'>";
+                $body .= "<div style='display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 12px; margin-bottom: 14px;'>";
+                $body .= "<div>";
+                $body .= "<div style='font-size: 11px; text-transform: uppercase; font-weight: 700; color: #f25b29; letter-spacing: 0.5px;'>Assigned Professional</div>";
+                $body .= "<div style='font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 2px;'>" . htmlspecialchars($data['staff_name'] ?? 'Certified Technician') . "</div>";
+                $body .= "</div>";
+                if (!empty($data['staff_phone'])) {
+                    $body .= "<a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='background: #10b981; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;'>📞 Call Technician</a>";
+                }
+                $body .= "</div>";
+
+                $body .= "<table style='width: 100%; border-collapse: collapse; font-size: 13.5px;'>";
+                $body .= "<tr><td style='padding: 6px 0; color: #64748b; width: 38%; font-weight: 600;'>Service Booked:</td><td style='padding: 6px 0; font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</td></tr>";
+                if (!empty($data['staff_phone'])) {
+                    $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Technician Mobile:</td><td style='padding: 6px 0; font-weight: 700;'><a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='color: #f25b29; text-decoration: none;'>" . htmlspecialchars($data['staff_phone']) . "</a></td></tr>";
+                }
+                $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Scheduled Visit:</td><td style='padding: 6px 0; font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " (" . htmlspecialchars($data['preferred_time'] ?? 'Flexible Slot') . ")</td></tr>";
+                if (!empty($data['address'])) {
+                    $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Service Address:</td><td style='padding: 6px 0; color: #334155; line-height: 1.4;'>" . htmlspecialchars($data['address']) . "</td></tr>";
+                }
+                $body .= "</table>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #f0fdf4; border-left: 4px solid #16a34a; padding: 14px 16px; border-radius: 6px; margin-bottom: 22px; font-size: 13px; color: #166534; line-height: 1.5;'>";
+                $body .= "<strong>What Happens Next?</strong><br>";
+                $body .= "&bull; Our verified professional will contact you on <strong>" . htmlspecialchars($data['customer_phone'] ?? 'your phone') . "</strong> prior to arrival to confirm timing.<br>";
+                $body .= "&bull; All REFIXEL technicians carry specialized tools and mechanized equipment for top-quality service.<br>";
+                $body .= "&bull; Pay safely via online invoice or cash only after the service is performed to your complete satisfaction.";
+                $body .= "</div>";
+
+                $body .= "<div style='text-align: center; margin: 24px 0;'>";
+                $body .= "<a href='" . htmlspecialchars($bookingUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 13px 30px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.25);'>View Booking Details & Track &rarr;</a>";
                 $body .= "</div>";
                 break;
 

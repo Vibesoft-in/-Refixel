@@ -213,6 +213,45 @@ class Notifier
     }
 
     /**
+     * Event 3B: Admin Assigns Technician -> Notify Customer with Full Technician Details
+     */
+    public static function notifyTechnicianAssignedCustomer(array $booking, array $staff): void
+    {
+        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
+        $customerEmail = !empty($booking['email']) ? $booking['email'] : ($booking['customer_email'] ?? null);
+        $customerPhone = !empty($booking['phone']) ? $booking['phone'] : ($booking['customer_phone'] ?? '');
+        $customerName  = !empty($booking['name']) ? $booking['name'] : ($booking['customer_name'] ?? 'Customer');
+
+        $data = [
+            'booking_id'     => $bId,
+            'booking_no'     => $booking['booking_no'] ?? '',
+            'customer_name'  => $customerName,
+            'customer_phone' => $customerPhone,
+            'customer_email' => $customerEmail,
+            'service_name'   => $booking['service_name'] ?? 'Home Service',
+            'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Certified Technician'),
+            'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
+            'preferred_date' => $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time' => $booking['preferred_time'] ?? 'Flexible',
+            'address'        => $booking['address'] ?? '',
+            'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
+            'login_url'      => View::fullUrl('/login'),
+        ];
+
+        if (!empty($customerEmail)) {
+            self::send('email', $customerEmail, 'technician_assigned_customer', $data);
+        }
+
+        if (!empty($customerPhone)) {
+            self::send('sms', $customerPhone, 'technician_assigned_sms', $data);
+
+            if (Env::get('WHATSAPP_ENABLED', false)) {
+                self::send('whatsapp', $customerPhone, 'technician_assigned_wa', $data);
+            }
+        }
+    }
+
+    /**
      * Event 4: Technician Accepts Job -> Notify Both Customer and Admin
      */
     public static function notifyTechnicianAccepted(array $booking, array $staff): void

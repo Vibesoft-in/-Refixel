@@ -181,6 +181,11 @@ class Workflow
                                 'name'  => $bDetails['staff_name'] ?? 'Technician',
                                 'phone' => $bDetails['staff_phone'] ?? '',
                             ]);
+                        } elseif ($newStatus === self::STATUS_ASSIGNED) {
+                            $staffUser = !empty($bDetails['staff_id']) ? \App\Models\User::find((int)$bDetails['staff_id']) : null;
+                            if ($staffUser) {
+                                Notifier::notifyTechnicianAssignedCustomer($bDetails, $staffUser);
+                            }
                         } elseif ($newStatus === self::STATUS_COMPLETED) {
                             $sDetails = !empty($bDetails['staff_name']) ? ['name' => $bDetails['staff_name']] : null;
                             Notifier::notifyJobCompleted($bDetails, $sDetails);
@@ -257,6 +262,11 @@ class Workflow
                             'name'  => $bDetails['staff_name'] ?? 'Technician',
                             'phone' => $bDetails['staff_phone'] ?? '',
                         ]);
+                    } elseif ($newStatus === self::STATUS_ASSIGNED) {
+                        $staffUser = !empty($bDetails['staff_id']) ? \App\Models\User::find((int)$bDetails['staff_id']) : null;
+                        if ($staffUser) {
+                            Notifier::notifyTechnicianAssignedCustomer($bDetails, $staffUser);
+                        }
                     } elseif ($newStatus === self::STATUS_COMPLETED) {
                         $sDetails = !empty($bDetails['staff_name']) ? ['name' => $bDetails['staff_name']] : null;
                         Notifier::notifyJobCompleted($bDetails, $sDetails);

@@ -314,6 +314,9 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
           <button type="submit" class="btn btn-brand btn-block btn-sm font-weight-bold py-2">
             <i class="fa fa-check mr-1"></i><?= !empty($booking['staff_name']) ? 'Reassign Technician' : 'Assign Technician' ?>
           </button>
+          <div class="text-muted mt-2 text-center" style="font-size: 11px; line-height: 1.3;">
+            <i class="fa fa-envelope text-success mr-1"></i>Technician & customer will automatically receive instant confirmation emails with visit details.
+          </div>
         </form>
       </div>
 
