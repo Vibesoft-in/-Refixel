@@ -320,6 +320,7 @@
         'staff'           => 0,
         'customers'       => 0,
         'gateways'        => 0,
+        'payouts_pending' => 0,
     ];
     try {
         $cRow = \App\Core\Database::fetchOne(
@@ -328,7 +329,8 @@
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending,
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status IN ('active', 'disabled')) as staff,
                 (SELECT COUNT(id) FROM users WHERE role = 'customer') as customers,
-                (SELECT COUNT(id) FROM payment_gateways WHERE is_active = 1) as gateways"
+                (SELECT COUNT(id) FROM payment_gateways WHERE is_active = 1) as gateways,
+                (SELECT COUNT(id) FROM staff_earnings WHERE is_settled = 0) as payouts_pending"
         );
         if ($cRow) {
             $saCounts['enquiries']       = (int)($cRow['enquiries'] ?? 0);
@@ -336,6 +338,7 @@
             $saCounts['staff']           = (int)($cRow['staff'] ?? 0);
             $saCounts['customers']       = (int)($cRow['customers'] ?? 0);
             $saCounts['gateways']        = (int)($cRow['gateways'] ?? 0);
+            $saCounts['payouts_pending'] = (int)($cRow['payouts_pending'] ?? 0);
         }
     } catch (\Throwable $e) {}
   ?>
@@ -394,6 +397,14 @@
         </li>
 
         <li class="nav-heading">Financial Core</li>
+        <li class="<?= str_contains($uri, '/admin/payouts') || str_contains($uri, '/superadmin/payouts') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/payouts') ?>">
+            <span class="d-flex align-items-center"><i class="fa fa-handshake-o"></i> Technician Payouts</span>
+            <?php if (!empty($saCounts['payouts_pending']) && $saCounts['payouts_pending'] > 0): ?>
+              <span class="badge badge-pill badge-warning" style="font-size: 11px;"><?= $saCounts['payouts_pending'] ?> Pending</span>
+            <?php endif; ?>
+          </a>
+        </li>
         <li class="<?= str_contains($uri, '/superadmin/gateways') ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/superadmin/gateways') ?>">
             <span class="d-flex align-items-center"><i class="fa fa-credit-card"></i> Payment Gateways</span>

@@ -309,6 +309,7 @@
         'bookings_pending' => 0,
         'reviews_pending'  => 0,
         'partner_pending'  => 0,
+        'payouts_pending'  => 0,
     ];
 
     try {
@@ -317,13 +318,15 @@
                 (SELECT COUNT(id) FROM bookings WHERE status = 'new') as enquiries_new,
                 (SELECT COUNT(id) FROM bookings WHERE status = 'accepted') as bookings_pending,
                 (SELECT COUNT(id) FROM reviews WHERE is_approved = 0) as reviews_pending,
-                (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending"
+                (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending,
+                (SELECT COUNT(id) FROM staff_earnings WHERE is_settled = 0) as payouts_pending"
         );
         if ($statsRow) {
             $sidebarCounts['enquiries_new']    = (int)($statsRow['enquiries_new'] ?? 0);
             $sidebarCounts['bookings_pending'] = (int)($statsRow['bookings_pending'] ?? 0);
             $sidebarCounts['reviews_pending']  = (int)($statsRow['reviews_pending'] ?? 0);
             $sidebarCounts['partner_pending']  = (int)($statsRow['partner_pending'] ?? 0);
+            $sidebarCounts['payouts_pending']  = (int)($statsRow['payouts_pending'] ?? 0);
         }
     } catch (\Throwable $e) {}
   ?>
@@ -403,6 +406,14 @@
         <?php endif; ?>
 
         <li class="nav-heading">Finance & Invoices</li>
+        <li class="<?= str_contains($uri, '/admin/payouts') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/payouts') ?>">
+            <span class="nav-text"><i class="fa fa-handshake-o"></i> Technician Payouts</span>
+            <?php if (!empty($sidebarCounts['payouts_pending']) && $sidebarCounts['payouts_pending'] > 0): ?>
+              <span class="nav-count-badge nav-badge-orange" title="<?= $sidebarCounts['payouts_pending'] ?> Pending Technician Payouts"><?= $sidebarCounts['payouts_pending'] ?></span>
+            <?php endif; ?>
+          </a>
+        </li>
         <li class="<?= str_contains($uri, '/admin/payments') ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/admin/payments') ?>">
             <span class="nav-text"><i class="fa fa-money"></i> Payments & Invoices</span>

@@ -174,6 +174,11 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::post('/superadmin/commissions/rules/{id}/delete', 'SuperAdmin\\CommissionController@deleteRule', ['VerifyCsrf']);
     Router::post('/superadmin/commissions/settle/{id}', 'SuperAdmin\\CommissionController@settleEarning', ['VerifyCsrf']);
     Router::get('/superadmin/commissions/simulate', 'SuperAdmin\\CommissionController@simulate');
+
+    // Technician Payouts & Settlements (Super Admin Direct Access)
+    Router::get('/superadmin/payouts', 'Admin\\PayoutController@index');
+    Router::post('/superadmin/payouts/{id}/settle', 'Admin\\PayoutController@settle', ['VerifyCsrf']);
+    Router::post('/superadmin/payouts/technicians/{id}/settle-all', 'Admin\\PayoutController@settleAll', ['VerifyCsrf']);
 });
 
 // ==========================================
@@ -237,6 +242,11 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/commissions/rules/{id}/delete', 'Admin\\CommissionController@deleteRule', ['VerifyCsrf']);
     Router::post('/admin/commissions/settle/{id}', 'Admin\\CommissionController@settleEarning', ['VerifyCsrf']);
     Router::get('/admin/commissions/simulate', 'Admin\\CommissionController@simulate');
+
+    // Technician Payouts & Settlements
+    Router::get('/admin/payouts', 'Admin\\PayoutController@index');
+    Router::post('/admin/payouts/{id}/settle', 'Admin\\PayoutController@settle', ['VerifyCsrf']);
+    Router::post('/admin/payouts/technicians/{id}/settle-all', 'Admin\\PayoutController@settleAll', ['VerifyCsrf']);
 
     // Payments & Invoices
     Router::get('/admin/payments', 'Admin\\PaymentController@index');

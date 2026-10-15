@@ -101,6 +101,14 @@ $availableMonths = $availableMonths ?? [];
             <h4 class="font-weight-bold text-success mb-1" style="font-size: 19px;">₹<?= number_format($techAmount, 2) ?></h4>
             <?php if (!empty($item['is_settled'])): ?>
               <span class="badge badge-success px-2 py-1"><i class="fa fa-check mr-1"></i>Settled</span>
+              <?php if (!empty($item['settled_method']) || !empty($item['settled_ref'])): ?>
+                <div class="text-muted small mt-1" style="font-size: 11px;">
+                  Via <strong><?= strtoupper(View::e($item['settled_method'] ?? '')) ?></strong>
+                  <?php if (!empty($item['settled_ref'])): ?>
+                    <br><span class="text-secondary">Ref: <code class="text-dark"><?= View::e($item['settled_ref']) ?></code></span>
+                  <?php endif; ?>
+                </div>
+              <?php endif; ?>
             <?php else: ?>
               <span class="badge badge-warning text-dark px-2 py-1"><i class="fa fa-clock-o mr-1"></i>Pending Payout</span>
             <?php endif; ?>
