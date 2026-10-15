@@ -935,24 +935,19 @@ class BookingController extends Controller
         ], null);
     }
 
-    public function quickEnquiry(Request $request): Response
+    public function executeEnquiryCreation(array $data): array
     {
-        $name         = trim((string)$request->input('name', ''));
-        $rawPhone     = trim((string)$request->input('phone', ''));
-        $rawEmail     = trim((string)$request->input('email', ''));
-        $serviceInput = trim((string)$request->input('service', ''));
-        $location     = trim((string)($request->input('location') ?? $request->input('detected_location') ?? ''));
-        $message      = trim((string)$request->input('message', ''));
+        $name         = trim((string)($data['name'] ?? ''));
+        $rawPhone     = trim((string)($data['phone'] ?? ''));
+        $rawEmail     = trim((string)($data['email'] ?? ''));
+        $serviceInput = trim((string)($data['service'] ?? ''));
+        $location     = trim((string)($data['location'] ?? $data['detected_location'] ?? ''));
+        $message      = trim((string)($data['message'] ?? ''));
 
         // Clean phone number (strip spaces, symbols, +91)
         $cleanPhone = preg_replace('/\D/', '', $rawPhone);
         if (str_starts_with($cleanPhone, '91') && strlen($cleanPhone) === 12) {
             $cleanPhone = substr($cleanPhone, 2);
-        }
-
-        if (empty($name) || empty($cleanPhone)) {
-            View::setFlash('error', 'Please enter your name and a valid phone number.');
-            return $this->redirect('/#homeContactSection');
         }
 
         // Resolve service ID from name, slug or keyword
@@ -1039,7 +1034,7 @@ class BookingController extends Controller
             'pincode'        => null,
             'preferred_date' => date('Y-m-d'),
             'preferred_time' => 'Immediate / ASAP',
-            'issue_details'  => $message ?: 'Quick enquiry submitted from homepage',
+            'issue_details'  => $message ?: 'Quick enquiry submitted from homepage (Verified Email)',
             'status'         => 'new',
             'priority'       => 'high',
         ]);
@@ -1062,18 +1057,18 @@ class BookingController extends Controller
         // Trigger Notifications
         try {
             $record = [
-                'id'             => $bookingId,
-                'booking_id'     => $bookingId,
-                'booking_no'     => $bookingNo,
-                'service_name'   => $service ? $service['name'] : ($serviceInput ?: 'Home Service'),
-                'name'           => $name,
-                'phone'          => $cleanPhone,
-                'email'          => !empty($rawEmail) ? $rawEmail : null,
-                'address'        => $location ?: 'Service Area',
-                'preferred_date' => date('Y-m-d'),
-                'preferred_time' => 'Immediate / ASAP',
-                'message'        => $message,
-                'is_new_customer'=> $isNewCustomer,
+                'id'                 => $bookingId,
+                'booking_id'         => $bookingId,
+                'booking_no'         => $bookingNo,
+                'service_name'       => $service ? $service['name'] : ($serviceInput ?: 'Home Service'),
+                'name'               => $name,
+                'phone'              => $cleanPhone,
+                'email'              => !empty($rawEmail) ? $rawEmail : null,
+                'address'            => $location ?: 'Service Area',
+                'preferred_date'     => date('Y-m-d'),
+                'preferred_time'     => 'Immediate / ASAP',
+                'message'            => $message,
+                'is_new_customer'    => $isNewCustomer,
                 'login_url'          => View::fullUrl('/login'),
                 'admin_url'          => View::fullUrl('/admin/bookings/' . $bookingId),
                 'generated_password' => $generatedPassword,
@@ -1085,7 +1080,221 @@ class BookingController extends Controller
             Logger::error("Enquiry notification note: " . $e->getMessage());
         }
 
-        return $this->redirect('/enquiry-success?booking_no=' . urlencode($bookingNo));
+        return [
+            'booking_id' => $bookingId,
+            'booking_no' => $bookingNo,
+        ];
+    }
+
+    public function quickEnquiry(Request $request): Response
+    {
+        $name     = trim((string)$request->input('name', ''));
+        $rawPhone = trim((string)$request->input('phone', ''));
+        $rawEmail = trim((string)$request->input('email', ''));
+        $otp      = trim((string)$request->input('otp', ''));
+
+        // If AJAX request, delegate to OTP sending
+        if ($request->isAjax() || $request->isJson()) {
+            return $this->apiSendEnquiryOtp($request);
+        }
+
+        // Non-AJAX fallback if OTP was submitted
+        if (!empty($otp) && !empty($_SESSION['enquiry_otp']['otp_hash']) && password_verify($otp, $_SESSION['enquiry_otp']['otp_hash'])) {
+            $formData = $_SESSION['enquiry_otp']['data'] ?? $request->all();
+            unset($_SESSION['enquiry_otp']);
+            $res = $this->executeEnquiryCreation($formData);
+            return $this->redirect('/enquiry-success?booking_no=' . urlencode($res['booking_no']));
+        }
+
+        if (empty($name) || empty($rawPhone)) {
+            View::setFlash('error', 'Please enter your name and a valid phone number.');
+            return $this->redirect('/#homeContactSection');
+        }
+
+        // If email provided without OTP, initiate OTP and notify
+        if (!empty($rawEmail)) {
+            $this->apiSendEnquiryOtp($request);
+            View::setFlash('info', 'Verification code sent! Please verify your email.');
+            return $this->redirect('/#homeContactSection');
+        }
+
+        // Fallback direct creation
+        $res = $this->executeEnquiryCreation($request->all());
+        return $this->redirect('/enquiry-success?booking_no=' . urlencode($res['booking_no']));
+    }
+
+    public function apiSendEnquiryOtp(Request $request): Response
+    {
+        $name         = trim((string)$request->input('name', ''));
+        $rawPhone     = trim((string)$request->input('phone', ''));
+        $rawEmail     = trim((string)$request->input('email', ''));
+        $serviceInput = trim((string)$request->input('service', ''));
+        $location     = trim((string)($request->input('location') ?? $request->input('detected_location') ?? ''));
+        $message      = trim((string)$request->input('message', ''));
+
+        $cleanPhone = preg_replace('/\D/', '', $rawPhone);
+        if (str_starts_with($cleanPhone, '91') && strlen($cleanPhone) === 12) {
+            $cleanPhone = substr($cleanPhone, 2);
+        }
+
+        if (empty($name)) {
+            return Response::json(['status' => 'error', 'message' => 'Please enter your name.'], 422);
+        }
+        if (empty($cleanPhone) || strlen($cleanPhone) < 10) {
+            return Response::json(['status' => 'error', 'message' => 'Please enter a valid 10-digit mobile number.'], 422);
+        }
+        if (empty($rawEmail) || !filter_var($rawEmail, FILTER_VALIDATE_EMAIL)) {
+            return Response::json(['status' => 'error', 'message' => 'Please enter a valid email address to receive the verification OTP.'], 422);
+        }
+
+        // Generate 6-digit numeric OTP
+        $otp = (string)random_int(100000, 999999);
+
+        // Store pending enquiry in session
+        $_SESSION['enquiry_otp'] = [
+            'otp_hash'   => password_hash($otp, PASSWORD_BCRYPT),
+            'email'      => $rawEmail,
+            'expires_at' => time() + 600, // 10 minutes
+            'resend_at'  => time() + 30,  // 30 seconds cooldown
+            'attempts'   => 0,
+            'data'       => [
+                'name'              => $name,
+                'phone'             => $cleanPhone,
+                'email'             => $rawEmail,
+                'service'           => $serviceInput,
+                'location'          => $location,
+                'message'           => $message,
+                'detected_location' => $location,
+            ],
+        ];
+
+        // Send OTP email
+        $sent = false;
+        try {
+            $sent = Notifier::notifyEnquiryOtp($rawEmail, $otp, [
+                'name'    => $name,
+                'service' => $serviceInput,
+                'phone'   => $cleanPhone,
+            ]);
+        } catch (\Throwable $e) {
+            Logger::error("Enquiry OTP dispatch error: " . $e->getMessage());
+        }
+
+        // Mask email for display: r***@domain.com
+        $parts = explode('@', $rawEmail);
+        $namePart = $parts[0];
+        $domainPart = $parts[1] ?? '';
+        $maskedName = strlen($namePart) > 2 ? substr($namePart, 0, 1) . str_repeat('*', max(1, strlen($namePart) - 2)) . substr($namePart, -1) : substr($namePart, 0, 1) . '***';
+        $maskedEmail = $maskedName . '@' . $domainPart;
+
+        return Response::json([
+            'status'       => 'success',
+            'message'      => 'A 6-digit verification code has been sent to ' . $rawEmail,
+            'masked_email' => $maskedEmail,
+            'email'        => $rawEmail,
+            'cooldown'     => 30,
+        ]);
+    }
+
+    public function apiResendEnquiryOtp(Request $request): Response
+    {
+        $sessionOtp = $_SESSION['enquiry_otp'] ?? null;
+        if (!$sessionOtp || empty($sessionOtp['email'])) {
+            return Response::json([
+                'status'  => 'error',
+                'message' => 'Verification session expired. Please submit the enquiry form again.'
+            ], 400);
+        }
+
+        $now = time();
+        if ($now < ($sessionOtp['resend_at'] ?? 0)) {
+            $remain = (int)($sessionOtp['resend_at'] - $now);
+            return Response::json([
+                'status'  => 'error',
+                'message' => "Please wait {$remain} seconds before requesting a new OTP."
+            ], 429);
+        }
+
+        $otp = (string)random_int(100000, 999999);
+        $_SESSION['enquiry_otp']['otp_hash']   = password_hash($otp, PASSWORD_BCRYPT);
+        $_SESSION['enquiry_otp']['expires_at'] = $now + 600;
+        $_SESSION['enquiry_otp']['resend_at']  = $now + 30;
+        $_SESSION['enquiry_otp']['attempts']   = 0;
+
+        $email = $sessionOtp['email'];
+        $data  = $sessionOtp['data'] ?? [];
+
+        try {
+            Notifier::notifyEnquiryOtp($email, $otp, $data);
+        } catch (\Throwable $e) {
+            Logger::error("Resend Enquiry OTP dispatch error: " . $e->getMessage());
+        }
+
+        return Response::json([
+            'status'   => 'success',
+            'message'  => 'A fresh verification code has been sent to ' . $email . '.',
+            'cooldown' => 30,
+        ]);
+    }
+
+    public function apiVerifyEnquiryOtp(Request $request): Response
+    {
+        $sessionOtp = $_SESSION['enquiry_otp'] ?? null;
+        if (!$sessionOtp || empty($sessionOtp['email'])) {
+            return Response::json([
+                'status'  => 'error',
+                'message' => 'Verification session expired. Please fill out the form again.'
+            ], 400);
+        }
+
+        $now = time();
+        if ($now > ($sessionOtp['expires_at'] ?? 0)) {
+            return Response::json([
+                'status'  => 'error',
+                'message' => 'OTP has expired. Please click Resend OTP to receive a fresh code.'
+            ], 400);
+        }
+
+        if (($sessionOtp['attempts'] ?? 0) >= 5) {
+            unset($_SESSION['enquiry_otp']);
+            return Response::json([
+                'status'  => 'error',
+                'message' => 'Too many invalid attempts. Please submit the enquiry form again.'
+            ], 400);
+        }
+
+        $inputOtp = trim((string)$request->input('otp', ''));
+        $cleanOtp = preg_replace('/\D/', '', $inputOtp);
+
+        if (empty($cleanOtp) || strlen($cleanOtp) !== 6) {
+            return Response::json([
+                'status'  => 'error',
+                'message' => 'Please enter the complete 6-digit OTP code.'
+            ], 422);
+        }
+
+        if (!password_verify($cleanOtp, $sessionOtp['otp_hash'])) {
+            $_SESSION['enquiry_otp']['attempts'] = ($sessionOtp['attempts'] ?? 0) + 1;
+            $remaining = 5 - $_SESSION['enquiry_otp']['attempts'];
+            return Response::json([
+                'status'  => 'error',
+                'message' => "Invalid OTP code. Please check your email and enter the correct code. ({$remaining} attempt(s) remaining)",
+                'remaining_attempts' => $remaining,
+            ], 400);
+        }
+
+        // Verified! Execute enquiry creation
+        $formData = $sessionOtp['data'] ?? [];
+        unset($_SESSION['enquiry_otp']);
+
+        $res = $this->executeEnquiryCreation($formData);
+
+        return Response::json([
+            'status'       => 'success',
+            'message'      => 'Enquiry successfully verified and submitted!',
+            'booking_no'   => $res['booking_no'],
+            'redirect_url' => View::url('/enquiry-success?booking_no=' . urlencode($res['booking_no'])),
+        ]);
     }
 
     public function enquirySuccess(Request $request): Response

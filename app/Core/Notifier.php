@@ -500,4 +500,19 @@ class Notifier
             self::send('email', $adminEmail, 'admin_new_partner', $staffData);
         }
     }
+
+    /**
+     * Event 16: Customer Enquiry Email OTP Verification
+     */
+    public static function notifyEnquiryOtp(string $email, string $otp, array $enquiryData = []): bool
+    {
+        $data = [
+            'otp'     => $otp,
+            'email'   => $email,
+            'name'    => $enquiryData['name'] ?? 'Customer',
+            'service' => $enquiryData['service'] ?? 'Home Maintenance Service',
+            'phone'   => $enquiryData['phone'] ?? '',
+        ];
+        return self::send('email', $email, 'enquiry_email_otp', $data);
+    }
 }

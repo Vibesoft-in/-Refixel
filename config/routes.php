@@ -56,6 +56,9 @@ Router::post('/book/verify-payment', 'BookingController@verifyPayment');
 Router::get('/book-success', 'BookingController@success');
 Router::post('/quick-enquiry', 'BookingController@quickEnquiry');
 Router::get('/enquiry-success', 'BookingController@enquirySuccess');
+Router::post('/api/enquiry/send-otp', 'BookingController@apiSendEnquiryOtp');
+Router::post('/api/enquiry/resend-otp', 'BookingController@apiResendEnquiryOtp');
+Router::post('/api/enquiry/verify-otp', 'BookingController@apiVerifyEnquiryOtp');
 
 Router::get('/cart', 'BookingController@cart');
 Router::get('/cart.php', 'BookingController@cart');

@@ -4286,6 +4286,616 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 </section>
 
+<!-- ========================================== -->
+<!-- ENQUIRY EMAIL OTP VERIFICATION MODAL -->
+<!-- ========================================== -->
+<div class="ref_otp_modal_overlay" id="enquiryOtpModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="enquiryOtpModalTitle">
+  <div class="ref_otp_modal_backdrop" id="enquiryOtpBackdrop"></div>
+  <div class="ref_otp_modal_card">
+    <button type="button" class="ref_otp_close_btn" id="enquiryOtpCloseBtn" aria-label="Close verification modal">&times;</button>
+    
+    <div class="ref_otp_card_inner text-center">
+      <!-- Animated Icon Header -->
+      <div class="ref_otp_icon_circle">
+        <i class="fa fa-envelope-o"></i>
+        <span class="ref_otp_lock_badge"><i class="fa fa-shield"></i></span>
+      </div>
+
+      <div class="ref_otp_badge_pill"><i class="fa fa-check-circle mr-1"></i> Email Verification</div>
+      <h3 class="ref_otp_title" id="enquiryOtpModalTitle">Enter Verification OTP</h3>
+      <p class="ref_otp_subtitle">
+        We've sent a 6-digit confirmation code to:<br>
+        <strong id="enquiryOtpTargetEmail" class="ref_otp_email_highlight">your.email@example.com</strong>
+      </p>
+
+      <!-- Alert Notification Box -->
+      <div id="enquiryOtpAlert" class="ref_otp_alert" style="display: none;"></div>
+
+      <!-- 6-Digit OTP Input Boxes -->
+      <div class="ref_otp_inputs_row" id="enquiryOtpDigitsContainer">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="0" autocomplete="off">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="1" autocomplete="off">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="2" autocomplete="off">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="3" autocomplete="off">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="4" autocomplete="off">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="5" autocomplete="off">
+      </div>
+
+      <!-- Resend Timer -->
+      <div class="ref_otp_resend_box">
+        <span id="enquiryOtpTimerWrap"><i class="fa fa-clock-o text-muted mr-1"></i> Resend code in <strong id="enquiryOtpCountdown">30</strong>s</span>
+        <button type="button" id="enquiryOtpResendBtn" class="ref_otp_resend_link" style="display: none;">
+          <i class="fa fa-refresh mr-1"></i> Resend Verification Code
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="ref_otp_actions">
+        <button type="button" class="btn_verify_enquiry_otp" id="enquiryOtpVerifyBtn">
+          <span class="btn_verify_label">Verify & Submit Enquiry</span> <i class="fa fa-arrow-right ml-1"></i>
+        </button>
+        <button type="button" class="btn_cancel_enquiry_otp" id="enquiryOtpCancelBtn">
+          <i class="fa fa-pencil mr-1"></i> Edit Details / Change Email
+        </button>
+      </div>
+
+      <div class="ref_otp_footer_note">
+        <i class="fa fa-lock text-success mr-1"></i> Verified customer enquiries receive priority dispatch response.
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.ref_otp_modal_overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.ref_otp_modal_backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 28, 51, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ref_otp_modal_card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(242, 91, 41, 0.15);
+  overflow: hidden;
+  animation: refOtpPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes refOtpPopIn {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes refOtpShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.ref_otp_close_btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  z-index: 3;
+}
+.ref_otp_close_btn:hover { color: #0f172a; }
+.ref_otp_card_inner {
+  padding: 34px 28px 26px;
+}
+.ref_otp_icon_circle {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  color: #f25b29;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  position: relative;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 20px rgba(242, 91, 41, 0.18);
+}
+.ref_otp_lock_badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+.ref_otp_badge_pill {
+  display: inline-block;
+  background: #ffedd5;
+  color: #c2410c;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.ref_otp_title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0a1c33;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+.ref_otp_subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+.ref_otp_email_highlight {
+  color: #0a1c33;
+  word-break: break-all;
+  font-weight: 700;
+}
+.ref_otp_alert {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: left;
+}
+.ref_otp_alert.alert_error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+.ref_otp_alert.alert_success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+.ref_otp_inputs_row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.ref_otp_digit {
+  width: 48px;
+  height: 56px;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #0a1c33;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: Monaco, Menlo, Consolas, monospace;
+}
+.ref_otp_digit:focus {
+  border-color: #f25b29;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(242, 91, 41, 0.16);
+  transform: translateY(-2px);
+}
+.ref_otp_digit.has_value {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+.ref_otp_resend_box {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 22px;
+}
+.ref_otp_resend_link {
+  background: none;
+  border: none;
+  color: #f25b29;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13.5px;
+  text-decoration: underline;
+  transition: color 0.15s ease;
+}
+.ref_otp_resend_link:hover { color: #d94819; }
+.ref_otp_actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn_verify_enquiry_otp {
+  background: linear-gradient(135deg, #f25b29 0%, #ff7337 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 800;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 16px rgba(242, 91, 41, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn_verify_enquiry_otp:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(242, 91, 41, 0.45);
+}
+.btn_verify_enquiry_otp:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn_cancel_enquiry_otp {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.btn_cancel_enquiry_otp:hover { color: #0a1c33; }
+.ref_otp_footer_note {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+@media (max-width: 480px) {
+  .ref_otp_inputs_row { gap: 6px; }
+  .ref_otp_digit { width: 42px; height: 50px; font-size: 20px; }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var form = document.getElementById("homeContactForm");
+  var modal = document.getElementById("enquiryOtpModal");
+  if (!form || !modal) return;
+
+  var closeBtn = document.getElementById("enquiryOtpCloseBtn");
+  var backdrop = document.getElementById("enquiryOtpBackdrop");
+  var cancelBtn = document.getElementById("enquiryOtpCancelBtn");
+  var verifyBtn = document.getElementById("enquiryOtpVerifyBtn");
+  var resendBtn = document.getElementById("enquiryOtpResendBtn");
+  var targetEmailEl = document.getElementById("enquiryOtpTargetEmail");
+  var alertBox = document.getElementById("enquiryOtpAlert");
+  var timerWrap = document.getElementById("enquiryOtpTimerWrap");
+  var countdownEl = document.getElementById("enquiryOtpCountdown");
+  var digitInputs = Array.from(document.querySelectorAll(".ref_otp_digit"));
+  var sendBtn = form.querySelector('button[type="submit"]');
+
+  var countdownInterval = null;
+  var currentEmail = '';
+
+  function getCsrfToken() {
+    var inp = form.querySelector('input[name="_csrf"]');
+    return inp ? inp.value : '';
+  }
+
+  function showAlert(msg, isSuccess) {
+    alertBox.style.display = "block";
+    alertBox.className = "ref_otp_alert " + (isSuccess ? "alert_success" : "alert_error");
+    alertBox.innerHTML = (isSuccess ? '<i class="fa fa-check-circle mr-1"></i> ' : '<i class="fa fa-exclamation-circle mr-1"></i> ') + msg;
+  }
+
+  function hideAlert() {
+    alertBox.style.display = "none";
+    alertBox.innerHTML = "";
+  }
+
+  function startCountdown(seconds) {
+    clearInterval(countdownInterval);
+    var remaining = seconds || 30;
+    timerWrap.style.display = "inline";
+    resendBtn.style.display = "none";
+    countdownEl.textContent = remaining;
+
+    countdownInterval = setInterval(function () {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        timerWrap.style.display = "none";
+        resendBtn.style.display = "inline-block";
+      } else {
+        countdownEl.textContent = remaining;
+      }
+    }, 1000);
+  }
+
+  function openModal(email, maskedEmail) {
+    currentEmail = email;
+    targetEmailEl.textContent = email;
+    hideAlert();
+    digitInputs.forEach(function (inp) {
+      inp.value = "";
+      inp.classList.remove("has_value");
+    });
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+    startCountdown(30);
+    setTimeout(function () {
+      if (digitInputs[0]) digitInputs[0].focus();
+    }, 150);
+  }
+
+  function closeModal() {
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+    clearInterval(countdownInterval);
+    hideAlert();
+  }
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (backdrop) backdrop.addEventListener("click", closeModal);
+  if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
+
+  // Form Submission Intercept -> Send OTP to Email
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var nameInput = form.querySelector('input[name="name"]');
+    var phoneInput = form.querySelector('input[name="phone"]');
+    var emailInput = form.querySelector('input[name="email"]');
+    var serviceInput = form.querySelector('select[name="service"]');
+    var locationInput = form.querySelector('input[name="location"]');
+    var messageInput = form.querySelector('textarea[name="message"]');
+
+    var nameVal = (nameInput ? nameInput.value : '').trim();
+    var phoneVal = (phoneInput ? phoneInput.value : '').trim();
+    var emailVal = (emailInput ? emailInput.value : '').trim();
+    var serviceVal = (serviceInput ? serviceInput.value : '').trim();
+    var locationVal = (locationInput ? locationInput.value : '').trim();
+    var messageVal = (messageInput ? messageInput.value : '').trim();
+
+    if (!nameVal) {
+      alert("Please enter your name.");
+      if (nameInput) nameInput.focus();
+      return;
+    }
+    if (!phoneVal || phoneVal.replace(/\D/g, '').length < 10) {
+      alert("Please enter a valid 10-digit mobile number.");
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailVal || !emailRegex.test(emailVal)) {
+      alert("Please enter a valid email address to receive the verification OTP.");
+      if (emailInput) emailInput.focus();
+      return;
+    }
+    if (!serviceVal) {
+      alert("Please select a service category.");
+      if (serviceInput) serviceInput.focus();
+      return;
+    }
+    if (!locationVal) {
+      alert("Please enter your service location or tap Auto-Detect.");
+      if (locationInput) locationInput.focus();
+      return;
+    }
+    if (!messageVal) {
+      alert("Please provide brief details of your requirement.");
+      if (messageInput) messageInput.focus();
+      return;
+    }
+
+    var originalBtnHtml = sendBtn.innerHTML;
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Sending Verification OTP...';
+
+    var formData = new FormData(form);
+
+    fetch('<?= \App\Core\View::url("/api/enquiry/send-otp") ?>', {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = originalBtnHtml;
+
+      if (data.status === 'success') {
+        openModal(emailVal, data.masked_email || emailVal);
+      } else {
+        alert(data.message || 'Unable to send OTP. Please try again.');
+      }
+    })
+    .catch(function (err) {
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = originalBtnHtml;
+      alert('Network error while requesting verification OTP. Please try again.');
+    });
+  });
+
+  // Digit Input auto-advance & paste handler
+  digitInputs.forEach(function (input, idx) {
+    input.addEventListener("input", function (e) {
+      var val = this.value.replace(/\D/g, '');
+      this.value = val ? val.charAt(val.length - 1) : '';
+      if (this.value) {
+        this.classList.add("has_value");
+        if (idx < digitInputs.length - 1) {
+          digitInputs[idx + 1].focus();
+        }
+      } else {
+        this.classList.remove("has_value");
+      }
+      checkAutoSubmit();
+    });
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Backspace" && !this.value && idx > 0) {
+        digitInputs[idx - 1].focus();
+      } else if (e.key === "ArrowLeft" && idx > 0) {
+        digitInputs[idx - 1].focus();
+      } else if (e.key === "ArrowRight" && idx < digitInputs.length - 1) {
+        digitInputs[idx + 1].focus();
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        submitOtpVerification();
+      }
+    });
+
+    input.addEventListener("paste", function (e) {
+      e.preventDefault();
+      var pasted = (e.clipboardData || window.clipboardData).getData('text');
+      var digits = (pasted || '').replace(/\D/g, '').slice(0, 6);
+      if (digits.length) {
+        digits.split('').forEach(function (d, i) {
+          if (digitInputs[i]) {
+            digitInputs[i].value = d;
+            digitInputs[i].classList.add("has_value");
+          }
+        });
+        var targetIdx = Math.min(digits.length, digitInputs.length - 1);
+        digitInputs[targetIdx].focus();
+        checkAutoSubmit();
+      }
+    });
+  });
+
+  function getCombinedOtp() {
+    return digitInputs.map(function (inp) { return inp.value; }).join('').trim();
+  }
+
+  function checkAutoSubmit() {
+    var code = getCombinedOtp();
+    if (code.length === 6) {
+      submitOtpVerification();
+    }
+  }
+
+  function submitOtpVerification() {
+    var code = getCombinedOtp();
+    if (code.length !== 6) {
+      showAlert("Please enter all 6 digits of the verification code.", false);
+      return;
+    }
+
+    hideAlert();
+    verifyBtn.disabled = true;
+    var originalVerifyHtml = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Verifying Code...';
+
+    var bodyPayload = new FormData();
+    bodyPayload.append('otp', code);
+    bodyPayload.append('_csrf', getCsrfToken());
+
+    fetch('<?= \App\Core\View::url("/api/enquiry/verify-otp") ?>', {
+      method: 'POST',
+      body: bodyPayload,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.status === 'success') {
+        showAlert("OTP verified successfully! Redirecting to confirmation...", true);
+        verifyBtn.innerHTML = '<i class="fa fa-check-circle mr-1"></i> Verified & Confirmed!';
+        verifyBtn.style.background = "#16a34a";
+        setTimeout(function () {
+          window.location.href = data.redirect_url || ('<?= \App\Core\View::url("/enquiry-success") ?>?booking_no=' + encodeURIComponent(data.booking_no || ''));
+        }, 600);
+      } else {
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = originalVerifyHtml;
+        showAlert(data.message || "Invalid OTP code. Please try again.", false);
+        var container = document.getElementById("enquiryOtpDigitsContainer");
+        if (container) {
+          container.style.animation = "refOtpShake 0.4s ease";
+          setTimeout(function () { container.style.animation = ""; }, 400);
+        }
+      }
+    })
+    .catch(function (err) {
+      verifyBtn.disabled = false;
+      verifyBtn.innerHTML = originalVerifyHtml;
+      showAlert("Network error during verification. Please try again.", false);
+    });
+  }
+
+  if (verifyBtn) verifyBtn.addEventListener("click", submitOtpVerification);
+
+  // Resend OTP
+  if (resendBtn) {
+    resendBtn.addEventListener("click", function () {
+      resendBtn.disabled = true;
+      var origText = resendBtn.innerHTML;
+      resendBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Resending OTP...';
+
+      var bodyPayload = new FormData();
+      bodyPayload.append('_csrf', getCsrfToken());
+
+      fetch('<?= \App\Core\View::url("/api/enquiry/resend-otp") ?>', {
+        method: 'POST',
+        body: bodyPayload,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = origText;
+
+        if (data.status === 'success') {
+          showAlert("A fresh OTP code has been dispatched to your email!", true);
+          startCountdown(data.cooldown || 30);
+          digitInputs.forEach(function (inp) {
+            inp.value = "";
+            inp.classList.remove("has_value");
+          });
+          if (digitInputs[0]) digitInputs[0].focus();
+        } else {
+          showAlert(data.message || "Could not resend OTP right now.", false);
+        }
+      })
+      .catch(function () {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = origText;
+        showAlert("Network error resending OTP.", false);
+      });
+    });
+  }
+});
+</script>
+
 <!-- 08. Service Location Section ("Drop your location in one click.") -->
 <section class="home_location_section" id="locationSection">
   <div class="container">
