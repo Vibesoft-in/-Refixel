@@ -120,9 +120,11 @@ class PaymentController extends Controller
         }
 
         return $this->render('admin.payments.invoice', [
-            'title'   => "GST Invoice #{$invoice['invoice_no']} | REFIXEL Admin",
-            'invoice' => $invoice,
-        ], 'admin');
+            'title'     => "GST Invoice #{$invoice['invoice_no']} | REFIXEL Admin",
+            'invoice'   => $invoice,
+            'backUrl'   => View::url('/admin/payments'),
+            'backLabel' => 'Back to Payments',
+        ], 'invoice');
     }
 
     public function refundPayment(Request $request, string $id): Response

@@ -75,9 +75,11 @@ class AccountController extends Controller
         }
 
         return $this->render('customer.account.invoice-detail', [
-            'title'   => "GST Invoice #{$invoice['invoice_no']} | REFIXEL",
-            'invoice' => $invoice,
-        ], $request->isAjax() ? null : 'customer_account');
+            'title'     => "GST Invoice #{$invoice['invoice_no']} | REFIXEL",
+            'invoice'   => $invoice,
+            'backUrl'   => \App\Core\View::url('/account/invoices'),
+            'backLabel' => 'Back to Invoices',
+        ], $request->isAjax() ? null : 'invoice');
     }
 
     public function cancelBooking(Request $request, string $id): Response
