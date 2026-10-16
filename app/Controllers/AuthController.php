@@ -279,7 +279,12 @@ class AuthController extends Controller
             'must_change_password' => 0,
         ];
         if (($user['role'] ?? '') === 'admin') {
-            $updateData['plain_password'] = (string)$request->input('new_password');
+            try {
+                $col = \App\Core\Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
+                if ($col) {
+                    $updateData['plain_password'] = (string)$request->input('new_password');
+                }
+            } catch (\Throwable $ignored) {}
         }
 
         User::update($user['id'], $updateData);

@@ -518,8 +518,22 @@ class DashboardController extends Controller
 
     public function admins(Request $request): Response
     {
+        $hasPlain = true;
+        try {
+            $col = Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
+            if (!$col) {
+                Database::query("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) NULL DEFAULT NULL AFTER password_hash");
+                $col = Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
+            }
+            $hasPlain = (bool)$col;
+        } catch (\Throwable $e) {
+            $hasPlain = false;
+        }
+
+        $selectPlain = $hasPlain ? "plain_password," : "NULL as plain_password,";
+
         $admins = Database::fetchAll(
-            "SELECT id, role, name, email, phone, plain_password, status, last_login_at, created_at 
+            "SELECT id, role, name, email, phone, {$selectPlain} status, last_login_at, created_at 
              FROM users 
              WHERE role IN ('admin', 'super_admin') 
              ORDER BY (role = 'super_admin') DESC, id ASC"
@@ -561,16 +575,24 @@ class DashboardController extends Controller
         }
 
         try {
-            User::create([
+            $userData = [
                 'role'          => $role,
                 'name'          => $name,
                 'email'         => !empty($email) ? $email : null,
                 'phone'         => !empty($phone) ? $phone : null,
                 'password_hash' => password_hash($password, PASSWORD_BCRYPT),
-                'plain_password'=> $password,
                 'status'        => 'active',
                 'must_change_password' => 0,
-            ]);
+            ];
+
+            try {
+                $col = Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
+                if ($col) {
+                    $userData['plain_password'] = $password;
+                }
+            } catch (\Throwable $ignored) {}
+
+            User::create($userData);
 
             // Automatically email login credentials to newly created admin
             if (!empty($email)) {
@@ -624,10 +646,18 @@ class DashboardController extends Controller
         }
 
         try {
-            User::update($adminId, [
-                'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
-                'plain_password' => $password,
-            ]);
+            $updateData = [
+                'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+            ];
+
+            try {
+                $col = Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
+                if ($col) {
+                    $updateData['plain_password'] = $password;
+                }
+            } catch (\Throwable $ignored) {}
+
+            User::update($adminId, $updateData);
 
             // Automatically email updated login credentials if email exists
             if (!empty($admin['email'])) {

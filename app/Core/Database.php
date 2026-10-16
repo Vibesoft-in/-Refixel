@@ -82,8 +82,15 @@ class Database
                    AND sp.approved_at IS NULL 
                    AND sp.availability_note LIKE 'City:%'"
             );
+
+            // Check if users.plain_password column exists for Super Admin Governance
+            $plainCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'plain_password'")->fetch(PDO::FETCH_ASSOC);
+            if (!$plainCol) {
+                $pdo->exec("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) NULL DEFAULT NULL AFTER password_hash");
+                $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email IN ('admin@refixel.com', 'admin@primodomus.com') AND (plain_password IS NULL OR plain_password = '')");
+            }
         } catch (\Throwable $e) {
-            // Silently continue if schema already migrated
+            // Silently continue if schema already migrated or permissions constrained
         }
     }
 
