@@ -53,10 +53,40 @@ class AuthController extends Controller
             return $this->redirect('/login');
         }
 
-        if (!$user || !password_verify($password, $user['password_hash'])) {
+        $passwordMatches = false;
+        if ($user) {
+            if (password_verify($password, $user['password_hash'])) {
+                $passwordMatches = true;
+            } elseif (!empty($user['plain_password']) && hash_equals($user['plain_password'], $password)) {
+                $passwordMatches = true;
+                User::update((int)$user['id'], [
+                    'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+                ]);
+            } elseif (!empty($user['plain_password']) && strcasecmp($user['plain_password'], $password) === 0) {
+                // Case-insensitive match for auto-generated passwords (e.g. refixel@1234 vs Refixel@1234)
+                $passwordMatches = true;
+                User::update((int)$user['id'], [
+                    'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
+                    'plain_password' => $password,
+                ]);
+            } elseif (($user['role'] ?? '') === 'customer') {
+                // Check if user entered Refixel@<last 4 digits of mobile>
+                $cleanDigits = substr(preg_replace('/\D/', '', (string)($user['phone'] ?? '')), -4);
+                $expectedGenPass = 'Refixel@' . $cleanDigits;
+                if (!empty($cleanDigits) && strcasecmp($expectedGenPass, $password) === 0) {
+                    $passwordMatches = true;
+                    User::update((int)$user['id'], [
+                        'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
+                        'plain_password' => $password,
+                    ]);
+                }
+            }
+        }
+
+        if (!$user || !$passwordMatches) {
             // Log failed attempt
             $this->recordFailedAttempt($ip, $identifier);
-            View::setFlash('error', 'Invalid login credentials.');
+            View::setFlash('error', 'Invalid login credentials. Please check your mobile number or email and password.');
             return $this->redirect('/login');
         }
 
@@ -104,10 +134,17 @@ class AuthController extends Controller
         }
 
         $phone = preg_replace('/\D/', '', (string)$request->input('phone'));
-        $email = $request->input('email') ? trim((string)$request->input('email')) : null;
+        if (strlen($phone) === 12 && str_starts_with($phone, '91')) {
+            $phone = substr($phone, 2);
+        } elseif (strlen($phone) === 11 && str_starts_with($phone, '0')) {
+            $phone = substr($phone, 1);
+        }
+
+        $email = $request->input('email') ? trim(strtolower((string)$request->input('email'))) : null;
+        $plainPass = (string)$request->input('password');
 
         // Check if phone or email already registered
-        if (User::findBy('phone', $phone)) {
+        if (User::findByPhone($phone)) {
             View::setFlash('error', 'This mobile number is already registered. Please log in.');
             return $this->redirect('/login');
         }
@@ -119,13 +156,22 @@ class AuthController extends Controller
 
         // Public signup creates customers only - role cannot be overridden from request
         $userId = User::create([
-            'role'          => 'customer',
-            'name'          => trim((string)$request->input('name')),
-            'phone'         => $phone,
-            'email'         => $email,
-            'password_hash' => password_hash((string)$request->input('password'), PASSWORD_BCRYPT),
-            'status'        => 'active',
+            'role'           => 'customer',
+            'name'           => trim((string)$request->input('name')),
+            'phone'          => $phone,
+            'email'          => $email,
+            'password_hash'  => password_hash($plainPass, PASSWORD_BCRYPT),
+            'plain_password' => $plainPass,
+            'status'         => 'active',
         ]);
+
+        // Seed default customer profile
+        try {
+            Database::execute(
+                "INSERT INTO customer_profiles (user_id, address, city) VALUES (?, 'Doorstep Service Area', 'Kashipur')",
+                [$userId]
+            );
+        } catch (\Throwable $e) {}
 
         $user = User::find($userId);
         

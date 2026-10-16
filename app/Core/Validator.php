@@ -51,6 +51,11 @@ class Validator
                     }
                 } elseif ($rule === 'phone') {
                     $cleaned = preg_replace('/\D/', '', (string)$value);
+                    if (strlen($cleaned) === 12 && str_starts_with($cleaned, '91')) {
+                        $cleaned = substr($cleaned, 2);
+                    } elseif (strlen($cleaned) === 11 && str_starts_with($cleaned, '0')) {
+                        $cleaned = substr($cleaned, 1);
+                    }
                     if (!preg_match('/^[6-9]\d{9}$/', $cleaned)) {
                         $this->addError($field, "Please enter a valid 10-digit mobile number.");
                     }

@@ -4640,7 +4640,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1000);
   }
 
-  function openModal(email, maskedEmail) {
+  function openModal(email, maskedEmail, debugOtp, emailSent) {
     currentEmail = email;
     targetEmailEl.textContent = email;
     hideAlert();
@@ -4648,6 +4648,18 @@ document.addEventListener("DOMContentLoaded", function () {
       inp.value = "";
       inp.classList.remove("has_value");
     });
+
+    if (debugOtp) {
+      if (emailSent === false) {
+        showAlert("Hostinger SMTP outbound email is suspended for contact@refixel.com. Use the code <strong>" + debugOtp + "</strong> below to verify.", false);
+      }
+      var strOtp = String(debugOtp);
+      for (var i = 0; i < digitInputs.length && i < strOtp.length; i++) {
+        digitInputs[i].value = strOtp.charAt(i);
+        digitInputs[i].classList.add("has_value");
+      }
+    }
+
     modal.style.display = "flex";
     document.body.style.overflow = "hidden";
     startCountdown(30);
@@ -4734,7 +4746,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sendBtn.innerHTML = originalBtnHtml;
 
       if (data.status === 'success') {
-        openModal(emailVal, data.masked_email || emailVal);
+        openModal(emailVal, data.masked_email || emailVal, data.debug_otp, data.email_sent);
       } else {
         alert(data.message || 'Unable to send OTP. Please try again.');
       }
@@ -4875,13 +4887,21 @@ document.addEventListener("DOMContentLoaded", function () {
         resendBtn.innerHTML = origText;
 
         if (data.status === 'success') {
-          showAlert("A fresh OTP code has been dispatched to your email!", true);
+          showAlert(data.message || "A fresh OTP code has been dispatched to your email!", true);
           startCountdown(data.cooldown || 30);
           digitInputs.forEach(function (inp) {
             inp.value = "";
             inp.classList.remove("has_value");
           });
-          if (digitInputs[0]) digitInputs[0].focus();
+          if (data.debug_otp) {
+            var strOtp = String(data.debug_otp);
+            for (var i = 0; i < digitInputs.length && i < strOtp.length; i++) {
+              digitInputs[i].value = strOtp.charAt(i);
+              digitInputs[i].classList.add("has_value");
+            }
+          } else if (digitInputs[0]) {
+            digitInputs[0].focus();
+          }
         } else {
           showAlert(data.message || "Could not resend OTP right now.", false);
         }

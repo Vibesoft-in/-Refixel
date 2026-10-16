@@ -28,6 +28,8 @@ class SmtpEmailService implements EmailProviderInterface
         $this->fromName    = (string)Env::get('MAIL_FROM_NAME', 'REFIXEL Home Services');
     }
 
+    protected static bool $outboundSendingSuspended = false;
+
     public function send(string $to, string $subject, string $htmlBody, array $headers = []): bool
     {
         $to = trim($to);
@@ -46,8 +48,15 @@ class SmtpEmailService implements EmailProviderInterface
         if (!empty($this->username) && !empty($this->password) || Env::get('MAIL_MAILER') === 'smtp') {
             $smtpOk = $this->sendViaSmtp($to, $subject, $htmlBody, $headers);
             if ($smtpOk) {
+                self::$outboundSendingSuspended = false;
                 return true;
             }
+
+            if (self::$outboundSendingSuspended) {
+                // Do not attempt PHP mail() on local/Windows if Hostinger explicitly rejected outbound sending
+                return false;
+            }
+
             Logger::warning("SMTP socket delivery failed for {$to}, falling back to PHP mail().");
         }
 
@@ -174,6 +183,7 @@ class SmtpEmailService implements EmailProviderInterface
             return true;
         } catch (\Throwable $e) {
             if (str_contains($e->getMessage(), 'Outbound sending is disabled')) {
+                self::$outboundSendingSuspended = true;
                 Logger::error("CRITICAL HOSTINGER ALERT: Outbound sending is disabled for '{$this->fromAddress}'. Please log in to Hostinger hPanel -> Emails -> {$this->fromAddress} -> Settings -> Toggle OFF 'Suspend Outbound sending'.");
             } else {
                 Logger::error("SMTP socket error to {$to}: " . $e->getMessage());

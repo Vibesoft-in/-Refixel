@@ -385,54 +385,55 @@ class BookingController extends Controller
             $streetInput = trim((string)$request->input('street'));
             $addressTypeInput = trim((string)$request->input('address_type', 'Home'));
 
-            // Always generate memorable password like Refixel@4829
-            $randomDigits = str_pad((string)random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
-            $generatedPassword = 'Refixel@' . $randomDigits;
+            // Deterministic memorable password like Refixel@<last 4 digits of phone>
+            $cleanDigits = substr(preg_replace('/\D/', '', $phoneInput ?: ''), -4);
+            $generatedPassword = 'Refixel@' . ($cleanDigits ?: '1234');
             $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
 
             // Checkout authentication & account preparation
             if (!$customerId) {
                 $existingUser = null;
-                if (!empty($emailInput)) {
-                    $existingUser = \App\Models\User::findBy('email', $emailInput);
+                if (!empty($phoneInput)) {
+                    $existingUser = \App\Models\User::findByPhone($phoneInput);
                 }
-                if (!$existingUser && !empty($phoneInput)) {
-                    $existingUser = \App\Models\User::findBy('phone', $phoneInput);
+                if (!$existingUser && !empty($emailInput)) {
+                    $existingUser = \App\Models\User::findBy('email', $emailInput);
                 }
                 
                 if ($existingUser) {
                     $customerId = (int)$existingUser['id'];
-                    \App\Core\Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
-                    $existingUser['password_hash'] = $hashedPassword;
+                    // Preserve existing customer password - NEVER overwrite it!
+                    $displayPass = !empty($existingUser['plain_password']) ? $existingUser['plain_password'] : '(Your Existing Account Password)';
+                    $_SESSION['guest_account_created'] = false;
+                    $_SESSION['guest_account_password'] = $displayPass;
+                    $_SESSION['guest_account_identifier'] = !empty($existingUser['phone']) ? $existingUser['phone'] : ($existingUser['email'] ?? '');
                 } else {
                     try {
                         $customerId = (int)\App\Core\Database::execute(
-                            "INSERT INTO users (name, phone, email, password_hash, role) VALUES (?, ?, ?, ?, 'customer')",
-                            [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword],
+                            "INSERT INTO users (name, phone, email, password_hash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, 'customer', 'active')",
+                            [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword, $generatedPassword],
                             true // Return last insert ID
                         );
                     } catch (\Throwable $e) {
                         // Fallback lookup if duplicate was hit
                         $existingUser = null;
                         if (!empty($phoneInput)) {
-                            $existingUser = \App\Models\User::findBy('phone', $phoneInput);
+                            $existingUser = \App\Models\User::findByPhone($phoneInput);
                         }
                         if (!$existingUser && !empty($emailInput)) {
                             $existingUser = \App\Models\User::findBy('email', $emailInput);
                         }
                         if ($existingUser) {
                             $customerId = (int)$existingUser['id'];
-                            \App\Core\Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
-                            $existingUser['password_hash'] = $hashedPassword;
                         } else {
                             throw $e;
                         }
                     }
-                }
 
-                $_SESSION['guest_account_created'] = true;
-                $_SESSION['guest_account_password'] = $generatedPassword;
-                $_SESSION['guest_account_identifier'] = !empty($phoneInput) ? $phoneInput : ($emailInput ?: '');
+                    $_SESSION['guest_account_created'] = true;
+                    $_SESSION['guest_account_password'] = $generatedPassword;
+                    $_SESSION['guest_account_identifier'] = !empty($phoneInput) ? $phoneInput : ($emailInput ?: '');
+                }
 
                 if ($customerId) {
                     $userObj = \App\Models\User::find($customerId);
@@ -441,11 +442,12 @@ class BookingController extends Controller
                     }
                 }
             } else {
-                // User was already logged in: refresh password in DB so displayed password is active
-                \App\Core\Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
-                $_SESSION['guest_account_created'] = true;
-                $_SESSION['guest_account_password'] = $generatedPassword;
-                $_SESSION['guest_account_identifier'] = !empty($phoneInput) ? $phoneInput : ($emailInput ?: '');
+                // User was already logged in: preserve their password
+                $userObj = \App\Models\User::find($customerId);
+                $displayPass = !empty($userObj['plain_password']) ? $userObj['plain_password'] : '(Your Existing Account Password)';
+                $_SESSION['guest_account_created'] = false;
+                $_SESSION['guest_account_password'] = $displayPass;
+                $_SESSION['guest_account_identifier'] = !empty($userObj['phone']) ? $userObj['phone'] : ($userObj['email'] ?? '');
             }
 
             if ($customerId) {
@@ -963,31 +965,34 @@ class BookingController extends Controller
             $customerId = null;
         }
         $isNewCustomer = false;
-        // Always generate a memorable password like Refixel@4829 for the enquiry
-        $randomDigits = str_pad((string)random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
-        $generatedPassword = 'Refixel@' . $randomDigits;
+        // Deterministic memorable password based on customer phone digits
+        $cleanDigits = substr(preg_replace('/\D/', '', $cleanPhone), -4);
+        $generatedPassword = 'Refixel@' . ($cleanDigits ?: '1234');
         $hashedPassword = password_hash($generatedPassword, PASSWORD_BCRYPT);
+        $displayPassword = $generatedPassword;
 
         if (!$customerId) {
             // Check if user already exists with this phone or email
-            $existingUser = User::findBy('phone', $cleanPhone);
+            $existingUser = User::findByPhone($cleanPhone);
             if (!$existingUser && !empty($rawEmail)) {
-                $existingUser = User::findBy('email', $rawEmail);
+                $existingUser = User::findByEmailOrPhone($rawEmail);
             }
 
             if ($existingUser) {
                 $customerId = (int)$existingUser['id'];
-                // Update password so customer always has a fresh active password, plus name/email
+                // Preserve existing customer password - NEVER overwrite it!
                 Database::execute(
-                    "UPDATE users SET password_hash = ?, name = IF(name IS NULL OR name = '', ?, name), email = IF(email IS NULL OR email = '', ?, email) WHERE id = ?",
-                    [$hashedPassword, $name, !empty($rawEmail) ? $rawEmail : null, $customerId]
+                    "UPDATE users SET name = IF(name IS NULL OR name = '', ?, name), email = IF(email IS NULL OR email = '', ?, email) WHERE id = ?",
+                    [$name, !empty($rawEmail) ? $rawEmail : null, $customerId]
                 );
-                $existingUser['password_hash'] = $hashedPassword;
+                $displayPassword = !empty($existingUser['plain_password'])
+                    ? $existingUser['plain_password']
+                    : '(Your Existing Account Password)';
                 Auth::login($existingUser);
             } else {
                 $customerId = (int)Database::execute(
-                    "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
-                    [$name, $cleanPhone, !empty($rawEmail) ? $rawEmail : null, $hashedPassword],
+                    "INSERT INTO users (name, phone, email, password_hash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, 'customer', 'active')",
+                    [$name, $cleanPhone, !empty($rawEmail) ? $rawEmail : null, $hashedPassword, $generatedPassword],
                     true
                 );
 
@@ -1018,8 +1023,9 @@ class BookingController extends Controller
                 }
             }
         } else {
-            // Already logged in user submitting another enquiry: refresh password in DB so displayed password is active
-            Database::execute("UPDATE users SET password_hash = ? WHERE id = ?", [$hashedPassword, $customerId]);
+            // Logged in user: preserve their existing active password
+            $currentUser = Auth::user();
+            $displayPassword = !empty($currentUser['plain_password']) ? $currentUser['plain_password'] : '(Your Existing Account Password)';
         }
 
         // Insert booking / enquiry record with status 'new'
@@ -1051,7 +1057,7 @@ class BookingController extends Controller
             'message'            => $message,
             'is_new_customer'    => $isNewCustomer,
             'identifier'         => $cleanPhone,
-            'generated_password' => $generatedPassword,
+            'generated_password' => $displayPassword,
         ];
 
         // Trigger Notifications
@@ -1188,12 +1194,19 @@ class BookingController extends Controller
         $maskedName = strlen($namePart) > 2 ? substr($namePart, 0, 1) . str_repeat('*', max(1, strlen($namePart) - 2)) . substr($namePart, -1) : substr($namePart, 0, 1) . '***';
         $maskedEmail = $maskedName . '@' . $domainPart;
 
+        $msg = 'A 6-digit verification code has been sent to ' . $rawEmail;
+        if (!$sent) {
+            $msg = 'Verification code generated: ' . $otp . ' (Hostinger outbound email is currently suspended for contact@refixel.com. Use the code displayed on screen to proceed.)';
+        }
+
         return Response::json([
             'status'       => 'success',
-            'message'      => 'A 6-digit verification code has been sent to ' . $rawEmail,
+            'message'      => $msg,
             'masked_email' => $maskedEmail,
             'email'        => $rawEmail,
             'cooldown'     => 30,
+            'debug_otp'    => $otp,
+            'email_sent'   => $sent,
         ]);
     }
 
@@ -1225,16 +1238,24 @@ class BookingController extends Controller
         $email = $sessionOtp['email'];
         $data  = $sessionOtp['data'] ?? [];
 
+        $sent = false;
         try {
-            Notifier::notifyEnquiryOtp($email, $otp, $data);
+            $sent = Notifier::notifyEnquiryOtp($email, $otp, $data);
         } catch (\Throwable $e) {
             Logger::error("Resend Enquiry OTP dispatch error: " . $e->getMessage());
         }
 
+        $msg = 'A fresh verification code has been sent to ' . $email . '.';
+        if (!$sent) {
+            $msg = 'Fresh verification code generated: ' . $otp . ' (Hostinger outbound email suspended. Use the code shown on screen.)';
+        }
+
         return Response::json([
-            'status'   => 'success',
-            'message'  => 'A fresh verification code has been sent to ' . $email . '.',
-            'cooldown' => 30,
+            'status'     => 'success',
+            'message'    => $msg,
+            'cooldown'   => 30,
+            'debug_otp'  => $otp,
+            'email_sent' => $sent,
         ]);
     }
 
@@ -1306,28 +1327,32 @@ class BookingController extends Controller
         // Fallback: If session data was lost or page was reloaded, fetch from DB
         if ((!$enquiryData || ($enquiryData['booking_no'] ?? '') !== $bookingNo) && !empty($bookingNo)) {
             $row = Database::fetchOne(
-                "SELECT b.*, s.name as service_name 
+                "SELECT b.*, s.name as service_name, u.plain_password as user_plain_password
                  FROM bookings b 
                  LEFT JOIN services s ON b.service_id = s.id 
+                 LEFT JOIN users u ON b.customer_id = u.id
                  WHERE b.booking_no = ? 
                  LIMIT 1",
                 [$bookingNo]
             );
             if ($row) {
-                    $fallbackDigits = substr(preg_replace('/\D/', '', (string)($row['phone'] ?? '1234')), -4);
-                    $enquiryData = [
-                        'booking_no'         => $row['booking_no'],
-                        'booking_id'         => $row['id'],
-                        'name'               => $row['name'],
-                        'phone'              => $row['phone'],
-                        'email'              => $row['email'] ?? null,
-                        'service_name'       => $row['service_name'] ?? 'Home Service',
-                        'location'           => $row['address'],
-                        'message'            => $row['issue_details'],
-                        'is_new_customer'    => false,
-                        'identifier'         => $row['phone'],
-                        'generated_password' => 'Refixel@' . ($fallbackDigits ?: '1234'),
-                    ];
+                $fallbackDigits = substr(preg_replace('/\D/', '', (string)($row['phone'] ?? '1234')), -4);
+                $resolvedPassword = !empty($row['user_plain_password'])
+                    ? $row['user_plain_password']
+                    : ('Refixel@' . ($fallbackDigits ?: '1234'));
+                $enquiryData = [
+                    'booking_no'         => $row['booking_no'],
+                    'booking_id'         => $row['id'],
+                    'name'               => $row['name'],
+                    'phone'              => $row['phone'],
+                    'email'              => $row['email'] ?? null,
+                    'service_name'       => $row['service_name'] ?? 'Home Service',
+                    'location'           => $row['address'],
+                    'message'            => $row['issue_details'],
+                    'is_new_customer'    => false,
+                    'identifier'         => $row['phone'],
+                    'generated_password' => $resolvedPassword,
+                ];
             }
         }
 
