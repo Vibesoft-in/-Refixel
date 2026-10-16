@@ -114,7 +114,18 @@ class JobController extends Controller
 
         try {
             Workflow::recordSubAction((int)$id, 'on_the_way', $staffId, 'Technician is en route to customer location.');
-            View::setFlash('success', 'Status updated: You are on the way to the customer location.');
+
+            // Notify customer that technician is en route
+            $staffUser = Database::fetchOne("SELECT id, name, email, phone FROM users WHERE id = :sid", ['sid' => $staffId]);
+            $bDetails = \App\Models\Booking::findWithDetails((int)$job['booking_id']);
+            if ($bDetails) {
+                \App\Core\Notifier::notifyTechnicianOnTheWay($bDetails, $staffUser ?: [
+                    'name'  => $job['staff_name'] ?? 'Technician',
+                    'phone' => $job['staff_phone'] ?? '',
+                ]);
+            }
+
+            View::setFlash('success', 'Status updated: You are on the way to the customer location. Customer notified.');
         } catch (\Throwable $e) {
             View::setFlash('error', 'Could not update status: ' . $e->getMessage());
         }

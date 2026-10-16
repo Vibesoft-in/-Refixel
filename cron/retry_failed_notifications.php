@@ -20,8 +20,8 @@ $failedNotifications = Database::fetchAll(
     "SELECT * FROM notifications 
      WHERE status = 'failed' 
        AND created_at >= NOW() - INTERVAL 24 HOUR
-     ORDER BY id ASC 
-     LIMIT 30"
+     ORDER BY id DESC 
+     LIMIT 50"
 );
 
 $retried = 0;

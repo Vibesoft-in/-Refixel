@@ -105,13 +105,18 @@ class Notifier
 
     protected static function getAdminEmail(): string
     {
-        return (string)(
+        $email = (string)(
             Setting::get('admin_notification_email')
             ?: Setting::get('company_email')
             ?: Env::get('ADMIN_NOTIFICATION_EMAIL')
             ?: Env::get('MAIL_FROM_ADDRESS')
             ?: 'wearerefixel@gmail.com'
         );
+        $email = trim($email);
+        if (empty($email) || str_contains($email, 'primodomus.com') || str_contains($email, 'example.com')) {
+            return 'wearerefixel@gmail.com';
+        }
+        return $email;
     }
 
     // ==========================================
@@ -127,7 +132,7 @@ class Notifier
         $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
         $adminUrl = !empty($booking['admin_url']) ? $booking['admin_url'] : View::fullUrl('/admin/bookings/' . $bId);
 
-        self::send('email', $adminEmail, 'admin_new_booking', [
+        $payload = [
             'booking_no'    => $booking['booking_no'] ?? '',
             'service_name'  => $booking['service_name'] ?? 'Home Service',
             'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
@@ -139,7 +144,14 @@ class Notifier
             'address'       => $booking['address'] ?? '',
             'message'       => $booking['message'] ?? ($booking['issue_details'] ?? ''),
             'admin_url'     => $adminUrl,
-        ]);
+        ];
+
+        self::send('email', $adminEmail, 'admin_new_booking', $payload);
+
+        // Also notify super admin mailbox if different
+        if ($adminEmail !== 'wearerefixel@gmail.com') {
+            self::send('email', 'wearerefixel@gmail.com', 'admin_new_booking', $payload);
+        }
     }
 
     /**
@@ -147,8 +159,9 @@ class Notifier
      */
     public static function notifyBookingConfirmationCustomer(array $booking): void
     {
+        $isEnquiry = !empty($booking['is_enquiry']);
         $isNew = !empty($booking['generated_password']) || !empty($booking['is_new_customer']);
-        $template = $isNew ? 'customer_welcome_booking' : 'booking_confirmation';
+        $template = $isEnquiry ? 'customer_enquiry_confirmed' : ($isNew ? 'customer_welcome_booking' : 'booking_confirmation');
         $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
 
         $data = [
@@ -164,6 +177,7 @@ class Notifier
             'identifier'         => $booking['identifier'] ?? ($booking['email'] ?? $booking['phone'] ?? null),
             'login_url'          => !empty($booking['login_url']) ? $booking['login_url'] : View::fullUrl('/login'),
             'booking_url'        => View::fullUrl('/account/bookings/' . $bId),
+            'is_enquiry'         => $isEnquiry,
         ];
 
         if (!empty($booking['email'])) {
@@ -280,6 +294,40 @@ class Notifier
         // 2. Notify Admin
         $adminEmail = self::getAdminEmail();
         self::send('email', $adminEmail, 'technician_accepted_admin', $data);
+    }
+
+    /**
+     * Event 4B: Technician On The Way -> Notify Customer
+     */
+    public static function notifyTechnicianOnTheWay(array $booking, array $staff): void
+    {
+        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
+        $customerEmail = !empty($booking['email']) ? $booking['email'] : ($booking['customer_email'] ?? null);
+        $customerPhone = !empty($booking['phone']) ? $booking['phone'] : ($booking['customer_phone'] ?? '');
+        $customerName  = !empty($booking['name']) ? $booking['name'] : ($booking['customer_name'] ?? 'Customer');
+
+        $data = [
+            'booking_id'     => $bId,
+            'booking_no'     => $booking['booking_no'] ?? '',
+            'customer_name'  => $customerName,
+            'customer_phone' => $customerPhone,
+            'customer_email' => $customerEmail,
+            'service_name'   => $booking['service_name'] ?? 'Home Service',
+            'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Certified Technician'),
+            'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
+            'preferred_date' => $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time' => $booking['preferred_time'] ?? 'Flexible Slot',
+            'address'        => $booking['address'] ?? '',
+            'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
+        ];
+
+        if (!empty($customerEmail)) {
+            self::send('email', $customerEmail, 'technician_on_the_way', $data);
+        }
+
+        if (!empty($customerPhone)) {
+            self::send('sms', $customerPhone, 'technician_on_the_way_sms', $data);
+        }
     }
 
     /**

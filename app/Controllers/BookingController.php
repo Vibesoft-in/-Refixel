@@ -1073,6 +1073,7 @@ class BookingController extends Controller
                 'admin_url'          => View::fullUrl('/admin/bookings/' . $bookingId),
                 'generated_password' => $generatedPassword,
                 'identifier'         => $cleanPhone,
+                'is_enquiry'         => true,
             ];
             Notifier::notifyNewBookingAdmin($record);
             Notifier::notifyBookingConfirmationCustomer($record);

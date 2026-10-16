@@ -23,6 +23,8 @@ spl_autoload_register(function (string $class) {
 
 // Load Environment Configuration
 \App\Core\Env::load(ROOT_PATH . '/.env');
+\App\Core\Env::set('APP_ENV', 'test');
+\App\Core\Env::set('MAIL_MAILER', 'mock');
 
 // Set Timezone
 date_default_timezone_set(\App\Core\Env::get('APP_TIMEZONE', 'Asia/Kolkata'));

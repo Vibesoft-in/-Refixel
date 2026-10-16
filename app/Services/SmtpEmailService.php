@@ -62,7 +62,7 @@ class SmtpEmailService implements EmailProviderInterface
             'Content-type' => 'text/html; charset=UTF-8',
             'From'         => "{$this->fromName} <{$this->fromAddress}>",
             'Reply-To'     => $this->fromAddress,
-            'X-Mailer'     => 'PHP/' . phpversion(),
+            'X-Mailer'     => 'REFIXEL-Mailer/2.0',
         ];
 
         $allHeaders = array_merge($defaultHeaders, $headers);
@@ -72,7 +72,12 @@ class SmtpEmailService implements EmailProviderInterface
         }
 
         try {
-            $ok = @mail($to, $subject, $htmlBody, $headerStr);
+            $fromEnvelope = "-f" . escapeshellarg($this->fromAddress);
+            $ok = @mail($to, $subject, $htmlBody, $headerStr, $fromEnvelope);
+            if (!$ok) {
+                // Fallback without 5th parameter if server environment restricts it
+                $ok = @mail($to, $subject, $htmlBody, $headerStr);
+            }
             if ($ok) {
                 Logger::info("Email dispatched via PHP mail() to {$to} [Subject: {$subject}]");
             } else {
@@ -168,7 +173,11 @@ class SmtpEmailService implements EmailProviderInterface
             Logger::info("SMTP email successfully sent to {$to} [Subject: {$subject}]");
             return true;
         } catch (\Throwable $e) {
-            Logger::error("SMTP socket error to {$to}: " . $e->getMessage());
+            if (str_contains($e->getMessage(), 'Outbound sending is disabled')) {
+                Logger::error("CRITICAL HOSTINGER ALERT: Outbound sending is disabled for '{$this->fromAddress}'. Please log in to Hostinger hPanel -> Emails -> {$this->fromAddress} -> Settings -> Toggle OFF 'Suspend Outbound sending'.");
+            } else {
+                Logger::error("SMTP socket error to {$to}: " . $e->getMessage());
+            }
             @fclose($socket);
             return false;
         }
@@ -204,11 +213,13 @@ class SmtpEmailService implements EmailProviderInterface
     {
         $subject = match ($template) {
             'customer_welcome_booking'    => 'Booking Confirmed #' . ($data['booking_no'] ?? '') . ' & Your REFIXEL Account Details',
+            'customer_enquiry_confirmed'  => '✅ Service Enquiry Received #' . ($data['booking_no'] ?? '') . ' & Your REFIXEL Account Details',
             'booking_confirmation'        => 'Your REFIXEL Booking is Confirmed - #' . ($data['booking_no'] ?? ''),
             'admin_new_booking'           => '🚨 New Booking Received: #' . ($data['booking_no'] ?? '') . ' (' . ($data['service_name'] ?? 'Home Service') . ')',
             'staff_assigned'              => '🔧 New Job Assigned: #' . ($data['booking_no'] ?? '') . ' - ' . ($data['service_name'] ?? 'Service'),
             'technician_assigned_customer'=> '🔧 Technician Assigned: Your Service Visit is Scheduled - Booking #' . ($data['booking_no'] ?? ''),
             'technician_accepted_customer'=> '✅ Technician Confirmed: Your Service is Scheduled - #' . ($data['booking_no'] ?? ''),
+            'technician_on_the_way'       => '🚀 Your Technician is On The Way! - Booking #' . ($data['booking_no'] ?? ''),
             'technician_accepted_admin'   => '✅ Technician Accepted Job: #' . ($data['booking_no'] ?? '') . ' - ' . ($data['staff_name'] ?? 'Technician'),
             'invoice_prepaid_work_due'    => '📄 Payment Receipt: Work Scheduled - Booking #' . ($data['booking_no'] ?? ''),
             'invoice_final_completed'     => '🧾 Final GST Tax Invoice: Service Completed - Booking #' . ($data['booking_no'] ?? ''),
@@ -241,16 +252,32 @@ class SmtpEmailService implements EmailProviderInterface
         $bookingUrl = !empty($data['booking_url']) ? $data['booking_url'] : View::fullUrl('/account/bookings');
         $invoiceUrl = !empty($data['invoice_url']) ? $data['invoice_url'] : View::fullUrl('/account/invoices');
 
-        $body = "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body style='margin:0; padding:20px; background:#f4f6f9; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #1e293b;'>";
-        $body .= "<div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.06);'>";
+        $body = "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>";
+        $body .= "<style type='text/css'>
+        /* Mobile Responsive Overrides */
+        @media only screen and (max-width: 600px) {
+            body { padding: 8px 4px !important; }
+            .email-container { max-width: 100% !important; width: 100% !important; border-radius: 8px !important; margin: 0 !important; }
+            .email-header { padding: 18px 12px !important; }
+            .email-body { padding: 20px 14px !important; }
+            .email-footer { padding: 16px 12px !important; }
+            .email-btn { display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: center !important; padding: 14px 16px !important; }
+            .email-table td { font-size: 13px !important; padding: 7px 6px !important; }
+            .email-credentials { padding: 14px 12px !important; }
+            .email-title { font-size: 20px !important; }
+            .email-otp-box { font-size: 28px !important; letter-spacing: 5px !important; padding: 12px 18px !important; }
+        }
+        </style>";
+        $body .= "</head><body style='margin:0; padding:20px; background:#f4f6f9; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #1e293b;'>";
+        $body .= "<div class='email-container' style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.06);'>";
         
         // Brand Header
-        $body .= "<div style='background: #0a1c33; padding: 24px 20px; text-align: center; border-bottom: 3px solid #f25b29;'>";
+        $body .= "<div class='email-header' style='background: #0a1c33; padding: 24px 20px; text-align: center; border-bottom: 3px solid #f25b29;'>";
         $body .= "<h1 style='margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: 0.5px;'>REFIXEL<span style='color: #f25b29;'>.</span></h1>";
         $body .= "<p style='margin: 4px 0 0; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;'>Mechanized Home & Maintenance Services</p>";
         $body .= "</div>";
 
-        $body .= "<div style='padding: 28px 24px;'>";
+        $body .= "<div class='email-body' style='padding: 28px 24px;'>";
 
         switch ($template) {
             case 'admin_welcome_credentials':
@@ -330,6 +357,45 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div style='text-align: center; margin: 26px 0;'>";
                 $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Sign In to Admin Portal &rarr;</a>";
                 $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px;'>Portal URL: <a href='" . htmlspecialchars($loginUrl) . "' style='color: #0284c7;'>" . htmlspecialchars($loginUrl) . "</a></p>";
+                $body .= "</div>";
+                break;
+
+            case 'customer_enquiry_confirmed':
+                $body .= "<div style='text-align: center; margin-bottom: 22px;'>";
+                $body .= "<span style='background: #dcfce7; color: #15803d; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 20px; display: inline-block;'>Enquiry Confirmed</span>";
+                $body .= "<h2 class='email-title' style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Service Enquiry Confirmed, " . htmlspecialchars($data['customer_name'] ?? 'Valued Customer') . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>Your verified service enquiry has been received and assigned a priority tracking ID.</p>";
+                $body .= "</div>";
+
+                // Summary Card
+                $body .= "<div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;'>";
+                $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px;'>";
+                $body .= "<strong style='color: #0a1c33;'>Enquiry / Booking ID:</strong> <span style='font-family: monospace; font-weight: 700; color: #f25b29;'>#" . htmlspecialchars($data['booking_no'] ?? '') . "</span>";
+                $body .= "</div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Service Requested:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
+                $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Preferred Slot:</strong> " . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " • " . htmlspecialchars($data['preferred_time'] ?? 'Immediate / ASAP') . "</div>";
+                $body .= "<div><strong style='color: #0a1c33;'>Service Area:</strong> " . htmlspecialchars($data['address'] ?? 'Uttarakhand Service Area') . "</div>";
+                $body .= "</div>";
+
+                // Account Credentials Box
+                if (!empty($data['generated_password'])) {
+                    $body .= "<div class='email-credentials' style='background: #0a1c33; color: #ffffff; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 5px solid #f25b29;'>";
+                    $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Your Customer Account Login Credentials</h3>";
+                    $body .= "<p style='margin: 0 0 12px; color: #cbd5e1; font-size: 13px;'>Your REFIXEL customer portal account is active so you can track technician assignment, chat with support, and view GST invoices:</p>";
+                    $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; font-size: 14px;'>";
+                    $body .= "<div style='margin-bottom: 6px;'><strong>Login Phone / ID:</strong> <span style='color: #38bdf8; font-weight: 600; font-family: monospace;'>" . htmlspecialchars($data['identifier'] ?? ($data['phone'] ?? $data['email'] ?? '')) . "</span></div>";
+                    if (!empty($data['email'])) {
+                        $body .= "<div style='margin-bottom: 6px;'><strong>Registered Email:</strong> <span style='color: #e2e8f0; font-weight: 500;'>" . htmlspecialchars($data['email']) . "</span></div>";
+                    }
+                    $body .= "<div><strong>Temporary Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-weight: 700; font-size: 15px;'>" . htmlspecialchars($data['generated_password']) . "</span></div>";
+                    $body .= "</div>";
+                    $body .= "<p style='margin: 10px 0 0; color: #94a3b8; font-size: 12px;'>You can change this password at any time in your profile.</p>";
+                    $body .= "</div>";
+                }
+
+                // CTA Button
+                $body .= "<div style='text-align: center; margin: 26px 0;'>";
+                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' class='email-btn' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(242,91,41,0.3);'>Log In to Customer Portal &rarr;</a>";
                 $body .= "</div>";
                 break;
 
@@ -496,7 +562,45 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "</div>";
 
                 $body .= "<div style='text-align: center; margin: 24px 0;'>";
-                $body .= "<a href='" . htmlspecialchars($bookingUrl) . "' style='background: #0a1c33; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 8px; display: inline-block;'>View Booking in Portal &rarr;</a>";
+                $body .= "<a href='" . htmlspecialchars($bookingUrl) . "' class='email-btn' style='background: #0a1c33; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 8px; display: inline-block;'>View Booking in Portal &rarr;</a>";
+                $body .= "</div>";
+                break;
+
+            case 'technician_on_the_way':
+                $body .= "<div style='text-align: center; margin-bottom: 20px;'>";
+                $body .= "<span style='background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 13px; padding: 6px 16px; border-radius: 20px; display: inline-block; letter-spacing: 0.3px;'>🚀 Technician En Route</span>";
+                $body .= "<h2 class='email-title' style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Your Technician is On The Way!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0; line-height: 1.5;'>Dear " . htmlspecialchars($data['customer_name'] ?? 'Customer') . ", your assigned specialist is travelling to your location for Booking <strong>#" . htmlspecialchars($data['booking_no'] ?? '') . "</strong>.</p>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 20px; margin-bottom: 20px;'>";
+                $body .= "<div style='display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding-bottom: 12px; margin-bottom: 14px;'>";
+                $body .= "<div>";
+                $body .= "<div style='font-size: 11px; text-transform: uppercase; font-weight: 700; color: #f25b29; letter-spacing: 0.5px;'>Assigned Professional</div>";
+                $body .= "<div style='font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 2px;'>" . htmlspecialchars($data['staff_name'] ?? 'Technician') . "</div>";
+                $body .= "</div>";
+                if (!empty($data['staff_phone'])) {
+                    $body .= "<a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='background: #10b981; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;'>📞 Call Now</a>";
+                }
+                $body .= "</div>";
+
+                $body .= "<table class='email-table' style='width: 100%; border-collapse: collapse; font-size: 13.5px;'>";
+                $body .= "<tr><td style='padding: 6px 0; color: #64748b; width: 38%; font-weight: 600;'>Service Booked:</td><td style='padding: 6px 0; font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</td></tr>";
+                if (!empty($data['staff_phone'])) {
+                    $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Technician Phone:</td><td style='padding: 6px 0; font-weight: 700;'><a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='color: #f25b29; text-decoration: none;'>" . htmlspecialchars($data['staff_phone']) . "</a></td></tr>";
+                }
+                $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Destination Address:</td><td style='padding: 6px 0; color: #334155; line-height: 1.4;'>" . htmlspecialchars($data['address'] ?? '') . "</td></tr>";
+                $body .= "</table>";
+                $body .= "</div>";
+
+                $body .= "<div style='background: #fff7ed; border-left: 4px solid #f97316; padding: 14px 16px; border-radius: 6px; margin-bottom: 22px; font-size: 13.5px; color: #9a3412; line-height: 1.5;'>";
+                $body .= "<strong>Arrival Window:</strong><br>";
+                $body .= "&bull; Our technician expects to arrive within <strong>15 to 30 minutes</strong> depending on traffic conditions.<br>";
+                $body .= "&bull; Please ensure someone is available at the premises and keep your contact mobile reachable.";
+                $body .= "</div>";
+
+                $body .= "<div style='text-align: center; margin: 24px 0;'>";
+                $body .= "<a href='" . htmlspecialchars($bookingUrl) . "' class='email-btn' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 13px 30px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.25);'>Track Service Live &rarr;</a>";
                 $body .= "</div>";
                 break;
 

@@ -117,7 +117,7 @@ assert($createdBooking['status'] === 'new', "Booking status must be 'new'");
 // Verify Customer Confirmation Email dispatched
 $confirmNotif = Database::fetchOne("SELECT * FROM notifications 
                                     WHERE to_address = 'enquiry_otp_test@refixel.com' 
-                                    AND template IN ('booking_confirmation', 'customer_welcome_booking') 
+                                    AND template IN ('booking_confirmation', 'customer_welcome_booking', 'customer_enquiry_confirmed') 
                                     ORDER BY id DESC LIMIT 1");
 assert($confirmNotif !== null, "Customer must receive booking confirmation email after successful OTP verification");
 echo "[PASS] Test 5: Verified OTP successfully creates booking (#{$correctData['booking_no']}), clears OTP session, and dispatches confirmation\n";

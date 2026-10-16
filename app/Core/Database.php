@@ -89,6 +89,10 @@ class Database
                 $pdo->exec("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) NULL DEFAULT NULL AFTER password_hash");
                 $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email IN ('admin@refixel.com', 'admin@primodomus.com') AND (plain_password IS NULL OR plain_password = '')");
             }
+
+            // Ensure active admin notification email is wearerefixel@gmail.com
+            $pdo->exec("UPDATE settings SET setting_value = 'wearerefixel@gmail.com' WHERE setting_key = 'admin_notification_email' AND (setting_value LIKE '%primodomus.com%' OR setting_value = '' OR setting_value IS NULL)");
+            $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'company_email' AND (setting_value LIKE '%primodomus.com%' OR setting_value = '' OR setting_value IS NULL)");
         } catch (\Throwable $e) {
             // Silently continue if schema already migrated or permissions constrained
         }

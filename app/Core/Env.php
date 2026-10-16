@@ -58,4 +58,11 @@ class Env
     {
         return self::$variables[$key] ?? $_ENV[$key] ?? $_SERVER[$key] ?? $default;
     }
+
+    public static function set(string $key, mixed $value): void
+    {
+        self::$variables[$key] = $value;
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
+    }
 }

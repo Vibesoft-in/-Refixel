@@ -276,6 +276,48 @@ class BookingController extends Controller
             );
         }
 
+        // Dispatch notifications on status change
+        try {
+            $bDetails = Booking::findWithDetails((int)$id);
+            if ($bDetails) {
+                if ($newStatus === 'completed') {
+                    $totAmt = (float)(($bDetails['total_amount'] ?? 0) > 0 ? $bDetails['total_amount'] : ($bDetails['starting_price'] ?? 0));
+                    $latestPayment = Database::fetchOne(
+                        "SELECT * FROM payments WHERE booking_id = :bid AND status = 'paid' ORDER BY id DESC LIMIT 1",
+                        ['bid' => (int)$id]
+                    );
+                    $finalInvoice = null;
+                    if ($latestPayment) {
+                        $finalInvoice = Database::fetchOne("SELECT * FROM invoices WHERE payment_id = :pid LIMIT 1", ['pid' => (int)$latestPayment['id']]);
+                        if (!$finalInvoice) {
+                            $subtotal = round($totAmt / 1.18, 2);
+                            $finalInvoice = \App\Core\InvoiceBuilder::createForPayment((int)$latestPayment['id'], $subtotal, 18.00, $totAmt, 0.00);
+                        }
+                    } else {
+                        $pId = (int)\App\Models\Payment::create([
+                            'booking_id'      => (int)$id,
+                            'amount'          => $totAmt,
+                            'method'          => 'cash',
+                            'status'          => 'paid',
+                            'transaction_ref' => 'ADMIN-SETTLE-' . time(),
+                            'paid_at'         => date('Y-m-d H:i:s'),
+                            'recorded_by'     => $this->userId(),
+                        ]);
+                        $subtotal = round($totAmt / 1.18, 2);
+                        $finalInvoice = \App\Core\InvoiceBuilder::createForPayment($pId, $subtotal, 18.00, $totAmt, 0.00);
+                    }
+                    if ($finalInvoice) {
+                        $staffMember = !empty($bDetails['staff_name']) ? ['name' => $bDetails['staff_name'], 'phone' => $bDetails['staff_phone'] ?? ''] : null;
+                        \App\Core\Notifier::notifyFinalCompletedInvoice($finalInvoice, $bDetails, $staffMember);
+                    }
+                } else {
+                    \App\Core\Notifier::notifyBookingStatusChange($bDetails, $newStatus, $notes);
+                }
+            }
+        } catch (\Throwable $ne) {
+            \App\Core\Logger::error("Admin status notification skipped: " . $ne->getMessage());
+        }
+
         View::setFlash('success', "Booking status updated to '{$newStatus}'.");
         return $this->redirect('/admin/bookings/' . $id);
     }

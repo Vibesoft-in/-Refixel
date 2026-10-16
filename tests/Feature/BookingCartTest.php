@@ -104,7 +104,9 @@ $latestBooking = \App\Core\Database::fetchOne("SELECT * FROM bookings ORDER BY i
 assert($latestBooking !== null, "Booking must have been created in database");
 assert($latestBooking['status'] === 'new', "New booking status must be 'new'");
 assert($latestBooking['priority'] === 'high', "Expected priority 'high'");
-assert($latestBooking['customer_id'] == 3, "Booking must be associated with customer user 3");
+$userCust = \App\Core\Database::fetchOne("SELECT id FROM users WHERE phone = '9876543212' OR email = 'customer@primodomus.com'");
+$expectedCustId = $userCust ? (int)$userCust['id'] : 3;
+assert($latestBooking['customer_id'] == $expectedCustId, "Booking must be associated with customer user {$expectedCustId}");
 assert(str_starts_with($latestBooking['booking_no'], 'BK-'), "Booking number must follow BK- prefix");
 echo "Test 6: Booking creation (status=new, unique BK- number, customer association) - PASSED\n";
 
