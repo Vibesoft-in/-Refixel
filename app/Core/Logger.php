@@ -51,7 +51,7 @@ class Logger
             'password', 'password_confirmation', 'token', 'secret', 'card', 'cvv',
             'auth_token', 'api_key', 'razorpay_secret', 'authorization', 'cookie',
             'session_id', 'otp', 'pin', 'card_number', 'private_key', 'access_token',
-            'refresh_token', 'smtp_pass', 'db_pass', 'password_hash'
+            'refresh_token', 'smtp_pass', 'db_pass', 'password_hash', 'plain_password'
         ];
         foreach ($data as $key => $value) {
             if (is_array($value)) {

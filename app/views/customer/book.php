@@ -602,22 +602,33 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                           <span class="badge" style="background: #fff3ec; color: #ff5238; font-size: 10.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;">Doorstep Visit</span>
                         </div>
                         <div class="time-options-list" id="timeSlotsGroup">
-                          <div class="time-option-item" role="button" tabindex="0" data-slot="09:00 - 11:00 AM" data-start-minutes="540">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="08:00 - 10:00 AM" data-start-minutes="480">
                             <div class="d-flex align-items-center" style="gap: 12px;">
                               <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
                               <div>
-                                <div class="time-opt-title font-weight-bold">09:00 - 11:00 AM</div>
+                                <div class="time-opt-title font-weight-bold">08:00 - 10:00 AM</div>
+                                <div class="time-opt-sub">Early Morning Slot</div>
+                              </div>
+                            </div>
+                            <i class="fa fa-check time-opt-check"></i>
+                          </div>
+
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="10:00 AM - 12:00 PM" data-start-minutes="600">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
+                              <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
+                              <div>
+                                <div class="time-opt-title font-weight-bold">10:00 AM - 12:00 PM</div>
                                 <div class="time-opt-sub">Morning Slot</div>
                               </div>
                             </div>
                             <i class="fa fa-check time-opt-check"></i>
                           </div>
 
-                          <div class="time-option-item" role="button" tabindex="0" data-slot="11:00 AM - 01:00 PM" data-start-minutes="660">
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="12:00 - 02:00 PM" data-start-minutes="720">
                             <div class="d-flex align-items-center" style="gap: 12px;">
                               <div class="time-opt-icon"><i class="fa fa-sun-o"></i></div>
                               <div>
-                                <div class="time-opt-title font-weight-bold">11:00 AM - 01:00 PM</div>
+                                <div class="time-opt-title font-weight-bold">12:00 - 02:00 PM</div>
                                 <div class="time-opt-sub">Noon Slot</div>
                               </div>
                             </div>
@@ -641,6 +652,17 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                               <div>
                                 <div class="time-opt-title font-weight-bold">04:00 - 06:00 PM</div>
                                 <div class="time-opt-sub">Evening Slot</div>
+                              </div>
+                            </div>
+                            <i class="fa fa-check time-opt-check"></i>
+                          </div>
+
+                          <div class="time-option-item" role="button" tabindex="0" data-slot="06:00 - 08:00 PM" data-start-minutes="1080">
+                            <div class="d-flex align-items-center" style="gap: 12px;">
+                              <div class="time-opt-icon"><i class="fa fa-moon-o"></i></div>
+                              <div>
+                                <div class="time-opt-title font-weight-bold">06:00 - 08:00 PM</div>
+                                <div class="time-opt-sub">Late Evening Slot</div>
                               </div>
                             </div>
                             <i class="fa fa-check time-opt-check"></i>
@@ -1147,8 +1169,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var realNow = new Date();
     var currentCutoffMinutes = realNow.getHours() * 60 + realNow.getMinutes() + 30;
     var selectedDate = new Date(today.getTime());
-    if (currentCutoffMinutes > 960) {
-      // 04:00 PM (960 min) is the last slot start. Past 03:30 PM, today has 0 valid slots.
+    if (currentCutoffMinutes > 1080) {
+      // 06:00 PM (1080 min) is the last slot start. Past 05:30 PM, today has 0 valid slots.
       selectedDate = new Date(today.getTime() + 86400000);
     }
     var viewYear = selectedDate.getFullYear();

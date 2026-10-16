@@ -515,4 +515,26 @@ class Notifier
         ];
         return self::send('email', $email, 'enquiry_email_otp', $data);
     }
+
+    /**
+     * Event 17: Admin Provisioned by SuperAdmin -> Send Welcome & Login Credentials
+     */
+    public static function notifyAdminCreated(array $adminData): bool
+    {
+        if (empty($adminData['email'])) {
+            return false;
+        }
+        return self::send('email', $adminData['email'], 'admin_welcome_credentials', $adminData);
+    }
+
+    /**
+     * Event 18: Admin Password Updated by SuperAdmin -> Send Updated Login Credentials
+     */
+    public static function notifyAdminPasswordReset(array $adminData): bool
+    {
+        if (empty($adminData['email'])) {
+            return false;
+        }
+        return self::send('email', $adminData['email'], 'admin_password_reset', $adminData);
+    }
 }

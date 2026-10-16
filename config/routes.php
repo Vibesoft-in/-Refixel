@@ -158,6 +158,7 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     // Operations Admin Governance
     Router::get('/superadmin/admins', 'SuperAdmin\\DashboardController@admins');
     Router::post('/superadmin/admins', 'SuperAdmin\\DashboardController@storeAdmin', ['VerifyCsrf']);
+    Router::post('/superadmin/admins/{id}/reset-password', 'SuperAdmin\\DashboardController@updateAdminPassword', ['VerifyCsrf']);
     Router::post('/superadmin/admins/{id}/delete', 'SuperAdmin\\DashboardController@deleteAdmin', ['VerifyCsrf']);
 
     // Payment Gateways & API Credentials (Exclusively Super Admin)

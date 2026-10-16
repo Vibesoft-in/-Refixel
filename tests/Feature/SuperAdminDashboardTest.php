@@ -164,7 +164,7 @@ echo "[PASS] Test 6: Enquiries single and bulk deletion mechanism verified\n";
 
 // Test 7: Header shadow and WhatsApp overlay CSS validation
 $cssContent = file_get_contents(ROOT_PATH . '/public/assets/css/style.css');
-assert(str_contains($cssContent, 'box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08)'), "CSS contains header bottom box-shadow to prevent blending with white body");
+assert(str_contains($cssContent, 'box-shadow: 0 6px 20px rgba(15, 23, 42, 0.14)'), "CSS contains header bottom box-shadow to prevent blending with white body");
 assert(str_contains($cssContent, '.whatsapchat') && str_contains($cssContent, 'z-index: 99999 !important'), "CSS contains z-index: 99999 for WhatsApp floating button");
 echo "[PASS] Test 7: CSS header shadow & WhatsApp z-index verified in public stylesheet\n";
 
@@ -235,7 +235,55 @@ $validCreate = $saController->storeAdmin(new \App\Core\Request([
 ]));
 $createdAdmin = User::findBy('email', 'ops.manager@refixel.com');
 assert($createdAdmin !== null && $createdAdmin['role'] === 'admin', "Super Admin successfully created Operations Admin");
+assert($createdAdmin['plain_password'] === 'managerpass123', "Created admin plain_password must be saved for Super Admin visibility");
 Database::query("DELETE FROM users WHERE email = 'ops.manager@refixel.com'");
 echo "[PASS] Test 9: Exclusive Super Admin provisioning of Admin accounts verified (No self/public admin creation possible)\n";
+
+// Test 10: Super Admin Governance - Normal Admin ID & Password Visibility and Reset
+$_SESSION['user'] = $superAdmin;
+Database::query("DELETE FROM users WHERE email = 'testgoverned@refixel.com'");
+$saController->storeAdmin(new \App\Core\Request([
+    'name'     => 'Governed Admin',
+    'email'    => 'testgoverned@refixel.com',
+    'phone'    => '9777112233',
+    'password' => 'GovSecure99!',
+    'role'     => 'admin',
+]));
+$govAdmin = User::findBy('email', 'testgoverned@refixel.com');
+assert($govAdmin !== null, "Governed admin must exist");
+$govAdminId = (int)$govAdmin['id'];
+assert($govAdmin['plain_password'] === 'GovSecure99!', "Admin plain_password must match GovSecure99!");
+
+// View /superadmin/admins and verify ID and password appear in view
+$adminsViewRes = $saController->admins(new \App\Core\Request([]));
+$adminsHtml = $adminsViewRes->getContent();
+assert(str_contains($adminsHtml, "#{$govAdminId}"), "Super Admin view must show admin account ID");
+assert(str_contains($adminsHtml, 'testgoverned@refixel.com'), "Super Admin view must show admin login email");
+assert(str_contains($adminsHtml, 'GovSecure99!'), "Super Admin view must reveal/contain admin plain password for governance");
+assert(str_contains($adminsHtml, 'toggleAdminPassword'), "Super Admin view must contain password toggle handler");
+
+// Update / Reset password as Super Admin
+$resetReq = new \App\Core\Request([
+    'password' => 'UpdatedSecret77!',
+]);
+$resetRes = $saController->updateAdminPassword($resetReq, (string)$govAdminId);
+assert($resetRes instanceof \App\Core\Response && $resetRes->getStatusCode() === 302, "updateAdminPassword returns 302 redirect");
+
+$refreshedAdmin = User::find($govAdminId);
+assert($refreshedAdmin['plain_password'] === 'UpdatedSecret77!', "plain_password updated in DB");
+assert(password_verify('UpdatedSecret77!', $refreshedAdmin['password_hash']), "password_hash updated and valid in DB");
+
+// Verify view now shows the new updated password
+$refreshedView = $saController->admins(new \App\Core\Request([]));
+assert(str_contains($refreshedView->getContent(), 'UpdatedSecret77!'), "Super Admin view reflects updated admin password");
+
+// Verify normal admin cannot call updateAdminPassword
+$_SESSION['user'] = $govAdmin;
+$unauthorizedReset = $saController->updateAdminPassword($resetReq, (string)$govAdminId);
+assert($unauthorizedReset->getStatusCode() === 302, "Standard admin blocked from reset endpoint");
+
+// Cleanup
+Database::query("DELETE FROM users WHERE email = 'testgoverned@refixel.com'");
+echo "[PASS] Test 10: Super Admin Governance - Normal admin ID & password visibility and reset mechanism verified\n";
 
 echo "\n=== ALL SUPER ADMIN & DASHBOARD TESTS PASSED SUCCESSFULLY! ===\n";

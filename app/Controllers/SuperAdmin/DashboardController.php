@@ -519,7 +519,7 @@ class DashboardController extends Controller
     public function admins(Request $request): Response
     {
         $admins = Database::fetchAll(
-            "SELECT id, role, name, email, phone, status, last_login_at, created_at 
+            "SELECT id, role, name, email, phone, plain_password, status, last_login_at, created_at 
              FROM users 
              WHERE role IN ('admin', 'super_admin') 
              ORDER BY (role = 'super_admin') DESC, id ASC"
@@ -567,13 +567,87 @@ class DashboardController extends Controller
                 'email'         => !empty($email) ? $email : null,
                 'phone'         => !empty($phone) ? $phone : null,
                 'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+                'plain_password'=> $password,
                 'status'        => 'active',
                 'must_change_password' => 0,
             ]);
 
-            View::setFlash('success', "New {$role} user '{$name}' created successfully!");
+            // Automatically email login credentials to newly created admin
+            if (!empty($email)) {
+                try {
+                    \App\Core\Notifier::notifyAdminCreated([
+                        'name'      => $name,
+                        'email'     => $email,
+                        'phone'     => $phone,
+                        'role'      => $role,
+                        'password'  => $password,
+                        'login_url' => View::fullUrl('/login'),
+                    ]);
+                } catch (\Throwable $mailEx) {
+                    \App\Core\Logger::error("Failed to send welcome credentials email to admin {$email}: " . $mailEx->getMessage());
+                }
+            }
+
+            View::setFlash('success', "New {$role} user '{$name}' created successfully! Login credentials have been emailed to {$email}.");
         } catch (\Throwable $e) {
             View::setFlash('error', "Failed to create admin: " . $e->getMessage());
+        }
+
+        return $this->redirect('/superadmin/admins');
+    }
+
+    public function updateAdminPassword(Request $request, string $id): Response
+    {
+        // Enforce strict platform security: ONLY Super Admin can manage administrative credentials
+        if (!Auth::isSuperAdmin()) {
+            View::setFlash('error', 'Security Policy Violation: Only Super Admin can modify administrative credentials.');
+            return $this->redirect('/admin');
+        }
+
+        $adminId = (int)$id;
+        $admin = User::find($adminId);
+        if (!$admin || !in_array($admin['role'], ['admin', 'super_admin'], true)) {
+            View::setFlash('error', 'Administrative account not found.');
+            return $this->redirect('/superadmin/admins');
+        }
+
+        // Only Super Admin can change another super admin password if they are that super admin
+        if ($admin['role'] === 'super_admin' && $adminId !== Auth::id()) {
+            View::setFlash('error', 'Cannot reset password for another Super Admin account.');
+            return $this->redirect('/superadmin/admins');
+        }
+
+        $password = trim((string)$request->input('password', ''));
+        if (strlen($password) < 6) {
+            View::setFlash('error', 'Password must be at least 6 characters long.');
+            return $this->redirect('/superadmin/admins');
+        }
+
+        try {
+            User::update($adminId, [
+                'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
+                'plain_password' => $password,
+            ]);
+
+            // Automatically email updated login credentials if email exists
+            if (!empty($admin['email'])) {
+                try {
+                    \App\Core\Notifier::notifyAdminPasswordReset([
+                        'name'      => $admin['name'],
+                        'email'     => $admin['email'],
+                        'phone'     => $admin['phone'],
+                        'role'      => $admin['role'],
+                        'password'  => $password,
+                        'login_url' => View::fullUrl('/login'),
+                    ]);
+                } catch (\Throwable $mailEx) {
+                    \App\Core\Logger::error("Failed to email reset credentials to admin {$admin['email']}: " . $mailEx->getMessage());
+                }
+            }
+
+            View::setFlash('success', "Password for {$admin['name']} (#{$adminId}) updated successfully.");
+        } catch (\Throwable $e) {
+            View::setFlash('error', "Failed to update password: " . $e->getMessage());
         }
 
         return $this->redirect('/superadmin/admins');

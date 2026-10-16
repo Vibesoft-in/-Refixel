@@ -223,6 +223,8 @@ class SmtpEmailService implements EmailProviderInterface
             'partner_rejected'            => 'Update on Your REFIXEL Partner Application',
             'partner_welcome'             => 'Welcome to REFIXEL Partner Network - Your Technician Portal Access',
             'admin_new_partner'           => '👷 New Service Partner Registered: ' . ($data['name'] ?? 'Technician') . ' (' . ($data['trade'] ?? 'Trade') . ')',
+            'admin_welcome_credentials'   => '🔐 Welcome to REFIXEL - Your Admin Account Login Credentials',
+            'admin_password_reset'        => '🔑 REFIXEL Admin Security - Your Account Password Has Been Updated',
             'enquiry_email_otp'           => '🔐 ' . ($data['otp'] ?? '') . ' is your REFIXEL Enquiry Verification Code',
             default                       => 'Notification from REFIXEL',
         };
@@ -251,6 +253,86 @@ class SmtpEmailService implements EmailProviderInterface
         $body .= "<div style='padding: 28px 24px;'>";
 
         switch ($template) {
+            case 'admin_welcome_credentials':
+                $roleBadge = ($data['role'] ?? '') === 'super_admin' ? 'Super Administrator' : 'Operations Administrator';
+                $roleBadgeBg = ($data['role'] ?? '') === 'super_admin' ? '#fdf2f8' : '#e0f2fe';
+                $roleBadgeColor = ($data['role'] ?? '') === 'super_admin' ? '#9d174d' : '#0369a1';
+                $adminName = htmlspecialchars($data['name'] ?? 'Admin');
+                $adminEmail = htmlspecialchars($data['email'] ?? '');
+                $adminPhone = htmlspecialchars($data['phone'] ?? '');
+                $adminPassword = htmlspecialchars($data['password'] ?? '');
+
+                $body .= "<div style='text-align: center; margin-bottom: 22px;'>";
+                $body .= "<div style='display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: #eff6ff; color: #2563eb; font-size: 28px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(37,99,235,0.15);'><i style='font-style: normal;'>🛡️</i></div><br>";
+                $body .= "<span style='background: {$roleBadgeBg}; color: {$roleBadgeColor}; font-weight: 700; font-size: 12px; padding: 5px 14px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;'>{$roleBadge}</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Welcome to REFIXEL, " . $adminName . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>An administrative account has been created for you on the REFIXEL Management Platform.</p>";
+                $body .= "</div>";
+
+                // Account Credentials Box
+                $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 12px; padding: 22px; margin-bottom: 24px; border-left: 5px solid #f25b29; box-shadow: 0 4px 16px rgba(10,28,51,0.15);'>";
+                $body .= "<h3 style='margin: 0 0 12px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Your Platform Login Credentials</h3>";
+                $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13px;'>Use the credentials below to log into the administrative management portal:</p>";
+                $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 14px;'>";
+                if (!empty($adminEmail)) {
+                    $body .= "<div style='margin-bottom: 8px;'><strong>Login Email:</strong> <span style='color: #38bdf8; font-weight: 600; font-family: monospace;'>" . $adminEmail . "</span></div>";
+                }
+                if (!empty($adminPhone)) {
+                    $body .= "<div style='margin-bottom: 8px;'><strong>Registered Phone:</strong> <span style='color: #e2e8f0; font-weight: 500; font-family: monospace;'>" . $adminPhone . "</span></div>";
+                }
+                $body .= "<div style='margin-bottom: 8px;'><strong>Assigned Role:</strong> <span style='color: #fcd34d; font-weight: 600;'>" . htmlspecialchars($roleBadge) . "</span></div>";
+                $body .= "<div><strong>Temporary Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 3px 10px; border-radius: 4px; font-family: Monaco, Menlo, Consolas, monospace; font-weight: 700; font-size: 15px; letter-spacing: 0.5px;'>" . $adminPassword . "</span></div>";
+                $body .= "</div>";
+                $body .= "<p style='margin: 12px 0 0; color: #94a3b8; font-size: 12px;'>⚠️ For security, please keep these credentials safe and update your password upon your first login.</p>";
+                $body .= "</div>";
+
+                // CTA Button
+                $body .= "<div style='text-align: center; margin: 26px 0;'>";
+                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Sign In to Admin Portal &rarr;</a>";
+                $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px;'>Portal URL: <a href='" . htmlspecialchars($loginUrl) . "' style='color: #0284c7;'>" . htmlspecialchars($loginUrl) . "</a></p>";
+                $body .= "</div>";
+                break;
+
+            case 'admin_password_reset':
+                $roleBadge = ($data['role'] ?? '') === 'super_admin' ? 'Super Administrator' : 'Operations Administrator';
+                $roleBadgeBg = ($data['role'] ?? '') === 'super_admin' ? '#fdf2f8' : '#e0f2fe';
+                $roleBadgeColor = ($data['role'] ?? '') === 'super_admin' ? '#9d174d' : '#0369a1';
+                $adminName = htmlspecialchars($data['name'] ?? 'Admin');
+                $adminEmail = htmlspecialchars($data['email'] ?? '');
+                $adminPhone = htmlspecialchars($data['phone'] ?? '');
+                $adminPassword = htmlspecialchars($data['password'] ?? '');
+
+                $body .= "<div style='text-align: center; margin-bottom: 22px;'>";
+                $body .= "<div style='display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: #fef3c7; color: #d97706; font-size: 28px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(217,119,6,0.15);'><i style='font-style: normal;'>🔑</i></div><br>";
+                $body .= "<span style='background: {$roleBadgeBg}; color: {$roleBadgeColor}; font-weight: 700; font-size: 12px; padding: 5px 14px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;'>{$roleBadge}</span>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Password Updated, " . $adminName . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>Your REFIXEL administrative access password has been updated by Super Admin Governance.</p>";
+                $body .= "</div>";
+
+                // Account Credentials Box
+                $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 12px; padding: 22px; margin-bottom: 24px; border-left: 5px solid #f25b29; box-shadow: 0 4px 16px rgba(10,28,51,0.15);'>";
+                $body .= "<h3 style='margin: 0 0 12px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Updated Sign-In Credentials</h3>";
+                $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13px;'>Your updated sign-in credentials are shown below:</p>";
+                $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 14px;'>";
+                if (!empty($adminEmail)) {
+                    $body .= "<div style='margin-bottom: 8px;'><strong>Login Email:</strong> <span style='color: #38bdf8; font-weight: 600; font-family: monospace;'>" . $adminEmail . "</span></div>";
+                }
+                if (!empty($adminPhone)) {
+                    $body .= "<div style='margin-bottom: 8px;'><strong>Registered Phone:</strong> <span style='color: #e2e8f0; font-weight: 500; font-family: monospace;'>" . $adminPhone . "</span></div>";
+                }
+                $body .= "<div style='margin-bottom: 8px;'><strong>Assigned Role:</strong> <span style='color: #fcd34d; font-weight: 600;'>" . htmlspecialchars($roleBadge) . "</span></div>";
+                $body .= "<div><strong>New Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 3px 10px; border-radius: 4px; font-family: Monaco, Menlo, Consolas, monospace; font-weight: 700; font-size: 15px; letter-spacing: 0.5px;'>" . $adminPassword . "</span></div>";
+                $body .= "</div>";
+                $body .= "<p style='margin: 12px 0 0; color: #94a3b8; font-size: 12px;'>⚠️ If you did not request this update, contact your Super Administrator immediately.</p>";
+                $body .= "</div>";
+
+                // CTA Button
+                $body .= "<div style='text-align: center; margin: 26px 0;'>";
+                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Sign In to Admin Portal &rarr;</a>";
+                $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px;'>Portal URL: <a href='" . htmlspecialchars($loginUrl) . "' style='color: #0284c7;'>" . htmlspecialchars($loginUrl) . "</a></p>";
+                $body .= "</div>";
+                break;
+
             case 'customer_welcome_booking':
                 $body .= "<div style='text-align: center; margin-bottom: 22px;'>";
                 $body .= "<span style='background: #dcfce7; color: #15803d; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 20px; display: inline-block;'>Booking Confirmed</span>";

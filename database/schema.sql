@@ -42,6 +42,7 @@ CREATE TABLE users (
     email VARCHAR(160) NULL UNIQUE,
     phone VARCHAR(15) NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    plain_password VARCHAR(255) NULL,
     status ENUM('active','disabled') NOT NULL DEFAULT 'active',
     must_change_password TINYINT(1) NOT NULL DEFAULT 0,
     last_login_at DATETIME NULL,

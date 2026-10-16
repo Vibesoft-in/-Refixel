@@ -274,10 +274,15 @@ class AuthController extends Controller
             }
         }
 
-        User::update($user['id'], [
+        $updateData = [
             'password_hash'        => password_hash((string)$request->input('new_password'), PASSWORD_BCRYPT),
             'must_change_password' => 0,
-        ]);
+        ];
+        if (($user['role'] ?? '') === 'admin') {
+            $updateData['plain_password'] = (string)$request->input('new_password');
+        }
+
+        User::update($user['id'], $updateData);
 
         $_SESSION['user']['must_change_password'] = false;
 
