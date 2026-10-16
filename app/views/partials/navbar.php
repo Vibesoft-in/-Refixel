@@ -75,8 +75,8 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
     <style>
       nav.navbar.main_menu {
         background: #ffffff !important;
-        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
-        border-bottom: 1px solid #eef2f6 !important;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
       }
       .navbar-toggler {
         display: none !important;
