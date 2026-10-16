@@ -116,6 +116,16 @@ class BookingController extends Controller
             return $this->redirect('/admin/bookings');
         }
 
+        if ($booking['status'] === 'completed') {
+            View::setFlash('error', "Cannot reassign booking #{$booking['booking_no']}. This service has already been completed and delivered.");
+            return $this->redirect('/admin/bookings/' . $id);
+        }
+
+        if ($booking['status'] === 'cancelled') {
+            View::setFlash('error', "Cannot assign a cancelled booking (#{$booking['booking_no']}).");
+            return $this->redirect('/admin/bookings/' . $id);
+        }
+
         $job = Database::fetchOne("SELECT id, status, staff_id FROM jobs WHERE booking_id = :bid", ['bid' => $id]);
 
         if ($job) {
@@ -190,6 +200,11 @@ class BookingController extends Controller
         if (!$booking) {
             View::setFlash('error', 'Booking not found.');
             return $this->redirect('/admin/bookings');
+        }
+
+        if (in_array($booking['status'], ['completed', 'cancelled'], true)) {
+            View::setFlash('error', "Cannot reschedule a {$booking['status']} booking.");
+            return $this->redirect('/admin/bookings/' . $id);
         }
 
         $newDate = $request->input('preferred_date');

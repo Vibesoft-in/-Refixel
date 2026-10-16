@@ -138,18 +138,20 @@ class DashboardController extends Controller
 
     // =========================================================================
     // 2. TECHNICIANS / STAFF SECTION & BULK DELETE
-    // =========================================================================
-
     public function staff(Request $request): Response
     {
         $sql = "SELECT u.id, u.name, u.email, u.phone, u.status, u.created_at,
                        sp.rating_avg, sp.rating_count, sp.is_available, sp.availability_note,
                        (SELECT COUNT(*) FROM jobs j WHERE j.staff_id = u.id) as jobs_count,
-                       (SELECT COUNT(*) FROM jobs j WHERE j.staff_id = u.id AND j.status = 'completed') as completed_jobs_count
+                       (SELECT COUNT(*) FROM jobs j WHERE j.staff_id = u.id AND j.status = 'completed') as completed_jobs_count,
+                       (SELECT GROUP_CONCAT(c.name SEPARATOR ', ')
+                        FROM staff_skills ss
+                        JOIN categories c ON ss.category_id = c.id
+                        WHERE ss.staff_id = u.id) as trade_skills
                 FROM users u
                 LEFT JOIN staff_profiles sp ON u.id = sp.user_id
-                WHERE u.role = 'staff' AND u.status IN ('active', 'disabled')
-                ORDER BY u.created_at DESC";
+                WHERE u.role = 'staff'
+                ORDER BY CASE WHEN u.status = 'pending' THEN 0 ELSE 1 END, u.created_at DESC";
 
         $staffMembers = Database::fetchAll($sql);
         $totalCount = count($staffMembers);

@@ -245,113 +245,193 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
         $previewWorkerPayout = max(0.0, round($bookingBasePrice - 49.0, 2));
       ?>
 
-      <!-- Assign / Reassign Staff Card -->
-      <div class="stat-card mb-3" style="border: 2px solid #f25b29;">
-        <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-user-plus text-success mr-2"></i>Technician Assignment</h6>
+      <?php if ($booking['status'] === 'completed'): ?>
+        <!-- Completed Job Summary & Verification Card (Reassignment Locked) -->
+        <div class="stat-card mb-3" style="border: 2px solid #10b981; border-radius: 10px; background: #ffffff;">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle d-flex align-items-center justify-content-center text-white mr-2 shadow-sm" style="width: 32px; height: 32px; background: #10b981;">
+                <i class="fa fa-check"></i>
+              </div>
+              <div>
+                <h6 class="font-weight-bold text-dark mb-0" style="font-size: 14px;">Job Completed & Closed</h6>
+                <span class="text-success small font-weight-bold" style="font-size: 11px;"><i class="fa fa-shield mr-1"></i>Verified Service Delivery</span>
+              </div>
+            </div>
+            <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size: 11px;">COMPLETED</span>
+          </div>
 
-        <!-- Labour Income Preview Box -->
-        <div class="p-3 mb-3 rounded" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.4);">
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="small font-weight-bold text-dark"><i class="fa fa-money text-success mr-1"></i>Technician Labour Payout:</span>
-            <span class="font-weight-bold text-success" style="font-size: 17px;">₹<?= number_format($previewWorkerPayout, 0) ?></span>
+          <!-- Executed By Technician -->
+          <div class="p-3 mb-3 rounded" style="background: #f0fdf4; border: 1.5px solid #bbf7d0;">
+            <div class="text-muted small font-weight-bold text-uppercase mb-2" style="font-size: 10.5px; letter-spacing: 0.5px;">Executed By Technician</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center text-white font-weight-bold mr-2 shadow-sm" style="width: 38px; height: 38px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-size: 15px;">
+                  <?= strtoupper(substr($booking['staff_name'] ?? 'T', 0, 1)) ?>
+                </div>
+                <div>
+                  <div class="font-weight-bold text-dark" style="font-size: 13.5px;"><?= View::e($booking['staff_name'] ?? 'Assigned Staff') ?></div>
+                  <div class="text-muted small" style="font-size: 11.5px;">
+                    <?php if (!empty($booking['staff_phone'])): ?>
+                      <a href="tel:<?= View::e($booking['staff_phone']) ?>" class="text-success font-weight-bold text-decoration-none">
+                        <i class="fa fa-phone mr-1"></i><?= View::e($booking['staff_phone']) ?>
+                      </a>
+                    <?php else: ?>
+                      Lead Field Technician
+                    <?php endif; ?>
+                  </div>
+                </div>
+              </div>
+              <span class="badge badge-success px-2 py-1 font-weight-bold" style="font-size: 11px;">✓ Job Done</span>
+            </div>
           </div>
-          <div class="d-flex justify-content-between align-items-center mt-1 text-muted small">
-            <span>Platform Fee: ₹49</span>
-            <span class="badge badge-light border text-muted">Total - ₹49 Fee</span>
+
+          <!-- Payout & Fee Summary -->
+          <div class="p-2 px-3 rounded bg-light border mb-3 small" style="font-size: 12px;">
+            <div class="d-flex justify-content-between py-1 border-bottom">
+              <span class="text-muted">Total Service Value:</span>
+              <strong class="text-dark">₹<?= number_format($totAmt > 0 ? $totAmt : $bookingBasePrice, 2) ?></strong>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom">
+              <span class="text-muted">Technician Labour Payout:</span>
+              <strong class="text-success">₹<?= number_format($previewWorkerPayout, 2) ?></strong>
+            </div>
+            <div class="d-flex justify-content-between py-1">
+              <span class="text-muted">Platform Fee:</span>
+              <strong class="text-muted">₹49.00</strong>
+            </div>
           </div>
-          <div class="d-flex align-items-center mt-2 pt-2 border-top border-light" style="gap: 6px;">
-            <?php if ($dueAmt <= 0 && ($totAmt > 0 || ($booking['payment_type'] ?? '') === 'online')): ?>
-              <span class="badge badge-success px-2 py-1"><i class="fa fa-credit-card mr-1"></i>Prepaid (Fully Paid)</span>
-            <?php else: ?>
-              <span class="badge badge-primary px-2 py-1"><i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked (Pay on Visit)</span>
-            <?php endif; ?>
-            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">
-              Priority: <?= ucfirst(View::e($booking['priority'] ?? 'normal')) ?>
-            </span>
-          </div>
-          <div class="text-muted mt-2 pt-1" style="font-size: 11px; line-height: 1.3;">
-            <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format($previewWorkerPayout, 0) ?></strong> (Labour Income: Total - ₹49), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
+
+          <div class="alert alert-light border mb-0 text-center py-2 px-2" style="font-size: 11.5px; background: #f8fafc; color: #475569; border-radius: 6px;">
+            <i class="fa fa-lock text-success mr-1"></i>This job is closed and verified. Reassignment is locked to protect completion proof & payout integrity.
           </div>
         </div>
-        
-        <?php if (!empty($booking['staff_name'])): ?>
-          <div class="p-2 bg-light rounded mb-3 small">
-            <div><span class="text-muted">Assigned:</span> <strong><?= View::e($booking['staff_name']) ?></strong></div>
-            <div><span class="text-muted">Status:</span> <span class="badge badge-status-<?= View::e($job['status'] ?? 'assigned') ?>"><?= ucfirst($job['status'] ?? 'assigned') ?></span></div>
+      <?php elseif ($booking['status'] === 'cancelled'): ?>
+        <!-- Cancelled Job Card (Reassignment Locked) -->
+        <div class="stat-card mb-3" style="border: 2px solid #ef4444; border-radius: 10px; background: #ffffff;">
+          <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+            <div class="d-flex align-items-center">
+              <div class="rounded-circle d-flex align-items-center justify-content-center text-white mr-2" style="width: 32px; height: 32px; background: #ef4444;">
+                <i class="fa fa-times"></i>
+              </div>
+              <div>
+                <h6 class="font-weight-bold text-dark mb-0">Booking Cancelled</h6>
+                <span class="text-danger small font-weight-bold" style="font-size: 11px;">Service Terminated</span>
+              </div>
+            </div>
+            <span class="badge badge-danger px-2 py-1 font-weight-bold" style="font-size: 11px;">CANCELLED</span>
           </div>
-        <?php endif; ?>
+          <p class="text-muted small mb-0" style="font-size: 11.5px;">This booking was cancelled. Technician assignment and rescheduling are closed.</p>
+        </div>
+      <?php else: ?>
+        <!-- Assign / Reassign Staff Card (Active Bookings Only) -->
+        <div class="stat-card mb-3" style="border: 2px solid #f25b29;">
+          <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-user-plus text-success mr-2"></i>Technician Assignment</h6>
 
-        <form method="POST" action="<?= View::url('/admin/bookings/' . $booking['id'] . '/assign') ?>">
-          <?= View::csrfField() ?>
-
-          <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark">Select Technician</label>
-            <select name="staff_id" class="form-control form-control-sm" required>
-              <option value="">-- Choose technician --</option>
-              <?php foreach ($staffMembers as $s): ?>
-                <option value="<?= $s['id'] ?>" <?= ($booking['staff_id'] ?? 0) == $s['id'] ? 'selected' : '' ?>>
-                  <?= View::e($s['name']) ?> (★ <?= number_format((float)($s['rating_avg'] ?? 5.0), 1) ?>) <?= !empty($s['is_available']) ? '🟢' : '🔴' ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
+          <!-- Labour Income Preview Box -->
+          <div class="p-3 mb-3 rounded" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.4);">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small font-weight-bold text-dark"><i class="fa fa-money text-success mr-1"></i>Technician Labour Payout:</span>
+              <span class="font-weight-bold text-success" style="font-size: 17px;">₹<?= number_format($previewWorkerPayout, 0) ?></span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-1 text-muted small">
+              <span>Platform Fee: ₹49</span>
+              <span class="badge badge-light border text-muted">Total - ₹49 Fee</span>
+            </div>
+            <div class="d-flex align-items-center mt-2 pt-2 border-top border-light" style="gap: 6px;">
+              <?php if ($dueAmt <= 0 && ($totAmt > 0 || ($booking['payment_type'] ?? '') === 'online')): ?>
+                <span class="badge badge-success px-2 py-1"><i class="fa fa-credit-card mr-1"></i>Prepaid (Fully Paid)</span>
+              <?php else: ?>
+                <span class="badge badge-primary px-2 py-1"><i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked (Pay on Visit)</span>
+              <?php endif; ?>
+              <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">
+                Priority: <?= ucfirst(View::e($booking['priority'] ?? 'normal')) ?>
+              </span>
+            </div>
+            <div class="text-muted mt-2 pt-1" style="font-size: 11px; line-height: 1.3;">
+              <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format($previewWorkerPayout, 0) ?></strong> (Labour Income: Total - ₹49), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
+            </div>
           </div>
+          
+          <?php if (!empty($booking['staff_name'])): ?>
+            <div class="p-2 bg-light rounded mb-3 small">
+              <div><span class="text-muted">Assigned:</span> <strong><?= View::e($booking['staff_name']) ?></strong></div>
+              <div><span class="text-muted">Status:</span> <span class="badge badge-status-<?= View::e($job['status'] ?? 'assigned') ?>"><?= ucfirst($job['status'] ?? 'assigned') ?></span></div>
+            </div>
+          <?php endif; ?>
 
-          <div class="form-group mb-2">
-            <label class="font-weight-bold small text-dark">Job Priority</label>
-            <select name="priority" class="form-control form-control-sm">
-              <option value="high" <?= ($booking['priority'] ?? '') === 'high' ? 'selected' : '' ?>>🔥 High Priority</option>
-              <option value="urgent" <?= ($booking['priority'] ?? '') === 'urgent' ? 'selected' : '' ?>>⚡ Urgent Priority</option>
-              <option value="normal" <?= ($booking['priority'] ?? 'normal') === 'normal' ? 'selected' : '' ?>>⭐ Normal Priority</option>
-              <option value="low" <?= ($booking['priority'] ?? '') === 'low' ? 'selected' : '' ?>>🟢 Low Priority</option>
-            </select>
-          </div>
+          <form method="POST" action="<?= View::url('/admin/bookings/' . $booking['id'] . '/assign') ?>">
+            <?= View::csrfField() ?>
 
-          <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark">Scheduled Time</label>
-            <input type="datetime-local" name="scheduled_at" class="form-control form-control-sm" value="<?= date('Y-m-d\TH:i') ?>">
-          </div>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold small text-dark">Select Technician</label>
+              <select name="staff_id" class="form-control form-control-sm" required>
+                <option value="">-- Choose technician --</option>
+                <?php foreach ($staffMembers as $s): ?>
+                  <option value="<?= $s['id'] ?>" <?= ($booking['staff_id'] ?? 0) == $s['id'] ? 'selected' : '' ?>>
+                    <?= View::e($s['name']) ?> (★ <?= number_format((float)($s['rating_avg'] ?? 5.0), 1) ?>) <?= !empty($s['is_available']) ? '🟢' : '🔴' ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
 
-          <button type="submit" class="btn btn-brand btn-block btn-sm font-weight-bold py-2">
-            <i class="fa fa-check mr-1"></i><?= !empty($booking['staff_name']) ? 'Reassign Technician' : 'Assign Technician' ?>
-          </button>
-          <div class="text-muted mt-2 text-center" style="font-size: 11px; line-height: 1.3;">
-            <i class="fa fa-envelope text-success mr-1"></i>Technician & customer will automatically receive instant confirmation emails with visit details.
-          </div>
-        </form>
-      </div>
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small text-dark">Job Priority</label>
+              <select name="priority" class="form-control form-control-sm">
+                <option value="high" <?= ($booking['priority'] ?? '') === 'high' ? 'selected' : '' ?>>🔥 High Priority</option>
+                <option value="urgent" <?= ($booking['priority'] ?? '') === 'urgent' ? 'selected' : '' ?>>⚡ Urgent Priority</option>
+                <option value="normal" <?= ($booking['priority'] ?? 'normal') === 'normal' ? 'selected' : '' ?>>⭐ Normal Priority</option>
+                <option value="low" <?= ($booking['priority'] ?? '') === 'low' ? 'selected' : '' ?>>🟢 Low Priority</option>
+              </select>
+            </div>
 
-      <!-- Reschedule Booking Card -->
-      <div class="stat-card mb-3">
-        <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-calendar text-info mr-2"></i>Reschedule Slot</h6>
-        
-        <form method="POST" action="<?= View::url('/admin/bookings/' . $booking['id'] . '/reschedule') ?>">
-          <?= View::csrfField() ?>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold small text-dark">Scheduled Time</label>
+              <input type="datetime-local" name="scheduled_at" class="form-control form-control-sm" value="<?= date('Y-m-d\TH:i') ?>">
+            </div>
 
-          <div class="form-group mb-2">
-            <label class="font-weight-bold small text-dark">New Date</label>
-            <input type="date" name="preferred_date" class="form-control form-control-sm" value="<?= View::e($booking['preferred_date'] ?? date('Y-m-d')) ?>" required>
-          </div>
+            <button type="submit" class="btn btn-brand btn-block btn-sm font-weight-bold py-2 shadow-sm" style="border-radius: 6px;">
+              <i class="fa fa-check mr-1"></i><?= !empty($booking['staff_name']) ? 'Reassign Technician' : 'Assign Technician' ?>
+            </button>
+            <div class="text-muted mt-2 text-center" style="font-size: 11px; line-height: 1.3;">
+              <i class="fa fa-envelope text-success mr-1"></i>Technician & customer will automatically receive instant confirmation emails with visit details.
+            </div>
+          </form>
+        </div>
 
-          <div class="form-group mb-2">
-            <label class="font-weight-bold small text-dark">New Time Slot</label>
-            <select name="preferred_time" class="form-control form-control-sm">
-              <option value="09:00 AM - 12:00 PM">09:00 AM - 12:00 PM</option>
-              <option value="12:00 PM - 03:00 PM">12:00 PM - 03:00 PM</option>
-              <option value="03:00 PM - 06:00 PM">03:00 PM - 06:00 PM</option>
-              <option value="06:00 PM - 09:00 PM">06:00 PM - 09:00 PM</option>
-            </select>
-          </div>
+        <!-- Reschedule Booking Card -->
+        <div class="stat-card mb-3">
+          <h6 class="font-weight-bold text-dark mb-3"><i class="fa fa-calendar text-info mr-2"></i>Reschedule Slot</h6>
+          
+          <form method="POST" action="<?= View::url('/admin/bookings/' . $booking['id'] . '/reschedule') ?>">
+            <?= View::csrfField() ?>
 
-          <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark">Reason (Optional)</label>
-            <input type="text" name="reason" class="form-control form-control-sm" placeholder="e.g. Customer requested morning slot">
-          </div>
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small text-dark">New Date</label>
+              <input type="date" name="preferred_date" class="form-control form-control-sm" value="<?= View::e($booking['preferred_date'] ?? date('Y-m-d')) ?>" required>
+            </div>
 
-          <button type="submit" class="btn btn-outline-info btn-block btn-sm font-weight-bold">
-            <i class="fa fa-refresh mr-1"></i>Confirm Reschedule
-          </button>
-        </form>
-      </div>
+            <div class="form-group mb-2">
+              <label class="font-weight-bold small text-dark">New Time Slot</label>
+              <select name="preferred_time" class="form-control form-control-sm">
+                <option value="09:00 AM - 12:00 PM">09:00 AM - 12:00 PM</option>
+                <option value="12:00 PM - 03:00 PM">12:00 PM - 03:00 PM</option>
+                <option value="03:00 PM - 06:00 PM">03:00 PM - 06:00 PM</option>
+                <option value="06:00 PM - 09:00 PM">06:00 PM - 09:00 PM</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="font-weight-bold small text-dark">Reason (Optional)</label>
+              <input type="text" name="reason" class="form-control form-control-sm" placeholder="e.g. Customer requested morning slot">
+            </div>
+
+            <button type="submit" class="btn btn-outline-info btn-block btn-sm font-weight-bold" style="border-radius: 6px;">
+              <i class="fa fa-refresh mr-1"></i>Confirm Reschedule
+            </button>
+          </form>
+        </div>
+      <?php endif; ?>
 
       <!-- Override Status / Cancellation Card -->
       <div class="stat-card">

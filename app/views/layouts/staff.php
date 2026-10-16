@@ -28,35 +28,147 @@
       margin: 0;
     }
     .staff-header {
-      background: var(--primary);
+      background: #0b2341;
+      border-bottom: 2px solid var(--primary);
       color: #fff;
-      padding: 12px 18px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(15,110,86,0.15);
+      gap: 8px;
+      box-shadow: 0 2px 10px rgba(11,35,65,0.18);
       position: sticky;
       top: 0;
       z-index: 999;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .staff-header .brand-title {
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      color: #fff;
-      text-decoration: none;
+    @media (min-width: 576px) {
+      .staff-header {
+        padding: 10px 18px;
+        gap: 12px;
+      }
+    }
+    .staff-header .staff-header-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+      text-decoration: none;
+    }
+    .staff-header .staff-header-left:hover {
+      text-decoration: none;
+    }
+    .staff-header .brand-logo-img {
+      height: 28px;
+      max-width: 96px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 4px;
+      display: block;
+      flex-shrink: 0;
+    }
+    @media (min-width: 576px) {
+      .staff-header .brand-logo-img {
+        height: 34px;
+        max-width: 130px;
+      }
+    }
+    .staff-header .brand-divider {
+      color: rgba(255, 255, 255, 0.35);
+      font-weight: 300;
+      font-size: 14px;
+      user-select: none;
+      flex-shrink: 0;
+      margin: 0 2px;
+    }
+    .staff-header .trade-badge {
+      background: rgba(242, 91, 41, 0.22);
+      border: 1px solid rgba(242, 91, 41, 0.55);
+      color: #ff9d75;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2.5px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    @media (min-width: 576px) {
+      .staff-header .trade-badge {
+        font-size: 11.5px;
+        padding: 3px 9px;
+        border-radius: 6px;
+        max-width: 180px;
+      }
+    }
+    .staff-header .trade-badge i {
+      font-size: 9.5px;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+    .staff-header .staff-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
     }
     .staff-header .user-badge {
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.22);
       color: #fff;
-      font-size: 12px;
-      padding: 4px 10px;
+      font-size: 11px;
+      padding: 3px 8px;
       border-radius: 20px;
       font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+    @media (min-width: 576px) {
+      .staff-header .user-badge {
+        font-size: 12px;
+        padding: 4px 10px;
+        max-width: 180px;
+      }
+    }
+    .staff-header .user-badge i {
+      font-size: 12px;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+    .staff-header .user-badge:hover {
+      background: rgba(255,255,255,0.18);
+    }
+    .staff-header .logout-link {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 15px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .staff-header .logout-link:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.18);
+      text-decoration: none;
     }
     .staff-bottom-nav {
       position: fixed;
@@ -164,17 +276,57 @@
   <?php
     $currentUri = $_SERVER['REQUEST_URI'] ?? '';
     $user = \App\Core\Auth::user();
+
+    // Determine technician's trade / category skills dynamically
+    $staffTradeTitle = 'Technician';
+    $staffTradeFull = 'Technician';
+    $userId = (int)($user['id'] ?? 0);
+    if ($userId > 0) {
+        try {
+            $skillsList = \App\Core\Database::fetchAll(
+                "SELECT c.name FROM staff_skills ss 
+                 JOIN categories c ON ss.category_id = c.id 
+                 WHERE ss.staff_id = :uid 
+                 ORDER BY c.name ASC",
+                ['uid' => $userId]
+            );
+            if (!empty($skillsList)) {
+                $tradeNames = array_column($skillsList, 'name');
+                $staffTradeFull = implode(', ', $tradeNames);
+                if (count($tradeNames) === 1) {
+                    $staffTradeTitle = $tradeNames[0];
+                } elseif (count($tradeNames) === 2) {
+                    $staffTradeTitle = implode(' & ', $tradeNames);
+                } else {
+                    $staffTradeTitle = $tradeNames[0] . ' +' . (count($tradeNames) - 1);
+                }
+            }
+        } catch (\Throwable $e) {}
+    }
   ?>
   <div class="staff-header">
-    <a href="<?= \App\Core\View::url('/staff') ?>" class="brand-title">
-      <img src="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" alt="REFIXEL" style="height: 22px; width: 22px; object-fit: contain;">
-      <span>REFIXEL Field Ops</span>
-    </a>
-    <div class="d-flex align-items-center">
-      <span class="user-badge mr-2">
-        <i class="fa fa-user-circle-o mr-1"></i><?= \App\Core\View::e($user['name'] ?? 'Technician') ?>
+    <a href="<?= \App\Core\View::url('/staff') ?>" class="staff-header-left" title="REFIXEL · <?= \App\Core\View::e($staffTradeFull) ?>">
+      <img src="<?= \App\Core\View::asset('img/logo blue bg color.png') ?>?v=3" 
+           alt="REFIXEL" 
+           class="brand-logo-img"
+           onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-logo-white-orange.png') ?>';">
+      <span class="brand-divider d-none d-sm-inline">|</span>
+      <span class="trade-badge" title="<?= \App\Core\View::e($staffTradeFull) ?>">
+        <i class="fa fa-wrench"></i><?= \App\Core\View::e($staffTradeTitle) ?>
       </span>
-      <a href="<?= \App\Core\View::url('/logout') ?>" class="text-white" title="Logout" style="font-size: 16px;">
+    </a>
+    <div class="staff-header-right">
+      <?php
+        $fullName = trim($user['name'] ?? 'Technician');
+        $nameParts = explode(' ', $fullName);
+        $firstName = $nameParts[0] ?? 'Tech';
+      ?>
+      <span class="user-badge" title="<?= \App\Core\View::e($fullName) ?>">
+        <i class="fa fa-user-circle-o"></i>
+        <span class="d-none d-sm-inline"><?= \App\Core\View::e($fullName) ?></span>
+        <span class="d-inline d-sm-none"><?= \App\Core\View::e($firstName) ?></span>
+      </span>
+      <a href="<?= \App\Core\View::url('/logout') ?>" class="logout-link" title="Logout">
         <i class="fa fa-power-off"></i>
       </a>
     </div>

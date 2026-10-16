@@ -21,8 +21,12 @@ class StaffController extends Controller
     {
         $staff = Database::fetchAll(
             "SELECT u.*, sp.rating_avg, sp.rating_count, sp.is_available, sp.availability_note,
-                    COUNT(j.id) as total_jobs,
-                    SUM(CASE WHEN j.status IN ('assigned', 'accepted', 'in_progress') THEN 1 ELSE 0 END) as active_jobs
+                    COUNT(DISTINCT j.id) as total_jobs,
+                    COUNT(DISTINCT CASE WHEN j.status IN ('assigned', 'accepted', 'in_progress') THEN j.id ELSE NULL END) as active_jobs,
+                    (SELECT GROUP_CONCAT(c.name SEPARATOR ', ')
+                     FROM staff_skills ss
+                     JOIN categories c ON ss.category_id = c.id
+                     WHERE ss.staff_id = u.id) as trade_skills
              FROM users u
              LEFT JOIN staff_profiles sp ON u.id = sp.user_id
              LEFT JOIN jobs j ON u.id = j.staff_id
