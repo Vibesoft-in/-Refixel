@@ -666,9 +666,76 @@ foreach ($checklist ?? [] as $item) {
         </div>
 
         <?php $swNum = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
-        <a href="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100">
+        <a href="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100" id="serviceWhatsAppBtn" data-base-url="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>">
           <i class="fa fa-whatsapp mr-1"></i> Quick Book via WhatsApp
         </a>
+
+        <?php 
+        $addonsList = !empty($addons) ? $addons : \App\Models\ServiceAddon::forService((int)$service['id'], [], 6);
+        ?>
+        <?php if (!empty($addonsList)): ?>
+          <div class="service-addons-widget mt-3 pt-3 border-top" id="serviceAddonsWidget" data-base-price="<?= (float)preg_replace('/[^0-9.]/', '', (string)$price) ?>">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="service-addons-header-title">
+                <i class="fa fa-plus-circle mr-1" style="color: #f25b29;"></i> Frequently Added Together
+              </span>
+              <span class="badge" style="font-size: 10px; background: #fff0ea; color: #f25b29; border: 1px solid #ffdacf; padding: 2px 7px; border-radius: 6px; font-weight: 600;">Special Add-ons</span>
+            </div>
+            <p class="text-muted small mb-2" style="font-size: 11.5px; line-height: 1.4;">
+              Select complementary services to bundle with this booking:
+            </p>
+
+            <div class="service-addons-list">
+              <?php foreach ($addonsList as $aItem): ?>
+                <?php 
+                  $aPrice = (float)($aItem['starting_price'] ?? $aItem['price'] ?? 0);
+                  $aImg = !empty($aItem['image']) ? (str_starts_with($aItem['image'], 'http') ? $aItem['image'] : \App\Core\View::url($aItem['image'])) : \App\Core\View::url('/assets/images/service-default.jpg');
+                  $aBadge = $aItem['badge'] ?? 'Special Match';
+                  $aNote = $aItem['savings_note'] ?? '';
+                ?>
+                <label class="service-addon-checkbox-row d-flex align-items-center p-2 mb-2 rounded" for="addon_chk_<?= (int)$aItem['id'] ?>">
+                  <div class="service-addon-chk-wrap mr-2">
+                    <input type="checkbox" 
+                           class="service-addon-chk" 
+                           id="addon_chk_<?= (int)$aItem['id'] ?>" 
+                           value="<?= (int)$aItem['id'] ?>" 
+                           data-name="<?= htmlspecialchars($aItem['name'], ENT_QUOTES) ?>" 
+                           data-price="<?= $aPrice ?>">
+                  </div>
+                  <div class="addon-row-thumb mr-2">
+                    <img src="<?= htmlspecialchars($aImg) ?>" alt="<?= htmlspecialchars($aItem['name']) ?>" loading="lazy" onerror="this.onerror=null; this.src='<?= \App\Core\View::url('/assets/images/service-default.jpg') ?>';">
+                  </div>
+                  <div class="addon-row-content flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <span class="addon-row-title text-truncate" title="<?= htmlspecialchars($aItem['name']) ?>">
+                        <?= htmlspecialchars($aItem['name']) ?>
+                      </span>
+                      <span class="addon-row-price font-weight-bold ml-1">+₹<?= number_format($aPrice, 0) ?></span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mt-1">
+                      <span class="addon-row-badge"><?= htmlspecialchars($aBadge) ?></span>
+                      <?php if (!empty($aNote)): ?>
+                        <span class="addon-row-note text-truncate text-muted" title="<?= htmlspecialchars($aNote) ?>"><?= htmlspecialchars($aNote) ?></span>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                </label>
+              <?php endforeach; ?>
+            </div>
+
+            <!-- Dynamic Bundle Total Strip when add-ons are checked -->
+            <div id="serviceAddonTotalStrip" class="service-addon-total-strip p-2 mt-2 rounded" style="display: none;">
+              <div class="d-flex align-items-center justify-content-between">
+                <span class="small font-weight-bold text-success" style="font-size: 12px;">
+                  <i class="fa fa-check-circle mr-1"></i> <span id="selectedAddonCount">0</span> add-on(s) selected
+                </span>
+                <span class="small font-weight-bold text-dark" style="font-size: 12px;">
+                  Bundle: <strong style="color: #059669; font-size: 14px;">₹<span id="serviceAddonBundleTotal"><?= $price ?></span></strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -697,6 +764,113 @@ foreach ($checklist ?? [] as $item) {
 </div>
 
 <style>
+/* Service Single Page Addon Checkbox Widget Styling */
+.service-addons-widget {
+  background: #fafbfe;
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid #f0f2f5;
+}
+.service-addons-header-title {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+}
+.service-addons-list {
+  max-height: 275px;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+.service-addons-list::-webkit-scrollbar {
+  width: 4px;
+}
+.service-addons-list::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+.service-addons-list::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+.service-addon-checkbox-row {
+  cursor: pointer;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  transition: all 0.18s ease-in-out;
+  margin-bottom: 7px !important;
+  user-select: none;
+}
+.service-addon-checkbox-row:hover {
+  border-color: #f25b29;
+  background: #fffdfb;
+}
+.service-addon-checkbox-row.is-checked {
+  border-color: #f25b29;
+  background: #fff6f0;
+  box-shadow: 0 2px 6px rgba(242, 91, 41, 0.12);
+}
+.service-addon-chk-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.service-addon-chk {
+  width: 17px;
+  height: 17px;
+  cursor: pointer;
+  accent-color: #f25b29;
+}
+.addon-row-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f3f4f6;
+  flex-shrink: 0;
+  border: 1px solid #eef0f2;
+}
+.addon-row-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.addon-row-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+  display: block;
+}
+.service-addon-checkbox-row.is-checked .addon-row-title {
+  color: #c2410c;
+}
+.addon-row-price {
+  font-size: 12px;
+  color: #059669;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.addon-row-badge {
+  font-size: 9px;
+  font-weight: 600;
+  color: #d94814;
+  background: #ffede5;
+  padding: 1px 5px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.addon-row-note {
+  font-size: 10px;
+  color: #6b7280;
+  max-width: 130px;
+  text-align: right;
+}
+.service-addon-total-strip {
+  background: #ecfdf5;
+  border: 1px dashed #10b981;
+  transition: all 0.2s ease;
+}
+
 /* Service Detail Title Responsive Typography (Fits in max 2 lines on phone view) */
 .service-detail-title {
   font-size: 28px;
@@ -1485,7 +1659,7 @@ document.addEventListener('DOMContentLoaded', function () {
     startAutoPlay();
   }
 
-  /* Add to Cart button handler */
+  /* Add to Cart button handler (Bundles checked add-ons) */
   document.addEventListener('click', function(e) {
     var cartBtn = e.target.closest('.btn-add-to-cart');
     if (!cartBtn) return;
@@ -1499,17 +1673,32 @@ document.addEventListener('DOMContentLoaded', function () {
     cartBtn.disabled = true;
     cartBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
 
+    // Collect checked add-on IDs
+    var checkedAddons = [];
+    document.querySelectorAll('#serviceAddonsWidget .service-addon-chk:checked').forEach(function(chk) {
+      var val = parseInt(chk.value, 10);
+      if (val > 0) checkedAddons.push(val);
+    });
+
+    var postData = 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1';
+    if (checkedAddons.length > 0) {
+      postData += '&addon_ids=' + encodeURIComponent(checkedAddons.join(','));
+    }
+
     fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      body: 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1'
+      body: postData
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
-      cartBtn.innerHTML = '<i class="fa fa-check"></i>';
+      var successText = checkedAddons.length > 0 
+        ? '<i class="fa fa-check"></i> Added +' + checkedAddons.length + ' Add-ons' 
+        : '<i class="fa fa-check"></i> Added';
+      cartBtn.innerHTML = successText;
       cartBtn.style.background = '#10b981';
       cartBtn.style.borderColor = '#10b981';
       cartBtn.style.color = '#ffffff';
@@ -1518,7 +1707,8 @@ document.addEventListener('DOMContentLoaded', function () {
         window.syncCartUI();
       }
 
-      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+      // If user did not pick inline addons and modal is available, open modal; else skip modal to prevent duplicate prompt
+      if (checkedAddons.length === 0 && window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
         window.openRefixelAddonModal(data);
       }
 
@@ -1528,7 +1718,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cartBtn.style.borderColor = '';
         cartBtn.style.color = '';
         cartBtn.disabled = false;
-      }, 1500);
+      }, 1800);
     })
     .catch(function(err) {
       console.error(err);
@@ -1537,7 +1727,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* Book Doorstep Visit / Mobile Book Now button handler (triggers Smart Addons upsell modal) */
+  /* Book Doorstep Visit / Mobile Book Now button handler (Bundles checked add-ons) */
   document.addEventListener('click', function(e) {
     var bookBtn = e.target.closest('.service-book-visit-btn, .smb-book-btn');
     if (!bookBtn) return;
@@ -1552,13 +1742,25 @@ document.addEventListener('DOMContentLoaded', function () {
     bookBtn.disabled = true;
     bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
 
+    // Collect checked add-on IDs
+    var checkedAddons = [];
+    document.querySelectorAll('#serviceAddonsWidget .service-addon-chk:checked').forEach(function(chk) {
+      var val = parseInt(chk.value, 10);
+      if (val > 0) checkedAddons.push(val);
+    });
+
+    var postData = 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1';
+    if (checkedAddons.length > 0) {
+      postData += '&addon_ids=' + encodeURIComponent(checkedAddons.join(','));
+    }
+
     fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      body: 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1'
+      body: postData
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {
@@ -1569,7 +1771,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.syncCartUI();
       }
 
-      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+      if (checkedAddons.length === 0 && window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
         window.openRefixelAddonModal(data, { isBookMode: true });
       } else {
         window.location.href = '<?= \App\Core\View::url('/cart') ?>';
@@ -1582,5 +1784,66 @@ document.addEventListener('DOMContentLoaded', function () {
       window.location.href = bookBtn.getAttribute('href') || '<?= \App\Core\View::url('/cart') ?>';
     });
   });
+
+  /* Interactive Checkbox Addons Widget: Dynamic bundle total & WhatsApp updater */
+  function updateAddonSummary() {
+    var widget = document.getElementById('serviceAddonsWidget');
+    if (!widget) return;
+
+    var basePrice = parseFloat(widget.getAttribute('data-base-price')) || 0;
+    var chks = widget.querySelectorAll('.service-addon-chk:checked');
+    var strip = document.getElementById('serviceAddonTotalStrip');
+    var countEl = document.getElementById('selectedAddonCount');
+    var totalEl = document.getElementById('serviceAddonBundleTotal');
+    var whatsappBtn = document.getElementById('serviceWhatsAppBtn');
+
+    var addSum = 0;
+    var selectedNames = [];
+
+    widget.querySelectorAll('.service-addon-checkbox-row').forEach(function(row) {
+      var chk = row.querySelector('.service-addon-chk');
+      if (chk && chk.checked) {
+        row.classList.add('is-checked');
+        addSum += (parseFloat(chk.getAttribute('data-price')) || 0);
+        selectedNames.push(chk.getAttribute('data-name'));
+      } else {
+        row.classList.remove('is-checked');
+      }
+    });
+
+    var count = chks.length;
+    if (count > 0) {
+      if (strip) strip.style.display = 'block';
+      if (countEl) countEl.textContent = count;
+      if (totalEl) totalEl.textContent = Math.round(basePrice + addSum);
+    } else {
+      if (strip) strip.style.display = 'none';
+      if (countEl) countEl.textContent = '0';
+      if (totalEl) totalEl.textContent = Math.round(basePrice);
+    }
+
+    // Update WhatsApp link text with selected addons
+    if (whatsappBtn) {
+      var origHref = whatsappBtn.getAttribute('data-base-url') || whatsappBtn.href;
+      if (!whatsappBtn.getAttribute('data-base-url')) {
+        whatsappBtn.setAttribute('data-base-url', origHref);
+      }
+      if (count > 0) {
+        var addonText = '%20with%20add-ons%3A%20' + encodeURIComponent(selectedNames.join(', '));
+        whatsappBtn.href = origHref + addonText;
+      } else {
+        whatsappBtn.href = origHref;
+      }
+    }
+  }
+
+  var addonWidget = document.getElementById('serviceAddonsWidget');
+  if (addonWidget) {
+    addonWidget.addEventListener('change', function(e) {
+      if (e.target && e.target.classList.contains('service-addon-chk')) {
+        updateAddonSummary();
+      }
+    });
+  }
 });
 </script>

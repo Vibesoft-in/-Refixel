@@ -161,6 +161,9 @@ class ServiceAddon extends Model
         } elseif (str_contains($context, 'sofa') || str_contains($context, 'couch') || str_contains($context, 'upholstery')) {
             // Sensible sofa / living room addons
             $slugTerms = ['mattress', 'ceiling-fan', 'balcony', 'full-home', 'cockroach'];
+        } elseif (str_contains($context, 'balcony') || str_contains($context, 'terrace') || str_contains($context, 'patio')) {
+            // Sensible balcony / terrace outdoor wash addons
+            $slugTerms = ['sofa', 'cockroach', 'bathroom', 'ceiling-fan', 'full-home'];
         } elseif (str_contains($context, 'home') || str_contains($context, 'house') || str_contains($context, 'flat') || str_contains($context, 'room')) {
             // Sensible full home / room cleaning addons
             $slugTerms = ['sofa', 'cockroach', 'balcony', 'bathroom', 'mattress', 'ceiling-fan'];

@@ -13,6 +13,7 @@ use App\Models\Review;
 use App\Models\Service;
 use App\Models\ServiceArea;
 use App\Models\ServiceChecklistItem;
+use App\Models\ServiceAddon;
 
 class ServiceController extends Controller
 {
@@ -348,6 +349,8 @@ class ServiceController extends Controller
             '@graph'   => $schemaGraph,
         ];
 
+        $addons = ServiceAddon::forService((int)$svc['id'], [], 6);
+
         return $this->render('customer.services.show', [
             'title'           => $title,
             'description'     => $description,
@@ -361,6 +364,7 @@ class ServiceController extends Controller
             'reviews'         => $reviews,
             'relatedServices' => $relatedServices,
             'serviceAreas'    => $serviceAreas,
+            'addons'          => $addons,
         ], 'customer');
     }
 

@@ -280,6 +280,48 @@ $pairings = [
         'sort_order'   => 5,
     ],
 
+    // --- Balcony Deep Pressure Wash (Service slug: balcony-deep-pressure-wash) ---
+    [
+        'source_slug'  => 'balcony-deep-pressure-wash',
+        'addon_slug'   => 'sofa-cleaning',
+        'badge'        => '🛋️ Living Room Care',
+        'note'         => 'Deep foam upholstery shampoo',
+        'price'        => 599.00,
+        'sort_order'   => 1,
+    ],
+    [
+        'source_slug'  => 'balcony-deep-pressure-wash',
+        'addon_slug'   => 'cockroach-pest-control',
+        'badge'        => '🛡️ Balcony & Drain Shield',
+        'note'         => 'Herbal pest barrier spray',
+        'price'        => 399.00,
+        'sort_order'   => 2,
+    ],
+    [
+        'source_slug'  => 'balcony-deep-pressure-wash',
+        'addon_slug'   => 'bathroom-deep-cleaning',
+        'badge'        => '🧼 Spotless Bath',
+        'note'         => 'Intense tile & fittings descaling',
+        'price'        => 399.00,
+        'sort_order'   => 3,
+    ],
+    [
+        'source_slug'  => 'balcony-deep-pressure-wash',
+        'addon_slug'   => 'ceiling-fan-chandelier-detailing',
+        'badge'        => '⚡ Dust-Free Clean',
+        'note'         => 'High ceiling & fan detailing',
+        'price'        => 149.00,
+        'sort_order'   => 4,
+    ],
+    [
+        'source_slug'  => 'balcony-deep-pressure-wash',
+        'addon_slug'   => 'full-home-cleaning',
+        'badge'        => '🏠 Complete Home Upgrade',
+        'note'         => 'Upgrade to full home deep clean',
+        'price'        => 1299.00,
+        'sort_order'   => 5,
+    ],
+
     // --- Sofa & Upholstery Deep Cleaning (Service slug: sofa-cleaning) ---
     [
         'source_slug'  => 'sofa-cleaning',

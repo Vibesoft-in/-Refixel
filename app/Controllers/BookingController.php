@@ -104,6 +104,22 @@ class BookingController extends Controller
         } else {
             $res = Cart::add($serviceId, max(1, $qty));
         }
+
+        // Support bundling multiple companion add-on services directly
+        $addonIds = $request->input('addon_ids');
+        if (!empty($addonIds)) {
+            if (is_string($addonIds)) {
+                $addonIds = array_filter(array_map('intval', explode(',', $addonIds)));
+            }
+            if (is_array($addonIds)) {
+                foreach ($addonIds as $aId) {
+                    if ($aId > 0 && $aId !== $serviceId) {
+                        Cart::add($aId, 1);
+                    }
+                }
+            }
+        }
+
         $details = Cart::getDetails();
 
         $addedService = Service::find($serviceId);
