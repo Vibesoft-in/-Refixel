@@ -9,8 +9,12 @@ use App\Core\Database;
 use App\Core\Request;
 use App\Models\Booking;
 use App\Controllers\BookingController;
+use App\Services\AutoDispatchService;
 
 echo "=== RUNNING HOMEPAGE ENQUIRY EMAIL OTP VERIFICATION TESTS ===\n";
+
+$prevBusyMode = AutoDispatchService::isBusyModeEnabled();
+AutoDispatchService::setBusyMode(false);
 
 // Cleanup old test data
 Database::query("DELETE FROM notifications WHERE to_address = 'enquiry_otp_test@refixel.com'");
@@ -128,5 +132,6 @@ Database::query("DELETE FROM jobs WHERE booking_id IN (SELECT id FROM bookings W
 Database::query("DELETE FROM bookings WHERE email = 'enquiry_otp_test@refixel.com'");
 Database::query("DELETE FROM users WHERE email = 'enquiry_otp_test@refixel.com'");
 unset($_SESSION['enquiry_otp'], $_SESSION['last_enquiry']);
+AutoDispatchService::setBusyMode($prevBusyMode);
 
 echo "\n=== ALL 5 HOMEPAGE ENQUIRY OTP TESTS PASSED SUCCESSFULLY! ===\n";

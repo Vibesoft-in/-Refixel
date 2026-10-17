@@ -1371,12 +1371,24 @@ class BookingController extends Controller
         unset($_SESSION['enquiry_otp']);
 
         $res = $this->executeEnquiryCreation($formData);
+        $enquiryData = $_SESSION['last_enquiry'] ?? [];
 
         return Response::json([
             'status'       => 'success',
             'message'      => 'Enquiry successfully verified and submitted!',
             'booking_no'   => $res['booking_no'],
             'redirect_url' => View::url('/enquiry-success?booking_no=' . urlencode($res['booking_no'])),
+            'enquiry'      => [
+                'booking_no'         => $res['booking_no'],
+                'booking_id'         => $res['booking_id'] ?? 0,
+                'name'               => $enquiryData['name'] ?? '',
+                'phone'              => $enquiryData['phone'] ?? '',
+                'email'              => $enquiryData['email'] ?? '',
+                'service_name'       => $enquiryData['service_name'] ?? 'Home Service',
+                'location'           => $enquiryData['location'] ?? 'Service Area',
+                'generated_password' => $enquiryData['generated_password'] ?? '',
+                'dashboard_url'      => View::url('/account'),
+            ],
         ]);
     }
 

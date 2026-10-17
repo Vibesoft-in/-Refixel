@@ -4407,7 +4407,190 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 </div>
 
+<!-- ========================================== -->
+<!-- ENQUIRY BOOKING DONE SUCCESS POPUP MODAL -->
+<!-- ========================================== -->
+<div class="ref_success_modal_overlay" id="enquirySuccessModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="enquirySuccessModalTitle">
+  <div class="ref_success_modal_backdrop" id="enquirySuccessBackdrop"></div>
+  <div class="ref_success_modal_card">
+    <button type="button" class="ref_success_close_btn" id="enquirySuccessXCloseBtn" aria-label="Close dialog">&times;</button>
+
+    <div class="ref_success_card_inner">
+      <!-- Brand Logo -->
+      <div class="rfx-logo text-center mb-2">
+        <img src="<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>" alt="REFIXEL" style="height: 32px; width: auto; object-fit: contain;">
+      </div>
+
+      <!-- Small Card Body -->
+      <div class="rfx-card-body p-0">
+        <!-- Booking Done + ID -->
+        <div class="rfx-top text-center mb-3">
+          <div class="rfx-done-badge d-inline-flex align-items-center" style="gap: 7px; color: #16a34a; font-size: 16px; font-weight: 800;">
+            <span class="tick-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; display: inline-flex; align-items: center; justify-content: center; font-size: 13px;">
+              <i class="fa fa-check"></i>
+            </span>
+            <span id="enquirySuccessModalTitle">Booking Done</span>
+          </div>
+          <div class="mt-1">
+            <span class="rfx-id-tag d-inline-flex align-items-center" style="gap: 5px; background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; padding: 2px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 700; font-family: monospace;">
+              ID: <span id="rfxSuccessBookingNo">BK-PENDING</span>
+              <button type="button" class="rfx-copy-btn" id="rfxCopyIdBtn" title="Copy ID">
+                <i class="fa fa-copy"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Mobile Number, Email & Password Credentials Box -->
+        <div class="rfx-cred-box" style="background: #0a1c33; color: #ffffff; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
+          <div class="rfx-cred-row d-flex align-items-center justify-content-between py-1" style="font-size: 12px;">
+            <span class="rfx-cred-lbl" style="color: #94a3b8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">MOBILE NUMBER</span>
+            <span class="rfx-cred-val font-weight-bold text-white d-flex align-items-center" style="font-size: 12.5px; gap: 5px;">
+              <span id="rfxSuccessPhone"></span>
+              <button type="button" class="rfx-copy-btn" id="rfxCopyPhoneBtn" title="Copy Mobile">
+                <i class="fa fa-copy"></i>
+              </button>
+            </span>
+          </div>
+
+          <div class="rfx-cred-row d-flex align-items-center justify-content-between py-1" id="rfxSuccessEmailRow" style="font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 4px; padding-top: 6px;">
+            <span class="rfx-cred-lbl" style="color: #94a3b8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">EMAIL</span>
+            <span class="rfx-cred-val font-weight-bold text-white d-flex align-items-center" style="font-size: 11px; gap: 5px;">
+              <span id="rfxSuccessEmail" style="max-width: 175px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+              <button type="button" class="rfx-copy-btn" id="rfxCopyEmailBtn" title="Copy Email">
+                <i class="fa fa-copy"></i>
+              </button>
+            </span>
+          </div>
+
+          <div class="rfx-cred-row d-flex align-items-center justify-content-between py-1" style="font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 4px; padding-top: 6px;">
+            <span class="rfx-cred-lbl" style="color: #94a3b8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">PASSWORD</span>
+            <span class="rfx-cred-val font-weight-bold d-flex align-items-center" style="font-size: 12.5px; gap: 5px;">
+              <span id="rfxSuccessPassword" style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"></span>
+              <button type="button" class="rfx-copy-btn" id="rfxCopyPasswordBtn" title="Copy Password">
+                <i class="fa fa-copy"></i> Copy
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Enquiry Summary Box -->
+        <div class="rfx-sum-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; font-size: 12px;">
+          <div class="rfx-sum-title" style="font-size: 10px; text-transform: uppercase; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px;">ENQUIRY SUMMARY</div>
+          <div class="rfx-sum-row d-flex justify-content-between align-items-center py-1" style="color: #64748b; border-bottom: 1px dashed #e2e8f0;">
+            <span style="font-size: 11.5px;">Service</span>
+            <strong id="rfxSuccessService" style="color: #f25b29; font-weight: 700; font-size: 12px; text-align: right; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></strong>
+          </div>
+          <div class="rfx-sum-row d-flex justify-content-between align-items-center py-1" style="color: #64748b; border-bottom: 1px dashed #e2e8f0;">
+            <span style="font-size: 11.5px;">Name</span>
+            <strong id="rfxSuccessName" style="color: #0f172a; font-weight: 700; font-size: 12px; text-align: right; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></strong>
+          </div>
+          <div class="rfx-sum-row d-flex justify-content-between align-items-center py-1" style="color: #64748b;">
+            <span style="font-size: 11.5px;">Location</span>
+            <strong id="rfxSuccessLocation" style="color: #0f172a; font-weight: 700; font-size: 12px; text-align: right; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></strong>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div>
+          <a href="<?= \App\Core\View::url('/account') ?>" id="rfxSuccessDashboardBtn" class="rfx-btn-dash text-center text-white d-block" style="background: #f25b29; font-weight: 700; font-size: 13.5px; padding: 9px 14px; border-radius: 8px; text-decoration: none !important; box-shadow: 0 3px 10px rgba(242, 91, 41, 0.25); transition: opacity 0.15s;">
+            Open Dashboard &rarr;
+          </a>
+          <button type="button" id="rfxSuccessReturnBtn" class="rfx-link-home btn btn-link text-center d-block w-100" style="color: #64748b; font-size: 11.5px; font-weight: 600; text-decoration: none !important; margin-top: 8px; background: none; border: none; padding: 4px; cursor: pointer;">
+            Return to Home
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
+/* Enquiry Success Modal Styling */
+.ref_success_modal_overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+}
+.ref_success_modal_overlay.ref_show {
+  opacity: 1;
+  visibility: visible;
+}
+.ref_success_modal_backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 28, 51, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1;
+}
+.ref_success_modal_card {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  width: 100%;
+  max-width: 380px;
+  border-radius: 16px;
+  padding: 20px 18px 18px 18px;
+  box-shadow: 0 20px 50px rgba(10, 28, 51, 0.3), 0 6px 18px rgba(0,0,0,0.1);
+  border: 1px solid #e2e8f0;
+  transform: scale(0.92) translateY(15px);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+.ref_success_modal_overlay.ref_show .ref_success_modal_card {
+  transform: scale(1) translateY(0);
+}
+.ref_success_close_btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.ref_success_close_btn:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+.rfx-copy-btn {
+  background: rgba(255, 255, 255, 0.16);
+  border: none;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+  transition: background 0.15s;
+}
+.rfx-copy-btn:hover {
+  background: #f25b29;
+}
+.rfx-id-tag .rfx-copy-btn {
+  background: rgba(194, 65, 12, 0.12);
+  color: #c2410c;
+}
+.rfx-id-tag .rfx-copy-btn:hover {
+  background: #f25b29;
+  color: #ffffff;
+}
+
 .ref_otp_modal_overlay {
   position: fixed;
   top: 0;
@@ -4663,6 +4846,26 @@ document.addEventListener("DOMContentLoaded", function () {
   var digitInputs = Array.from(document.querySelectorAll(".ref_otp_digit"));
   var sendBtn = form.querySelector('button[type="submit"]');
 
+  // Success Modal Elements
+  var successModal = document.getElementById("enquirySuccessModal");
+  var successBackdrop = document.getElementById("enquirySuccessBackdrop");
+  var successXCloseBtn = document.getElementById("enquirySuccessXCloseBtn");
+  var successReturnBtn = document.getElementById("enquirySuccessReturnBtn");
+  var successBookingNo = document.getElementById("rfxSuccessBookingNo");
+  var successPhone = document.getElementById("rfxSuccessPhone");
+  var successEmail = document.getElementById("rfxSuccessEmail");
+  var successEmailRow = document.getElementById("rfxSuccessEmailRow");
+  var successPassword = document.getElementById("rfxSuccessPassword");
+  var successService = document.getElementById("rfxSuccessService");
+  var successName = document.getElementById("rfxSuccessName");
+  var successLocation = document.getElementById("rfxSuccessLocation");
+  var successDashboardBtn = document.getElementById("rfxSuccessDashboardBtn");
+
+  var copyIdBtn = document.getElementById("rfxCopyIdBtn");
+  var copyPhoneBtn = document.getElementById("rfxCopyPhoneBtn");
+  var copyEmailBtn = document.getElementById("rfxCopyEmailBtn");
+  var copyPasswordBtn = document.getElementById("rfxCopyPasswordBtn");
+
   var countdownInterval = null;
   var currentEmail = '';
 
@@ -4901,12 +5104,20 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(function (r) { return r.json(); })
     .then(function (data) {
       if (data.status === 'success') {
-        showAlert("OTP verified successfully! Redirecting to confirmation...", true);
+        showAlert("OTP verified successfully!", true);
         verifyBtn.innerHTML = '<i class="fa fa-check-circle mr-1"></i> Verified & Confirmed!';
         verifyBtn.style.background = "#16a34a";
         setTimeout(function () {
-          window.location.href = data.redirect_url || ('<?= \App\Core\View::url("/enquiry-success") ?>?booking_no=' + encodeURIComponent(data.booking_no || ''));
-        }, 600);
+          closeModal();
+          openEnquirySuccessModal(data.enquiry || {
+            booking_no: data.booking_no,
+            phone: form.querySelector('input[name="phone"]') ? form.querySelector('input[name="phone"]').value : '',
+            email: currentEmail,
+            name: form.querySelector('input[name="name"]') ? form.querySelector('input[name="name"]').value : '',
+            service_name: (form.querySelector('select[name="service_name"]') ? form.querySelector('select[name="service_name"]').value : '') || 'Home Maintenance Service',
+            location: form.querySelector('input[name="location"]') ? form.querySelector('input[name="location"]').value : '',
+          });
+        }, 450);
       } else {
         verifyBtn.disabled = false;
         verifyBtn.innerHTML = originalVerifyHtml;
@@ -4974,6 +5185,105 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
+
+  // ── Success Modal Functions ──
+  function openEnquirySuccessModal(enquiry) {
+    if (!successModal || !enquiry) return;
+
+    var bNo = enquiry.booking_no || '';
+    var phone = enquiry.phone || '';
+    var email = enquiry.email || '';
+    var password = enquiry.generated_password || ('Refixel@' + (phone.replace(/\D/g, '').slice(-4) || '1234'));
+    var service = enquiry.service_name || 'Home Maintenance Service';
+    var name = enquiry.name || 'Guest';
+    var location = enquiry.location || 'Uttarakhand Service Area';
+    var dashUrl = enquiry.dashboard_url || '<?= \App\Core\View::url("/account") ?>';
+
+    if (successBookingNo) successBookingNo.textContent = bNo;
+    if (successPhone) successPhone.textContent = phone;
+    if (successEmail) {
+      if (email) {
+        successEmail.textContent = email;
+        if (successEmailRow) successEmailRow.style.display = 'flex';
+      } else {
+        if (successEmailRow) successEmailRow.style.display = 'none';
+      }
+    }
+    if (successPassword) successPassword.textContent = password;
+    if (successService) successService.textContent = service;
+    if (successName) successName.textContent = name;
+    if (successLocation) successLocation.textContent = location;
+    if (successDashboardBtn) successDashboardBtn.href = dashUrl;
+
+    // Attach copy actions
+    setupCopyBtn(copyIdBtn, bNo);
+    setupCopyBtn(copyPhoneBtn, phone);
+    setupCopyBtn(copyEmailBtn, email);
+    setupCopyBtn(copyPasswordBtn, password);
+
+    // Show modal with animation
+    successModal.style.display = "flex";
+    void successModal.offsetWidth;
+    successModal.classList.add("ref_show");
+  }
+
+  function closeEnquirySuccessModal() {
+    if (!successModal) return;
+    successModal.classList.remove("ref_show");
+    setTimeout(function () {
+      successModal.style.display = "none";
+    }, 280);
+
+    // Reset home contact form
+    if (form) {
+      form.reset();
+    }
+  }
+
+  function setupCopyBtn(btn, text) {
+    if (!btn) return;
+    btn.onclick = function (e) {
+      e.preventDefault();
+      if (!text) return;
+      var origHtml = btn.innerHTML;
+      var done = function () {
+        btn.innerHTML = '<i class="fa fa-check text-success"></i>';
+        setTimeout(function () { btn.innerHTML = origHtml; }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {
+          fallbackCopyText(text, done);
+        });
+      } else {
+        fallbackCopyText(text, done);
+      }
+    };
+  }
+
+  function fallbackCopyText(text, cb) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    if (cb) cb();
+  }
+
+  if (successXCloseBtn) successXCloseBtn.addEventListener("click", closeEnquirySuccessModal);
+  if (successReturnBtn) successReturnBtn.addEventListener("click", closeEnquirySuccessModal);
+  if (successBackdrop) successBackdrop.addEventListener("click", closeEnquirySuccessModal);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      if (modal && modal.style.display !== "none") {
+        closeModal();
+      }
+      if (successModal && successModal.classList.contains("ref_show")) {
+        closeEnquirySuccessModal();
+      }
+    }
+  });
 });
 </script>
 
