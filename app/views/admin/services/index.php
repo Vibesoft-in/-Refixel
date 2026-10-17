@@ -12,8 +12,11 @@ $categories = $categories ?? [];
     </div>
 
     <div>
+      <a href="<?= View::url('/admin/services/addons') ?>" class="btn btn-sm btn-outline-brand font-weight-bold mr-2" style="border: 1px solid #f25b29; color: #f25b29;">
+        <i class="fa fa-puzzle-piece mr-1"></i>Manage Add-ons &amp; Pairing
+      </a>
       <a href="<?= View::url('/admin/services/categories') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold mr-2">
-        <i class="fa fa-th-large mr-1"></i>Homepage Services & Categories
+        <i class="fa fa-th-large mr-1"></i>Homepage Services &amp; Categories
       </a>
       <button type="button" class="btn btn-sm btn-brand font-weight-bold px-3 py-2" data-toggle="modal" data-target="#addServiceModal">
         <i class="fa fa-plus mr-1"></i>Add New Service

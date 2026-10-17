@@ -232,6 +232,15 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/categories/{id}/delete', 'Admin\\ServiceController@deleteCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/toggle-status', 'Admin\\ServiceController@toggleCategoryStatus', ['VerifyCsrf']);
 
+    // Service Add-ons & Smart Pairing Management
+    Router::get('/admin/services/addons', 'Admin\\ServiceAddonController@index');
+    Router::post('/admin/services/addons', 'Admin\\ServiceAddonController@store', ['VerifyCsrf']);
+    Router::post('/admin/services/addons/toggle-auto-engine', 'Admin\\ServiceAddonController@toggleAutoEngine', ['VerifyCsrf']);
+    Router::post('/admin/services/addons/create-addon-service', 'Admin\\ServiceAddonController@createAddonService', ['VerifyCsrf']);
+    Router::post('/admin/services/addons/{id}/update', 'Admin\\ServiceAddonController@update', ['VerifyCsrf']);
+    Router::post('/admin/services/addons/{id}/delete', 'Admin\\ServiceAddonController@delete', ['VerifyCsrf']);
+    Router::post('/admin/services/addons/{id}/toggle-status', 'Admin\\ServiceAddonController@toggleStatus', ['VerifyCsrf']);
+
     // Payment Gateways & Credentials
     Router::get('/admin/gateways', 'Admin\\GatewayController@index');
     Router::post('/admin/gateways/{id}/update', 'Admin\\GatewayController@update', ['VerifyCsrf']);

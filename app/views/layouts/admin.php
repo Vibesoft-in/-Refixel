@@ -390,9 +390,15 @@
         </li>
 
         <li class="nav-heading">Services & Catalog</li>
-        <li class="<?= str_contains($uri, '/admin/services') ? 'active' : '' ?>">
+        <li class="<?= ($uri === '/admin/services' || str_starts_with($uri, '/admin/services/categories')) ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/admin/services') ?>">
             <span class="nav-text"><i class="fa fa-wrench"></i> Services & Catalog</span>
+          </a>
+        </li>
+        <li class="<?= str_contains($uri, '/admin/services/addons') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/services/addons') ?>">
+            <span class="nav-text"><i class="fa fa-puzzle-piece"></i> Add-ons Control</span>
+            <span class="nav-count-badge" style="background: rgba(242, 91, 41, 0.15); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.3);">Smart</span>
           </a>
         </li>
 
