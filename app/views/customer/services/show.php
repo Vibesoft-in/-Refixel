@@ -660,7 +660,7 @@ foreach ($checklist ?? [] as $item) {
                   aria-label="Add <?= $svcName ?> to cart">
             <i class="fa fa-shopping-cart mr-1"></i> Add to Cart
           </button>
-          <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn service-book-visit-btn">
+          <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn service-book-visit-btn" data-service-id="<?= (int)$service['id'] ?>">
             Book Doorstep Visit
           </a>
         </div>
@@ -689,7 +689,7 @@ foreach ($checklist ?? [] as $item) {
               aria-label="Add <?= $svcName ?> to cart">
         <i class="fa fa-shopping-cart"></i>
       </button>
-      <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn">
+      <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn" data-service-id="<?= (int)$service['id'] ?>">
         Book Now &rarr;
       </a>
     </div>
@@ -1534,6 +1534,52 @@ document.addEventListener('DOMContentLoaded', function () {
       console.error(err);
       cartBtn.innerHTML = origHtml;
       cartBtn.disabled = false;
+    });
+  });
+
+  /* Book Doorstep Visit / Mobile Book Now button handler (triggers Smart Addons upsell modal) */
+  document.addEventListener('click', function(e) {
+    var bookBtn = e.target.closest('.service-book-visit-btn, .smb-book-btn');
+    if (!bookBtn) return;
+
+    var serviceId = bookBtn.getAttribute('data-service-id');
+    if (!serviceId || serviceId === '0') return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    var origHtml = bookBtn.innerHTML;
+    bookBtn.disabled = true;
+    bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+    fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1'
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      bookBtn.innerHTML = origHtml;
+      bookBtn.disabled = false;
+
+      if (window.syncCartUI) {
+        window.syncCartUI();
+      }
+
+      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+        window.openRefixelAddonModal(data, { isBookMode: true });
+      } else {
+        window.location.href = '<?= \App\Core\View::url('/cart') ?>';
+      }
+    })
+    .catch(function(err) {
+      console.error(err);
+      bookBtn.innerHTML = origHtml;
+      bookBtn.disabled = false;
+      window.location.href = bookBtn.getAttribute('href') || '<?= \App\Core\View::url('/cart') ?>';
     });
   });
 });

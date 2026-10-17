@@ -1455,7 +1455,7 @@ if (empty($activeCategory)) {
                             <i class="fa fa-list-ul mr-1"></i> Checklist
                           </a>
                           <!-- Book Now on the Right -->
-                          <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold text-center btn-package-book" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                          <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold text-center btn-package-book" data-service-id="<?= (int)$svcId ?>" data-is-logged-in="<?= $isCustomerLoggedIn ? '1' : '0' ?>" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
                             Book Now
                           </a>
                         </div>
@@ -1724,6 +1724,62 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(function () {
       cartBtn.innerHTML = origHtml;
       cartBtn.disabled = false;
+    });
+  });
+
+  /* ── Book Now button click handler (triggers Smart Addons upsell modal) ── */
+  document.addEventListener('click', function (e) {
+    var bookBtn = e.target.closest('.btn-package-book');
+    if (!bookBtn) return;
+
+    var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1';
+    if (!isLoggedIn) {
+      // Guest user: proceed with default href navigation to login
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    var serviceId = bookBtn.getAttribute('data-service-id');
+    if (!serviceId || serviceId === '0') {
+      window.location.href = bookBtn.getAttribute('href');
+      return;
+    }
+
+    var origHtml = bookBtn.innerHTML;
+    bookBtn.disabled = true;
+    bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+    fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1'
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      bookBtn.innerHTML = origHtml;
+      bookBtn.disabled = false;
+
+      if (window._refixelCartIds) window._refixelCartIds.add(serviceId);
+
+      if (window.syncCartUI) {
+        window.syncCartUI();
+      }
+
+      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+        window.openRefixelAddonModal(data, { isBookMode: true });
+      } else {
+        window.location.href = '<?= \App\Core\View::url('/cart') ?>';
+      }
+    })
+    .catch(function () {
+      bookBtn.innerHTML = origHtml;
+      bookBtn.disabled = false;
+      window.location.href = bookBtn.getAttribute('href') || '<?= \App\Core\View::url('/cart') ?>';
     });
   });
 

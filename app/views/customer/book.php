@@ -718,37 +718,79 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
 
     <!-- Booking Summary Sticky Card -->
     <div class="col-lg-4">
-      <div class="card p-4 border-0 shadow-sm sticky-top" style="top: 90px; border-radius: 16px; background:#fff8f5; border:1px solid #ffdacf;">
-        <h4 class="font-weight-bold mb-3" style="font-size: 20px; color: #0a1c33;">Booking Summary</h4>
+      <div class="sticky-top" style="top: 90px; z-index: 10;">
+        <div class="card p-4 border-0 shadow-sm" style="border-radius: 16px; background:#fff8f5; border:1px solid #ffdacf;">
+          <h4 class="font-weight-bold mb-3" style="font-size: 20px; color: #0a1c33;">Booking Summary</h4>
 
-        <div class="d-flex justify-content-between mb-2 small text-muted">
-          <span>Service Base Fee:</span>
-          <span class="font-weight-bold text-dark" id="summaryBasePrice">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></span>
-        </div>
-        <div class="d-flex justify-content-between mb-2 small text-muted">
-          <span>Safety & Hygiene Gear:</span>
-          <span class="font-weight-bold" style="color: #f25b29;">FREE</span>
-        </div>
-        <div class="d-flex justify-content-between mb-2 small text-muted">
-          <span>Taxes & GST (18%):</span>
-          <span>Included</span>
-        </div>
-        <hr>
-        <div class="d-flex justify-content-between align-items-baseline mb-4">
-          <span class="font-weight-bold">Estimated Total:</span>
-          <h3 class="font-weight-bold mb-0" style="color: #f25b29;" id="summaryTotal">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></h3>
-        </div>
-
-        <div class="p-3 rounded bg-white border mb-3 small" style="line-height: 1.8;">
-          <div class="d-flex align-items-center mb-1 font-weight-bold" style="color: #f25b29;">
-            <i class="fa fa-shield mr-2"></i> REFIXEL Promise
+          <div class="d-flex justify-content-between mb-2 small text-muted">
+            <span>Service Base Fee:</span>
+            <span class="font-weight-bold text-dark" id="summaryBasePrice">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></span>
           </div>
-          <p class="text-muted mb-0">Pay securely after completion. No advance required. Full 24-hour re-clean guarantee on all packages.</p>
+          <div class="d-flex justify-content-between mb-2 small text-muted">
+            <span>Safety & Hygiene Gear:</span>
+            <span class="font-weight-bold" style="color: #f25b29;">FREE</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2 small text-muted">
+            <span>Taxes & GST (18%):</span>
+            <span>Included</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between align-items-baseline mb-4">
+            <span class="font-weight-bold">Estimated Total:</span>
+            <h3 class="font-weight-bold mb-0" style="color: #f25b29;" id="summaryTotal">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></h3>
+          </div>
+
+          <div class="p-3 rounded bg-white border mb-3 small" style="line-height: 1.8;">
+            <div class="d-flex align-items-center mb-1 font-weight-bold" style="color: #f25b29;">
+              <i class="fa fa-shield mr-2"></i> REFIXEL Promise
+            </div>
+            <p class="text-muted mb-0">Pay securely after completion. No advance required. Full 24-hour re-clean guarantee on all packages.</p>
+          </div>
+
+          <small class="text-muted text-center d-block">
+            Need immediate assistance? Call <a href="tel:+918791154730" class="text-dark font-weight-bold">+91 87911 54730</a>
+          </small>
         </div>
 
-        <small class="text-muted text-center d-block">
-          Need immediate assistance? Call <a href="tel:+918791154730" class="text-dark font-weight-bold">+91 87911 54730</a>
-        </small>
+        <!-- Terms and Conditions Card (Small Box) -->
+        <div class="card p-3 border-0 shadow-sm mt-3" style="border-radius: 14px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);">
+          <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom" style="border-bottom-color: #f1f5f9 !important;">
+            <div class="d-flex align-items-center">
+              <span class="mr-2 d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px; border-radius: 6px; background: #fff3ec; color: #f25b29; font-size: 11.5px;">
+                <i class="fa fa-file-text-o"></i>
+              </span>
+              <h6 class="font-weight-bold mb-0" style="font-size: 13.5px; color: #0a1c33;">Terms &amp; Conditions</h6>
+            </div>
+            <span class="badge badge-light px-2 py-1 font-weight-normal" style="font-size: 10px; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0;">REFIXEL T&amp;C</span>
+          </div>
+
+          <ul class="list-unstyled mb-2 small text-muted" style="font-size: 11.5px; line-height: 1.55;">
+            <li class="mb-1 d-flex align-items-start">
+              <i class="fa fa-check-circle text-success mr-2 mt-1" style="font-size: 11px; flex-shrink: 0;"></i>
+              <span><strong>Free Cancellation:</strong> 100% full refund if cancelled at least 2 hours before your slot.</span>
+            </li>
+            <li class="mb-1 d-flex align-items-start">
+              <i class="fa fa-check-circle text-success mr-2 mt-1" style="font-size: 11px; flex-shrink: 0;"></i>
+              <span><strong>Late Cancellation:</strong> If cancelled under 2 hours, flat ₹50 is deducted; remaining amount refunded.</span>
+            </li>
+            <li class="mb-1 d-flex align-items-start">
+              <i class="fa fa-check-circle text-success mr-2 mt-1" style="font-size: 11px; flex-shrink: 0;"></i>
+              <span><strong>Service Warranty:</strong> 24-hr re-clean satisfaction guarantee on job issues.</span>
+            </li>
+            <li class="d-flex align-items-start">
+              <i class="fa fa-check-circle text-success mr-2 mt-1" style="font-size: 11px; flex-shrink: 0;"></i>
+              <span><strong>Transparent Rates:</strong> No off-platform charges; pay only what is on your invoice.</span>
+            </li>
+          </ul>
+
+          <div class="p-2 rounded" style="background: #f8fafc; border: 1px dashed #cbd5e1; font-size: 11px; line-height: 1.45; color: #64748b;">
+            <i class="fa fa-info-circle mr-1" style="color: #f25b29;"></i>
+            By confirming, you agree to our 
+            <a href="<?= \App\Core\View::url('/terms') ?>" target="_blank" class="font-weight-bold" style="color: #f25b29; text-decoration: underline;">Terms &amp; Conditions</a> 
+            and 
+            <a href="<?= \App\Core\View::url('/privacy') ?>" target="_blank" class="font-weight-bold" style="color: #f25b29; text-decoration: underline;">Privacy Policy</a>.
+          </div>
+        </div>
       </div>
     </div>
   </div>

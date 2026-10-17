@@ -98,7 +98,12 @@ class BookingController extends Controller
             return Response::json(['success' => false, 'error' => 'Invalid service ID.'], 400);
         }
 
-        $res = Cart::add($serviceId, max(1, $qty));
+        $setExact = (bool)($request->input('set_exact', false));
+        if ($setExact) {
+            $res = Cart::update($serviceId, max(1, $qty));
+        } else {
+            $res = Cart::add($serviceId, max(1, $qty));
+        }
         $details = Cart::getDetails();
 
         $addedService = Service::find($serviceId);
@@ -599,6 +604,15 @@ class BookingController extends Controller
                 }
             }
 
+            // Auto-assign to available technician if Admin Busy Mode is active
+            if (\App\Services\AutoDispatchService::isBusyModeEnabled()) {
+                try {
+                    \App\Services\AutoDispatchService::handleNewBooking((int)$bookingId);
+                } catch (\Throwable $autoDispatchErr) {
+                    Logger::error("AutoDispatch error for booking #{$bookingId}: " . $autoDispatchErr->getMessage());
+                }
+            }
+
             // Record payment record in payments table
             $paymentMethodInput = (string)$request->input('payment_method', 'cod');
             $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
@@ -1082,6 +1096,15 @@ class BookingController extends Controller
             'status'         => 'new',
             'priority'       => 'high',
         ]);
+
+        // Auto-assign to available technician if Admin Busy Mode is active
+        if (\App\Services\AutoDispatchService::isBusyModeEnabled()) {
+            try {
+                \App\Services\AutoDispatchService::handleNewBooking((int)$bookingId);
+            } catch (\Throwable $autoDispatchErr) {
+                Logger::error("AutoDispatch error for enquiry #{$bookingId}: " . $autoDispatchErr->getMessage());
+            }
+        }
 
         // Save session data for confirmation page
         $_SESSION['last_enquiry'] = [

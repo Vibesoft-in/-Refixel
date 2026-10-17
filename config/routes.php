@@ -189,6 +189,8 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
 Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::get('/admin', 'Admin\\DashboardController@index');
     Router::get('/admin/dashboard', 'Admin\\DashboardController@index');
+    Router::post('/admin/api/toggle-busy-mode', 'Admin\\DashboardController@toggleBusyMode');
+    Router::get('/admin/api/busy-mode-status', 'Admin\\DashboardController@getBusyModeStatus');
 
     // Enquiries
     Router::get('/admin/enquiries', 'Admin\\EnquiryController@index');

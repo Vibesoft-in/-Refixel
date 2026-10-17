@@ -5,6 +5,7 @@ $chartData = $chartData ?? ['labels' => [], 'data' => []];
 $statusDist = $statusDist ?? ['assigned' => 0, 'accepted' => 0, 'in_progress' => 0, 'completed' => 0];
 $recentBookings = $recentBookings ?? [];
 $filter = $filter ?? 'all';
+$isBusyMode = $isBusyMode ?? false;
 ?>
 
 <div class="admin-dashboard-page">
@@ -38,6 +39,53 @@ $filter = $filter ?? 'all';
             <i class="fa fa-credit-card mr-1"></i><span class="d-none d-sm-inline">Record </span>Payment
           </a>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Busy Mode / Auto-Dispatch Controller Card -->
+  <div class="card border-0 shadow-sm mb-3 auto-dispatch-card" style="border-radius: 14px; background: linear-gradient(135deg, #07172c 0%, #0d2749 100%); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden;">
+    <div class="card-body p-3 p-md-3">
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between" style="gap: 16px;">
+        <!-- Left: Status & Info -->
+        <div class="d-flex align-items-center" style="gap: 14px;">
+          <div class="dispatch-mode-icon-wrap" id="dispatchModeIconWrap" style="width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: <?= !empty($isBusyMode) ? 'rgba(242, 91, 41, 0.2)' : 'rgba(255, 255, 255, 0.08)' ?>; color: <?= !empty($isBusyMode) ? '#f25b29' : '#94a3b8' ?>; font-size: 20px; transition: all 0.3s ease;">
+            <i class="fa <?= !empty($isBusyMode) ? 'fa-bolt' : 'fa-user' ?>" id="dispatchModeIcon"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+              <h5 class="font-weight-bold mb-0 text-white" style="font-size: 15.5px; letter-spacing: -0.2px;">Admin Busy Mode (Auto-Assign)</h5>
+              <span class="badge" id="dispatchModeBadge" style="font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; <?= !empty($isBusyMode) ? 'background:#f25b29; color:#fff;' : 'background:rgba(255,255,255,0.15); color:#cbd5e1;' ?>">
+                <i class="fa <?= !empty($isBusyMode) ? 'fa-flash' : 'fa-circle-o' ?> mr-1"></i>
+                <span id="dispatchModeBadgeText"><?= !empty($isBusyMode) ? 'Busy Mode ON (Auto-Assign Active)' : 'Admin Active (Manual Dispatch)' ?></span>
+              </span>
+            </div>
+            <p class="mb-0 small" style="opacity: 0.85; font-size: 12.5px; line-height: 1.4; margin-top: 3px;" id="dispatchModeDesc">
+              <?= !empty($isBusyMode) 
+                ? 'Admin is currently busy. Enquiries are automatically assigned to the first free technician of the matching category.' 
+                : 'Turn this toggle ON when busy. All pending and incoming customer enquiries will automatically be assigned to available technicians of the same category.' ?>
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: The Toggle Control -->
+        <div class="d-flex align-items-center justify-content-between w-100 w-md-auto pl-md-3" style="gap: 16px;">
+          <div class="text-right d-none d-sm-block">
+            <span class="d-block font-weight-bold text-white small" id="dispatchToggleLabel"><?= !empty($isBusyMode) ? 'Busy Mode ON' : 'Busy Mode OFF' ?></span>
+            <small class="text-muted" style="font-size: 11px; color: #94a3b8 !important;" id="dispatchToggleSub"><?= !empty($isBusyMode) ? 'Auto-assigning' : 'Click to activate' ?></small>
+          </div>
+
+          <!-- Switch Slider -->
+          <label class="refixel-busy-switch mb-0" title="Click to toggle Admin Busy Mode">
+            <input type="checkbox" id="adminBusyToggle" <?= !empty($isBusyMode) ? 'checked' : '' ?>>
+            <span class="refixel-busy-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Live Auto-Assignment Toast / Results Strip -->
+      <div id="dispatchLiveStatus" class="mt-2 pt-2 border-top small" style="display: none; border-color: rgba(255,255,255,0.12) !important; font-size: 12px; color: #e2e8f0;">
+        <i class="fa fa-info-circle text-warning mr-1"></i> <span id="dispatchLiveText"></span>
       </div>
     </div>
   </div>
@@ -382,6 +430,141 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  // Admin Busy Mode Toggle Handler
+  const busyToggle = document.getElementById('adminBusyToggle');
+  const modeBadge = document.getElementById('dispatchModeBadge');
+  const modeIconWrap = document.getElementById('dispatchModeIconWrap');
+  const modeIcon = document.getElementById('dispatchModeIcon');
+  const modeDesc = document.getElementById('dispatchModeDesc');
+  const toggleLabel = document.getElementById('dispatchToggleLabel');
+  const toggleSub = document.getElementById('dispatchToggleSub');
+  const liveStatus = document.getElementById('dispatchLiveStatus');
+  const liveText = document.getElementById('dispatchLiveText');
+
+  if (busyToggle) {
+    busyToggle.addEventListener('change', function () {
+      const isChecked = this.checked;
+      busyToggle.disabled = true;
+
+      if (liveStatus) {
+        liveStatus.style.display = 'block';
+        liveText.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Updating Admin Busy status & scanning enquiries...';
+      }
+
+      fetch('<?= View::url('/admin/api/toggle-busy-mode') ?>', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'enabled=' + (isChecked ? '1' : '0')
+      })
+      .then(res => res.json())
+      .then(data => {
+        busyToggle.disabled = false;
+        if (data.success) {
+          const isBusy = !!data.busy_mode;
+          busyToggle.checked = isBusy;
+
+          if (isBusy) {
+            modeIconWrap.style.background = 'rgba(242, 91, 41, 0.2)';
+            modeIconWrap.style.color = '#f25b29';
+            modeIcon.className = 'fa fa-bolt';
+            modeBadge.style.background = '#f25b29';
+            modeBadge.style.color = '#ffffff';
+            modeBadge.innerHTML = '<i class="fa fa-flash mr-1"></i> Busy Mode ON (Auto-Assign Active)';
+            modeDesc.textContent = 'Admin is currently busy. Enquiries are automatically assigned to the first free technician of the matching category.';
+            if (toggleLabel) toggleLabel.textContent = 'Busy Mode ON';
+            if (toggleSub) toggleSub.textContent = 'Auto-assigning';
+
+            if (data.assigned_count > 0) {
+              const assignedDetails = (data.assigned || []).map(a => `${a.booking_no} &rarr; <strong>${a.technician}</strong> (${a.category_name})`).join(', ');
+              liveText.innerHTML = `<span class="text-success"><i class="fa fa-check-circle mr-1"></i> <strong>${data.assigned_count}</strong> enquiry(s) auto-assigned: ${assignedDetails}</span>`;
+              setTimeout(() => { window.location.reload(); }, 2500);
+            } else {
+              liveText.innerHTML = '<span class="text-info"><i class="fa fa-check-circle mr-1"></i> Admin Busy Mode is active. New enquiries will be auto-assigned to available technicians.</span>';
+            }
+          } else {
+            modeIconWrap.style.background = 'rgba(255, 255, 255, 0.08)';
+            modeIconWrap.style.color = '#94a3b8';
+            modeIcon.className = 'fa fa-user';
+            modeBadge.style.background = 'rgba(255,255,255,0.15)';
+            modeBadge.style.color = '#cbd5e1';
+            modeBadge.innerHTML = '<i class="fa fa-circle-o mr-1"></i> Admin Active (Manual Dispatch)';
+            modeDesc.textContent = 'Turn this toggle ON when busy. All pending and incoming customer enquiries will automatically be assigned to available technicians of the same category.';
+            if (toggleLabel) toggleLabel.textContent = 'Busy Mode OFF';
+            if (toggleSub) toggleSub.textContent = 'Click to activate';
+
+            liveText.innerHTML = '<span class="text-light"><i class="fa fa-info-circle mr-1"></i> Busy mode deactivated. Enquiries will be dispatched manually.</span>';
+            setTimeout(() => { if (liveStatus) liveStatus.style.display = 'none'; }, 3500);
+          }
+        } else {
+          alert('Failed to update Busy Mode. Please try again.');
+          busyToggle.checked = !isChecked;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        busyToggle.disabled = false;
+        busyToggle.checked = !isChecked;
+        if (liveStatus) {
+          liveText.innerHTML = '<span class="text-danger"><i class="fa fa-exclamation-triangle mr-1"></i> Network error updating Busy Mode.</span>';
+        }
+      });
+    });
+  }
 });
 </script>
+
+<style>
+/* Modern Switch Toggle styling */
+.refixel-busy-switch {
+  position: relative;
+  display: inline-block;
+  width: 58px;
+  height: 30px;
+  flex-shrink: 0;
+  cursor: pointer;
+  margin: 0;
+}
+.refixel-busy-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.refixel-busy-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 30px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+}
+.refixel-busy-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 2.5px;
+  background-color: #ffffff;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+}
+.refixel-busy-switch input:checked + .refixel-busy-slider {
+  background-color: #f25b29;
+  border-color: #f25b29;
+  box-shadow: 0 0 12px rgba(242, 91, 41, 0.45);
+}
+.refixel-busy-switch input:checked + .refixel-busy-slider:before {
+  transform: translateX(27px);
+}
+.refixel-busy-switch input:disabled + .refixel-busy-slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>
 

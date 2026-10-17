@@ -18,7 +18,7 @@
     <div class="rf-addon-header">
       <div class="rf-added-success-badge">
         <span class="rf-badge-check"><i class="fa fa-check"></i></span>
-        <span class="rf-badge-text">Added to Cart!</span>
+        <span class="rf-badge-text" id="rfBadgeText">Added to Cart!</span>
       </div>
       <button type="button" class="rf-addon-close-btn" id="rfAddonCloseBtn" aria-label="Close add-ons">&times;</button>
     </div>
@@ -33,7 +33,7 @@
           <span class="rf-added-item-price" id="rfAddedItemPrice">₹0</span>
         </div>
         <div class="rf-added-item-status">
-          <span class="rf-status-pill"><i class="fa fa-check-circle"></i> In Cart</span>
+          <span class="rf-status-pill" id="rfStatusPill"><i class="fa fa-check-circle"></i> In Cart</span>
         </div>
       </div>
 
@@ -58,7 +58,7 @@
     <!-- Modal Footer / Checkout Bar -->
     <div class="rf-addon-footer">
       <a href="<?= \App\Core\View::url('/cart') ?>" class="btn rf-btn-checkout" id="rfBtnCheckout">
-        <span class="rf-btn-checkout-label">View Cart &amp; Checkout</span>
+        <span class="rf-btn-checkout-label" id="rfBtnCheckoutLabel">View Cart &amp; Checkout</span>
         <span class="rf-btn-checkout-val"><strong id="rfModalCartTotal">₹0</strong> <i class="fa fa-arrow-right ml-1"></i></span>
       </a>
       <button type="button" class="btn rf-btn-continue" id="rfBtnContinue">
@@ -674,9 +674,30 @@
     }
   });
 
-  // Global function called when a service is added to cart
-  window.openRefixelAddonModal = function(data) {
+  // Global function called when a service is added to cart or Book button is clicked
+  window.openRefixelAddonModal = function(data, options) {
     if (!modalEl || !data) return;
+
+    var isBookMode = false;
+    if (typeof options === 'boolean') {
+      isBookMode = options;
+    } else if (options && typeof options === 'object') {
+      isBookMode = !!options.isBookMode;
+    }
+
+    var badgeTextEl = document.getElementById('rfBadgeText') || modalEl.querySelector('.rf-badge-text');
+    var statusPillEl = document.getElementById('rfStatusPill') || modalEl.querySelector('.rf-status-pill');
+    var checkoutLabelEl = document.getElementById('rfBtnCheckoutLabel') || modalEl.querySelector('.rf-btn-checkout-label');
+
+    if (isBookMode) {
+      if (badgeTextEl) badgeTextEl.textContent = 'Service Selected for Booking!';
+      if (statusPillEl) statusPillEl.innerHTML = '<i class="fa fa-calendar-check-o"></i> Ready to Book';
+      if (checkoutLabelEl) checkoutLabelEl.textContent = 'Proceed to Book';
+    } else {
+      if (badgeTextEl) badgeTextEl.textContent = 'Added to Cart!';
+      if (statusPillEl) statusPillEl.innerHTML = '<i class="fa fa-check-circle"></i> In Cart';
+      if (checkoutLabelEl) checkoutLabelEl.textContent = 'View Cart & Checkout';
+    }
 
     var added = data.added_service || {};
     var addons = data.addons || [];
