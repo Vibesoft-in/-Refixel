@@ -43,7 +43,7 @@ class ServiceAddon extends Model
 
         // 1. Direct explicit admin pairings for this specific service
         $directRows = Database::fetchAll(
-            "SELECT sa.id as rule_id, sa.custom_badge, sa.custom_price, sa.custom_note, sa.sort_order,
+            "SELECT sa.id as rule_id, sa.custom_badge, sa.custom_price, sa.custom_note, sa.custom_image, sa.sort_order,
                     s.id, s.name, s.slug, s.starting_price, s.duration_minutes, s.image, s.category_id,
                     c.name as category_name
              FROM service_addons sa
@@ -76,7 +76,7 @@ class ServiceAddon extends Model
         // 2. Category-level explicit admin pairings
         if ($catId > 0 && count($results) < $limit) {
             $catRows = Database::fetchAll(
-                "SELECT sa.id as rule_id, sa.custom_badge, sa.custom_price, sa.custom_note, sa.sort_order,
+                "SELECT sa.id as rule_id, sa.custom_badge, sa.custom_price, sa.custom_note, sa.custom_image, sa.sort_order,
                         s.id, s.name, s.slug, s.starting_price, s.duration_minutes, s.image, s.category_id,
                         c.name as category_name
                  FROM service_addons sa
@@ -217,6 +217,8 @@ class ServiceAddon extends Model
         $badge = !empty($row['custom_badge']) ? $row['custom_badge'] : $defaultBadges[crc32($row['slug'] ?? '') % count($defaultBadges)];
         $savingsNote = !empty($row['custom_note']) ? $row['custom_note'] : 'Special Companion Rate';
 
+        $effectiveImage = !empty($row['custom_image']) ? $row['custom_image'] : ($row['image'] ?? null);
+
         return [
             'id'               => (int)$row['id'],
             'rule_id'          => (int)($row['rule_id'] ?? 0),
@@ -225,7 +227,7 @@ class ServiceAddon extends Model
             'starting_price'   => $customPrice,
             'base_price'       => (float)($row['starting_price'] ?? $customPrice),
             'duration_minutes' => (int)($row['duration_minutes'] ?? 30),
-            'image'            => Service::resolveImage($row['slug'] ?? '', $row['image'] ?? null),
+            'image'            => Service::resolveImage($row['slug'] ?? '', $effectiveImage),
             'category_name'    => (string)($row['category_name'] ?? 'Home Care'),
             'badge'            => $badge,
             'savings_note'     => $savingsNote,

@@ -59,7 +59,12 @@ class Upload
         $randomName = bin2hex(random_bytes(16)) . '.' . $extension;
         $destination = $targetDir . '/' . $randomName;
 
-        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        $moved = @move_uploaded_file($file['tmp_name'], $destination);
+        if (!$moved && (PHP_SAPI === 'cli' || defined('TESTING'))) {
+            $moved = @copy($file['tmp_name'], $destination);
+        }
+
+        if (!$moved) {
             throw new RuntimeException('Failed to move uploaded file.');
         }
 

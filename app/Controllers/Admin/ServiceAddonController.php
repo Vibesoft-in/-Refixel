@@ -7,10 +7,12 @@ use App\Controllers\Controller;
 use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\Upload;
 use App\Core\View;
 use App\Models\Category;
 use App\Models\Service;
 use App\Models\ServiceAddon;
+use Throwable;
 
 class ServiceAddonController extends Controller
 {
@@ -23,7 +25,7 @@ class ServiceAddonController extends Controller
         $filterCategoryId = $request->input('category_id') ? (int)$request->input('category_id') : null;
         $rules = ServiceAddon::allAdminList($filterServiceId, $filterCategoryId);
 
-        $services = Database::fetchAll("SELECT id, name, slug, starting_price, category_id FROM services WHERE is_active = 1 ORDER BY category_id ASC, name ASC");
+        $services = Database::fetchAll("SELECT id, name, slug, starting_price, category_id, image FROM services WHERE is_active = 1 ORDER BY category_id ASC, name ASC");
         $categories = Category::all('sort_order ASC, name ASC');
 
         // Map of addon_service_id => array of category IDs it is paired in
@@ -93,6 +95,19 @@ class ServiceAddonController extends Controller
             return $this->redirect('/admin/services/addons');
         }
 
+        // Process Add-on Image Upload
+        $uploadedImagePath = null;
+        if ($request->hasFile('image')) {
+            try {
+                $uploadedImagePath = Upload::process($request->file('image'), 'addons');
+                if ($addonServiceId > 0) {
+                    Service::update($addonServiceId, ['image' => $uploadedImagePath]);
+                }
+            } catch (Throwable $e) {
+                // Ignore upload failure or proceed
+            }
+        }
+
         // If a specific source service was chosen, resolve its category
         $srcServiceCatId = 0;
         if ($sourceServiceId > 0) {
@@ -121,7 +136,7 @@ class ServiceAddonController extends Controller
         // If a specific target service was selected, pair it directly
         if ($sourceServiceId > 0) {
             $existing = Database::fetchOne(
-                "SELECT id FROM service_addons WHERE source_service_id = :sid AND addon_service_id = :aid",
+                "SELECT id, custom_image FROM service_addons WHERE source_service_id = :sid AND addon_service_id = :aid",
                 ['sid' => $sourceServiceId, 'aid' => $addonServiceId]
             );
             if ($existing) {
@@ -130,6 +145,7 @@ class ServiceAddonController extends Controller
                     'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
                     'custom_price'       => $price,
                     'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'custom_image'       => $uploadedImagePath ?: ($existing['custom_image'] ?? null),
                     'sort_order'         => $sortOrder,
                     'is_active'          => 1,
                 ]);
@@ -142,6 +158,7 @@ class ServiceAddonController extends Controller
                     'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
                     'custom_price'       => $price,
                     'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'custom_image'       => $uploadedImagePath,
                     'sort_order'         => $sortOrder,
                     'is_active'          => 1,
                 ]);
@@ -156,7 +173,7 @@ class ServiceAddonController extends Controller
             }
 
             $existingCat = Database::fetchOne(
-                "SELECT id FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
+                "SELECT id, custom_image FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
                 ['cid' => $catId, 'aid' => $addonServiceId]
             );
 
@@ -165,6 +182,7 @@ class ServiceAddonController extends Controller
                     'custom_badge' => !empty($badge) ? $badge : '🔥 Popular Add-on',
                     'custom_price' => $price,
                     'custom_note'  => !empty($note) ? $note : 'Special Companion Rate',
+                    'custom_image' => $uploadedImagePath ?: ($existingCat['custom_image'] ?? null),
                     'sort_order'   => $sortOrder,
                     'is_active'    => 1,
                 ]);
@@ -177,6 +195,7 @@ class ServiceAddonController extends Controller
                     'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
                     'custom_price'       => $price,
                     'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'custom_image'       => $uploadedImagePath,
                     'sort_order'         => $sortOrder,
                     'is_active'          => 1,
                 ]);
@@ -220,6 +239,21 @@ class ServiceAddonController extends Controller
         $sourceServiceId = $request->has('source_service_id') ? (int)$request->input('source_service_id') : (int)($rule['source_service_id'] ?? 0);
         $addonServiceId = $request->has('addon_service_id') ? (int)$request->input('addon_service_id') : (int)($rule['addon_service_id'] ?? 0);
 
+        // Process Add-on Image Upload
+        $uploadedImagePath = null;
+        if ($request->hasFile('image')) {
+            try {
+                $uploadedImagePath = Upload::process($request->file('image'), 'addons');
+                if ($addonServiceId > 0) {
+                    Service::update($addonServiceId, ['image' => $uploadedImagePath]);
+                }
+            } catch (Throwable $e) {
+                // Ignore upload failure or proceed
+            }
+        }
+
+        $ruleImage = $uploadedImagePath ?: ($rule['custom_image'] ?? null);
+
         // If source service is chosen, resolve its category
         $srcServiceCatId = 0;
         if ($sourceServiceId > 0) {
@@ -250,6 +284,7 @@ class ServiceAddonController extends Controller
             'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
             'custom_price'       => $price,
             'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+            'custom_image'       => $ruleImage,
             'sort_order'         => $sortOrder,
             'is_active'          => $isActive ? 1 : 0,
         ]);
@@ -261,7 +296,7 @@ class ServiceAddonController extends Controller
             }
 
             $existingCat = Database::fetchOne(
-                "SELECT id FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
+                "SELECT id, custom_image FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
                 ['cid' => $catId, 'aid' => $addonServiceId]
             );
 
@@ -270,6 +305,7 @@ class ServiceAddonController extends Controller
                     'custom_badge' => !empty($badge) ? $badge : '🔥 Popular Add-on',
                     'custom_price' => $price,
                     'custom_note'  => !empty($note) ? $note : 'Special Companion Rate',
+                    'custom_image' => $uploadedImagePath ?: ($existingCat['custom_image'] ?? $ruleImage),
                     'sort_order'   => $sortOrder,
                     'is_active'    => $isActive ? 1 : 0,
                 ]);
@@ -281,6 +317,7 @@ class ServiceAddonController extends Controller
                     'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
                     'custom_price'       => $price,
                     'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'custom_image'       => $ruleImage,
                     'sort_order'         => $sortOrder,
                     'is_active'          => $isActive ? 1 : 0,
                 ]);

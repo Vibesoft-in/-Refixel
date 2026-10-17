@@ -22,6 +22,7 @@ Database::query("
         custom_badge VARCHAR(80) NULL DEFAULT '🔥 Popular Add-on',
         custom_price DECIMAL(10,2) NULL,
         custom_note VARCHAR(150) NULL DEFAULT 'Special Companion Rate',
+        custom_image VARCHAR(255) NULL,
         sort_order INT NOT NULL DEFAULT 0,
         is_active TINYINT(1) NOT NULL DEFAULT 1,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

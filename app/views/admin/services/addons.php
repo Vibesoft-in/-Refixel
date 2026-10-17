@@ -279,6 +279,8 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
                       $allCats[] = $curCatId;
                     }
                     $allCatsStr = implode(',', array_unique(array_filter($allCats)));
+                    $effImg = !empty($r['custom_image']) ? $r['custom_image'] : ($r['addon_image'] ?? '');
+                    $effImgUrl = !empty($effImg) ? \App\Models\Service::resolveImage($r['addon_slug'] ?? '', $effImg) : View::asset('img/refixel-cleaning.jpg');
                   ?>
                   <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold edit-addon-rule-btn"
                     data-id="<?= (int)$r['id'] ?>"
@@ -286,6 +288,7 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
                     data-all-category-ids="<?= $allCatsStr ?>"
                     data-source-service-id="<?= (int)($r['source_service_id'] ?? 0) ?>"
                     data-addon-service-id="<?= (int)$r['addon_service_id'] ?>"
+                    data-image="<?= htmlspecialchars($effImgUrl) ?>"
                     data-source-name="<?= View::e($r['source_service_name'] ?: 'All Services in ' . ($r['source_category_name'] ?? 'Category')) ?>"
                     data-addon-name="<?= View::e($r['addon_name']) ?>"
                     data-badge="<?= View::e($r['custom_badge'] ?? '') ?>"
@@ -319,7 +322,7 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
 <div class="modal fade" id="addPairingModal" tabindex="-1" role="dialog" aria-labelledby="addPairingModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
-      <form method="POST" action="<?= View::url('/admin/services/addons') ?>">
+      <form method="POST" action="<?= View::url('/admin/services/addons') ?>" enctype="multipart/form-data">
         <?= View::csrfField() ?>
         <div class="modal-header bg-light border-bottom">
           <h5 class="modal-title font-weight-bold text-dark" id="addPairingModalLabel">
@@ -390,11 +393,27 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
             <select name="addon_service_id" class="form-control" required id="modalAddonService">
               <option value="">-- Select Companion Add-on Service --</option>
               <?php foreach ($services as $srv): ?>
-                <option value="<?= $srv['id'] ?>">
+                <option value="<?= $srv['id'] ?>" data-image="<?= htmlspecialchars(\App\Models\Service::resolveImage($srv['slug'] ?? '', $srv['image'] ?? null)) ?>">
                   <?= View::e($srv['name']) ?> (Base: ₹<?= number_format((float)$srv['starting_price'], 0) ?>)
                 </option>
               <?php endforeach; ?>
             </select>
+          </div>
+
+          <!-- 4. Add-on Image Upload -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark mb-1">
+              <i class="fa fa-image text-brand mr-1" style="color: #f25b29;"></i> Add-on Image
+            </label>
+            <div class="d-flex align-items-center" style="gap: 12px;">
+              <div class="addon-preview-box rounded border bg-light d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; overflow: hidden; flex-shrink: 0; background: #f8fafc;">
+                <img id="modalAddonImagePreview" src="<?= View::url('/assets/images/service-default.jpg') ?>" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= View::asset('img/refixel-cleaning.jpg') ?>';">
+              </div>
+              <div class="flex-grow-1">
+                <input type="file" name="image" id="modalAddonImageInput" class="form-control-file small" accept="image/png, image/jpeg, image/webp" style="font-size: 12px;">
+                <small class="text-muted d-block mt-1" style="font-size: 11px;">Upload custom thumbnail (JPG, PNG, WEBP - max 5MB). Leave empty to use default service image.</small>
+              </div>
+            </div>
           </div>
 
           <!-- Marketing Badge -->
@@ -448,7 +467,7 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
 <div class="modal fade" id="editPairingModal" tabindex="-1" role="dialog" aria-labelledby="editPairingModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
-      <form method="POST" id="editPairingForm" action="">
+      <form method="POST" id="editPairingForm" action="" enctype="multipart/form-data">
         <?= View::csrfField() ?>
         <div class="modal-header bg-light border-bottom">
           <h5 class="modal-title font-weight-bold text-dark" id="editPairingModalLabel">
@@ -516,11 +535,27 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
             </label>
             <select name="addon_service_id" id="editAddonServiceId" class="form-control" required>
               <?php foreach ($services as $srv): ?>
-                <option value="<?= $srv['id'] ?>">
+                <option value="<?= $srv['id'] ?>" data-image="<?= htmlspecialchars(\App\Models\Service::resolveImage($srv['slug'] ?? '', $srv['image'] ?? null)) ?>">
                   <?= View::e($srv['name']) ?> (Base: ₹<?= number_format((float)$srv['starting_price'], 0) ?>)
                 </option>
               <?php endforeach; ?>
             </select>
+          </div>
+
+          <!-- 4. Add-on Image Upload -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark mb-1">
+              <i class="fa fa-image text-brand mr-1" style="color: #f25b29;"></i> Add-on Image
+            </label>
+            <div class="d-flex align-items-center" style="gap: 12px;">
+              <div class="addon-preview-box rounded border bg-light d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; overflow: hidden; flex-shrink: 0; background: #f8fafc;">
+                <img id="editAddonImagePreview" src="<?= View::url('/assets/images/service-default.jpg') ?>" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= View::asset('img/refixel-cleaning.jpg') ?>';">
+              </div>
+              <div class="flex-grow-1">
+                <input type="file" name="image" id="editAddonImageInput" class="form-control-file small" accept="image/png, image/jpeg, image/webp" style="font-size: 12px;">
+                <small class="text-muted d-block mt-1" style="font-size: 11px;">Upload a new image to replace current thumbnail (or leave empty to keep current).</small>
+              </div>
+            </div>
           </div>
 
           <!-- Marketing Badge -->
@@ -833,6 +868,16 @@ document.addEventListener("DOMContentLoaded", function() {
       var activeEl = document.getElementById("editActiveSelect");
       if (activeEl) activeEl.value = active;
 
+      var img = this.getAttribute("data-image") || '';
+      var imgPreview = document.getElementById("editAddonImagePreview");
+      if (imgPreview) {
+        imgPreview.src = img || (baseUrl + '/assets/images/service-default.jpg');
+      }
+      var imgInput = document.getElementById("editAddonImageInput");
+      if (imgInput) {
+        imgInput.value = '';
+      }
+
       if (editForm) {
         editForm.action = baseUrl + '/admin/services/addons/' + id + '/update';
       }
@@ -842,5 +887,39 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     });
   });
+
+  // Image upload live preview handlers
+  function setupImagePreview(inputId, previewId) {
+    var input = document.getElementById(inputId);
+    var preview = document.getElementById(previewId);
+    if (!input || !preview) return;
+
+    input.addEventListener("change", function() {
+      if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    });
+  }
+
+  setupImagePreview("modalAddonImageInput", "modalAddonImagePreview");
+  setupImagePreview("editAddonImageInput", "editAddonImagePreview");
+
+  // On addon service dropdown change, update preview to service default if no file uploaded
+  var modalAddonSelect = document.getElementById("modalAddonService");
+  if (modalAddonSelect) {
+    modalAddonSelect.addEventListener("change", function() {
+      var opt = modalAddonSelect.options[modalAddonSelect.selectedIndex];
+      var optImg = opt ? opt.getAttribute("data-image") : '';
+      var preview = document.getElementById("modalAddonImagePreview");
+      var fileInput = document.getElementById("modalAddonImageInput");
+      if (preview && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
+        preview.src = optImg || (baseUrl + '/assets/images/service-default.jpg');
+      }
+    });
+  }
 });
 </script>
