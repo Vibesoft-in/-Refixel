@@ -1,4 +1,6 @@
 <?php
+$isCustomerLoggedIn = \App\Core\Auth::check();
+
 $iconMap = [
     'cleaning'              => 'icons/cleaning icon.png',
     'painting-services'     => 'icons/painting icon.png',
@@ -1407,8 +1409,10 @@ if (empty($activeCategory)) {
                   $svcImgUrl = (str_starts_with($svcImg, 'http://') || str_starts_with($svcImg, 'https://') || str_starts_with($svcImg, 'uploads/') || str_starts_with($svcImg, 'assets/') || str_starts_with($svcImg, 'img/'))
                       ? \App\Core\View::asset($svcImg)
                       : \App\Core\View::asset('img/' . $svcImg);
-                  $svcUrl = \App\Core\View::url("/{$svcSlug}");
-                  $bookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
+                  $targetSvcUrl = \App\Core\View::url("/{$svcSlug}");
+                  $targetBookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
+                  $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
+                  $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
                 ?>
                   <div class="package-card-item">
                     <div class="card h-100 shadow-sm border-0 service-package-card" data-service-url="<?= $svcUrl ?>">
@@ -1705,6 +1709,10 @@ document.addEventListener('DOMContentLoaded', function () {
         window.syncCartUI();
       }
 
+      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+        window.openRefixelAddonModal(data);
+      }
+
       setTimeout(function () {
         cartBtn.innerHTML = origHtml;
         cartBtn.style.background = '';
@@ -1777,7 +1785,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var catSuggestionsBox = document.getElementById('catSidebarSuggestions');
   var catLinks = document.querySelectorAll('#servicesSidebarList .cat-sidebar-link');
 
-  var CATALOGUE_DATA = <?= json_encode(array_map(function($s) use ($categories) {
+  var CATALOGUE_DATA = <?= json_encode(array_map(function($s) use ($categories, $isCustomerLoggedIn) {
     $catName = '';
     $catSlug = '';
     foreach ($categories ?? [] as $c) {
@@ -1794,7 +1802,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'cat_name'      => $catName,
       'cat_slug'      => $catSlug,
       'starting_price'=> (float)($s['starting_price'] ?? 0),
-      'url'           => \App\Core\View::url('/services/' . $s['slug']),
+      'url'           => $isCustomerLoggedIn ? \App\Core\View::url('/services/' . $s['slug']) : \App\Core\View::url('/login?redirect=' . urlencode(\App\Core\View::url('/services/' . $s['slug']))),
     ];
   }, $services ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 

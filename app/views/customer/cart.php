@@ -195,6 +195,106 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
           </div>
         </div>
 
+        <?php if (!empty($recommendedAddons)): ?>
+          <!-- Frequently Added Add-ons (Flipkart / Amazon Style) -->
+          <div class="card p-4 border-0 shadow-sm mb-4 rf-cart-addons-card" style="border-radius: 16px; background: #ffffff; border: 1.5px solid rgba(242, 91, 41, 0.35) !important; box-shadow: 0 4px 16px rgba(10, 28, 51, 0.05);">
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap" style="gap: 8px;">
+              <div class="d-flex align-items-center" style="gap: 8px;">
+                <span class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 28px; height: 28px; background: #fff3ec; color: #f25b29; font-size: 13px;">
+                  <i class="fa fa-bolt"></i>
+                </span>
+                <h4 class="font-weight-bold mb-0" style="font-size: 18px; color: #0a1c33;">Frequently Added Add-ons</h4>
+              </div>
+              <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="background: #fef3c7; color: #d97706; font-size: 11px; border-radius: 6px;">
+                Pairs with your service
+              </span>
+            </div>
+            <p class="text-muted small mb-3" style="font-size: 13px;">Customers frequently bundle these verified doorstep services for 100% complete home care.</p>
+
+            <style>
+            .rf-cart-addons-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+              gap: 12px;
+            }
+            .rf-cart-addon-item {
+              background: #f8fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 12px;
+              padding: 10px 12px;
+              transition: all 0.2s ease;
+            }
+            .rf-cart-addon-item:hover {
+              background: #ffffff;
+              border-color: #f25b29;
+              box-shadow: 0 4px 12px rgba(242, 91, 41, 0.12);
+              transform: translateY(-1px);
+            }
+            .rf-cart-addon-thumb {
+              width: 52px;
+              height: 52px;
+              object-fit: cover;
+              border-radius: 8px;
+              flex-shrink: 0;
+              border: 1px solid #e2e8f0;
+            }
+            .rf-cart-addon-badge {
+              display: inline-block;
+              font-size: 10px;
+              font-weight: 700;
+              color: #d97706;
+              background: #fef3c7;
+              border-radius: 4px;
+              padding: 1px 6px;
+              margin-bottom: 2px;
+            }
+            .btn-cart-addon-add {
+              background: #0a1c33;
+              color: #ffffff !important;
+              border: none;
+              font-size: 12px;
+              font-weight: 700;
+              padding: 6px 14px;
+              border-radius: 8px;
+              transition: all 0.2s ease;
+              white-space: nowrap;
+            }
+            .btn-cart-addon-add:hover {
+              background: #f25b29;
+              color: #ffffff !important;
+              transform: translateY(-1px);
+              box-shadow: 0 3px 8px rgba(242, 91, 41, 0.3);
+            }
+            </style>
+
+            <div class="rf-cart-addons-grid">
+              <?php foreach ($recommendedAddons as $addon): ?>
+                <div class="rf-cart-addon-item">
+                  <div class="d-flex align-items-center" style="gap: 12px;">
+                    <img src="<?= \App\Core\View::asset('img/' . ($addon['image'] ?? 'Full-home-clean.jpg')) ?>" 
+                         alt="<?= \App\Core\View::e($addon['name']) ?>"
+                         class="rf-cart-addon-thumb"
+                         onerror="this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
+                    <div class="flex-grow-1 min-w-0" style="overflow: hidden;">
+                      <span class="rf-cart-addon-badge"><?= \App\Core\View::e($addon['badge'] ?? 'Popular Add-on') ?></span>
+                      <h6 class="font-weight-bold mb-1 text-truncate" style="font-size: 13.5px; color: #0f172a;" title="<?= \App\Core\View::e($addon['name']) ?>">
+                        <?= \App\Core\View::e($addon['name']) ?>
+                      </h6>
+                      <div class="d-flex align-items-center" style="gap: 6px;">
+                        <span class="font-weight-bold" style="color: #f25b29; font-size: 13.5px;">₹<?= number_format((float)$addon['starting_price'], 0) ?></span>
+                        <span class="text-muted" style="font-size: 11px;">• ~<?= (int)($addon['duration_minutes'] ?? 60) ?>m</span>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-cart-addon-add" data-service-id="<?= (int)$addon['id'] ?>" title="Add to Cart">
+                      <i class="fa fa-plus mr-1"></i> Add
+                    </button>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
         <!-- Doorstep Booking Schedule Form -->
         <div class="card p-4 p-md-5 border-0 shadow-sm doorstep-form-card" style="border-radius: 16px;">
           <h2 class="font-weight-bold mb-2" style="font-size: 24px; color: #1a1a1a;">Doorstep Visit Details</h2>
@@ -1236,6 +1336,44 @@ function initCartPage() {
       }
     });
   }
+
+  // 1-Click Add for Recommended Add-ons on Cart Page
+  document.querySelectorAll('.btn-cart-addon-add').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var id = parseInt(this.getAttribute('data-service-id'), 10);
+      if (!id) return;
+      var self = this;
+      self.disabled = true;
+      var originalHtml = self.innerHTML;
+      self.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Adding...';
+      fetch((window.REFIXEL_BASE_URL || baseUrl) + '/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'service_id=' + encodeURIComponent(id) + '&quantity=1'
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        self.innerHTML = '<i class="fa fa-check"></i> Added';
+        self.style.background = '#10b981';
+        if (window.syncCartUI) {
+          window.syncCartUI();
+        }
+        setTimeout(function() {
+          window.location.reload();
+        }, 300);
+      })
+      .catch(function(err) {
+        console.error('Cart addon add error:', err);
+        self.disabled = false;
+        self.innerHTML = originalHtml;
+      });
+    });
+  });
 
   // Interactive Calendar & Time Slot Popovers for Cart
   var datePickerContainer = document.getElementById('cartDatePickerContainer');

@@ -636,6 +636,7 @@ $resolveCardIcon = function(?string $icon): array {
     // FontAwesome class (e.g. fa-wrench, fa-paint-brush)
     return ['type' => 'fa', 'class' => $icon];
 };
+$isCustomerLoggedIn = \App\Core\Auth::check();
 ?>
 <section class="complete_solutions_main" id="completeHomeSolutions">
   <div class="container">
@@ -657,7 +658,7 @@ $resolveCardIcon = function(?string $icon): array {
         $catSlug = $cat['slug'];
         $cleanUrlSlug = str_ends_with($catSlug, '-services') ? $catSlug : ($catSlug === 'cleaning' ? 'cleaning-services' : "{$catSlug}-services");
         $targetUrl = \App\Core\View::url("/{$cleanUrlSlug}");
-        $cardHref = $targetUrl;
+        $cardHref = $isCustomerLoggedIn ? $targetUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetUrl));
 
         $bannerSrc = $resolveCardImage($cat['image'] ?? $cat['icon'] ?? null);
         $iconData = $resolveCardIcon($cat['icon'] ?? null);
@@ -702,7 +703,7 @@ $resolveCardIcon = function(?string $icon): array {
         $mSlug = $m['slug'];
         $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
         $mTarget = \App\Core\View::url("/{$mUrlSlug}");
-        $mHref = $mTarget;
+        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
       ?>
         <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
@@ -712,7 +713,7 @@ $resolveCardIcon = function(?string $icon): array {
         $mSlug = $m['slug'];
         $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
         $mTarget = \App\Core\View::url("/{$mUrlSlug}");
-        $mHref = $mTarget;
+        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
       ?>
         <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
@@ -5992,7 +5993,26 @@ document.addEventListener('DOMContentLoaded', function() {
   var isCustomerLoggedIn = <?= \App\Core\Auth::check() ? 'true' : 'false' ?>;
 
   function navigateToService(targetUrl) {
-    window.location.href = targetUrl;
+    if (!isCustomerLoggedIn) {
+      window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(targetUrl);
+    } else {
+      window.location.href = targetUrl;
+    }
+  }
+
+  // Intercept clicks on homepage service cards and marquee links for guests
+  if (!isCustomerLoggedIn) {
+    document.querySelectorAll('.solution_card, .services_marquee_strip a').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = this.getAttribute('data-target-url') || this.getAttribute('href');
+        if (target && target.indexOf('/login') !== -1) {
+          window.location.href = target;
+        } else if (target) {
+          window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(target);
+        }
+      });
+    });
   }
 
   function performSearchNavigation() {

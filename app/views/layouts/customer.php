@@ -168,6 +168,7 @@
   <?= \App\Core\View::partial('location-modal') ?>
   <?= \App\Core\View::partial('login-modal') ?>
   <?= \App\Core\View::partial('mobile-drawer') ?>
+  <?= \App\Core\View::partial('cart-addon-modal') ?>
   <?= \App\Core\View::partial('flash') ?>
 
   <main id="mainContent">

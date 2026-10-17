@@ -63,6 +63,7 @@ Router::post('/api/enquiry/verify-otp', 'BookingController@apiVerifyEnquiryOtp')
 Router::get('/cart', 'BookingController@cart');
 Router::get('/cart.php', 'BookingController@cart');
 Router::get('/api/cart', 'BookingController@apiCart');
+Router::get('/api/cart/addons', 'BookingController@apiCartAddons');
 Router::post('/api/cart/add', 'BookingController@addToCart');
 Router::post('/api/cart/update', 'BookingController@updateCart');
 Router::post('/api/cart/remove', 'BookingController@removeFromCart');

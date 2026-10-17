@@ -16,6 +16,14 @@ foreach ($checklist ?? [] as $item) {
     }
 }
 ?>
+<?php if (!\App\Core\Auth::check()): ?>
+<script>
+  (function() {
+    var redirectTarget = window.location.pathname + window.location.search;
+    window.location.replace('<?= \App\Core\View::url('/login?redirect=') ?>' + encodeURIComponent(redirectTarget));
+  })();
+</script>
+<?php endif; ?>
 <div class="container py-5 my-3">
 
 
@@ -1508,6 +1516,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (window.syncCartUI) {
         window.syncCartUI();
+      }
+
+      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+        window.openRefixelAddonModal(data);
       }
 
       setTimeout(function() {

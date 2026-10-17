@@ -1,4 +1,5 @@
 <?php
+$isCustomerLoggedIn = \App\Core\Auth::check();
 $catName = \App\Core\View::e($category['name']);
 $catSlug = \App\Core\View::e($category['slug']);
 $cityName = \App\Core\View::e($city);
@@ -161,7 +162,10 @@ $refixelTrustData = [
         <?php foreach ($services as $svc):
           $svcSlug = \App\Core\View::e($svc['slug']);
           $svcName = \App\Core\View::e($svc['name']);
-          $svcUrl = \App\Core\View::url("/{$svcSlug}-in-{$currentCitySlug}");
+          $targetSvcUrl = \App\Core\View::url("/{$svcSlug}-in-{$currentCitySlug}");
+          $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
+          $targetBookUrl = \App\Core\View::url('/book?service_id=' . (int)$svc['id'] . '&city=' . urlencode($city));
+          $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
           $imgFile = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
         ?>
           <div class="col-md-6 col-lg-4 mb-4">
@@ -204,7 +208,7 @@ $refixelTrustData = [
                     <i class="fa fa-list-ul mr-1"></i> Checklist
                   </a>
                   <!-- Book Now on the Right -->
-                  <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$svc['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white btn-sm px-2 font-weight-bold btn-package-book text-center" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                  <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold btn-package-book text-center" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
                     Book Now
                   </a>
                 </div>
@@ -375,6 +379,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (window.syncCartUI) {
         window.syncCartUI();
+      }
+
+      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+        window.openRefixelAddonModal(data);
       }
 
       setTimeout(function() {

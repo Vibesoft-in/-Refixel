@@ -50,11 +50,14 @@ class BookingController extends Controller
     public function cart(Request $request): Response
     {
         $cart = Cart::getDetails();
+        $cartServiceIds = array_keys(Cart::getRaw());
+        $recommendedAddons = Service::getCartAddonRecommendations($cartServiceIds, 4);
 
         return $this->render('customer.cart', [
-            'title'       => 'Your Service Cart | REFIXEL',
-            'description' => 'Review selected home cleaning and repair packages, calculate prices, and schedule your doorstep visit.',
-            'cart'        => $cart,
+            'title'             => 'Your Service Cart | REFIXEL',
+            'description'       => 'Review selected home cleaning and repair packages, calculate prices, and schedule your doorstep visit.',
+            'cart'              => $cart,
+            'recommendedAddons' => $recommendedAddons,
         ], 'customer');
     }
 
@@ -65,6 +68,23 @@ class BookingController extends Controller
             'cart_count' => $cart['count'],
             'cart_total' => $cart['total'],
             'cart'       => $cart,
+        ]);
+    }
+
+    public function apiCartAddons(Request $request): Response
+    {
+        $serviceId = (int)$request->input('service_id', 0);
+        $cartIds = array_keys(Cart::getRaw());
+
+        if ($serviceId > 0) {
+            $addons = Service::getAddonRecommendations($serviceId, $cartIds, 4);
+        } else {
+            $addons = Service::getCartAddonRecommendations($cartIds, 4);
+        }
+
+        return Response::json([
+            'success' => true,
+            'addons'  => $addons,
         ]);
     }
 
@@ -81,12 +101,30 @@ class BookingController extends Controller
         $res = Cart::add($serviceId, max(1, $qty));
         $details = Cart::getDetails();
 
+        $addedService = Service::find($serviceId);
+        $cartIds = array_keys(Cart::getRaw());
+        $addons = Service::getAddonRecommendations($serviceId, $cartIds, 3);
+
+        $addedServiceData = null;
+        if ($addedService) {
+            $addedServiceData = [
+                'id'             => (int)$addedService['id'],
+                'name'           => $addedService['name'],
+                'slug'           => $addedService['slug'],
+                'image'          => Service::resolveImage($addedService['slug'] ?? '', $addedService['image'] ?? null),
+                'starting_price' => (float)$addedService['starting_price'],
+                'category_name'  => $addedService['category_name'] ?? 'Refixel Service',
+            ];
+        }
+
         return Response::json([
-            'success'    => $res['success'] ?? true,
-            'status'     => $res['success'] ? 'success' : 'error',
-            'cart_count' => $details['count'],
-            'cart_total' => $details['total'],
-            'cart'       => $details,
+            'success'       => $res['success'] ?? true,
+            'status'        => ($res['success'] ?? true) ? 'success' : 'error',
+            'cart_count'    => $details['count'],
+            'cart_total'    => $details['total'],
+            'cart'          => $details,
+            'added_service' => $addedServiceData,
+            'addons'        => $addons,
         ]);
     }
 

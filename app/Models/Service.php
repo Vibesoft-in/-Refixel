@@ -168,4 +168,182 @@ class Service extends Model
 
         return array_slice($scored, 0, $limit ?? 10);
     }
+
+    /**
+     * Curated high-conversion complementary service pairings.
+     */
+    protected static array $curatedAddonMap = [
+        1  => [4, 7, 48, 2],    // Full Home Cleaning -> Sofa Cleaning, Pest Control, Balcony Wash, Bathroom Cleaning
+        2  => [8, 3, 7, 11],    // Bathroom Cleaning -> Tap Leak, Kitchen Cleaning, Pest Control, Switchboard Repair
+        3  => [7, 8, 2, 4],     // Kitchen Deep Cleaning -> Pest Control, Tap Leak, Bathroom Cleaning, Sofa Cleaning
+        4  => [1, 48, 7, 2],    // Sofa Cleaning -> Full Home Clean, Balcony Wash, Pest Control, Bathroom Cleaning
+        48 => [1, 4, 2, 8],     // Balcony Pressure Wash -> Full Home Clean, Sofa Cleaning, Bathroom Cleaning, Tap Leak
+        5  => [4, 10, 7, 11],   // Commercial Space -> Sofa Cleaning, AC Jet Service, Pest Control, Switchboard Repair
+        6  => [14, 11, 1, 13],  // Interior Painting -> Fall Ceiling Repair, Switchboard Repair, Full Home Clean, Fall Ceiling Install
+        13 => [11, 6, 14, 1],   // Fall Ceiling Install -> Switchboard Repair, Painting, Cove Light, Full Home Clean
+        14 => [11, 13, 6, 1],   // Fall Ceiling Repair -> Switchboard Repair, Fall Ceiling Install, Painting, Full Home Clean
+        8  => [2, 3, 11, 12],   // Tap Leak Repair -> Bathroom Cleaning, Kitchen Cleaning, Switchboard Repair, Appliance Diagnostic
+        9  => [11, 4, 12, 8],   // Furniture Assembly -> Switchboard Repair, Sofa Cleaning, Appliance Diagnostic, Tap Leak
+        10 => [11, 12, 2, 4],   // AC Jet Service -> Switchboard Repair, Appliance Diagnostic, Bathroom Cleaning, Sofa Cleaning
+        11 => [10, 12, 8, 2],   // Switchboard Repair -> AC Jet Service, Appliance Diagnostic, Tap Leak, Bathroom Cleaning
+        12 => [11, 10, 8, 3],   // Appliance Diagnostic -> Switchboard Repair, AC Jet Service, Tap Leak, Kitchen Cleaning
+        7  => [3, 2, 1, 48],    // Cockroach & Pest Control -> Kitchen Cleaning, Bathroom Cleaning, Full Home Clean, Balcony Wash
+    ];
+
+    /**
+     * Get smart addon recommendations for a single service.
+     */
+    public static function getAddonRecommendations(int $serviceId, array $excludeIds = [], int $limit = 3): array
+    {
+        $excludeMap = array_fill_keys(array_map('intval', $excludeIds), true);
+        $excludeMap[$serviceId] = true;
+
+        $targetIds = [];
+        if (isset(self::$curatedAddonMap[$serviceId])) {
+            foreach (self::$curatedAddonMap[$serviceId] as $cId) {
+                $cId = (int)$cId;
+                if (!isset($excludeMap[$cId])) {
+                    $targetIds[] = $cId;
+                }
+            }
+        }
+
+        // Fallback: fill with active services from same or related categories
+        if (count($targetIds) < $limit) {
+            $allActive = self::getActive();
+            $current = self::find($serviceId);
+            $catId = (int)($current['category_id'] ?? 0);
+
+            // First priority: same category
+            foreach ($allActive as $item) {
+                $id = (int)$item['id'];
+                if ($id === $serviceId || isset($excludeMap[$id]) || in_array($id, $targetIds, true)) {
+                    continue;
+                }
+                if ((int)$item['category_id'] === $catId) {
+                    $targetIds[] = $id;
+                    if (count($targetIds) >= $limit) break;
+                }
+            }
+
+            // Second priority: popular budget services under ₹1000
+            if (count($targetIds) < $limit) {
+                foreach ($allActive as $item) {
+                    $id = (int)$item['id'];
+                    if ($id === $serviceId || isset($excludeMap[$id]) || in_array($id, $targetIds, true)) {
+                        continue;
+                    }
+                    $targetIds[] = $id;
+                    if (count($targetIds) >= $limit) break;
+                }
+            }
+        }
+
+        $targetIds = array_slice($targetIds, 0, $limit);
+        if (empty($targetIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($targetIds), '?'));
+        $rows = Database::fetchAll(
+            "SELECT s.*, c.name as category_name, c.slug as category_slug 
+             FROM services s 
+             LEFT JOIN categories c ON s.category_id = c.id 
+             WHERE s.id IN ($placeholders) AND s.is_active = 1",
+            $targetIds
+        );
+
+        $rowMap = [];
+        foreach ($rows as $r) {
+            $r['image'] = self::resolveImage($r['slug'] ?? '', $r['image'] ?? null);
+            $rowMap[(int)$r['id']] = $r;
+        }
+
+        $badges = ['🔥 Popular Add-on', '⭐ Frequently Added', '⚡ 60-Min Arrival', '✨ Best Match'];
+        $results = [];
+        $i = 0;
+        foreach ($targetIds as $tid) {
+            if (isset($rowMap[$tid])) {
+                $item = $rowMap[$tid];
+                $item['badge'] = $badges[$i % count($badges)];
+                $item['savings_note'] = 'Special Companion Rate';
+                $results[] = $item;
+                $i++;
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get aggregate addon recommendations for the entire cart.
+     */
+    public static function getCartAddonRecommendations(array $cartServiceIds, int $limit = 4): array
+    {
+        $excludeMap = array_fill_keys(array_map('intval', $cartServiceIds), true);
+        $candidateWeights = [];
+
+        foreach ($cartServiceIds as $sid) {
+            $sid = (int)$sid;
+            if (isset(self::$curatedAddonMap[$sid])) {
+                $rank = 4;
+                foreach (self::$curatedAddonMap[$sid] as $cId) {
+                    $cId = (int)$cId;
+                    if (!isset($excludeMap[$cId])) {
+                        $candidateWeights[$cId] = ($candidateWeights[$cId] ?? 0) + $rank;
+                    }
+                    $rank--;
+                }
+            }
+        }
+
+        arsort($candidateWeights);
+        $targetIds = array_keys($candidateWeights);
+
+        if (count($targetIds) < $limit) {
+            $all = self::getActive();
+            foreach ($all as $item) {
+                $id = (int)$item['id'];
+                if (!isset($excludeMap[$id]) && !in_array($id, $targetIds, true)) {
+                    $targetIds[] = $id;
+                    if (count($targetIds) >= $limit) break;
+                }
+            }
+        }
+
+        $targetIds = array_slice($targetIds, 0, $limit);
+        if (empty($targetIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($targetIds), '?'));
+        $rows = Database::fetchAll(
+            "SELECT s.*, c.name as category_name, c.slug as category_slug 
+             FROM services s 
+             LEFT JOIN categories c ON s.category_id = c.id 
+             WHERE s.id IN ($placeholders) AND s.is_active = 1",
+            $targetIds
+        );
+
+        $rowMap = [];
+        foreach ($rows as $r) {
+            $r['image'] = self::resolveImage($r['slug'] ?? '', $r['image'] ?? null);
+            $rowMap[(int)$r['id']] = $r;
+        }
+
+        $badges = ['🔥 Frequently Added', '⭐ Best Companion', '⚡ Instant Dispatch', '🛡️ Refixel Guaranteed'];
+        $results = [];
+        $i = 0;
+        foreach ($targetIds as $tid) {
+            if (isset($rowMap[$tid])) {
+                $item = $rowMap[$tid];
+                $item['badge'] = $badges[$i % count($badges)];
+                $item['savings_note'] = '100% Satisfaction Guaranteed';
+                $results[] = $item;
+                $i++;
+            }
+        }
+
+        return $results;
+    }
 }
