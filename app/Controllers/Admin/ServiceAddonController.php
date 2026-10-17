@@ -26,6 +26,17 @@ class ServiceAddonController extends Controller
         $services = Database::fetchAll("SELECT id, name, slug, starting_price, category_id FROM services WHERE is_active = 1 ORDER BY category_id ASC, name ASC");
         $categories = Category::all('sort_order ASC, name ASC');
 
+        // Map of addon_service_id => array of category IDs it is paired in
+        $addonCategoriesMap = [];
+        $allPairings = Database::fetchAll("SELECT DISTINCT addon_service_id, COALESCE(source_category_id, (SELECT category_id FROM services WHERE id = source_service_id)) as cat_id FROM service_addons WHERE is_active = 1");
+        foreach ($allPairings as $ap) {
+            $aid = (int)$ap['addon_service_id'];
+            $cid = (int)$ap['cat_id'];
+            if ($aid > 0 && $cid > 0) {
+                $addonCategoriesMap[$aid][] = $cid;
+            }
+        }
+
         // Statistics
         $totalRules = count(Database::fetchAll("SELECT id FROM service_addons"));
         $activeRules = count(Database::fetchAll("SELECT id FROM service_addons WHERE is_active = 1"));
@@ -37,6 +48,7 @@ class ServiceAddonController extends Controller
             'rules'              => $rules,
             'services'           => $services,
             'categories'         => $categories,
+            'addonCategoriesMap' => $addonCategoriesMap,
             'filterServiceId'    => $filterServiceId,
             'filterCategoryId'   => $filterCategoryId,
             'totalRules'         => $totalRules,
@@ -47,12 +59,27 @@ class ServiceAddonController extends Controller
     }
 
     /**
-     * Create a new Add-on Pairing Rule.
+     * Create a new Add-on Pairing Rule across one or multiple categories.
      */
     public function store(Request $request): Response
     {
         $sourceServiceId = (int)$request->input('source_service_id', 0);
-        $sourceCategoryId = (int)$request->input('source_category_id', 0);
+        
+        // Support multiple category checkboxes (source_category_ids[]) or fallback single (source_category_id)
+        $categoryIds = [];
+        if ($request->has('source_category_ids')) {
+            $raw = $request->input('source_category_ids');
+            if (is_array($raw)) {
+                $categoryIds = array_values(array_unique(array_filter(array_map('intval', $raw))));
+            }
+        }
+        if (empty($categoryIds) && $request->has('source_category_id')) {
+            $singleCid = (int)$request->input('source_category_id', 0);
+            if ($singleCid > 0) {
+                $categoryIds[] = $singleCid;
+            }
+        }
+
         $addonServiceId = (int)$request->input('addon_service_id', 0);
         $badge = trim((string)$request->input('custom_badge', '🔥 Popular Add-on'));
         $price = $request->input('custom_price') !== null && $request->input('custom_price') !== '' 
@@ -66,16 +93,20 @@ class ServiceAddonController extends Controller
             return $this->redirect('/admin/services/addons');
         }
 
-        // If source service is chosen, resolve its category if not explicitly provided
-        if ($sourceServiceId > 0 && $sourceCategoryId <= 0) {
+        // If a specific source service was chosen, resolve its category
+        $srcServiceCatId = 0;
+        if ($sourceServiceId > 0) {
             $src = Service::find($sourceServiceId);
             if ($src) {
-                $sourceCategoryId = (int)($src['category_id'] ?? 0);
+                $srcServiceCatId = (int)($src['category_id'] ?? 0);
+                if (!in_array($srcServiceCatId, $categoryIds, true) && empty($categoryIds)) {
+                    $categoryIds[] = $srcServiceCatId;
+                }
             }
         }
 
-        if ($sourceServiceId <= 0 && $sourceCategoryId <= 0) {
-            View::setFlash('error', 'Please select a Category or Target Service.');
+        if (empty($categoryIds) && $sourceServiceId <= 0) {
+            View::setFlash('error', 'Please select at least one Category for this add-on.');
             return $this->redirect('/admin/services/addons');
         }
 
@@ -84,41 +115,82 @@ class ServiceAddonController extends Controller
             return $this->redirect('/admin/services/addons');
         }
 
-        // Check if pairing already exists
+        $createdCount = 0;
+        $updatedCount = 0;
+
+        // If a specific target service was selected, pair it directly
         if ($sourceServiceId > 0) {
             $existing = Database::fetchOne(
                 "SELECT id FROM service_addons WHERE source_service_id = :sid AND addon_service_id = :aid",
                 ['sid' => $sourceServiceId, 'aid' => $addonServiceId]
             );
-        } else {
-            $existing = Database::fetchOne(
+            if ($existing) {
+                ServiceAddon::update((int)$existing['id'], [
+                    'source_category_id' => $srcServiceCatId > 0 ? $srcServiceCatId : null,
+                    'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
+                    'custom_price'       => $price,
+                    'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'sort_order'         => $sortOrder,
+                    'is_active'          => 1,
+                ]);
+                $updatedCount++;
+            } else {
+                ServiceAddon::create([
+                    'source_service_id'  => $sourceServiceId,
+                    'source_category_id' => $srcServiceCatId > 0 ? $srcServiceCatId : null,
+                    'addon_service_id'   => $addonServiceId,
+                    'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
+                    'custom_price'       => $price,
+                    'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'sort_order'         => $sortOrder,
+                    'is_active'          => 1,
+                ]);
+                $createdCount++;
+            }
+        }
+
+        // Pair across all selected categories (category-wide)
+        foreach ($categoryIds as $catId) {
+            if ($sourceServiceId > 0 && $catId === $srcServiceCatId) {
+                continue;
+            }
+
+            $existingCat = Database::fetchOne(
                 "SELECT id FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
-                ['cid' => $sourceCategoryId, 'aid' => $addonServiceId]
+                ['cid' => $catId, 'aid' => $addonServiceId]
             );
+
+            if ($existingCat) {
+                ServiceAddon::update((int)$existingCat['id'], [
+                    'custom_badge' => !empty($badge) ? $badge : '🔥 Popular Add-on',
+                    'custom_price' => $price,
+                    'custom_note'  => !empty($note) ? $note : 'Special Companion Rate',
+                    'sort_order'   => $sortOrder,
+                    'is_active'    => 1,
+                ]);
+                $updatedCount++;
+            } else {
+                ServiceAddon::create([
+                    'source_service_id'  => null,
+                    'source_category_id' => $catId,
+                    'addon_service_id'   => $addonServiceId,
+                    'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
+                    'custom_price'       => $price,
+                    'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'sort_order'         => $sortOrder,
+                    'is_active'          => 1,
+                ]);
+                $createdCount++;
+            }
         }
 
-        if ($existing) {
-            View::setFlash('error', 'This service add-on pairing already exists. You can edit the existing rule below.');
-            return $this->redirect('/admin/services/addons');
-        }
-
-        ServiceAddon::create([
-            'source_service_id'  => $sourceServiceId > 0 ? $sourceServiceId : null,
-            'source_category_id' => $sourceCategoryId > 0 ? $sourceCategoryId : null,
-            'addon_service_id'   => $addonServiceId,
-            'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
-            'custom_price'       => $price,
-            'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
-            'sort_order'         => $sortOrder,
-            'is_active'          => 1,
-        ]);
-
-        View::setFlash('success', 'Smart add-on pairing created successfully!');
-        return $this->redirect('/admin/services/addons' . ($sourceServiceId > 0 ? '?service_id=' . $sourceServiceId : ($sourceCategoryId > 0 ? '?category_id=' . $sourceCategoryId : '')));
+        $totalAffected = $createdCount + $updatedCount;
+        View::setFlash('success', "Add-on successfully assigned across {$totalAffected} category pairing rule(s)!");
+        return $this->redirect('/admin/services/addons');
     }
 
     /**
-     * Update an existing Add-on Pairing Rule.
+     * Update an existing Add-on Pairing Rule across selected categories.
      */
     public function update(Request $request, string|int $id = ''): Response
     {
@@ -130,15 +202,33 @@ class ServiceAddonController extends Controller
             return $this->redirect('/admin/services/addons');
         }
 
-        $sourceCategoryId = $request->has('source_category_id') ? (int)$request->input('source_category_id') : (int)($rule['source_category_id'] ?? 0);
+        // Support multiple category checkboxes (source_category_ids[]) or fallback single (source_category_id)
+        $categoryIds = [];
+        if ($request->has('source_category_ids')) {
+            $raw = $request->input('source_category_ids');
+            if (is_array($raw)) {
+                $categoryIds = array_values(array_unique(array_filter(array_map('intval', $raw))));
+            }
+        }
+        if (empty($categoryIds) && $request->has('source_category_id')) {
+            $singleCid = (int)$request->input('source_category_id', 0);
+            if ($singleCid > 0) {
+                $categoryIds[] = $singleCid;
+            }
+        }
+
         $sourceServiceId = $request->has('source_service_id') ? (int)$request->input('source_service_id') : (int)($rule['source_service_id'] ?? 0);
         $addonServiceId = $request->has('addon_service_id') ? (int)$request->input('addon_service_id') : (int)($rule['addon_service_id'] ?? 0);
 
-        // If source service is chosen, resolve its category if not explicitly provided
-        if ($sourceServiceId > 0 && $sourceCategoryId <= 0) {
+        // If source service is chosen, resolve its category
+        $srcServiceCatId = 0;
+        if ($sourceServiceId > 0) {
             $src = Service::find($sourceServiceId);
             if ($src) {
-                $sourceCategoryId = (int)($src['category_id'] ?? 0);
+                $srcServiceCatId = (int)($src['category_id'] ?? 0);
+                if (!in_array($srcServiceCatId, $categoryIds, true) && empty($categoryIds)) {
+                    $categoryIds[] = $srcServiceCatId;
+                }
             }
         }
 
@@ -150,8 +240,11 @@ class ServiceAddonController extends Controller
         $sortOrder = (int)$request->input('sort_order', 0);
         $isActive = (int)$request->input('is_active', 1);
 
+        $primaryCatId = !empty($categoryIds) ? $categoryIds[0] : (int)($rule['source_category_id'] ?? 0);
+
+        // 1. Update the primary rule
         ServiceAddon::update($id, [
-            'source_category_id' => $sourceCategoryId > 0 ? $sourceCategoryId : null,
+            'source_category_id' => $primaryCatId > 0 ? $primaryCatId : null,
             'source_service_id'  => $sourceServiceId > 0 ? $sourceServiceId : null,
             'addon_service_id'   => $addonServiceId > 0 ? $addonServiceId : (int)$rule['addon_service_id'],
             'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
@@ -161,8 +254,41 @@ class ServiceAddonController extends Controller
             'is_active'          => $isActive ? 1 : 0,
         ]);
 
-        View::setFlash('success', 'Add-on rule updated successfully.');
-        return $this->redirect('/admin/services/addons' . (!empty($sourceServiceId) ? '?service_id=' . $sourceServiceId : (!empty($sourceCategoryId) ? '?category_id=' . $sourceCategoryId : '')));
+        // 2. Also ensure all other selected categories have this add-on assigned
+        foreach ($categoryIds as $catId) {
+            if ($catId === $primaryCatId) {
+                continue;
+            }
+
+            $existingCat = Database::fetchOne(
+                "SELECT id FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
+                ['cid' => $catId, 'aid' => $addonServiceId]
+            );
+
+            if ($existingCat) {
+                ServiceAddon::update((int)$existingCat['id'], [
+                    'custom_badge' => !empty($badge) ? $badge : '🔥 Popular Add-on',
+                    'custom_price' => $price,
+                    'custom_note'  => !empty($note) ? $note : 'Special Companion Rate',
+                    'sort_order'   => $sortOrder,
+                    'is_active'    => $isActive ? 1 : 0,
+                ]);
+            } else {
+                ServiceAddon::create([
+                    'source_service_id'  => null,
+                    'source_category_id' => $catId,
+                    'addon_service_id'   => $addonServiceId,
+                    'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
+                    'custom_price'       => $price,
+                    'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+                    'sort_order'         => $sortOrder,
+                    'is_active'          => $isActive ? 1 : 0,
+                ]);
+            }
+        }
+
+        View::setFlash('success', 'Add-on rule updated across selected categories successfully.');
+        return $this->redirect('/admin/services/addons');
     }
 
     /**

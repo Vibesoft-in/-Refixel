@@ -10,7 +10,31 @@ $totalRules = $totalRules ?? count($rules);
 $activeRules = $activeRules ?? 0;
 $servicesWithAddons = $servicesWithAddons ?? 0;
 $autoSensible = $autoSensible ?? true;
+$addonCategoriesMap = $addonCategoriesMap ?? [];
 ?>
+
+<style>
+.category-checkbox-card {
+  border: 1.5px solid #e2e8f0;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+.category-checkbox-card:hover {
+  border-color: #f25b29;
+  background: #fffdfb;
+}
+.category-checkbox-card.is-selected {
+  border-color: #f25b29;
+  background: #fff6f0;
+}
+.category-checkbox-grid::-webkit-scrollbar {
+  width: 4px;
+}
+.category-checkbox-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+</style>
 
 <div class="admin-addons-page">
   <!-- Top Header -->
@@ -248,9 +272,18 @@ $autoSensible = $autoSensible ?? true;
 
                 <!-- Actions -->
                 <td class="align-middle text-right">
+                  <?php 
+                    $curCatId = (int)($r['effective_category_id'] ?? $r['source_category_id'] ?? 0);
+                    $allCats = $addonCategoriesMap[(int)$r['addon_service_id']] ?? ($curCatId > 0 ? [$curCatId] : []);
+                    if ($curCatId > 0 && !in_array($curCatId, $allCats, true)) {
+                      $allCats[] = $curCatId;
+                    }
+                    $allCatsStr = implode(',', array_unique(array_filter($allCats)));
+                  ?>
                   <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold edit-addon-rule-btn"
                     data-id="<?= (int)$r['id'] ?>"
-                    data-source-category-id="<?= (int)($r['effective_category_id'] ?? $r['source_category_id'] ?? 0) ?>"
+                    data-source-category-id="<?= $curCatId ?>"
+                    data-all-category-ids="<?= $allCatsStr ?>"
                     data-source-service-id="<?= (int)($r['source_service_id'] ?? 0) ?>"
                     data-addon-service-id="<?= (int)$r['addon_service_id'] ?>"
                     data-source-name="<?= View::e($r['source_service_name'] ?: 'All Services in ' . ($r['source_category_name'] ?? 'Category')) ?>"
@@ -298,34 +331,55 @@ $autoSensible = $autoSensible ?? true;
         </div>
 
         <div class="modal-body p-4">
-          <!-- 1. Select Category -->
+          <!-- 1. Select Categories (Checkboxes) -->
           <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark mb-1">
-              <i class="fa fa-folder text-brand mr-1" style="color: #f25b29;"></i> Select Category <span class="text-danger">*</span>
-            </label>
-            <select name="source_category_id" id="modalSourceCategory" class="form-control" required>
-              <option value="">-- Choose Category (e.g. Cleaning, AC, Plumbers...) --</option>
-              <?php foreach ($categories as $cat): ?>
-                <option value="<?= $cat['id'] ?>" <?= ($filterCategoryId === (int)$cat['id']) ? 'selected' : '' ?>>
-                  <?= View::e($cat['name']) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-            <small class="text-muted">Put this add-on into any category so it triggers for that category.</small>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <label class="font-weight-bold small text-dark mb-0">
+                <i class="fa fa-folder text-brand mr-1" style="color: #f25b29;"></i> Select Categories <span class="text-danger">*</span>
+              </label>
+              <div class="category-quick-btns">
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 select-all-cats-btn" style="font-size: 11px;">Select All</button>
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 clear-all-cats-btn" style="font-size: 11px;">Clear</button>
+              </div>
+            </div>
+            <small class="text-muted d-block mb-2">Check one or more categories where this add-on should be offered.</small>
+
+            <div class="category-checkbox-grid p-2 rounded border" style="background: #f8fafc; max-height: 185px; overflow-y: auto;">
+              <div class="row no-gutters">
+                <?php foreach ($categories as $cat): ?>
+                  <?php $isPreSelected = ($filterCategoryId === (int)$cat['id']); ?>
+                  <div class="col-sm-6 p-1">
+                    <label class="category-checkbox-card d-flex align-items-center p-2 rounded border bg-white mb-0 <?= $isPreSelected ? 'is-selected' : '' ?>" for="modal_cat_chk_<?= (int)$cat['id'] ?>" style="cursor: pointer; transition: all 0.15s ease;">
+                      <input type="checkbox" 
+                             name="source_category_ids[]" 
+                             value="<?= (int)$cat['id'] ?>" 
+                             id="modal_cat_chk_<?= (int)$cat['id'] ?>" 
+                             class="modal-cat-chk mr-2" 
+                             style="width: 16px; height: 16px; accent-color: #f25b29; cursor: pointer;"
+                             <?= $isPreSelected ? 'checked' : '' ?>>
+                      <span class="small font-weight-semibold text-dark text-truncate" title="<?= View::e($cat['name']) ?>">
+                        <?= View::e($cat['name']) ?>
+                      </span>
+                    </label>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+            <div class="invalid-feedback d-none" id="modalCatError">Please select at least one category.</div>
           </div>
 
           <!-- 2. Target Service (Optional: specific or entire category) -->
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark mb-1">Target Service (Trigger)</label>
             <select name="source_service_id" id="modalSourceService" class="form-control">
-              <option value="">-- Apply to ALL Services in this Category (Category-Wide) --</option>
+              <option value="">-- Apply to ALL Services in Selected Categories (Category-Wide) --</option>
               <?php foreach ($services as $srv): ?>
                 <option value="<?= $srv['id'] ?>" data-category="<?= $srv['category_id'] ?>" <?= ($filterServiceId === (int)$srv['id']) ? 'selected' : '' ?>>
                   <?= View::e($srv['name']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <small class="text-muted">Choose a specific service, or leave as "ALL Services" to show across the whole category.</small>
+            <small class="text-muted">Choose a specific service, or leave as "ALL Services" to show across all selected categories.</small>
           </div>
 
           <!-- 3. Add-on Service Item -->
@@ -406,32 +460,53 @@ $autoSensible = $autoSensible ?? true;
         </div>
 
         <div class="modal-body p-4">
-          <!-- 1. Select Category -->
+          <!-- 1. Select Categories (Checkboxes) -->
           <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark mb-1">
-              <i class="fa fa-folder text-brand mr-1" style="color: #f25b29;"></i> Select Category <span class="text-danger">*</span>
-            </label>
-            <select name="source_category_id" id="editSourceCategoryId" class="form-control" required>
-              <option value="">-- Choose Category --</option>
-              <?php foreach ($categories as $cat): ?>
-                <option value="<?= $cat['id'] ?>"><?= View::e($cat['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-            <small class="text-muted">Put this add-on into any category of your choice.</small>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <label class="font-weight-bold small text-dark mb-0">
+                <i class="fa fa-folder text-brand mr-1" style="color: #f25b29;"></i> Select Categories <span class="text-danger">*</span>
+              </label>
+              <div class="category-quick-btns">
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 edit-select-all-cats-btn" style="font-size: 11px;">Select All</button>
+                <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 edit-clear-all-cats-btn" style="font-size: 11px;">Clear</button>
+              </div>
+            </div>
+            <small class="text-muted d-block mb-2">Check all categories where this add-on should be offered.</small>
+
+            <div class="category-checkbox-grid p-2 rounded border" style="background: #f8fafc; max-height: 185px; overflow-y: auto;">
+              <div class="row no-gutters">
+                <?php foreach ($categories as $cat): ?>
+                  <div class="col-sm-6 p-1">
+                    <label class="category-checkbox-card d-flex align-items-center p-2 rounded border bg-white mb-0" for="edit_cat_chk_<?= (int)$cat['id'] ?>" style="cursor: pointer; transition: all 0.15s ease;">
+                      <input type="checkbox" 
+                             name="source_category_ids[]" 
+                             value="<?= (int)$cat['id'] ?>" 
+                             id="edit_cat_chk_<?= (int)$cat['id'] ?>" 
+                             class="edit-modal-cat-chk mr-2" 
+                             style="width: 16px; height: 16px; accent-color: #f25b29; cursor: pointer;">
+                      <span class="small font-weight-semibold text-dark text-truncate" title="<?= View::e($cat['name']) ?>">
+                        <?= View::e($cat['name']) ?>
+                      </span>
+                    </label>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+            <div class="invalid-feedback d-none" id="editCatError">Please select at least one category.</div>
           </div>
 
           <!-- 2. Target Service (Trigger) -->
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark mb-1">Target Service (Trigger)</label>
             <select name="source_service_id" id="editSourceServiceId" class="form-control">
-              <option value="">-- Apply to ALL Services in this Category (Category-Wide) --</option>
+              <option value="">-- Apply to ALL Services in Selected Categories (Category-Wide) --</option>
               <?php foreach ($services as $srv): ?>
                 <option value="<?= $srv['id'] ?>" data-category="<?= $srv['category_id'] ?>">
                   <?= View::e($srv['name']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <small class="text-muted">Select a specific service, or leave as "ALL Services" to trigger across the whole category.</small>
+            <small class="text-muted">Select a specific service, or leave as "ALL Services" to trigger across all selected categories.</small>
           </div>
 
           <!-- 3. Add-on Item to Recommend -->
@@ -585,23 +660,24 @@ $autoSensible = $autoSensible ?? true;
 document.addEventListener("DOMContentLoaded", function() {
   var baseUrl = '<?= View::url("") ?>';
 
-  // Helper to filter services by category in a select element
-  function filterServicesByCategory(categorySelectId, serviceSelectId, preserveSelectedId) {
-    var catSelect = document.getElementById(categorySelectId);
+  // Helper to filter services by checked categories
+  function filterServicesByCheckedCategories(chkClass, serviceSelectId, preserveSelectedId) {
     var srvSelect = document.getElementById(serviceSelectId);
-    if (!catSelect || !srvSelect) return;
+    if (!srvSelect) return;
 
-    var selectedCat = String(catSelect.value || '');
+    var checkedCats = [];
+    document.querySelectorAll("." + chkClass + ":checked").forEach(function(chk) {
+      checkedCats.push(String(chk.value));
+    });
+
     var options = srvSelect.querySelectorAll("option");
-
     options.forEach(function(opt) {
       if (!opt.value) {
-        // Keep the "-- Apply to ALL Services in this Category --" option visible
         opt.style.display = "";
         return;
       }
       var optCat = opt.getAttribute("data-category");
-      if (!selectedCat || optCat === selectedCat) {
+      if (checkedCats.length === 0 || checkedCats.indexOf(optCat) !== -1) {
         opt.style.display = "";
       } else {
         opt.style.display = "none";
@@ -613,19 +689,77 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   }
 
-  // Bind change on Create Modal Category
-  var modalCatSelect = document.getElementById("modalSourceCategory");
-  if (modalCatSelect) {
-    modalCatSelect.addEventListener("change", function() {
-      filterServicesByCategory("modalSourceCategory", "modalSourceService", "");
-    });
-  }
+  // Handle visual card toggle on checkbox change
+  document.addEventListener("change", function(e) {
+    if (e.target && (e.target.classList.contains("modal-cat-chk") || e.target.classList.contains("edit-modal-cat-chk"))) {
+      var card = e.target.closest(".category-checkbox-card");
+      if (card) {
+        if (e.target.checked) card.classList.add("is-selected");
+        else card.classList.remove("is-selected");
+      }
+      if (e.target.classList.contains("modal-cat-chk")) {
+        filterServicesByCheckedCategories("modal-cat-chk", "modalSourceService");
+      } else {
+        filterServicesByCheckedCategories("edit-modal-cat-chk", "editSourceServiceId");
+      }
+    }
+  });
 
-  // Bind change on Edit Modal Category
-  var editCatSelect = document.getElementById("editSourceCategoryId");
-  if (editCatSelect) {
-    editCatSelect.addEventListener("change", function() {
-      filterServicesByCategory("editSourceCategoryId", "editSourceServiceId", "");
+  // Select all / clear in Add modal
+  document.querySelectorAll(".select-all-cats-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".modal-cat-chk").forEach(function(chk) {
+        chk.checked = true;
+        chk.closest(".category-checkbox-card")?.classList.add("is-selected");
+      });
+      filterServicesByCheckedCategories("modal-cat-chk", "modalSourceService");
+    });
+  });
+
+  document.querySelectorAll(".clear-all-cats-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".modal-cat-chk").forEach(function(chk) {
+        chk.checked = false;
+        chk.closest(".category-checkbox-card")?.classList.remove("is-selected");
+      });
+      filterServicesByCheckedCategories("modal-cat-chk", "modalSourceService");
+    });
+  });
+
+  // Select all / clear in Edit modal
+  document.querySelectorAll(".edit-select-all-cats-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".edit-modal-cat-chk").forEach(function(chk) {
+        chk.checked = true;
+        chk.closest(".category-checkbox-card")?.classList.add("is-selected");
+      });
+      filterServicesByCheckedCategories("edit-modal-cat-chk", "editSourceServiceId");
+    });
+  });
+
+  document.querySelectorAll(".edit-clear-all-cats-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.querySelectorAll(".edit-modal-cat-chk").forEach(function(chk) {
+        chk.checked = false;
+        chk.closest(".category-checkbox-card")?.classList.remove("is-selected");
+      });
+      filterServicesByCheckedCategories("edit-modal-cat-chk", "editSourceServiceId");
+    });
+  });
+
+  // Initialize filtering in Create modal
+  filterServicesByCheckedCategories("modal-cat-chk", "modalSourceService");
+
+  // Validate at least one category selected before submit
+  var addForm = document.querySelector("#addonModal form");
+  if (addForm) {
+    addForm.addEventListener("submit", function(e) {
+      var checked = addForm.querySelectorAll(".modal-cat-chk:checked").length;
+      var srvId = addForm.querySelector("#modalSourceService") ? addForm.querySelector("#modalSourceService").value : "";
+      if (checked === 0 && !srvId) {
+        e.preventDefault();
+        alert("Please select at least one Category for this add-on.");
+      }
     });
   }
 
@@ -642,11 +776,22 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // Edit Addon Rule Modal Populator
   var editForm = document.getElementById("editPairingForm");
+  if (editForm) {
+    editForm.addEventListener("submit", function(e) {
+      var checked = editForm.querySelectorAll(".edit-modal-cat-chk:checked").length;
+      var srvId = editForm.querySelector("#editSourceServiceId") ? editForm.querySelector("#editSourceServiceId").value : "";
+      if (checked === 0 && !srvId) {
+        e.preventDefault();
+        alert("Please select at least one Category for this add-on.");
+      }
+    });
+  }
 
   document.querySelectorAll(".edit-addon-rule-btn").forEach(function(btn) {
     btn.addEventListener("click", function() {
       var id = this.getAttribute("data-id");
-      var sourceCatId = this.getAttribute("data-source-category-id") || '';
+      var allCatIdsStr = this.getAttribute("data-all-category-ids") || this.getAttribute("data-source-category-id") || '';
+      var allCatIds = allCatIdsStr.split(",").map(function(s) { return s.trim(); }).filter(Boolean);
       var sourceSrvId = this.getAttribute("data-source-service-id") || '';
       var addonSrvId = this.getAttribute("data-addon-service-id") || '';
       var badge = this.getAttribute("data-badge") || '';
@@ -655,12 +800,18 @@ document.addEventListener("DOMContentLoaded", function() {
       var order = this.getAttribute("data-order") || '0';
       var active = this.getAttribute("data-active") || '1';
 
-      // Set category first, then filter services and set selected service
-      var catEl = document.getElementById("editSourceCategoryId");
-      if (catEl) {
-        catEl.value = sourceCatId;
-      }
-      filterServicesByCategory("editSourceCategoryId", "editSourceServiceId", sourceSrvId);
+      // Check all matching categories
+      document.querySelectorAll(".edit-modal-cat-chk").forEach(function(chk) {
+        var shouldCheck = allCatIds.indexOf(String(chk.value)) !== -1;
+        chk.checked = shouldCheck;
+        var card = chk.closest(".category-checkbox-card");
+        if (card) {
+          if (shouldCheck) card.classList.add("is-selected");
+          else card.classList.remove("is-selected");
+        }
+      });
+
+      filterServicesByCheckedCategories("edit-modal-cat-chk", "editSourceServiceId", sourceSrvId);
 
       var addonEl = document.getElementById("editAddonServiceId");
       if (addonEl) {
