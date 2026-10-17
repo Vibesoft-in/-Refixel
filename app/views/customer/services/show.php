@@ -40,7 +40,7 @@ foreach ($checklist ?? [] as $item) {
         <div class="card-body p-4 p-md-5">
           <div class="d-flex align-items-center mb-2">
             <span class="badge mr-2 font-weight-bold px-2.5 py-1.5" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf;">Verified Service</span>
-            <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in your location</span>
+            <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in <?= $cityName ?></span>
           </div>
 
           <h1 class="font-weight-bold mb-2 service-detail-title">
@@ -569,7 +569,7 @@ foreach ($checklist ?? [] as $item) {
                         <span class="text-warning font-weight-bold"><?= (int)$rev['rating'] ?>★</span>
                       </div>
                       <p class="text-muted small mb-1 fst-italic">"<?= \App\Core\View::e($rev['review_text'] ?? 'Excellent work, very professional and punctual.') ?>"</p>
-                      <small class="text-success"><i class="fa fa-check-circle"></i> Verified Booking - Available in your location</small>
+                      <small class="text-success"><i class="fa fa-check-circle"></i> Verified Booking in <?= $cityName ?></small>
                     </div>
                   </div>
                 <?php endforeach; ?>

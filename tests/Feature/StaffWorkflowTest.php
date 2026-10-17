@@ -30,8 +30,8 @@ $profCtrl = new ProfileController();
 $requireRole = new RequireRole();
 
 // Setup: Ensure Tech 1 (ID: 2) exists and is active
-$tech = Database::fetchOne("SELECT * FROM users WHERE role = 'staff' AND email = 'tech@primodomus.com'");
-assert($tech !== null, "Staff user tech@primodomus.com must exist");
+$tech = Database::fetchOne("SELECT * FROM users WHERE role = 'staff' AND email = 'tech@refixel.com'");
+assert($tech !== null, "Staff user tech@refixel.com must exist");
 $techId = (int)$tech['id'];
 
 // Test 1: Role protection & unauthenticated blocking
@@ -42,21 +42,21 @@ assert($blockGuest !== null && $blockGuest->getStatusCode() === 302, "Guest must
 echo "Test 1: Unauthenticated access blocked - PASSED\n";
 
 // Test 2: Customer blocked from /staff
-Auth::login(['id' => 3, 'name' => 'Customer', 'email' => 'customer@primodomus.com', 'role' => 'customer', 'must_change_password' => 0]);
+Auth::login(['id' => 3, 'name' => 'Customer', 'email' => 'customer@refixel.com', 'role' => 'customer', 'must_change_password' => 0]);
 $reqCustomer = new Request([], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/staff']);
 $blockCustomer = $requireRole->handle($reqCustomer, 'staff');
 assert($blockCustomer !== null && $blockCustomer->getStatusCode() === 302, "Customer must be blocked from /staff");
 echo "Test 2: Customer role blocked from /staff - PASSED\n";
 
 // Test 3: Forced password change enforcement for first-time login
-Auth::login(['id' => $techId, 'name' => 'Technician', 'email' => 'tech@primodomus.com', 'role' => 'staff', 'must_change_password' => 1]);
+Auth::login(['id' => $techId, 'name' => 'Technician', 'email' => 'tech@refixel.com', 'role' => 'staff', 'must_change_password' => 1]);
 $reqForcePwd = new Request([], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/staff']);
 $blockForce = $requireRole->handle($reqForcePwd, 'staff');
 assert($blockForce !== null && $blockForce->getStatusCode() === 302, "must_change_password must redirect to /change-password");
 echo "Test 3: First-login forced password change enforcement - PASSED\n";
 
 // Test 4: Technician Dashboard rendering
-Auth::login(['id' => $techId, 'name' => 'Technician', 'email' => 'tech@primodomus.com', 'role' => 'staff', 'must_change_password' => 0]);
+Auth::login(['id' => $techId, 'name' => 'Technician', 'email' => 'tech@refixel.com', 'role' => 'staff', 'must_change_password' => 0]);
 $dashReq = new Request([], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/staff']);
 $dashResp = $dashCtrl->index($dashReq);
 assert($dashResp->getStatusCode() === 200, "Expected 200 for /staff");
@@ -83,10 +83,10 @@ Database::query("UPDATE bookings SET status = 'assigned' WHERE id = (SELECT book
 
 // Test 5: Strict query isolation (WHERE staff_id = current_user_id)
 // Create a separate staff user (id: 9999) and assign a mock job
-Database::query("DELETE FROM users WHERE email = 'othertech@primodomus.com'");
+Database::query("DELETE FROM users WHERE email = 'othertech@refixel.com'");
 Database::query(
     "INSERT INTO users (role, name, email, phone, password_hash, status, created_at) 
-     VALUES ('staff', 'Other Tech', 'othertech@primodomus.com', '9999988888', 'dummy', 'active', NOW())"
+     VALUES ('staff', 'Other Tech', 'othertech@refixel.com', '9999988888', 'dummy', 'active', NOW())"
 );
 $otherTechId = (int)Database::lastInsertId();
 

@@ -31,9 +31,9 @@ $customer = Database::fetchOne("SELECT * FROM users WHERE role = 'customer' LIMI
 if (!$customer) {
     $cid = Database::query(
         "INSERT INTO users (name, phone, email, password_hash, role, is_active)
-         VALUES ('Test Customer', '9811122233', 'cust_test@primodomus.com', 'hash', 'customer', 1)"
+         VALUES ('Test Customer', '9811122233', 'cust_test@refixel.com', 'hash', 'customer', 1)"
     );
-    $customer = Database::fetchOne("SELECT * FROM users WHERE email = 'cust_test@primodomus.com'");
+    $customer = Database::fetchOne("SELECT * FROM users WHERE email = 'cust_test@refixel.com'");
 }
 $customerId = (int)$customer['id'];
 
@@ -244,7 +244,7 @@ Auth::login(['id' => $customerId, 'name' => 'Test Customer', 'role' => 'customer
 // First review on $testBookingId (which is completed)
 $reqReview = new Request([
     'rating'  => 5,
-    'comment' => 'Fantastic cleaning work by the Primodomus team! Very punctual and thorough.',
+    'comment' => 'Fantastic cleaning work by the Refixel team! Very punctual and thorough.',
 ], [], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => "/account/bookings/{$testBookingId}/review"]);
 
 $revRes = $accountCtrl->submitReview($reqReview, (string)$testBookingId);

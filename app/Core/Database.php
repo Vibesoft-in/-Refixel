@@ -87,12 +87,16 @@ class Database
             $plainCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'plain_password'")->fetch(PDO::FETCH_ASSOC);
             if (!$plainCol) {
                 $pdo->exec("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) NULL DEFAULT NULL AFTER password_hash");
-                $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email IN ('admin@refixel.com', 'admin@primodomus.com') AND (plain_password IS NULL OR plain_password = '')");
+                $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email = 'admin@refixel.com' AND (plain_password IS NULL OR plain_password = '')");
             }
 
-            // Ensure active admin notification email is wearerefixel@gmail.com
-            $pdo->exec("UPDATE settings SET setting_value = 'wearerefixel@gmail.com' WHERE setting_key = 'admin_notification_email' AND (setting_value LIKE '%primodomus.com%' OR setting_value = '' OR setting_value IS NULL)");
-            $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'company_email' AND (setting_value LIKE '%primodomus.com%' OR setting_value = '' OR setting_value IS NULL)");
+            // Ensure active admin notification email and brand details are REFIXEL
+            $pdo->exec("UPDATE settings SET setting_value = 'wearerefixel@gmail.com' WHERE setting_key = 'admin_notification_email' AND (setting_value LIKE '%primodomus%' OR setting_value = '' OR setting_value IS NULL)");
+            $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'company_email' AND (setting_value LIKE '%primodomus%' OR setting_value = '' OR setting_value IS NULL)");
+            $pdo->exec("UPDATE settings SET setting_value = REPLACE(setting_value, 'Primodomus', 'REFIXEL') WHERE setting_value LIKE '%Primodomus%'");
+            $pdo->exec("UPDATE faqs SET question = REPLACE(question, 'Primodomus', 'Refixel') WHERE question LIKE '%Primodomus%'");
+            $pdo->exec("UPDATE faqs SET answer = REPLACE(answer, 'Primodomus', 'Refixel') WHERE answer LIKE '%Primodomus%'");
+            $pdo->exec("UPDATE reviews SET comment = REPLACE(comment, 'Primodomus', 'Refixel') WHERE comment LIKE '%Primodomus%'");
         } catch (\Throwable $e) {
             // Silently continue if schema already migrated or permissions constrained
         }

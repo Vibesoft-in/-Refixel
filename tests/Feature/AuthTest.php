@@ -16,22 +16,22 @@ echo "=== RUNNING AUTHENTICATION FEATURE TESTS ===\n";
 // Clean up any test users
 Database::query("DELETE FROM users WHERE phone IN ('9999000001', '9999000002')");
 Database::query("DELETE FROM login_attempts WHERE identifier = 'invalid@user.com'");
-Database::query("UPDATE users SET password_hash = :hash WHERE email = 'customer@primodomus.com'", ['hash' => password_hash('password123', PASSWORD_BCRYPT)]);
+Database::query("UPDATE users SET password_hash = :hash WHERE email = 'customer@refixel.com'", ['hash' => password_hash('password123', PASSWORD_BCRYPT)]);
 
 // Test 1: Verify Seed Users exist and passwords match
-$adminUser = User::findByEmailOrPhone('admin@refixel.com') ?? User::findByEmailOrPhone('admin@primodomus.com');
+$adminUser = User::findByEmailOrPhone('admin@refixel.com');
 assert($adminUser !== null, "Admin user should exist");
 assert(password_verify('password123', $adminUser['password_hash']), "Admin password should match password123");
 assert($adminUser['role'] === 'admin', "Role must be admin");
 echo "Test 1: Admin account verification (PASSED)\n";
 
-$techUser = User::findByEmailOrPhone('tech@primodomus.com');
+$techUser = User::findByEmailOrPhone('tech@refixel.com');
 assert($techUser !== null, "Tech user should exist");
 assert(password_verify('password123', $techUser['password_hash']), "Tech password should match");
 assert($techUser['role'] === 'staff', "Role must be staff");
 echo "Test 2: Staff/Technician account verification (PASSED)\n";
 
-$custUser = User::findByEmailOrPhone('customer@primodomus.com');
+$custUser = User::findByEmailOrPhone('customer@refixel.com');
 assert($custUser !== null, "Customer user should exist");
 assert(password_verify('password123', $custUser['password_hash']), "Customer password should match");
 assert($custUser['role'] === 'customer', "Role must be customer");

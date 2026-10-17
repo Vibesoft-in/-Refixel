@@ -28,7 +28,6 @@ try {
     echo "2. Populating known passwords for initial demo admin accounts..." . PHP_EOL;
     // Set known demo admin password
     $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email = 'admin@refixel.com' AND (plain_password IS NULL OR plain_password = '')");
-    $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email = 'admin@primodomus.com' AND (plain_password IS NULL OR plain_password = '')");
 
     echo "Migration completed successfully!" . PHP_EOL;
 } catch (\Throwable $e) {

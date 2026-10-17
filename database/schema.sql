@@ -1,5 +1,5 @@
 -- =====================================================================
--- Primodomus Service Platform - Production Database Schema
+-- REFIXEL Service Platform - Production Database Schema
 -- MySQL 8.0+ / MariaDB 10.6+ Compatible
 -- Character Set: utf8mb4, Collation: utf8mb4_unicode_ci
 -- Engine: InnoDB strictly across all tables

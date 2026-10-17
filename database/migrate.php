@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Primodomus Database Migration & Seeder Script
+ * REFIXEL Database Migration & Seeder Script
  */
 
 require_once __DIR__ . '/../app/core/Env.php';
@@ -10,7 +10,7 @@ require_once __DIR__ . '/../app/core/Env.php';
 
 $host = \App\Core\Env::get('DB_HOST', '127.0.0.1');
 $port = \App\Core\Env::get('DB_PORT', 3306);
-$db   = \App\Core\Env::get('DB_DATABASE', 'primodomus_db');
+$db   = \App\Core\Env::get('DB_DATABASE', 'REFIXEL_db');
 $user = \App\Core\Env::get('DB_USERNAME', 'root');
 $pass = \App\Core\Env::get('DB_PASSWORD', '');
 $charset = \App\Core\Env::get('DB_CHARSET', 'utf8mb4');

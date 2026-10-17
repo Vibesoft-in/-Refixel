@@ -38,7 +38,7 @@ Auth::login($admin);
 // TEST 1: FAQs CMS Operations (Global & Per-Service)
 // ==========================================
 $faqReq = new Request([
-    'question'   => 'What certifications do Primodomus technicians hold?',
+    'question'   => 'What certifications do Refixel technicians hold?',
     'answer'     => 'All technicians hold verified vocational skill certificates and pass identity verification.',
     'service_id' => 0,
     'sort_order' => 10,
@@ -48,7 +48,7 @@ $faqRes = $adminContentCtrl->storeFaq($faqReq);
 assert($faqRes->getStatusCode() === 302, "Store FAQ must redirect");
 
 $storedFaq = Database::fetchOne(
-    "SELECT * FROM faqs WHERE question LIKE '%certifications do Primodomus%' ORDER BY id DESC LIMIT 1"
+    "SELECT * FROM faqs WHERE question LIKE '%certifications do Refixel%' ORDER BY id DESC LIMIT 1"
 );
 assert($storedFaq !== null, "FAQ must be stored in database");
 assert((int)$storedFaq['is_active'] === 1, "FAQ must be active by default");
@@ -164,7 +164,7 @@ echo "Test 5: Business Settings & Dynamic Stats - PASSED\n";
 // ==========================================
 // TEST 6: Public Sitemap.xml Generation
 // ==========================================
-$baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.primodomus.com'), '/');
+$baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.refixel.com'), '/');
 
 $sitemapReq = new Request([], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/sitemap.xml']);
 $sitemapRes = $pageCtrl->sitemap($sitemapReq);

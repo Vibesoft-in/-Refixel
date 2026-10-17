@@ -162,51 +162,74 @@ class ServiceController extends Controller
         $faqs = Faq::getGlobal();
         $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-'));
 
-        $title = "Available {$cat['name']} Packages - Available in your location | REFIXEL";
-        $description = "Looking for verified {$cat['name']} - Available in your location? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
+        $title = "Available {$cat['name']} Packages in {$cityName} | REFIXEL";
+        $description = "Looking for verified {$cat['name']} in {$cityName}? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
         $cleanCatSlug = str_ends_with($cat['slug'], '-services') ? $cat['slug'] : "{$cat['slug']}-services";
-        $canonicalUrl = View::url("/{$cleanCatSlug}");
+        $canonicalUrl = !empty($cleanCitySlug) ? View::url("/{$cleanCatSlug}-in-{$cleanCitySlug}") : View::url("/{$cleanCatSlug}");
 
         // Build Schema.org Structured Data
-        $schemaData = [
-            '@context' => 'https://schema.org',
-            '@graph'   => [
-                [
-                    '@type'       => 'LocalBusiness',
-                    'name'        => "REFIXEL {$cat['name']} Services - Available in your location",
-                    'description' => $description,
-                    'url'         => $canonicalUrl,
-                    'areaServed'  => [
-                        '@type'   => 'City',
-                        'name'    => $cityName,
-                    ],
-                    'priceRange'  => '₹₹',
-                    'telephone'   => '+91 87911 54730',
+        $schemaGraph = [
+            [
+                '@type'       => 'LocalBusiness',
+                'name'        => "REFIXEL {$cat['name']} Services in {$cityName}",
+                'description' => $description,
+                'url'         => $canonicalUrl,
+                'areaServed'  => [
+                    '@type'   => 'City',
+                    'name'    => $cityName,
                 ],
-                [
-                    '@type'           => 'BreadcrumbList',
-                    'itemListElement' => [
-                        [
-                            '@type'    => 'ListItem',
-                            'position' => 1,
-                            'name'     => 'Home',
-                            'item'     => View::url('/'),
-                        ],
-                        [
-                            '@type'    => 'ListItem',
-                            'position' => 2,
-                            'name'     => 'Services',
-                            'item'     => View::url('/services'),
-                        ],
-                        [
-                            '@type'    => 'ListItem',
-                            'position' => 3,
-                            'name'     => "{$cat['name']} - Available in your location",
-                            'item'     => $canonicalUrl,
-                        ],
+                'priceRange'  => '₹₹',
+                'telephone'   => '+91 87911 54730',
+            ],
+            [
+                '@type'           => 'BreadcrumbList',
+                'itemListElement' => [
+                    [
+                        '@type'    => 'ListItem',
+                        'position' => 1,
+                        'name'     => 'Home',
+                        'item'     => View::url('/'),
+                    ],
+                    [
+                        '@type'    => 'ListItem',
+                        'position' => 2,
+                        'name'     => 'Services',
+                        'item'     => View::url('/services'),
+                    ],
+                    [
+                        '@type'    => 'ListItem',
+                        'position' => 3,
+                        'name'     => "{$cat['name']} in {$cityName}",
+                        'item'     => $canonicalUrl,
                     ],
                 ],
             ],
+        ];
+
+        if (!empty($faqs)) {
+            $faqEntities = [];
+            foreach (array_slice($faqs, 0, 5) as $f) {
+                if (empty($f['question']) || empty($f['answer'])) continue;
+                $faqEntities[] = [
+                    '@type'          => 'Question',
+                    'name'           => $f['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text'  => strip_tags((string)$f['answer']),
+                    ],
+                ];
+            }
+            if (!empty($faqEntities)) {
+                $schemaGraph[] = [
+                    '@type'      => 'FAQPage',
+                    'mainEntity' => $faqEntities,
+                ];
+            }
+        }
+
+        $schemaData = [
+            '@context' => 'https://schema.org',
+            '@graph'   => $schemaGraph,
         ];
 
         return $this->render('customer.services.index', [
@@ -230,13 +253,7 @@ class ServiceController extends Controller
 
     protected function renderServicePage(array $svc, string $cityName, string $rawCity): Response
     {
-        // Enforce login for viewing a particular service
-        if (!Auth::check()) {
-            $currentUri = $_SERVER['REQUEST_URI'] ?? View::url('/' . ($svc['slug'] ?? 'services'));
-            View::setFlash('info', 'Please sign in or create an account to view service details.');
-            return $this->redirect('/login?redirect=' . urlencode($currentUri));
-        }
-
+        // Publicly accessible for guest users and search engine indexing (Googlebot)
         $checklist = ServiceChecklistItem::getByService((int)$svc['id']);
         $faqs = Faq::getByService((int)$svc['id']);
         if (empty($faqs)) {
@@ -248,64 +265,87 @@ class ServiceController extends Controller
         $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-'));
 
         $price = number_format((float)$svc['starting_price'], 0);
-        $title = "{$svc['name']} - Available in your location | REFIXEL";
-        $description = "Book {$svc['name']} - Available in your location starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee.";
-        $canonicalUrl = View::url("/{$svc['slug']}");
+        $title = "{$svc['name']} in {$cityName} - Starting ₹{$price} | REFIXEL";
+        $description = "Book {$svc['name']} in {$cityName} starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee. Doorstep service in {$cityName}.";
+        $canonicalUrl = !empty($cleanCitySlug) ? View::url("/{$svc['slug']}-in-{$cleanCitySlug}") : View::url("/{$svc['slug']}");
 
         // Build Schema.org Structured Data
-        $schemaData = [
-            '@context' => 'https://schema.org',
-            '@graph'   => [
-                [
-                    '@type'        => 'Service',
-                    'name'         => "{$svc['name']} - Available in your location",
-                    'description'  => $description,
-                    'url'          => $canonicalUrl,
-                    'provider'     => [
-                        '@type' => 'Organization',
-                        'name'  => 'REFIXEL',
-                        'url'   => View::url('/'),
-                    ],
-                    'areaServed'   => [
-                        '@type' => 'City',
-                        'name'  => $cityName,
-                    ],
-                    'offers'       => [
-                        '@type'         => 'Offer',
-                        'price'         => (string)$svc['starting_price'],
-                        'priceCurrency' => 'INR',
-                        'availability'  => 'https://schema.org/InStock',
-                    ],
-                    'aggregateRating' => [
-                        '@type'       => 'AggregateRating',
-                        'ratingValue' => '4.85',
-                        'reviewCount' => '128',
-                    ],
+        $schemaGraph = [
+            [
+                '@type'        => 'Service',
+                'name'         => "{$svc['name']} in {$cityName}",
+                'description'  => $description,
+                'url'          => $canonicalUrl,
+                'provider'     => [
+                    '@type' => 'Organization',
+                    'name'  => 'REFIXEL',
+                    'url'   => View::url('/'),
                 ],
-                [
-                    '@type'           => 'BreadcrumbList',
-                    'itemListElement' => [
-                        [
-                            '@type'    => 'ListItem',
-                            'position' => 1,
-                            'name'     => 'Home',
-                            'item'     => View::url('/'),
-                        ],
-                        [
-                            '@type'    => 'ListItem',
-                            'position' => 2,
-                            'name'     => 'Services',
-                            'item'     => View::url('/services'),
-                        ],
-                        [
-                            '@type'    => 'ListItem',
-                            'position' => 3,
-                            'name'     => "{$svc['name']} - Available in your location",
-                            'item'     => $canonicalUrl,
-                        ],
+                'areaServed'   => [
+                    '@type' => 'City',
+                    'name'  => $cityName,
+                ],
+                'offers'       => [
+                    '@type'         => 'Offer',
+                    'price'         => (string)$svc['starting_price'],
+                    'priceCurrency' => 'INR',
+                    'availability'  => 'https://schema.org/InStock',
+                ],
+                'aggregateRating' => [
+                    '@type'       => 'AggregateRating',
+                    'ratingValue' => '4.85',
+                    'reviewCount' => '128',
+                ],
+            ],
+            [
+                '@type'           => 'BreadcrumbList',
+                'itemListElement' => [
+                    [
+                        '@type'    => 'ListItem',
+                        'position' => 1,
+                        'name'     => 'Home',
+                        'item'     => View::url('/'),
+                    ],
+                    [
+                        '@type'    => 'ListItem',
+                        'position' => 2,
+                        'name'     => 'Services',
+                        'item'     => View::url('/services'),
+                    ],
+                    [
+                        '@type'    => 'ListItem',
+                        'position' => 3,
+                        'name'     => "{$svc['name']} in {$cityName}",
+                        'item'     => $canonicalUrl,
                     ],
                 ],
             ],
+        ];
+
+        if (!empty($faqs)) {
+            $faqEntities = [];
+            foreach (array_slice($faqs, 0, 5) as $f) {
+                if (empty($f['question']) || empty($f['answer'])) continue;
+                $faqEntities[] = [
+                    '@type'          => 'Question',
+                    'name'           => $f['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text'  => strip_tags((string)$f['answer']),
+                    ],
+                ];
+            }
+            if (!empty($faqEntities)) {
+                $schemaGraph[] = [
+                    '@type'      => 'FAQPage',
+                    'mainEntity' => $faqEntities,
+                ];
+            }
+        }
+
+        $schemaData = [
+            '@context' => 'https://schema.org',
+            '@graph'   => $schemaGraph,
         ];
 
         return $this->render('customer.services.show', [

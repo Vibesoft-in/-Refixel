@@ -1269,7 +1269,7 @@ if (empty($activeCategory)) {
             $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
             $targetUrl = \App\Core\View::url("/{$cleanCatSlug}");
           ?>
-            <a href="<?= $targetUrl ?>" class="cat-sidebar-link <?= ($activeCategory === $catSlug) ? 'active' : '' ?>" data-filter="<?= $catSlug ?>" title="<?= $catName ?> - Available in your location">
+            <a href="<?= $targetUrl ?>" class="cat-sidebar-link <?= ($activeCategory === $catSlug) ? 'active' : '' ?>" data-filter="<?= $catSlug ?>" title="<?= $catName ?> in <?= \App\Core\View::e($city ?? 'Kashipur') ?>">
               <div class="cat-icon-wrap">
                 <img src="<?= \App\Core\View::asset($sidebarIcon) ?>" alt="<?= $catName ?>" class="cat-thumb-icon" onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('icons/more services icon.png') ?>';">
               </div>
@@ -1387,7 +1387,7 @@ if (empty($activeCategory)) {
             <!-- Package Heading & Subtext (exact same text as standalone packages page) -->
             <div class="mb-4">
               <h2 class="font-weight-bold mb-1" style="font-size: 26px; color: #1a1a1a;">
-                Available <?= $catName ?> Packages - Available in your location
+                Available <?= $catName ?> Packages in <?= \App\Core\View::e($city ?? 'Kashipur') ?>
               </h2>
               <p class="text-muted small mb-0">
                 Select your package to view full checklist and instant booking options.

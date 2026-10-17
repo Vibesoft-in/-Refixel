@@ -40,7 +40,7 @@ if (!$staff) {
     $staffId = User::create([
         'role'          => 'staff',
         'name'          => 'Demo Technician',
-        'email'         => 'tech@primodomus.com',
+        'email'         => 'tech@refixel.com',
         'phone'         => '9876543211',
         'password_hash' => password_hash('password123', PASSWORD_BCRYPT),
         'status'        => 'active',
@@ -53,7 +53,7 @@ if (!$customer) {
     $custId = User::create([
         'role'          => 'customer',
         'name'          => 'Demo Customer',
-        'email'         => 'customer@primodomus.com',
+        'email'         => 'customer@refixel.com',
         'phone'         => '9876543212',
         'password_hash' => password_hash('password123', PASSWORD_BCRYPT),
         'status'        => 'active',

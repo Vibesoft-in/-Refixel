@@ -1,14 +1,14 @@
 -- =====================================================================
--- Primodomus Service Platform - Seed Data (Demo Environment)
+-- REFIXEL Service Platform - Seed Data (Demo Environment)
 -- NOTE: Demo data is explicitly marked as demo per prompt instructions.
 -- Default Password for all demo accounts: password123
 -- =====================================================================
 
 -- 1. Initial Users (Admin, Technician, Customer)
 INSERT INTO users (id, role, name, email, phone, password_hash, status, must_change_password) VALUES
-(1, 'admin', 'System Administrator', 'admin@primodomus.com', '9876543210', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
-(2, 'staff', 'Rajesh Sharma (Demo Tech)', 'tech@primodomus.com', '9876543211', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
-(3, 'customer', 'Ananya Verma (Demo Customer)', 'customer@primodomus.com', '9876543212', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
+(1, 'admin', 'System Administrator', 'admin@refixel.com', '9876543210', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
+(2, 'staff', 'Rajesh Sharma (Demo Tech)', 'tech@refixel.com', '9876543211', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
+(3, 'customer', 'Ananya Verma (Demo Customer)', 'customer@refixel.com', '9876543212', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
 (4, 'super_admin', 'Master Super Admin', 'superadmin@refixel.com', '9876543200', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0);
 
 -- 2. Customer Profile
@@ -107,9 +107,9 @@ INSERT INTO faqs (service_id, question, answer, sort_order, is_active) VALUES
 
 -- 12. Site Settings
 INSERT INTO settings (setting_key, setting_value) VALUES
-('company_name', 'Primodomus Home Services'),
+('company_name', 'REFIXEL Home Services'),
 ('company_phone', '+91 99999 99999'),
-('company_email', 'help@primodomus.com'),
+('company_email', 'help@refixel.com'),
 ('company_address', 'Station Road, Kashipur, Uttarakhand 244713'),
 ('company_gstin', '07AAAAA0000A1Z5'),
 ('promo_strip_text', 'Starting at ₹999 • Save up to 25% on your first booking'),
@@ -124,7 +124,7 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 
 -- 13. Demo Booking & Assigned Job (Clearly marked as Demo)
 INSERT INTO bookings (id, booking_no, customer_id, service_id, name, phone, email, address, pincode, preferred_date, preferred_time, issue_details, status, priority, created_at) VALUES
-(1, 'BK-DEMO-001', 3, 1, 'Ananya Verma (Demo Customer)', '9876543212', 'customer@primodomus.com', 'Station Road, Kashipur, Uttarakhand', '244713', CURDATE(), '10:00 AM - 01:00 PM', 'Complete deep cleaning before housewarming party.', 'assigned', 'high', NOW());
+(1, 'BK-DEMO-001', 3, 1, 'Ananya Verma (Demo Customer)', '9876543212', 'customer@refixel.com', 'Station Road, Kashipur, Uttarakhand', '244713', CURDATE(), '10:00 AM - 01:00 PM', 'Complete deep cleaning before housewarming party.', 'assigned', 'high', NOW());
 
 -- 14. Demo Job linked to Staff Rajesh Sharma
 INSERT INTO jobs (id, booking_id, staff_id, status, scheduled_at, created_at) VALUES

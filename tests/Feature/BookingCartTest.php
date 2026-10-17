@@ -74,7 +74,7 @@ echo "Test 5: Populated cart view rendering - PASSED\n";
 
 // Test 6: Booking submission with server-side validation & status=new
 $token = Csrf::token();
-Auth::login(['id' => 3, 'name' => 'Ananya Verma', 'email' => 'customer@primodomus.com', 'role' => 'customer']);
+Auth::login(['id' => 3, 'name' => 'Ananya Verma', 'email' => 'customer@refixel.com', 'role' => 'customer']);
 
 $postData = [
     '_csrf'          => $token,
@@ -82,7 +82,7 @@ $postData = [
     'service_id'     => '1',
     'name'           => 'Ananya Verma',
     'phone'          => '9876543212',
-    'email'          => 'customer@primodomus.com',
+    'email'          => 'customer@refixel.com',
     'address'        => 'Station Road, Kashipur',
     'city'           => 'Kashipur',
     'pincode'        => '244713',
@@ -104,7 +104,7 @@ $latestBooking = \App\Core\Database::fetchOne("SELECT * FROM bookings ORDER BY i
 assert($latestBooking !== null, "Booking must have been created in database");
 assert($latestBooking['status'] === 'new', "New booking status must be 'new'");
 assert($latestBooking['priority'] === 'high', "Expected priority 'high'");
-$userCust = \App\Core\Database::fetchOne("SELECT id FROM users WHERE phone = '9876543212' OR email = 'customer@primodomus.com'");
+$userCust = \App\Core\Database::fetchOne("SELECT id FROM users WHERE phone = '9876543212' OR email = 'customer@refixel.com'");
 $expectedCustId = $userCust ? (int)$userCust['id'] : 3;
 assert($latestBooking['customer_id'] == $expectedCustId, "Booking must be associated with customer user {$expectedCustId}");
 assert(str_starts_with($latestBooking['booking_no'], 'BK-'), "Booking number must follow BK- prefix");

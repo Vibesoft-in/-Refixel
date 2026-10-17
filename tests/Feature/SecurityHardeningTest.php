@@ -27,7 +27,7 @@ echo "=== RUNNING SECURITY HARDENING & PRIVACY FEATURE TESTS (PROMPT 13) ===\n";
 $adminId = User::create([
     'role'          => 'admin',
     'name'          => 'Security Admin',
-    'email'         => 'sec_admin_' . time() . '_' . random_int(100, 999) . '@primodomus.com',
+    'email'         => 'sec_admin_' . time() . '_' . random_int(100, 999) . '@refixel.com',
     'phone'         => '99' . random_int(10000000, 99999999),
     'password_hash' => password_hash('AdminPass@123', PASSWORD_BCRYPT),
     'status'        => 'active',
@@ -36,7 +36,7 @@ $adminId = User::create([
 $staffId = User::create([
     'role'          => 'staff',
     'name'          => 'Security Staff',
-    'email'         => 'sec_staff_' . time() . '_' . random_int(100, 999) . '@primodomus.com',
+    'email'         => 'sec_staff_' . time() . '_' . random_int(100, 999) . '@refixel.com',
     'phone'         => '98' . random_int(10000000, 99999999),
     'password_hash' => password_hash('StaffPass@123', PASSWORD_BCRYPT),
     'status'        => 'active',
@@ -177,7 +177,7 @@ foreach ($staffJobs as $j) {
 $otherStaffId = User::create([
     'role'          => 'staff',
     'name'          => 'Isolated Technician',
-    'email'         => 'other_tech_' . time() . '_' . random_int(100, 999) . '@primodomus.com',
+    'email'         => 'other_tech_' . time() . '_' . random_int(100, 999) . '@refixel.com',
     'phone'         => '95' . random_int(10000000, 99999999),
     'password_hash' => password_hash('Pass@123', PASSWORD_BCRYPT),
     'status'        => 'active',

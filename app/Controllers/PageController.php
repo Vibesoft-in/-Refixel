@@ -432,6 +432,30 @@ class PageController extends Controller
         $categories = \App\Models\Category::all('sort_order ASC');
         $services = \App\Models\Service::all('name ASC');
 
+        // Active Categories (General Clean URLs)
+        foreach ($categories as $cat) {
+            if (empty($cat['is_active'])) continue;
+            $catSlug = $cat['slug'] ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $cat['name']), '-'));
+            $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
+            $urls[] = [
+                'loc'        => "{$baseUrl}/{$cleanCatSlug}",
+                'priority'   => '0.9',
+                'changefreq' => 'weekly',
+            ];
+        }
+
+        // Active Services (General Clean URLs)
+        foreach ($services as $svc) {
+            if (empty($svc['is_active'])) continue;
+            $svcSlug = $svc['slug'] ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $svc['name']), '-'));
+            $urls[] = [
+                'loc'        => "{$baseUrl}/{$svcSlug}",
+                'priority'   => '0.9',
+                'changefreq' => 'weekly',
+            ];
+        }
+
+        // Active Cities SEO URLs
         foreach ($cities as $c) {
             $citySlug = strtolower(trim((string)$c['city']));
             if (empty($citySlug)) continue;
@@ -440,8 +464,9 @@ class PageController extends Controller
             foreach ($categories as $cat) {
                 if (empty($cat['is_active'])) continue;
                 $catSlug = $cat['slug'] ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $cat['name']), '-'));
+                $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
                 $urls[] = [
-                    'loc'        => "{$baseUrl}/{$catSlug}-services-in-{$citySlug}",
+                    'loc'        => "{$baseUrl}/{$cleanCatSlug}-in-{$citySlug}",
                     'priority'   => '0.9',
                     'changefreq' => 'weekly',
                 ];
@@ -452,7 +477,7 @@ class PageController extends Controller
                 if (empty($svc['is_active'])) continue;
                 $svcSlug = $svc['slug'] ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $svc['name']), '-'));
                 $urls[] = [
-                    'loc'        => "{$baseUrl}/{$svcSlug}-services-in-{$citySlug}",
+                    'loc'        => "{$baseUrl}/{$svcSlug}-in-{$citySlug}",
                     'priority'   => '0.9',
                     'changefreq' => 'weekly',
                 ];

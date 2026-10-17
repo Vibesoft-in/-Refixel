@@ -23,13 +23,16 @@ assert(str_contains($html1, 'LocalBusiness'), "Expected LocalBusiness in JSON-LD
 assert(str_contains($html1, 'BreadcrumbList'), "Expected BreadcrumbList in JSON-LD");
 echo "Test 1: Category in city (/cleaning-services-in-kashipur) - PASSED\n";
 
-// Test 2a: Guest accessing service details is redirected to /login
+// Test 2a: Guest accessing service details receives 200 OK with schema (Googlebot indexable)
 unset($_SESSION['user']);
 $reqGuest = new Request([], [], [], [], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/full-home-cleaning-in-kashipur']);
 $respGuest = $ctrl->serviceInCity($reqGuest, 'full-home-cleaning', 'kashipur');
-assert($respGuest->getStatusCode() === 302, "Expected 302 redirect for guest accessing service detail");
-assert(str_contains($respGuest->getHeader('Location') ?? '', '/login'), "Expected redirect to /login");
-echo "Test 2a: Guest access requires login redirect (/login?redirect=...) - PASSED\n";
+assert($respGuest->getStatusCode() === 200, "Expected 200 OK for guest/Googlebot accessing service detail");
+$htmlGuest = $respGuest->getContent();
+assert(str_contains($htmlGuest, 'Professional Full Home Cleaning'), "Expected H1 with Service name for guest");
+assert(str_contains($htmlGuest, 'application/ld+json'), "Expected JSON-LD schema for guest");
+assert(str_contains($htmlGuest, 'Kashipur'), "Expected city name Kashipur in page content");
+echo "Test 2a: Guest/Googlebot public indexable service access (200 OK + Schema) - PASSED\n";
 
 // Authenticate session for service page tests
 $_SESSION['user'] = [

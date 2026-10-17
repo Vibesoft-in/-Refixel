@@ -657,7 +657,7 @@ $resolveCardIcon = function(?string $icon): array {
         $catSlug = $cat['slug'];
         $cleanUrlSlug = str_ends_with($catSlug, '-services') ? $catSlug : ($catSlug === 'cleaning' ? 'cleaning-services' : "{$catSlug}-services");
         $targetUrl = \App\Core\View::url("/{$cleanUrlSlug}");
-        $cardHref = $isCustomerLoggedIn ? $targetUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetUrl));
+        $cardHref = $targetUrl;
 
         $bannerSrc = $resolveCardImage($cat['image'] ?? $cat['icon'] ?? null);
         $iconData = $resolveCardIcon($cat['icon'] ?? null);
@@ -702,7 +702,7 @@ $resolveCardIcon = function(?string $icon): array {
         $mSlug = $m['slug'];
         $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
         $mTarget = \App\Core\View::url("/{$mUrlSlug}");
-        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
+        $mHref = $mTarget;
       ?>
         <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
@@ -712,7 +712,7 @@ $resolveCardIcon = function(?string $icon): array {
         $mSlug = $m['slug'];
         $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
         $mTarget = \App\Core\View::url("/{$mUrlSlug}");
-        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
+        $mHref = $mTarget;
       ?>
         <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
@@ -3010,7 +3010,7 @@ document.addEventListener('DOMContentLoaded', function () {
 .contact_help_card {
   background: #0a1c33;
   border-radius: 16px;
-  padding: 36px 30px;
+  padding: 32px 28px;
   height: 100%;
   color: #ffffff;
   display: flex;
@@ -3036,13 +3036,58 @@ document.addEventListener('DOMContentLoaded', function () {
   font-size: 13.5px;
   line-height: 1.6;
   color: #cbd5e1;
-  margin: 0 0 30px 0;
+  margin: 0 0 20px 0;
+}
+.help_action_box {
+  margin-bottom: 12px;
+}
+.help_wa_cta_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #25d366;
+  color: #ffffff !important;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 11px 16px;
+  border-radius: 10px;
+  text-decoration: none !important;
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+}
+.help_wa_cta_btn:hover {
+  background: #20ba5a;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35);
+}
+.help_hours_strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin-bottom: 16px;
+}
+.help_hours_strip i {
+  color: #f25b29;
+  font-size: 13px;
+}
+.help_hours_strip strong {
+  color: #e2e8f0;
 }
 .help_items {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
   margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 .help_item {
   display: flex;
@@ -4193,6 +4238,21 @@ document.addEventListener('DOMContentLoaded', function () {
             <p class="help_desc">
               Have questions or need assistance? Reach out directly and our local support team will assist you immediately.
             </p>
+
+            <!-- Instant WhatsApp Quick Action -->
+            <div class="help_action_box">
+              <a href="https://api.whatsapp.com/send?phone=918791154730&text=Hi%20Refixel%2C%20I%20need%20assistance%20with%20booking%20a%20doorstep%20service." target="_blank" rel="noopener noreferrer" class="help_wa_cta_btn" title="Chat on WhatsApp">
+                <i class="fa fa-whatsapp"></i>
+                <span>Quick Chat on WhatsApp</span>
+              </a>
+            </div>
+
+            <!-- Operating Hours Strip -->
+            <div class="help_hours_strip">
+              <i class="fa fa-clock-o"></i>
+              <span>Hours: <strong>Mon &ndash; Sun: 08:00 AM &ndash; 09:00 PM</strong></span>
+            </div>
+
             <div class="help_items">
               <div class="help_item">
                 <i class="fa fa-phone"></i>
@@ -4204,7 +4264,7 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>
               <div class="help_item">
                 <i class="fa fa-map-marker"></i>
-                <span>Uttarakhand / Service Area</span>
+                <span>Kashipur, Jaspur &amp; Thakurdwara</span>
               </div>
             </div>
           </div>
@@ -5932,26 +5992,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var isCustomerLoggedIn = <?= \App\Core\Auth::check() ? 'true' : 'false' ?>;
 
   function navigateToService(targetUrl) {
-    if (!isCustomerLoggedIn) {
-      window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(targetUrl);
-    } else {
-      window.location.href = targetUrl;
-    }
-  }
-
-  // Intercept clicks on homepage service cards and marquee links for guests
-  if (!isCustomerLoggedIn) {
-    document.querySelectorAll('.solution_card, .services_marquee_strip a').forEach(function(el) {
-      el.addEventListener('click', function(e) {
-        e.preventDefault();
-        var target = this.getAttribute('data-target-url') || this.getAttribute('href');
-        if (target && target.indexOf('/login') !== -1) {
-          window.location.href = target;
-        } else if (target) {
-          window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(target);
-        }
-      });
-    });
+    window.location.href = targetUrl;
   }
 
   function performSearchNavigation() {

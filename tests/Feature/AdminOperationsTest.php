@@ -55,7 +55,7 @@ assert($requireRole->handle($reqGuest, 'admin') !== null, "Technician must be bl
 echo "Test 1: Role protection and access barriers - PASSED\n";
 
 // Authenticate as Admin for all subsequent tests
-Auth::login(['id' => $adminId, 'name' => 'Super Admin', 'email' => 'admin@primodomus.com', 'role' => 'admin', 'must_change_password' => 0]);
+Auth::login(['id' => $adminId, 'name' => 'Super Admin', 'email' => 'admin@refixel.com', 'role' => 'admin', 'must_change_password' => 0]);
 
 // Test 2: Admin Dashboard rendering & KPI metrics
 $dashReq = new Request([], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/admin']);
@@ -145,7 +145,7 @@ $createStaffReq = new Request([], [
     '_csrf'    => Csrf::token(),
     'name'     => 'Sunil Kumar',
     'phone'    => '9888877777',
-    'email'    => 'sunil.tech@primodomus.com',
+    'email'    => 'sunil.tech@refixel.com',
     'password' => 'secret123',
     'skills'   => ['1', '2'],
 ], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/admin/staff']);
@@ -237,7 +237,7 @@ echo "Test 10: Reports and operations analytics - PASSED\n";
 // Create FAQ
 $faqReq = new Request([], [
     '_csrf'      => Csrf::token(),
-    'question'   => 'Are Primodomus technicians verified and background checked?',
+    'question'   => 'Are Refixel technicians verified and background checked?',
     'answer'     => 'Yes, 100% of our field technicians undergo strict background and criminal checks.',
     'service_id' => '0',
     'sort_order' => '1',
@@ -278,9 +278,9 @@ echo "Test 11: CMS content operations (FAQs, review approval, service areas) - P
 // Test 12: Business & Notification Settings persistence
 $setReq = new Request([], [
     '_csrf'                     => Csrf::token(),
-    'business_name'             => 'Primodomus Facility Services Pvt Ltd',
+    'business_name'             => 'REFIXEL Facility Services Pvt Ltd',
     'support_phone'             => '+91 98765 00000',
-    'admin_notification_email'  => 'dispatch@primodomus.com',
+    'admin_notification_email'  => 'dispatch@refixel.com',
     'notify_email_enabled'      => '1',
     'notify_whatsapp_enabled'   => '1',
 ], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/admin/settings']);
@@ -288,9 +288,9 @@ $setResp = $setCtrl->save($setReq);
 assert($setResp->getStatusCode() === 302, "Expected 302 after saving settings");
 
 $savedBiz = \App\Models\Setting::get('business_name');
-assert($savedBiz === 'Primodomus Facility Services Pvt Ltd', "Setting 'business_name' must be saved");
+assert($savedBiz === 'REFIXEL Facility Services Pvt Ltd', "Setting 'business_name' must be saved");
 $savedMail = \App\Models\Setting::get('admin_notification_email');
-assert($savedMail === 'dispatch@primodomus.com', "Setting 'admin_notification_email' must be saved");
+assert($savedMail === 'dispatch@refixel.com', "Setting 'admin_notification_email' must be saved");
 echo "Test 12: Business metadata & notification settings persistence - PASSED\n";
 
 echo "\n=== ALL 12 ADMIN OPERATIONS FEATURE TESTS PASSED! ===\n";

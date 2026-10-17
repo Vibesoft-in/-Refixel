@@ -16,9 +16,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 echo "=== RUNNING ROLE ACCESS & PERMISSION TESTS ===\n";
 
-$adminUser = User::findByEmailOrPhone('admin@primodomus.com');
-$techUser  = User::findByEmailOrPhone('tech@primodomus.com');
-$custUser  = User::findByEmailOrPhone('customer@primodomus.com');
+$adminUser = User::findByEmailOrPhone('admin@refixel.com');
+$techUser  = User::findByEmailOrPhone('tech@refixel.com');
+$custUser  = User::findByEmailOrPhone('customer@refixel.com');
 
 $middleware = new RequireRole();
 $request = new Request();
