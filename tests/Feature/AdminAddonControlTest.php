@@ -104,15 +104,17 @@ assert($createdRule['custom_badge'] === '🎨 Perfect Match', "Test 5 Failed: Cu
 assert((float)$createdRule['custom_price'] === 999.00, "Test 5 Failed: Custom companion price must match");
 echo "Test 5: Admin Store Add-on Pairing Rule - PASSED\n";
 
-// 6. Test Admin Update Pairing Rule
+// 6. Test Admin Update Pairing Rule (Change Category and Service)
 $ruleId = (int)$createdRule['id'];
 $updateReq = new Request([], [
-    '_csrf'        => Csrf::token(),
-    'custom_badge' => '⭐ Recommended Finish',
-    'custom_price' => '899.00',
-    'custom_note'  => 'Special combo discount rate',
-    'sort_order'   => 2,
-    'is_active'    => 1,
+    '_csrf'              => Csrf::token(),
+    'source_category_id' => 1, // Category: Cleaning
+    'source_service_id'  => 1, // Target: Full Home Cleaning
+    'custom_badge'       => '⭐ Recommended Finish',
+    'custom_price'       => '899.00',
+    'custom_note'        => 'Special combo discount rate',
+    'sort_order'         => 2,
+    'is_active'          => 1,
 ], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => "/admin/services/addons/{$ruleId}/update"]);
 
 $updateRes = $addonCtrl->update($updateReq, (string)$ruleId);
@@ -121,7 +123,9 @@ assert($updateRes->getStatusCode() === 302, "Test 6 Failed: Update pairing rule 
 $updatedRule = Database::fetchOne("SELECT * FROM service_addons WHERE id = :id", ['id' => $ruleId]);
 assert($updatedRule['custom_badge'] === '⭐ Recommended Finish', "Test 6 Failed: Updated badge must match");
 assert((float)$updatedRule['custom_price'] === 899.00, "Test 6 Failed: Updated price must match");
-echo "Test 6: Admin Update Add-on Rule - PASSED\n";
+assert((int)$updatedRule['source_category_id'] === 1, "Test 6 Failed: Updated category must be 1 (Cleaning)");
+assert((int)$updatedRule['source_service_id'] === 1, "Test 6 Failed: Updated source service must be 1 (Full Home Clean)");
+echo "Test 6: Admin Update Add-on Rule (Put into Category & Target Service) - PASSED\n";
 
 // 7. Test Admin Toggle Status
 $toggleReq = new Request([], ['_csrf' => Csrf::token()], [

@@ -5,6 +5,7 @@ $rules = $rules ?? [];
 $services = $services ?? [];
 $categories = $categories ?? [];
 $filterServiceId = $filterServiceId ?? null;
+$filterCategoryId = $filterCategoryId ?? null;
 $totalRules = $totalRules ?? count($rules);
 $activeRules = $activeRules ?? 0;
 $servicesWithAddons = $servicesWithAddons ?? 0;
@@ -27,7 +28,7 @@ $autoSensible = $autoSensible ?? true;
           </span>
         <?php endif; ?>
       </div>
-      <p class="text-muted small mb-0">Control which add-ons appear when customers book services (Kitchen, Bathroom, Room, AC, etc.). Manage custom companion pricing, badges, and recommendations.</p>
+      <p class="text-muted small mb-0">Control which add-ons appear when customers book services (Kitchen, Bathroom, Room, AC, etc.). Put add-ons into any category or service, manage custom companion pricing, and badges.</p>
     </div>
 
     <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
@@ -91,19 +92,31 @@ $autoSensible = $autoSensible ?? true;
   <!-- Filter & Action Bar -->
   <div class="stat-card p-3 mb-4 bg-white border rounded shadow-sm d-flex flex-wrap align-items-center justify-content-between" style="gap: 12px;">
     <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
-      <span class="font-weight-bold small text-muted"><i class="fa fa-filter mr-1"></i> Filter Target Service:</span>
-      <form method="GET" action="<?= View::url('/admin/services/addons') ?>" class="form-inline m-0">
-        <select name="service_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="min-width: 260px;">
-          <option value="">-- All Target Services (<?= count($rules) ?> rules) --</option>
+      <span class="font-weight-bold small text-muted"><i class="fa fa-filter mr-1"></i> Filter Add-ons:</span>
+      <form method="GET" action="<?= View::url('/admin/services/addons') ?>" class="form-inline m-0 flex-wrap" style="gap: 8px;">
+        <!-- Category Filter -->
+        <select name="category_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="min-width: 200px;">
+          <option value="">-- All Categories --</option>
+          <?php foreach ($categories as $cat): ?>
+            <option value="<?= $cat['id'] ?>" <?= ($filterCategoryId === (int)$cat['id']) ? 'selected' : '' ?>>
+              📁 <?= View::e($cat['name']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+
+        <!-- Service Filter -->
+        <select name="service_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="min-width: 240px;">
+          <option value="">-- All Target Services --</option>
           <?php foreach ($services as $srv): ?>
             <option value="<?= $srv['id'] ?>" <?= ($filterServiceId === (int)$srv['id']) ? 'selected' : '' ?>>
               <?= View::e($srv['name']) ?> (₹<?= number_format((float)$srv['starting_price'], 0) ?>)
             </option>
           <?php endforeach; ?>
         </select>
-        <?php if ($filterServiceId): ?>
-          <a href="<?= View::url('/admin/services/addons') ?>" class="btn btn-sm btn-light ml-2 text-muted" title="Clear Filter">
-            <i class="fa fa-times mr-1"></i> Clear
+
+        <?php if ($filterServiceId || $filterCategoryId): ?>
+          <a href="<?= View::url('/admin/services/addons') ?>" class="btn btn-sm btn-light text-muted" title="Clear Filters">
+            <i class="fa fa-times mr-1"></i> Clear Filters
           </a>
         <?php endif; ?>
       </form>
@@ -120,7 +133,7 @@ $autoSensible = $autoSensible ?? true;
       <table class="table table-hover mb-0">
         <thead class="bg-light">
           <tr>
-            <th class="py-3 text-dark" style="width: 220px;">Trigger (Target Service)</th>
+            <th class="py-3 text-dark" style="width: 240px;">Category &amp; Target Service</th>
             <th class="py-3 text-dark">Add-on Service Item</th>
             <th class="py-3 text-dark">Marketing Badge</th>
             <th class="py-3 text-dark">Price (Companion Rate)</th>
@@ -136,23 +149,25 @@ $autoSensible = $autoSensible ?? true;
               <td colspan="8" class="text-center py-5 text-muted">
                 <i class="fa fa-puzzle-piece fa-2x mb-2 text-muted d-block"></i>
                 No add-on pairings found matching current filter.<br>
-                Click <strong>"New Add-on Pairing"</strong> above to link complementary add-ons to your services.
+                Click <strong>"New Add-on Pairing"</strong> above to link complementary add-ons to your categories &amp; services.
               </td>
             </tr>
           <?php else: ?>
             <?php foreach ($rules as $r): ?>
               <tr>
-                <!-- Target Service -->
+                <!-- Target Service & Category -->
                 <td class="align-middle">
+                  <div class="mb-1">
+                    <span class="badge badge-light border text-dark font-weight-bold px-2 py-0" style="font-size: 11px;">
+                      📁 <?= View::e($r['source_category_name'] ?: 'General Category') ?>
+                    </span>
+                  </div>
                   <?php if (!empty($r['source_service_name'])): ?>
                     <strong class="text-dark d-block" style="font-size: 13.5px;"><?= View::e($r['source_service_name']) ?></strong>
-                    <span class="badge badge-light border text-muted small px-2 py-0">Single Service</span>
-                  <?php elseif (!empty($r['source_category_name'])): ?>
-                    <strong class="text-primary d-block" style="font-size: 13.5px;">All in <?= View::e($r['source_category_name']) ?></strong>
-                    <span class="badge badge-info small px-2 py-0">Category Rule</span>
+                    <span class="text-muted small">Specific Service</span>
                   <?php else: ?>
-                    <strong class="text-secondary d-block" style="font-size: 13.5px;">Global Fallback</strong>
-                    <span class="badge badge-secondary small px-2 py-0">All Services</span>
+                    <strong class="text-primary d-block" style="font-size: 13.5px;">All Services in <?= View::e($r['source_category_name'] ?? 'Category') ?></strong>
+                    <span class="badge badge-info small px-2 py-0">Category-Wide</span>
                   <?php endif; ?>
                 </td>
 
@@ -235,8 +250,11 @@ $autoSensible = $autoSensible ?? true;
                 <td class="align-middle text-right">
                   <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold edit-addon-rule-btn"
                     data-id="<?= (int)$r['id'] ?>"
-                    data-source="<?= View::e($r['source_service_name'] ?: 'Global / Category') ?>"
-                    data-addon="<?= View::e($r['addon_name']) ?>"
+                    data-source-category-id="<?= (int)($r['effective_category_id'] ?? $r['source_category_id'] ?? 0) ?>"
+                    data-source-service-id="<?= (int)($r['source_service_id'] ?? 0) ?>"
+                    data-addon-service-id="<?= (int)$r['addon_service_id'] ?>"
+                    data-source-name="<?= View::e($r['source_service_name'] ?: 'All Services in ' . ($r['source_category_name'] ?? 'Category')) ?>"
+                    data-addon-name="<?= View::e($r['addon_name']) ?>"
                     data-badge="<?= View::e($r['custom_badge'] ?? '') ?>"
                     data-price="<?= ($r['custom_price'] !== null && (float)$r['custom_price'] > 0) ? (float)$r['custom_price'] : '' ?>"
                     data-note="<?= View::e($r['custom_note'] ?? '') ?>"
@@ -280,23 +298,41 @@ $autoSensible = $autoSensible ?? true;
         </div>
 
         <div class="modal-body p-4">
-          <!-- Target Service -->
+          <!-- 1. Select Category -->
           <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark mb-1">Target Service (Trigger) <span class="text-danger">*</span></label>
-            <select name="source_service_id" class="form-control" required id="modalSourceService">
-              <option value="">-- Select Service Being Booked --</option>
+            <label class="font-weight-bold small text-dark mb-1">
+              <i class="fa fa-folder text-brand mr-1" style="color: #f25b29;"></i> Select Category <span class="text-danger">*</span>
+            </label>
+            <select name="source_category_id" id="modalSourceCategory" class="form-control" required>
+              <option value="">-- Choose Category (e.g. Cleaning, AC, Plumbers...) --</option>
+              <?php foreach ($categories as $cat): ?>
+                <option value="<?= $cat['id'] ?>" <?= ($filterCategoryId === (int)$cat['id']) ? 'selected' : '' ?>>
+                  <?= View::e($cat['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <small class="text-muted">Put this add-on into any category so it triggers for that category.</small>
+          </div>
+
+          <!-- 2. Target Service (Optional: specific or entire category) -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark mb-1">Target Service (Trigger)</label>
+            <select name="source_service_id" id="modalSourceService" class="form-control">
+              <option value="">-- Apply to ALL Services in this Category (Category-Wide) --</option>
               <?php foreach ($services as $srv): ?>
-                <option value="<?= $srv['id'] ?>" <?= ($filterServiceId === (int)$srv['id']) ? 'selected' : '' ?>>
+                <option value="<?= $srv['id'] ?>" data-category="<?= $srv['category_id'] ?>" <?= ($filterServiceId === (int)$srv['id']) ? 'selected' : '' ?>>
                   <?= View::e($srv['name']) ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <small class="text-muted">When a customer books or adds this service, the add-on below will be recommended.</small>
+            <small class="text-muted">Choose a specific service, or leave as "ALL Services" to show across the whole category.</small>
           </div>
 
-          <!-- Add-on Service Item -->
+          <!-- 3. Add-on Service Item -->
           <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark mb-1">Add-on Item to Recommend <span class="text-danger">*</span></label>
+            <label class="font-weight-bold small text-dark mb-1">
+              <i class="fa fa-puzzle-piece mr-1 text-primary"></i> Add-on Item to Recommend <span class="text-danger">*</span>
+            </label>
             <select name="addon_service_id" class="form-control" required id="modalAddonService">
               <option value="">-- Select Companion Add-on Service --</option>
               <?php foreach ($services as $srv): ?>
@@ -320,12 +356,12 @@ $autoSensible = $autoSensible ?? true;
             </div>
           </div>
 
-          <!-- Companion Price & Note Row -->
+          <!-- Companion Price & Order -->
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="font-weight-bold small text-dark mb-1">Companion Discount Price (₹)</label>
               <input type="number" step="0.01" name="custom_price" class="form-control" placeholder="Leave blank for base price">
-              <small class="text-muted">Special companion rate for this service</small>
+              <small class="text-muted">Special companion rate for this add-on</small>
             </div>
             <div class="col-md-6 mb-3">
               <label class="font-weight-bold small text-dark mb-1">Sort Order</label>
@@ -370,9 +406,46 @@ $autoSensible = $autoSensible ?? true;
         </div>
 
         <div class="modal-body p-4">
-          <div class="p-2 mb-3 rounded bg-light border">
-            <div class="small text-muted">Target Service: <strong class="text-dark" id="editSourceLabel"></strong></div>
-            <div class="small text-muted">Add-on Item: <strong class="text-brand" id="editAddonLabel" style="color: #f25b29;"></strong></div>
+          <!-- 1. Select Category -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark mb-1">
+              <i class="fa fa-folder text-brand mr-1" style="color: #f25b29;"></i> Select Category <span class="text-danger">*</span>
+            </label>
+            <select name="source_category_id" id="editSourceCategoryId" class="form-control" required>
+              <option value="">-- Choose Category --</option>
+              <?php foreach ($categories as $cat): ?>
+                <option value="<?= $cat['id'] ?>"><?= View::e($cat['name']) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <small class="text-muted">Put this add-on into any category of your choice.</small>
+          </div>
+
+          <!-- 2. Target Service (Trigger) -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark mb-1">Target Service (Trigger)</label>
+            <select name="source_service_id" id="editSourceServiceId" class="form-control">
+              <option value="">-- Apply to ALL Services in this Category (Category-Wide) --</option>
+              <?php foreach ($services as $srv): ?>
+                <option value="<?= $srv['id'] ?>" data-category="<?= $srv['category_id'] ?>">
+                  <?= View::e($srv['name']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <small class="text-muted">Select a specific service, or leave as "ALL Services" to trigger across the whole category.</small>
+          </div>
+
+          <!-- 3. Add-on Item to Recommend -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark mb-1">
+              <i class="fa fa-puzzle-piece mr-1 text-primary"></i> Add-on Item to Recommend <span class="text-danger">*</span>
+            </label>
+            <select name="addon_service_id" id="editAddonServiceId" class="form-control" required>
+              <?php foreach ($services as $srv): ?>
+                <option value="<?= $srv['id'] ?>">
+                  <?= View::e($srv['name']) ?> (Base: ₹<?= number_format((float)$srv['starting_price'], 0) ?>)
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
 
           <!-- Marketing Badge -->
@@ -512,6 +585,50 @@ $autoSensible = $autoSensible ?? true;
 document.addEventListener("DOMContentLoaded", function() {
   var baseUrl = '<?= View::url("") ?>';
 
+  // Helper to filter services by category in a select element
+  function filterServicesByCategory(categorySelectId, serviceSelectId, preserveSelectedId) {
+    var catSelect = document.getElementById(categorySelectId);
+    var srvSelect = document.getElementById(serviceSelectId);
+    if (!catSelect || !srvSelect) return;
+
+    var selectedCat = String(catSelect.value || '');
+    var options = srvSelect.querySelectorAll("option");
+
+    options.forEach(function(opt) {
+      if (!opt.value) {
+        // Keep the "-- Apply to ALL Services in this Category --" option visible
+        opt.style.display = "";
+        return;
+      }
+      var optCat = opt.getAttribute("data-category");
+      if (!selectedCat || optCat === selectedCat) {
+        opt.style.display = "";
+      } else {
+        opt.style.display = "none";
+      }
+    });
+
+    if (preserveSelectedId !== undefined) {
+      srvSelect.value = String(preserveSelectedId || '');
+    }
+  }
+
+  // Bind change on Create Modal Category
+  var modalCatSelect = document.getElementById("modalSourceCategory");
+  if (modalCatSelect) {
+    modalCatSelect.addEventListener("change", function() {
+      filterServicesByCategory("modalSourceCategory", "modalSourceService", "");
+    });
+  }
+
+  // Bind change on Edit Modal Category
+  var editCatSelect = document.getElementById("editSourceCategoryId");
+  if (editCatSelect) {
+    editCatSelect.addEventListener("change", function() {
+      filterServicesByCategory("editSourceCategoryId", "editSourceServiceId", "");
+    });
+  }
+
   // Badge suggestion chips
   document.querySelectorAll(".badge-suggest-btn").forEach(function(btn) {
     btn.addEventListener("click", function() {
@@ -524,29 +641,50 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // Edit Addon Rule Modal Populator
-  var editModal = document.getElementById("editPairingModal");
   var editForm = document.getElementById("editPairingForm");
 
   document.querySelectorAll(".edit-addon-rule-btn").forEach(function(btn) {
     btn.addEventListener("click", function() {
       var id = this.getAttribute("data-id");
-      var source = this.getAttribute("data-source");
-      var addon = this.getAttribute("data-addon");
-      var badge = this.getAttribute("data-badge");
-      var price = this.getAttribute("data-price");
-      var note = this.getAttribute("data-note");
-      var order = this.getAttribute("data-order");
-      var active = this.getAttribute("data-active");
+      var sourceCatId = this.getAttribute("data-source-category-id") || '';
+      var sourceSrvId = this.getAttribute("data-source-service-id") || '';
+      var addonSrvId = this.getAttribute("data-addon-service-id") || '';
+      var badge = this.getAttribute("data-badge") || '';
+      var price = this.getAttribute("data-price") || '';
+      var note = this.getAttribute("data-note") || '';
+      var order = this.getAttribute("data-order") || '0';
+      var active = this.getAttribute("data-active") || '1';
 
-      document.getElementById("editSourceLabel").textContent = source;
-      document.getElementById("editAddonLabel").textContent = addon;
-      document.getElementById("editBadgeInput").value = badge;
-      document.getElementById("editPriceInput").value = price;
-      document.getElementById("editNoteInput").value = note;
-      document.getElementById("editOrderInput").value = order;
-      document.getElementById("editActiveSelect").value = active;
+      // Set category first, then filter services and set selected service
+      var catEl = document.getElementById("editSourceCategoryId");
+      if (catEl) {
+        catEl.value = sourceCatId;
+      }
+      filterServicesByCategory("editSourceCategoryId", "editSourceServiceId", sourceSrvId);
 
-      editForm.action = baseUrl + '/admin/services/addons/' + id + '/update';
+      var addonEl = document.getElementById("editAddonServiceId");
+      if (addonEl) {
+        addonEl.value = addonSrvId;
+      }
+
+      var badgeEl = document.getElementById("editBadgeInput");
+      if (badgeEl) badgeEl.value = badge;
+
+      var priceEl = document.getElementById("editPriceInput");
+      if (priceEl) priceEl.value = price;
+
+      var noteEl = document.getElementById("editNoteInput");
+      if (noteEl) noteEl.value = note;
+
+      var orderEl = document.getElementById("editOrderInput");
+      if (orderEl) orderEl.value = order;
+
+      var activeEl = document.getElementById("editActiveSelect");
+      if (activeEl) activeEl.value = active;
+
+      if (editForm) {
+        editForm.action = baseUrl + '/admin/services/addons/' + id + '/update';
+      }
 
       if (window.$) {
         $('#editPairingModal').modal('show');

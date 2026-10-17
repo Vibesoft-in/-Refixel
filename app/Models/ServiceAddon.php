@@ -232,7 +232,7 @@ class ServiceAddon extends Model
     /**
      * Retrieve all addon pairings with parent service & addon service info for the Admin view.
      */
-    public static function allAdminList(?int $filterServiceId = null): array
+    public static function allAdminList(?int $filterServiceId = null, ?int $filterCategoryId = null): array
     {
         $where = "WHERE 1=1";
         $params = [];
@@ -242,19 +242,30 @@ class ServiceAddon extends Model
             $params['sid'] = $filterServiceId;
         }
 
+        if ($filterCategoryId !== null && $filterCategoryId > 0) {
+            $where .= " AND (sa.source_category_id = :cid OR src.category_id = :cid2)";
+            $params['cid'] = $filterCategoryId;
+            $params['cid2'] = $filterCategoryId;
+        }
+
         $sql = "SELECT sa.*, 
+                       COALESCE(sa.source_category_id, src.category_id) as effective_category_id,
+                       COALESCE(cat.name, src_cat.name) as source_category_name,
                        src.name as source_service_name, src.slug as source_service_slug,
-                       cat.name as source_category_name,
+                       src.category_id as source_service_cat_id,
                        addon.name as addon_name, addon.slug as addon_slug, 
                        addon.starting_price as addon_base_price, addon.image as addon_image,
                        addon_cat.name as addon_category_name
                 FROM service_addons sa
                 LEFT JOIN services src ON sa.source_service_id = src.id
+                LEFT JOIN categories src_cat ON src.category_id = src_cat.id
                 LEFT JOIN categories cat ON sa.source_category_id = cat.id
                 JOIN services addon ON sa.addon_service_id = addon.id
                 LEFT JOIN categories addon_cat ON addon.category_id = addon_cat.id
                 {$where}
-                ORDER BY src.name ASC, sa.sort_order ASC, sa.id ASC";
+                ORDER BY COALESCE(cat.sort_order, src_cat.sort_order, 99) ASC, 
+                         COALESCE(cat.name, src_cat.name) ASC, 
+                         src.name ASC, sa.sort_order ASC, sa.id ASC";
 
         return Database::fetchAll($sql, $params);
     }

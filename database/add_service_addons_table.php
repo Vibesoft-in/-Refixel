@@ -369,7 +369,9 @@ $pairings = [
 
 $count = 0;
 foreach ($pairings as $p) {
-    $srcId = $getServiceId($p['source_slug']);
+    $src = Database::fetchOne("SELECT id, category_id FROM services WHERE slug = :slug", ['slug' => $p['source_slug']]);
+    $srcId = $src ? (int)$src['id'] : null;
+    $srcCatId = $src ? (int)$src['category_id'] : null;
     $addId = $getServiceId($p['addon_slug']);
 
     if ($srcId && $addId) {
@@ -379,10 +381,11 @@ foreach ($pairings as $p) {
         );
         if (!$exists) {
             Database::query(
-                "INSERT INTO service_addons (source_service_id, addon_service_id, custom_badge, custom_price, custom_note, sort_order, is_active)
-                 VALUES (:sid, :aid, :badge, :price, :note, :sort_order, 1)",
+                "INSERT INTO service_addons (source_service_id, source_category_id, addon_service_id, custom_badge, custom_price, custom_note, sort_order, is_active)
+                 VALUES (:sid, :cid, :aid, :badge, :price, :note, :sort_order, 1)",
                 [
                     'sid'        => $srcId,
+                    'cid'        => $srcCatId,
                     'aid'        => $addId,
                     'badge'      => $p['badge'],
                     'price'      => $p['price'],
@@ -394,6 +397,8 @@ foreach ($pairings as $p) {
         }
     }
 }
+
+Database::query("UPDATE service_addons sa JOIN services s ON sa.source_service_id = s.id SET sa.source_category_id = s.category_id WHERE sa.source_category_id IS NULL");
 
 echo "✓ Seeded {$count} default sensible add-on pairings.\n";
 echo "=== MIGRATION COMPLETED SUCCESSFULLY ===\n";

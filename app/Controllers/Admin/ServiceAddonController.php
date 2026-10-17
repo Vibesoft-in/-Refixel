@@ -20,9 +20,10 @@ class ServiceAddonController extends Controller
     public function index(Request $request): Response
     {
         $filterServiceId = $request->input('service_id') ? (int)$request->input('service_id') : null;
-        $rules = ServiceAddon::allAdminList($filterServiceId);
+        $filterCategoryId = $request->input('category_id') ? (int)$request->input('category_id') : null;
+        $rules = ServiceAddon::allAdminList($filterServiceId, $filterCategoryId);
 
-        $services = Database::fetchAll("SELECT id, name, slug, starting_price, category_id FROM services WHERE is_active = 1 ORDER BY name ASC");
+        $services = Database::fetchAll("SELECT id, name, slug, starting_price, category_id FROM services WHERE is_active = 1 ORDER BY category_id ASC, name ASC");
         $categories = Category::all('sort_order ASC, name ASC');
 
         // Statistics
@@ -37,6 +38,7 @@ class ServiceAddonController extends Controller
             'services'           => $services,
             'categories'         => $categories,
             'filterServiceId'    => $filterServiceId,
+            'filterCategoryId'   => $filterCategoryId,
             'totalRules'         => $totalRules,
             'activeRules'        => $activeRules,
             'servicesWithAddons' => $servicesWithAddons,
@@ -64,6 +66,19 @@ class ServiceAddonController extends Controller
             return $this->redirect('/admin/services/addons');
         }
 
+        // If source service is chosen, resolve its category if not explicitly provided
+        if ($sourceServiceId > 0 && $sourceCategoryId <= 0) {
+            $src = Service::find($sourceServiceId);
+            if ($src) {
+                $sourceCategoryId = (int)($src['category_id'] ?? 0);
+            }
+        }
+
+        if ($sourceServiceId <= 0 && $sourceCategoryId <= 0) {
+            View::setFlash('error', 'Please select a Category or Target Service.');
+            return $this->redirect('/admin/services/addons');
+        }
+
         if ($sourceServiceId > 0 && $sourceServiceId === $addonServiceId) {
             View::setFlash('error', 'A service cannot be an add-on of itself.');
             return $this->redirect('/admin/services/addons');
@@ -77,8 +92,8 @@ class ServiceAddonController extends Controller
             );
         } else {
             $existing = Database::fetchOne(
-                "SELECT id FROM service_addons WHERE source_service_id IS NULL AND addon_service_id = :aid",
-                ['aid' => $addonServiceId]
+                "SELECT id FROM service_addons WHERE source_category_id = :cid AND source_service_id IS NULL AND addon_service_id = :aid",
+                ['cid' => $sourceCategoryId, 'aid' => $addonServiceId]
             );
         }
 
@@ -99,7 +114,7 @@ class ServiceAddonController extends Controller
         ]);
 
         View::setFlash('success', 'Smart add-on pairing created successfully!');
-        return $this->redirect('/admin/services/addons' . ($sourceServiceId > 0 ? '?service_id=' . $sourceServiceId : ''));
+        return $this->redirect('/admin/services/addons' . ($sourceServiceId > 0 ? '?service_id=' . $sourceServiceId : ($sourceCategoryId > 0 ? '?category_id=' . $sourceCategoryId : '')));
     }
 
     /**
@@ -115,6 +130,18 @@ class ServiceAddonController extends Controller
             return $this->redirect('/admin/services/addons');
         }
 
+        $sourceCategoryId = $request->has('source_category_id') ? (int)$request->input('source_category_id') : (int)($rule['source_category_id'] ?? 0);
+        $sourceServiceId = $request->has('source_service_id') ? (int)$request->input('source_service_id') : (int)($rule['source_service_id'] ?? 0);
+        $addonServiceId = $request->has('addon_service_id') ? (int)$request->input('addon_service_id') : (int)($rule['addon_service_id'] ?? 0);
+
+        // If source service is chosen, resolve its category if not explicitly provided
+        if ($sourceServiceId > 0 && $sourceCategoryId <= 0) {
+            $src = Service::find($sourceServiceId);
+            if ($src) {
+                $sourceCategoryId = (int)($src['category_id'] ?? 0);
+            }
+        }
+
         $badge = trim((string)$request->input('custom_badge', ''));
         $price = $request->input('custom_price') !== null && $request->input('custom_price') !== '' 
             ? (float)$request->input('custom_price') 
@@ -124,15 +151,18 @@ class ServiceAddonController extends Controller
         $isActive = (int)$request->input('is_active', 1);
 
         ServiceAddon::update($id, [
-            'custom_badge' => !empty($badge) ? $badge : '🔥 Popular Add-on',
-            'custom_price' => $price,
-            'custom_note'  => !empty($note) ? $note : 'Special Companion Rate',
-            'sort_order'   => $sortOrder,
-            'is_active'    => $isActive ? 1 : 0,
+            'source_category_id' => $sourceCategoryId > 0 ? $sourceCategoryId : null,
+            'source_service_id'  => $sourceServiceId > 0 ? $sourceServiceId : null,
+            'addon_service_id'   => $addonServiceId > 0 ? $addonServiceId : (int)$rule['addon_service_id'],
+            'custom_badge'       => !empty($badge) ? $badge : '🔥 Popular Add-on',
+            'custom_price'       => $price,
+            'custom_note'        => !empty($note) ? $note : 'Special Companion Rate',
+            'sort_order'         => $sortOrder,
+            'is_active'          => $isActive ? 1 : 0,
         ]);
 
         View::setFlash('success', 'Add-on rule updated successfully.');
-        return $this->redirect('/admin/services/addons' . (!empty($rule['source_service_id']) ? '?service_id=' . $rule['source_service_id'] : ''));
+        return $this->redirect('/admin/services/addons' . (!empty($sourceServiceId) ? '?service_id=' . $sourceServiceId : (!empty($sourceCategoryId) ? '?category_id=' . $sourceCategoryId : '')));
     }
 
     /**
