@@ -242,7 +242,13 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
     <div class="col-lg-4">
       <?php
         $bookingBasePrice = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 0);
-        $previewWorkerPayout = max(0.0, round($bookingBasePrice - 49.0, 2));
+        $serviceId = !empty($booking['service_id']) ? (int)$booking['service_id'] : null;
+        $categoryId = !empty($booking['category_id']) ? (int)$booking['category_id'] : null;
+        $split = \App\Models\CommissionRule::calculateSplit($bookingBasePrice, 0.0, $serviceId, $categoryId);
+        $previewWorkerPayout = (float)($split['worker_total_payout'] ?? $split['worker_share'] ?? round($bookingBasePrice * 0.75, 2));
+        $adminShare = (float)($split['admin_share'] ?? round($bookingBasePrice * 0.25, 2));
+        $workerPct = (float)($split['worker_percent'] ?? 75);
+        $adminPct = (float)($split['admin_percent'] ?? 25);
       ?>
 
       <?php if ($booking['status'] === 'completed'): ?>
@@ -293,12 +299,12 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
               <strong class="text-dark">₹<?= number_format($totAmt > 0 ? $totAmt : $bookingBasePrice, 2) ?></strong>
             </div>
             <div class="d-flex justify-content-between py-1 border-bottom">
-              <span class="text-muted">Technician Labour Payout:</span>
+              <span class="text-muted">Technician Share (<?= $workerPct ?>%):</span>
               <strong class="text-success">₹<?= number_format($previewWorkerPayout, 2) ?></strong>
             </div>
             <div class="d-flex justify-content-between py-1">
-              <span class="text-muted">Platform Fee:</span>
-              <strong class="text-muted">₹49.00</strong>
+              <span class="text-muted">Platform / Admin Share (<?= $adminPct ?>%):</span>
+              <strong class="text-muted">₹<?= number_format($adminShare, 2) ?></strong>
             </div>
           </div>
 
@@ -331,12 +337,12 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
           <!-- Labour Income Preview Box -->
           <div class="p-3 mb-3 rounded" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed rgba(16, 185, 129, 0.4);">
             <div class="d-flex justify-content-between align-items-center">
-              <span class="small font-weight-bold text-dark"><i class="fa fa-money text-success mr-1"></i>Technician Labour Payout:</span>
+              <span class="small font-weight-bold text-dark"><i class="fa fa-money text-success mr-1"></i>Technician Labour Payout (<?= $workerPct ?>%):</span>
               <span class="font-weight-bold text-success" style="font-size: 17px;">₹<?= number_format($previewWorkerPayout, 0) ?></span>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-1 text-muted small">
-              <span>Platform Fee: ₹49</span>
-              <span class="badge badge-light border text-muted">Total - ₹49 Fee</span>
+              <span>Platform Share: <?= $adminPct ?>% (₹<?= number_format($adminShare, 0) ?>)</span>
+              <span class="badge badge-light border text-muted"><?= $workerPct ?>% Tech Share</span>
             </div>
             <div class="d-flex align-items-center mt-2 pt-2 border-top border-light" style="gap: 6px;">
               <?php if ($dueAmt <= 0 && ($totAmt > 0 || ($booking['payment_type'] ?? '') === 'online')): ?>
@@ -349,7 +355,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
               </span>
             </div>
             <div class="text-muted mt-2 pt-1" style="font-size: 11px; line-height: 1.3;">
-              <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>only see ₹<?= number_format($previewWorkerPayout, 0) ?></strong> (Labour Income: Total - ₹49), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
+              <i class="fa fa-info-circle text-primary mr-1"></i>Technician will <strong>see ₹<?= number_format($previewWorkerPayout, 0) ?></strong> (<?= $workerPct ?>% Commission Payout), booking type (Prepaid / Pre-Booked), and Priority level to decide whether to accept.
             </div>
           </div>
           

@@ -497,6 +497,7 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>A new booking has been assigned to you. Please review and accept in your portal:</p>";
                 $body .= "</div>";
 
+                $workerPctDisplay = !empty($data['worker_percent']) ? ' (' . (float)$data['worker_percent'] . '% share)' : '';
                 $payoutDisplay = !empty($data['technician_payout']) ? '₹' . number_format((float)$data['technician_payout'], 0) : '₹850';
 
                 $body .= "<div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 22px; font-size: 14px;'>";
@@ -504,7 +505,7 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Service:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Scheduled:</strong> " . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " (" . htmlspecialchars($data['preferred_time'] ?? 'Flexible') . ")</div>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Address:</strong> " . htmlspecialchars($data['address'] ?? '') . "</div>";
-                $body .= "<div style='padding-top: 10px; border-top: 1px dashed #cbd5e1; margin-top: 10px;'><strong style='color: #15803d;'>Your Expected Payout:</strong> <span style='font-size: 18px; font-weight: 800; color: #16a34a;'>" . $payoutDisplay . "</span></div>";
+                $body .= "<div style='padding-top: 10px; border-top: 1px dashed #cbd5e1; margin-top: 10px;'><strong style='color: #15803d;'>Your Expected Payout" . $workerPctDisplay . ":</strong> <span style='font-size: 18px; font-weight: 800; color: #16a34a;'>" . $payoutDisplay . "</span></div>";
                 $body .= "</div>";
 
                 $body .= "<div style='text-align: center; margin: 24px 0;'>";

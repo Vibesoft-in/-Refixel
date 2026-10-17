@@ -29,7 +29,7 @@ class Booking extends Model
     public static function findWithDetails(int $id): ?array
     {
         return Database::fetchOne(
-            "SELECT b.*, s.name as service_name, s.starting_price, c.name as category_name,
+            "SELECT b.*, s.category_id, s.name as service_name, s.starting_price, c.name as category_name,
                     u.name as customer_name, u.phone as customer_phone, u.email as customer_email,
                     j.id as job_id, j.status as job_status, j.staff_id, st.name as staff_name,
                     st.phone as staff_phone, st.email as staff_email,

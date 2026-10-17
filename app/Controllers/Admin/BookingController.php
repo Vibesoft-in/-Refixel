@@ -189,7 +189,7 @@ class BookingController extends Controller
             \App\Core\Logger::error("Customer technician assignment notification error: " . $e->getMessage());
         }
 
-        View::setFlash('success', 'Technician successfully assigned. Confirmation emails dispatched to customer and technician.');
+        View::setFlash('success', 'Technician successfully assigned. Job notification dispatched to technician.');
 
         return $this->redirect('/admin/bookings/' . $id);
     }

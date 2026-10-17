@@ -194,13 +194,24 @@ class Notifier
     }
 
     /**
-     * Event 3: Staff Assignment -> Technician Email with Job Details & Payout
+     * Event 3 (Lifecycle Email 3): Staff Assignment -> Technician Email with Job Details & 75% Payout
      */
     public static function notifyStaffAssigned(array $booking, array $staff): void
     {
         $jobId = $booking['job_id'] ?? '';
-        $baseAmt = (float)($booking['total_amount'] ?? $booking['starting_price'] ?? 899);
-        $expectedPayout = max(0.0, round($baseAmt - 49.0, 2));
+        $baseAmt = (float)($booking['total_amount'] ?? 0);
+        if ($baseAmt <= 0) {
+            $baseAmt = (float)($booking['starting_price'] ?? 899);
+        }
+
+        $serviceId = !empty($booking['service_id']) ? (int)$booking['service_id'] : null;
+        $categoryId = !empty($booking['category_id']) ? (int)$booking['category_id'] : null;
+        $workerTier = $staff['tier'] ?? 'standard';
+
+        // Compute actual commission split (default 75% worker share) instead of deducting flat platform/advance fees
+        $split = \App\Models\CommissionRule::calculateSplit($baseAmt, 0.0, $serviceId, $categoryId, $workerTier);
+        $workerPct = (float)($split['worker_percent'] ?? Setting::get('global_worker_commission_pct', 75.0));
+        $expectedPayout = (float)($split['worker_total_payout'] ?? $split['worker_share'] ?? round($baseAmt * ($workerPct / 100.0), 2));
 
         $data = [
             'booking_no'        => $booking['booking_no'] ?? '',
@@ -209,6 +220,8 @@ class Notifier
             'preferred_date'    => $booking['preferred_date'] ?? date('Y-m-d'),
             'preferred_time'    => $booking['preferred_time'] ?? 'Flexible',
             'address'           => $booking['address'] ?? '',
+            'total_amount'      => $baseAmt,
+            'worker_percent'    => $workerPct,
             'technician_payout' => $expectedPayout,
             'staff_job_url'     => View::fullUrl('/staff/jobs/' . $jobId),
         ];
@@ -227,7 +240,7 @@ class Notifier
     }
 
     /**
-     * Event 3B: Admin Assigns Technician -> Notify Customer with Full Technician Details
+     * Event 3B: Admin Assigns Technician -> SMS/WA to Customer (Email channel silenced for 4-email rule)
      */
     public static function notifyTechnicianAssignedCustomer(array $booking, array $staff): void
     {
@@ -252,10 +265,7 @@ class Notifier
             'login_url'      => View::fullUrl('/login'),
         ];
 
-        if (!empty($customerEmail)) {
-            self::send('email', $customerEmail, 'technician_assigned_customer', $data);
-        }
-
+        // Email channel intentionally disabled: per business flow, customer receives Booking Confirmation, and final GST Invoice upon completion.
         if (!empty($customerPhone)) {
             self::send('sms', $customerPhone, 'technician_assigned_sms', $data);
 
@@ -266,43 +276,19 @@ class Notifier
     }
 
     /**
-     * Event 4: Technician Accepts Job -> Notify Both Customer and Admin
+     * Event 4: Technician Accepts Job (Email silenced to prevent inbox spam)
      */
     public static function notifyTechnicianAccepted(array $booking, array $staff): void
     {
-        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
-        $data = [
-            'booking_no'     => $booking['booking_no'] ?? '',
-            'customer_name'  => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
-            'customer_phone' => $booking['phone'] ?? ($booking['customer_phone'] ?? ''),
-            'service_name'   => $booking['service_name'] ?? 'Home Service',
-            'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Technician'),
-            'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
-            'preferred_date' => $booking['preferred_date'] ?? date('Y-m-d'),
-            'preferred_time' => $booking['preferred_time'] ?? 'Flexible',
-            'address'        => $booking['address'] ?? '',
-            'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
-            'admin_url'      => View::fullUrl('/admin/bookings/' . $bId),
-        ];
-
-        // 1. Notify Customer
-        $customerEmail = $booking['email'] ?? ($booking['customer_email'] ?? null);
-        if (!empty($customerEmail)) {
-            self::send('email', $customerEmail, 'technician_accepted_customer', $data);
-        }
-
-        // 2. Notify Admin
-        $adminEmail = self::getAdminEmail();
-        self::send('email', $adminEmail, 'technician_accepted_admin', $data);
+        // Email intentionally silenced to adhere to strict 4-email lifecycle
     }
 
     /**
-     * Event 4B: Technician On The Way -> Notify Customer
+     * Event 4B: Technician On The Way -> SMS to Customer (Email silenced)
      */
     public static function notifyTechnicianOnTheWay(array $booking, array $staff): void
     {
         $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
-        $customerEmail = !empty($booking['email']) ? $booking['email'] : ($booking['customer_email'] ?? null);
         $customerPhone = !empty($booking['phone']) ? $booking['phone'] : ($booking['customer_phone'] ?? '');
         $customerName  = !empty($booking['name']) ? $booking['name'] : ($booking['customer_name'] ?? 'Customer');
 
@@ -311,7 +297,6 @@ class Notifier
             'booking_no'     => $booking['booking_no'] ?? '',
             'customer_name'  => $customerName,
             'customer_phone' => $customerPhone,
-            'customer_email' => $customerEmail,
             'service_name'   => $booking['service_name'] ?? 'Home Service',
             'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Certified Technician'),
             'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
@@ -321,42 +306,22 @@ class Notifier
             'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
         ];
 
-        if (!empty($customerEmail)) {
-            self::send('email', $customerEmail, 'technician_on_the_way', $data);
-        }
-
+        // Email silenced; send SMS arrival notification if phone is present
         if (!empty($customerPhone)) {
             self::send('sms', $customerPhone, 'technician_on_the_way_sms', $data);
         }
     }
 
     /**
-     * Event 5: Prepaid Online Booking Receipt with "Work is Due" Notice
+     * Event 5: Prepaid Online Booking (Silenced: customer gets Booking Confirmation email #1 and Final Invoice email #4)
      */
     public static function notifyPrepaidInvoiceWorkDue(array $invoice, array $booking): void
     {
-        $customerEmail = $booking['email'] ?? ($booking['customer_email'] ?? null);
-        if (empty($customerEmail)) {
-            return;
-        }
-
-        $invId = $invoice['id'] ?? '';
-        $data = [
-            'invoice_no'    => $invoice['invoice_no'] ?? 'INV-PREPAID',
-            'booking_no'    => $booking['booking_no'] ?? '',
-            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
-            'service_name'  => $booking['service_name'] ?? 'Home Service',
-            'total'         => (float)($invoice['total'] ?? ($booking['total_amount'] ?? 0)),
-            'preferred_date'=> $booking['preferred_date'] ?? date('Y-m-d'),
-            'preferred_time'=> $booking['preferred_time'] ?? 'Flexible',
-            'invoice_url'   => View::fullUrl('/account/invoices/' . $invId),
-        ];
-
-        self::send('email', $customerEmail, 'invoice_prepaid_work_due', $data);
+        // Silenced to ensure only 4 lifecycle emails are dispatched
     }
 
     /**
-     * Event 6: Service Completed -> Final GST Tax Invoice to Customer
+     * Event 6 (Lifecycle Email 4): Service Completed -> Final GST Tax Invoice to Customer
      */
     public static function notifyFinalCompletedInvoice(array $invoice, array $booking, ?array $staff = null): void
     {
@@ -379,11 +344,12 @@ class Notifier
             'invoice_url'   => View::fullUrl('/account/invoices/' . $invId),
         ];
 
+        // 4th Lifecycle Email: Customer Completion & Final GST Tax Invoice
         self::send('email', $customerEmail, 'invoice_final_completed', $data);
     }
 
     /**
-     * Event 7: Booking Status Change -> Customer
+     * Event 7: Booking Status Change -> SMS to Customer (Email silenced)
      */
     public static function notifyBookingStatusChange(array $booking, string $newStatus, ?string $notes = null): void
     {
@@ -394,11 +360,7 @@ class Notifier
             'notes'         => $notes ?? '',
         ];
 
-        $email = $booking['email'] ?? ($booking['customer_email'] ?? null);
-        if (!empty($email)) {
-            self::send('email', $email, 'status_updated', $data);
-        }
-
+        // Email silenced; send SMS update if phone present
         $phone = $booking['phone'] ?? ($booking['customer_phone'] ?? null);
         if (!empty($phone)) {
             self::send('sms', $phone, 'status_updated_sms', $data);
@@ -406,28 +368,11 @@ class Notifier
     }
 
     /**
-     * Event 8: Job Completed -> Customer & Admin (General Alert)
+     * Event 8: Job Completed (Silenced: Replaced by notifyFinalCompletedInvoice which sends the full GST Tax Invoice to customer)
      */
     public static function notifyJobCompleted(array $booking, ?array $staff = null): void
     {
-        $data = [
-            'booking_no'    => $booking['booking_no'] ?? '',
-            'customer_name' => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
-            'service_name'  => $booking['service_name'] ?? 'Home Service',
-            'staff_name'    => $staff['name'] ?? ($booking['staff_name'] ?? 'Technician'),
-        ];
-
-        $email = $booking['email'] ?? ($booking['customer_email'] ?? null);
-        if (!empty($email)) {
-            self::send('email', $email, 'job_completed', $data);
-        }
-
-        // Alert Admin
-        $adminEmail = self::getAdminEmail();
-        self::send('email', $adminEmail, 'admin_alert', [
-            'title'   => "Job Completed: Booking #{$booking['booking_no']}",
-            'message' => "Technician {$data['staff_name']} completed service for {$data['customer_name']}.",
-        ]);
+        // Silenced to ensure only 4 lifecycle emails are dispatched (final invoice is sent via notifyFinalCompletedInvoice)
     }
 
     /**
