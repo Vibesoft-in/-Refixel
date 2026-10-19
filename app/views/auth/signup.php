@@ -27,11 +27,25 @@
   </div>
   <div class="form-group mb-3">
     <label class="font-weight-600" style="color: #334155; font-size: 13.5px;">Password <span class="text-danger">*</span></label>
-    <input type="password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
+    <div class="input-group">
+      <input type="password" name="password" id="signupPasswordInput" class="form-control" placeholder="Minimum 6 characters" style="border-right: none;" required>
+      <div class="input-group-append">
+        <button type="button" class="btn password-toggle-btn" onclick="togglePasswordVisibility('signupPasswordInput', this)" title="Show/Hide password">
+          <i class="fa fa-eye"></i>
+        </button>
+      </div>
+    </div>
   </div>
   <div class="form-group mb-4">
     <label class="font-weight-600" style="color: #334155; font-size: 13.5px;">Confirm Password <span class="text-danger">*</span></label>
-    <input type="password" name="password_confirmation" class="form-control" placeholder="Repeat password" required>
+    <div class="input-group">
+      <input type="password" name="password_confirmation" id="signupConfirmPassInput" class="form-control" placeholder="Repeat password" style="border-right: none;" required>
+      <div class="input-group-append">
+        <button type="button" class="btn password-toggle-btn" onclick="togglePasswordVisibility('signupConfirmPassInput', this)" title="Show/Hide password">
+          <i class="fa fa-eye"></i>
+        </button>
+      </div>
+    </div>
   </div>
   <button type="submit" class="btn btn-primary-custom py-2">Create Account & Continue &rarr;</button>
 </form>

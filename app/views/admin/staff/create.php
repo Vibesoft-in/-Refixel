@@ -37,8 +37,15 @@ $categories = $categories ?? [];
 
       <div class="form-group mb-3">
         <label class="font-weight-bold small text-dark">Temporary Password <span class="text-danger">*</span></label>
-        <input type="password" name="password" class="form-control" required placeholder="Minimum 6 characters">
-        <small class="form-text text-success font-weight-bold">
+        <div class="input-group">
+          <input type="password" name="password" id="staffCreatePasswordInput" class="form-control" required placeholder="Minimum 6 characters" style="border-right: none;">
+          <div class="input-group-append">
+            <button type="button" class="btn bg-white border" style="border-left: none; color: #94a3b8;" onclick="togglePasswordVisibility('staffCreatePasswordInput', this)" title="Show/Hide password">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <small class="form-text text-success font-weight-bold mt-1">
           <i class="fa fa-shield mr-1"></i>The technician will be forced to change this temporary password upon first login.
         </small>
       </div>

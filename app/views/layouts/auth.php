@@ -18,6 +18,9 @@
     .auth-logo img { height: 42px; }
     .btn-primary-custom { background-color: #f25b29; border-color: #f25b29; color: #fff; font-weight: 600; width: 100%; border-radius: 6px; padding: 10px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25); }
     .btn-primary-custom:hover { background-color: #db4918; border-color: #db4918; color: #fff; }
+    .password-toggle-btn { background: #fff; border-color: #ced4da; border-left: none; color: #94a3b8; cursor: pointer; transition: all 0.2s ease; }
+    .password-toggle-btn:hover { color: #f25b29; background-color: #f8fafc; }
+    .password-toggle-btn:focus { outline: none; box-shadow: none; }
   </style>
 </head>
 <body>
@@ -40,6 +43,27 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
   <script>
+  function togglePasswordVisibility(targetId, btn) {
+    var input = document.getElementById(targetId);
+    if (!input) return;
+    var icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (icon) {
+        icon.className = 'fa fa-eye-slash';
+        icon.style.color = '#f25b29';
+      }
+      btn.setAttribute('title', 'Hide password');
+    } else {
+      input.type = 'password';
+      if (icon) {
+        icon.className = 'fa fa-eye';
+        icon.style.color = '#94a3b8';
+      }
+      btn.setAttribute('title', 'Show password');
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     // Mobile Drawer Toggle
     var drawerTriggers = document.querySelectorAll(".open-mobile-drawer, #mobileMenuBtn");

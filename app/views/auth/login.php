@@ -29,7 +29,12 @@
       <div class="input-group-prepend">
         <span class="input-group-text bg-white" style="border-right: none; color: #94a3b8;"><i class="fa fa-lock"></i></span>
       </div>
-      <input type="password" name="password" class="form-control" placeholder="••••••••" style="border-left: none;" required>
+      <input type="password" name="password" id="loginPasswordInput" class="form-control" placeholder="••••••••" style="border-left: none; border-right: none;" required>
+      <div class="input-group-append">
+        <button type="button" class="btn password-toggle-btn" onclick="togglePasswordVisibility('loginPasswordInput', this)" title="Show/Hide password">
+          <i class="fa fa-eye"></i>
+        </button>
+      </div>
     </div>
   </div>
 

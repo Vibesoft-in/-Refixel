@@ -539,6 +539,27 @@
         activeNav.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }
     });
+
+    function togglePasswordVisibility(targetId, btn) {
+      var input = document.getElementById(targetId);
+      if (!input) return;
+      var icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+          icon.className = 'fa fa-eye-slash';
+          icon.style.color = '#f25b29';
+        }
+        btn.setAttribute('title', 'Hide password');
+      } else {
+        input.type = 'password';
+        if (icon) {
+          icon.className = 'fa fa-eye';
+          icon.style.color = '#94a3b8';
+        }
+        btn.setAttribute('title', 'Show password');
+      }
+    }
   </script>
 </body>
 </html>
