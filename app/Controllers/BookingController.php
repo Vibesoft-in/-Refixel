@@ -261,6 +261,27 @@ class BookingController extends Controller
             if (!in_array('payment_type', $existingCols, true)) {
                 try { Database::execute("ALTER TABLE bookings ADD COLUMN payment_type VARCHAR(20) NOT NULL DEFAULT 'cod'"); } catch (\Throwable $e) {}
             }
+            if (!in_array('items_json', $existingCols, true)) {
+                try { Database::execute("ALTER TABLE bookings ADD COLUMN items_json TEXT NULL AFTER issue_details"); } catch (\Throwable $e) {}
+            }
+
+            try {
+                Database::execute("
+                CREATE TABLE IF NOT EXISTS `booking_items` (
+                  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                  `booking_id` INT UNSIGNED NOT NULL,
+                  `service_id` INT UNSIGNED NULL,
+                  `item_type` ENUM('service', 'addon') NOT NULL DEFAULT 'service',
+                  `name` VARCHAR(150) NOT NULL,
+                  `quantity` INT NOT NULL DEFAULT 1,
+                  `unit_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                  `total_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`),
+                  KEY `idx_booking_id` (`booking_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+                ");
+            } catch (\Throwable $e) {}
 
             $invCols = Database::fetchAll("SHOW COLUMNS FROM invoices");
             $existingInvCols = array_column($invCols, 'Field');
@@ -645,14 +666,74 @@ class BookingController extends Controller
             $paymentMethod = ($paymentMethodInput === 'online') ? 'online' : 'cod';
             
             $totalServiceAmount = (float)($service['starting_price'] ?? 0);
+            $itemsToRecord = [];
+
             if ($request->input('from_cart')) {
                 $cartData = Cart::getDetails();
                 if (!empty($cartData['total'])) {
                     $totalServiceAmount = (float)$cartData['total'];
                 }
+                if (!empty($cartData['items'])) {
+                    $isFirst = true;
+                    foreach ($cartData['items'] as $cItem) {
+                        $isMain = ($isFirst && (int)$cItem['service_id'] === (int)$service['id']);
+                        $itemsToRecord[] = [
+                            'service_id'  => (int)$cItem['service_id'],
+                            'name'        => (string)$cItem['name'],
+                            'item_type'   => $isMain ? 'service' : 'addon',
+                            'quantity'    => max(1, (int)($cItem['quantity'] ?? 1)),
+                            'unit_price'  => (float)($cItem['unit_price'] ?? 0),
+                            'total_price' => (float)($cItem['line_total'] ?? 0),
+                        ];
+                        $isFirst = false;
+                    }
+                }
                 // Clear cart only AFTER obtaining details
                 Cart::clear();
             }
+
+            // Direct add-on IDs passed in booking request
+            $directAddonIds = $request->input('addon_ids');
+            if (!empty($directAddonIds)) {
+                if (is_string($directAddonIds)) {
+                    $directAddonIds = array_filter(array_map('intval', explode(',', $directAddonIds)));
+                }
+                if (is_array($directAddonIds)) {
+                    foreach ($directAddonIds as $aId) {
+                        if ($aId > 0 && $aId !== (int)$service['id']) {
+                            $addonSvc = Service::find($aId);
+                            if ($addonSvc) {
+                                $aPrice = (float)($addonSvc['starting_price'] ?? 0);
+                                $totalServiceAmount += $aPrice;
+                                $itemsToRecord[] = [
+                                    'service_id'  => (int)$addonSvc['id'],
+                                    'name'        => (string)$addonSvc['name'],
+                                    'item_type'   => 'addon',
+                                    'quantity'    => 1,
+                                    'unit_price'  => $aPrice,
+                                    'total_price' => $aPrice,
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If no items were constructed, record default primary service
+            if (empty($itemsToRecord)) {
+                $itemsToRecord[] = [
+                    'service_id'  => (int)$service['id'],
+                    'name'        => (string)$service['name'],
+                    'item_type'   => 'service',
+                    'quantity'    => 1,
+                    'unit_price'  => $totalServiceAmount,
+                    'total_price' => $totalServiceAmount,
+                ];
+            }
+
+            // Save line items to booking_items & update items_json
+            Booking::recordItems($bookingId, $itemsToRecord);
+
             if ($totalServiceAmount <= 0) {
                 $totalServiceAmount = 899.00;
             }
@@ -1126,6 +1207,16 @@ class BookingController extends Controller
             'status'         => 'new',
             'priority'       => 'high',
         ]);
+
+        // Record enquiry service line item
+        Booking::recordItems($bookingId, [[
+            'service_id'  => $serviceId,
+            'name'        => $service ? $service['name'] : ($serviceInput ?: 'Home Maintenance Service'),
+            'item_type'   => 'service',
+            'quantity'    => 1,
+            'unit_price'  => (float)($service['starting_price'] ?? 0),
+            'total_price' => (float)($service['starting_price'] ?? 0),
+        ]]);
 
         // Auto-assign to available technician if Admin Busy Mode is active
         if (\App\Services\AutoDispatchService::isBusyModeEnabled()) {

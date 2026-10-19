@@ -102,10 +102,75 @@ $attachments = $attachments ?? [];
             <h5 class="font-weight-bold text-dark mt-1 mb-0"><?= View::e($booking['service_name']) ?></h5>
           </div>
           <div class="text-right">
-            <div class="text-muted small">Starting Price</div>
-            <h4 class="font-weight-bold text-success mb-0">₹<?= number_format((float)($booking['starting_price'] ?? 0), 2) ?></h4>
+            <div class="text-muted small">Total Service Amount</div>
+            <h4 class="font-weight-bold text-success mb-0">₹<?= number_format((float)(($booking['total_amount'] ?? 0) > 0 ? $booking['total_amount'] : ($booking['starting_price'] ?? 0)), 2) ?></h4>
           </div>
         </div>
+
+        <?php 
+          $items = $booking['items'] ?? \App\Models\Booking::getItems((int)$booking['id'], $booking);
+          $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+          $totAmt = (float)(($booking['total_amount'] ?? 0) > 0 ? $booking['total_amount'] : ($booking['starting_price'] ?? 0));
+        ?>
+
+        <?php if (!empty($addons)): ?>
+          <div class="border-top pt-3 mt-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="small font-weight-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">
+                <i class="fa fa-cubes text-warning mr-1"></i>Included Add-ons & Service Breakdown (<?= count($addons) ?> Add-on<?= count($addons) > 1 ? 's' : '' ?>)
+              </span>
+              <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size: 11px; background: #fef08a; border: 1px solid #fde047;">
+                ⚡ Customer Selected Add-ons
+              </span>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered bg-white mb-0" style="font-size: 13px;">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Item / Add-on Description</th>
+                    <th style="width: 120px;" class="text-center">Type</th>
+                    <th style="width: 70px;" class="text-center">Qty</th>
+                    <th style="width: 120px;" class="text-right">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($items as $itm): ?>
+                    <tr class="<?= ($itm['item_type'] ?? '') === 'addon' ? 'bg-light font-weight-bold' : '' ?>">
+                      <td>
+                        <?php if (($itm['item_type'] ?? '') === 'addon'): ?>
+                          <i class="fa fa-plus-circle text-success mr-1"></i>
+                          <span class="text-dark"><?= View::e($itm['name']) ?></span>
+                          <?php if (!empty($itm['badge'])): ?>
+                            <span class="badge badge-light border text-muted ml-1" style="font-size: 10px;"><?= View::e($itm['badge']) ?></span>
+                          <?php endif; ?>
+                        <?php else: ?>
+                          <i class="fa fa-wrench text-primary mr-1"></i>
+                          <span><?= View::e($itm['name']) ?></span>
+                          <span class="text-muted small ml-1">(Primary Service)</span>
+                        <?php endif; ?>
+                      </td>
+                      <td class="text-center">
+                        <?php if (($itm['item_type'] ?? '') === 'addon'): ?>
+                          <span class="badge badge-warning px-2 py-0" style="font-size: 10.5px; background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">+ Add-on</span>
+                        <?php else: ?>
+                          <span class="badge badge-primary px-2 py-0" style="font-size: 10.5px;">Main Service</span>
+                        <?php endif; ?>
+                      </td>
+                      <td class="text-center"><?= (int)($itm['quantity'] ?? 1) ?></td>
+                      <td class="text-right text-dark">₹<?= number_format((float)($itm['total_price'] ?? $itm['unit_price'] ?? 0), 2) ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                  <tr style="background: #f8fafc;">
+                    <th colspan="3" class="text-right text-dark font-weight-bold">Total Service Value:</th>
+                    <th class="text-right text-success font-weight-bold" style="font-size: 14.5px;">₹<?= number_format($totAmt, 2) ?></th>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        <?php endif; ?>
 
         <div class="border-top pt-3 mt-3">
           <div class="small font-weight-bold text-dark mb-1">Customer Issue Notes:</div>
@@ -165,6 +230,24 @@ $attachments = $attachments ?? [];
         <?php if (!empty($booking['staff_name'])): ?>
           <div class="alert alert-info py-2 px-3 small font-weight-bold mb-3">
             <i class="fa fa-info-circle mr-1"></i>Currently assigned to: <strong><?= View::e($booking['staff_name']) ?></strong> (Status: <?= ucfirst($booking['job_status'] ?? 'assigned') ?>)
+          </div>
+        <?php endif; ?>
+
+        <?php if (!empty($addons)): ?>
+          <div class="p-2 mb-3 rounded" style="background: #fffbeb; border: 1.5px dashed #f59e0b; font-size: 12.5px;">
+            <div class="font-weight-bold text-dark mb-1 d-flex align-items-center justify-content-between">
+              <span><i class="fa fa-cubes text-warning mr-1"></i>Customer Booked Add-ons:</span>
+              <span class="badge badge-warning text-dark font-weight-bold"><?= count($addons) ?> Add-on<?= count($addons) > 1 ? 's' : '' ?></span>
+            </div>
+            <ul class="mb-1 pl-3 text-dark">
+              <?php foreach ($addons as $ad): ?>
+                <li>
+                  <strong><?= View::e($ad['name']) ?></strong> 
+                  <span class="text-success font-weight-bold">(+₹<?= number_format((float)($ad['total_price'] ?? $ad['unit_price'] ?? 0), 0) ?>)</span>
+                </li>
+              <?php endforeach; ?>
+            </ul>
+            <div class="text-muted" style="font-size: 11px;">Make sure the technician carries appropriate tools/consumables for these add-ons.</div>
           </div>
         <?php endif; ?>
 

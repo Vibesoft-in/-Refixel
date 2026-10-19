@@ -81,7 +81,7 @@ foreach ($payments as $p) {
 
         <!-- Service Information -->
         <h5 class="font-weight-bold mb-3" style="font-size: 18px; color: #0a1c33;">Service Information</h5>
-        <div class="row mb-4">
+        <div class="row mb-3">
           <div class="col-md-6 mb-2">
             <span class="text-muted small d-block">Service Requested:</span>
             <strong><?= \App\Core\View::e($booking['service_name'] ?? 'Home Maintenance') ?></strong>
@@ -101,6 +101,57 @@ foreach ($payments as $p) {
             </div>
           <?php endif; ?>
         </div>
+
+        <?php 
+          $custItems = $booking['items'] ?? \App\Models\Booking::getItems((int)$booking['id'], $booking);
+          $custAddons = array_values(array_filter($custItems, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+        ?>
+        <?php if (!empty($custAddons)): ?>
+          <div class="mb-4">
+            <h6 class="font-weight-bold text-dark mb-2" style="font-size: 14px;">
+              <i class="fa fa-cubes text-warning mr-1"></i> Included Service Package & Add-ons
+            </h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered bg-white mb-0" style="font-size: 13px;">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Item Description</th>
+                    <th style="width: 110px;" class="text-center">Type</th>
+                    <th style="width: 60px;" class="text-center">Qty</th>
+                    <th style="width: 110px;" class="text-right">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($custItems as $itm): ?>
+                    <tr class="<?= ($itm['item_type'] ?? '') === 'addon' ? 'bg-light' : '' ?>">
+                      <td>
+                        <?php if (($itm['item_type'] ?? '') === 'addon'): ?>
+                          <i class="fa fa-plus-circle text-success mr-1"></i>
+                          <strong class="text-dark"><?= \App\Core\View::e($itm['name']) ?></strong>
+                          <?php if (!empty($itm['badge'])): ?>
+                            <span class="badge badge-light border text-muted ml-1" style="font-size: 10px;"><?= \App\Core\View::e($itm['badge']) ?></span>
+                          <?php endif; ?>
+                        <?php else: ?>
+                          <i class="fa fa-wrench text-primary mr-1"></i>
+                          <span><?= \App\Core\View::e($itm['name']) ?></span>
+                        <?php endif; ?>
+                      </td>
+                      <td class="text-center">
+                        <?php if (($itm['item_type'] ?? '') === 'addon'): ?>
+                          <span class="badge badge-warning px-2 py-0" style="font-size: 10px; background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">+ Add-on</span>
+                        <?php else: ?>
+                          <span class="badge badge-primary px-2 py-0" style="font-size: 10px;">Primary</span>
+                        <?php endif; ?>
+                      </td>
+                      <td class="text-center"><?= (int)($itm['quantity'] ?? 1) ?></td>
+                      <td class="text-right font-weight-bold text-dark">₹<?= number_format((float)($itm['total_price'] ?? $itm['unit_price'] ?? 0), 2) ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <?php endif; ?>
 
         <!-- Assigned Technician (if present) -->
         <?php if (!empty($booking['staff_name'])): ?>

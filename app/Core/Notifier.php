@@ -124,6 +124,23 @@ class Notifier
     // ==========================================
 
     /**
+     * Helper to resolve booking line items and addons safely
+     */
+    protected static function extractBookingItems(array $booking): array
+    {
+        if (!empty($booking['items']) && is_array($booking['items'])) {
+            return $booking['items'];
+        }
+        $bId = (int)($booking['id'] ?? $booking['booking_id'] ?? 0);
+        if ($bId > 0) {
+            try {
+                return \App\Models\Booking::getItems($bId, $booking);
+            } catch (\Throwable $e) {}
+        }
+        return [];
+    }
+
+    /**
      * Event 1: New Booking -> Admin Alert with Direct Dashboard Link
      */
     public static function notifyNewBookingAdmin(array $booking): void
@@ -131,6 +148,9 @@ class Notifier
         $adminEmail = self::getAdminEmail();
         $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
         $adminUrl = !empty($booking['admin_url']) ? $booking['admin_url'] : View::fullUrl('/admin/bookings/' . $bId);
+
+        $items = self::extractBookingItems($booking);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
 
         $payload = [
             'booking_no'    => $booking['booking_no'] ?? '',
@@ -144,6 +164,8 @@ class Notifier
             'address'       => $booking['address'] ?? '',
             'message'       => $booking['message'] ?? ($booking['issue_details'] ?? ''),
             'admin_url'     => $adminUrl,
+            'items'         => $items,
+            'addons'        => $addons,
         ];
 
         self::send('email', $adminEmail, 'admin_new_booking', $payload);
@@ -184,6 +206,9 @@ class Notifier
             } catch (\Throwable $e) {}
         }
 
+        $items = self::extractBookingItems($booking);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+
         $data = [
             'booking_no'         => $booking['booking_no'] ?? '',
             'customer_name'      => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
@@ -198,6 +223,8 @@ class Notifier
             'login_url'          => !empty($booking['login_url']) ? $booking['login_url'] : View::fullUrl('/login'),
             'booking_url'        => View::fullUrl('/account/bookings/' . $bId),
             'is_enquiry'         => $isEnquiry,
+            'items'              => $items,
+            'addons'             => $addons,
         ];
 
         if (!empty($targetEmail) && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
@@ -236,6 +263,9 @@ class Notifier
         $workerPct = (float)($split['worker_percent'] ?? Setting::get('global_worker_commission_pct', 75.0));
         $expectedPayout = (float)($split['worker_total_payout'] ?? $split['worker_share'] ?? round($baseAmt * ($workerPct / 100.0), 2));
 
+        $items = self::extractBookingItems($booking);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+
         $data = [
             'booking_no'        => $booking['booking_no'] ?? '',
             'staff_name'        => $staff['name'] ?? 'Technician',
@@ -247,6 +277,8 @@ class Notifier
             'worker_percent'    => $workerPct,
             'technician_payout' => $expectedPayout,
             'staff_job_url'     => View::fullUrl('/staff/jobs/' . $jobId),
+            'items'             => $items,
+            'addons'            => $addons,
         ];
 
         if (!empty($staff['email'])) {
@@ -291,6 +323,9 @@ class Notifier
             } catch (\Throwable $e) {}
         }
 
+        $items = self::extractBookingItems($booking);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+
         $data = [
             'booking_id'     => $bId,
             'booking_no'     => $booking['booking_no'] ?? '',
@@ -305,6 +340,8 @@ class Notifier
             'address'        => $booking['address'] ?? '',
             'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
             'login_url'      => View::fullUrl('/login'),
+            'items'          => $items,
+            'addons'         => $addons,
         ];
 
         // Dispatch Customer Notification Email
@@ -353,6 +390,9 @@ class Notifier
             } catch (\Throwable $e) {}
         }
 
+        $items = self::extractBookingItems($booking);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+
         $data = [
             'booking_id'     => $bId,
             'booking_no'     => $booking['booking_no'] ?? '',
@@ -367,6 +407,8 @@ class Notifier
             'address'        => $booking['address'] ?? '',
             'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
             'admin_url'      => View::fullUrl('/admin/bookings/' . $bId),
+            'items'          => $items,
+            'addons'         => $addons,
         ];
 
         // Customer Email
@@ -411,6 +453,9 @@ class Notifier
             } catch (\Throwable $e) {}
         }
 
+        $items = self::extractBookingItems($booking);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+
         $data = [
             'booking_id'     => $bId,
             'booking_no'     => $booking['booking_no'] ?? '',
@@ -424,6 +469,8 @@ class Notifier
             'preferred_time' => $booking['preferred_time'] ?? 'Flexible Slot',
             'address'        => $booking['address'] ?? '',
             'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
+            'items'          => $items,
+            'addons'         => $addons,
         ];
 
         // Dispatch Customer Notification Email

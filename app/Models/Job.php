@@ -48,7 +48,7 @@ class Job extends Model
             "SELECT j.*, b.booking_no, b.address, b.pincode, b.preferred_date, b.preferred_time,
                     b.issue_details, b.name as customer_name, b.phone as customer_phone, b.email as customer_email,
                     b.service_id, s.category_id, b.total_amount, b.advance_amount, b.due_amount,
-                    b.payment_type, b.priority,
+                    b.payment_type, b.priority, b.items_json,
                     s.name as service_name, s.starting_price, s.description as service_description
              FROM jobs j
              JOIN bookings b ON j.booking_id = b.id
@@ -59,6 +59,8 @@ class Job extends Model
         );
         if ($job) {
             self::attachPayout($job);
+            $job['items'] = Booking::getItems((int)$job['booking_id'], $job);
+            $job['addons'] = array_values(array_filter($job['items'], fn($i) => ($i['item_type'] ?? '') === 'addon'));
         }
         return $job;
     }

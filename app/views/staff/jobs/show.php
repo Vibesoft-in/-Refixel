@@ -85,6 +85,49 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
           <span class="text-success font-weight-bold">Net Tech Share: ₹<?= number_format((float)($job['technician_payout'] ?? 0), 0) ?> (<?= (float)($job['worker_percent'] ?? 75) ?>%)</span>
         </div>
       </div>
+
+      <?php 
+        $items = $job['items'] ?? \App\Models\Booking::getItems((int)$job['booking_id'], $job);
+        $addons = array_values(array_filter($items, fn($i) => ($i['item_type'] ?? '') === 'addon'));
+      ?>
+      <?php if (!empty($addons)): ?>
+        <div class="mt-3 p-3 rounded" style="background: #fffbeb; border: 1.5px solid #fde68a;">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="font-weight-bold text-dark" style="font-size: 13.5px;">
+              <i class="fa fa-cubes text-warning mr-1"></i>Scope of Work: Included Add-ons (<?= count($addons) ?>)
+            </span>
+            <span class="badge badge-warning font-weight-bold px-2 py-1" style="font-size: 11px; background: #fef08a; color: #854d0e; border: 1px solid #fde047;">
+              ⚡ Required On-Site
+            </span>
+          </div>
+          <div class="small text-muted mb-2" style="font-size: 11.5px;">
+            Customer paid for the following services and add-ons. Please execute all items during your visit:
+          </div>
+          <div class="list-group list-group-flush rounded bg-white border">
+            <div class="list-group-item py-2 px-3 d-flex justify-content-between align-items-center" style="font-size: 13px;">
+              <div>
+                <i class="fa fa-wrench text-primary mr-2"></i>
+                <strong class="text-dark"><?= View::e($job['service_name']) ?></strong>
+                <span class="badge badge-primary px-2 py-0 ml-1" style="font-size: 10px;">Primary Service</span>
+              </div>
+              <span class="text-muted font-weight-bold">₹<?= number_format((float)($job['starting_price'] ?? 0), 0) ?></span>
+            </div>
+            <?php foreach ($addons as $ad): ?>
+              <div class="list-group-item py-2 px-3 d-flex justify-content-between align-items-center" style="font-size: 13px; background: #f0fdf4;">
+                <div>
+                  <i class="fa fa-plus-circle text-success mr-2"></i>
+                  <strong class="text-dark"><?= View::e($ad['name']) ?></strong>
+                  <span class="badge badge-success px-2 py-0 ml-1" style="font-size: 10px;">+ Add-on Included</span>
+                  <?php if (!empty($ad['badge'])): ?>
+                    <span class="badge badge-light border text-muted ml-1" style="font-size: 10px;"><?= View::e($ad['badge']) ?></span>
+                  <?php endif; ?>
+                </div>
+                <span class="font-weight-bold text-success">+₹<?= number_format((float)($ad['total_price'] ?? $ad['unit_price'] ?? 0), 0) ?></span>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 

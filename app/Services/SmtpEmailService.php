@@ -452,6 +452,10 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<strong style='color: #0a1c33;'>Enquiry / Booking ID:</strong> <span style='font-family: monospace; font-weight: 700; color: #f25b29;'>#" . htmlspecialchars($data['booking_no'] ?? '') . "</span>";
                 $body .= "</div>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Service Requested:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<div style='margin-bottom: 8px;'><strong style='color: #b45309;'>⚡ Included Add-ons:</strong> <span style='background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;'>" . implode(', ', $addonNames) . "</span></div>";
+                }
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Preferred Slot:</strong> " . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " • " . htmlspecialchars($data['preferred_time'] ?? 'Immediate / ASAP') . "</div>";
                 $body .= "<div><strong style='color: #0a1c33;'>Service Area:</strong> " . htmlspecialchars($data['address'] ?? 'Uttarakhand Service Area') . "</div>";
                 $body .= "</div>";
@@ -491,6 +495,10 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<strong style='color: #0a1c33;'>Booking ID:</strong> <span style='font-family: monospace; font-weight: 700; color: #f25b29;'>#" . htmlspecialchars($data['booking_no'] ?? '') . "</span>";
                 $body .= "</div>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Service:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<div style='margin-bottom: 8px;'><strong style='color: #b45309;'>⚡ Included Add-ons:</strong> <span style='background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;'>" . implode(', ', $addonNames) . "</span></div>";
+                }
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Scheduled Slot:</strong> " . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " • " . htmlspecialchars($data['preferred_time'] ?? 'Flexible') . "</div>";
                 $body .= "<div><strong style='color: #0a1c33;'>Service Location:</strong> " . htmlspecialchars($data['address'] ?? 'Service Address') . "</div>";
                 $body .= "</div>";
@@ -523,6 +531,10 @@ class SmtpEmailService implements EmailProviderInterface
 
                 $body .= "<div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 22px; font-size: 14px;'>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Service:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<div style='margin-bottom: 8px;'><strong style='color: #b45309;'>⚡ Included Add-ons:</strong> <span style='background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 13px;'>" . implode(', ', $addonNames) . "</span></div>";
+                }
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Date & Time:</strong> " . htmlspecialchars($data['preferred_date'] ?? '') . " (" . htmlspecialchars($data['preferred_time'] ?? '') . ")</div>";
                 $body .= "<div><strong style='color: #0a1c33;'>Address:</strong> " . htmlspecialchars($data['address'] ?? '') . "</div>";
                 $body .= "</div>";
@@ -541,6 +553,10 @@ class SmtpEmailService implements EmailProviderInterface
 
                 $body .= "<table style='width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px;'>";
                 $body .= "<tr><td style='padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; width: 38%; font-weight: 600; color: #475569;'>Service</td><td style='padding: 8px 12px; border: 1px solid #e2e8f0; font-weight: 700; color: #0a1c33;'>" . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</td></tr>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<tr><td style='padding: 8px 12px; background: #fffbeb; border: 1px solid #fde68a; font-weight: 600; color: #92400e;'>Included Add-ons</td><td style='padding: 8px 12px; border: 1px solid #fde68a; color: #92400e; font-weight: 700;'>" . implode(', ', $addonNames) . "</td></tr>";
+                }
                 $body .= "<tr><td style='padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;'>Customer Name</td><td style='padding: 8px 12px; border: 1px solid #e2e8f0; color: #0a1c33;'>" . htmlspecialchars($data['customer_name'] ?? '') . "</td></tr>";
                 $body .= "<tr><td style='padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;'>Phone</td><td style='padding: 8px 12px; border: 1px solid #e2e8f0;'><a href='tel:" . htmlspecialchars($data['phone'] ?? '') . "' style='color: #f25b29; font-weight: 600;'>" . htmlspecialchars($data['phone'] ?? '') . "</a></td></tr>";
                 if (!empty($data['email'])) {
@@ -572,6 +588,10 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div style='background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; margin-bottom: 22px; font-size: 14px;'>";
                 $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px;'><strong style='color: #0a1c33;'>Booking ID:</strong> <span style='font-family: monospace; font-weight: 700; color: #f25b29;'>#" . htmlspecialchars($data['booking_no'] ?? '') . "</span></div>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Service:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<div style='margin-bottom: 8px;'><strong style='color: #b45309;'>⚡ Scope Add-ons:</strong> <span style='background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 13px;'>" . implode(', ', $addonNames) . "</span></div>";
+                }
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Scheduled:</strong> " . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " (" . htmlspecialchars($data['preferred_time'] ?? 'Flexible') . ")</div>";
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #0a1c33;'>Address:</strong> " . htmlspecialchars($data['address'] ?? '') . "</div>";
                 $body .= "<div style='padding-top: 10px; border-top: 1px dashed #cbd5e1; margin-top: 10px;'><strong style='color: #15803d;'>Your Expected Payout" . $workerPctDisplay . ":</strong> <span style='font-size: 18px; font-weight: 800; color: #16a34a;'>" . $payoutDisplay . "</span></div>";
@@ -602,6 +622,10 @@ class SmtpEmailService implements EmailProviderInterface
 
                 $body .= "<table style='width: 100%; border-collapse: collapse; font-size: 13.5px;'>";
                 $body .= "<tr><td style='padding: 6px 0; color: #64748b; width: 38%; font-weight: 600;'>Service Booked:</td><td style='padding: 6px 0; font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</td></tr>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<tr><td style='padding: 6px 0; color: #b45309; font-weight: 600;'>Included Add-ons:</td><td style='padding: 6px 0; font-weight: 700; color: #92400e;'>" . implode(', ', $addonNames) . "</td></tr>";
+                }
                 if (!empty($data['staff_phone'])) {
                     $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Technician Mobile:</td><td style='padding: 6px 0; font-weight: 700;'><a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='color: #f25b29; text-decoration: none;'>" . htmlspecialchars($data['staff_phone']) . "</a></td></tr>";
                 }
@@ -637,6 +661,10 @@ class SmtpEmailService implements EmailProviderInterface
                     $body .= "<div style='margin-bottom: 8px;'><strong style='color: #1e3a8a;'>Technician Contact:</strong> <a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='color: #f25b29; font-weight: 700;'>" . htmlspecialchars($data['staff_phone']) . "</a></div>";
                 }
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #1e3a8a;'>Service:</strong> " . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</div>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<div style='margin-bottom: 8px;'><strong style='color: #1e3a8a;'>Included Add-ons:</strong> <span style='color: #b45309; font-weight: 700;'>" . implode(', ', $addonNames) . "</span></div>";
+                }
                 $body .= "<div style='margin-bottom: 8px;'><strong style='color: #1e3a8a;'>Scheduled Slot:</strong> " . htmlspecialchars($data['preferred_date'] ?? date('Y-m-d')) . " • " . htmlspecialchars($data['preferred_time'] ?? 'Flexible') . "</div>";
                 $body .= "<div><strong style='color: #1e3a8a;'>Location:</strong> " . htmlspecialchars($data['address'] ?? '') . "</div>";
                 $body .= "</div>";
@@ -666,6 +694,10 @@ class SmtpEmailService implements EmailProviderInterface
 
                 $body .= "<table class='email-table' style='width: 100%; border-collapse: collapse; font-size: 13.5px;'>";
                 $body .= "<tr><td style='padding: 6px 0; color: #64748b; width: 38%; font-weight: 600;'>Service Booked:</td><td style='padding: 6px 0; font-weight: 700; color: #0f172a;'>" . htmlspecialchars($data['service_name'] ?? 'Home Service') . "</td></tr>";
+                if (!empty($data['addons']) && is_array($data['addons'])) {
+                    $addonNames = array_map(fn($a) => htmlspecialchars($a['name'] . ' (+₹' . number_format((float)($a['total_price'] ?? $a['unit_price'] ?? 0), 0) . ')'), $data['addons']);
+                    $body .= "<tr><td style='padding: 6px 0; color: #b45309; font-weight: 600;'>Included Add-ons:</td><td style='padding: 6px 0; font-weight: 700; color: #92400e;'>" . implode(', ', $addonNames) . "</td></tr>";
+                }
                 if (!empty($data['staff_phone'])) {
                     $body .= "<tr><td style='padding: 6px 0; color: #64748b; font-weight: 600;'>Technician Phone:</td><td style='padding: 6px 0; font-weight: 700;'><a href='tel:" . htmlspecialchars($data['staff_phone']) . "' style='color: #f25b29; text-decoration: none;'>" . htmlspecialchars($data['staff_phone']) . "</a></td></tr>";
                 }

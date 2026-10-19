@@ -28,7 +28,7 @@ class Booking extends Model
 
     public static function findWithDetails(int $id): ?array
     {
-        return Database::fetchOne(
+        $row = Database::fetchOne(
             "SELECT b.*, s.category_id, s.name as service_name, s.starting_price, c.name as category_name,
                     u.name as customer_name, u.phone as customer_phone, u.email as customer_email,
                     j.id as job_id, j.status as job_status, j.staff_id, st.name as staff_name,
@@ -45,5 +45,173 @@ class Booking extends Model
              LIMIT 1",
             ['id' => $id]
         );
+
+        if ($row) {
+            $row['items'] = self::getItems($id, $row);
+            $row['addons'] = array_values(array_filter($row['items'], fn($i) => ($i['item_type'] ?? '') === 'addon'));
+        }
+
+        return $row;
+    }
+
+    /**
+     * Record itemized line items (main service + add-ons) for a booking.
+     */
+    public static function recordItems(int $bookingId, array $items): void
+    {
+        if (empty($items)) {
+            return;
+        }
+
+        $formatted = [];
+        foreach ($items as $item) {
+            $sid = !empty($item['service_id']) ? (int)$item['service_id'] : null;
+            $name = trim((string)($item['name'] ?? 'Service Item'));
+            $type = ($item['item_type'] ?? '') === 'addon' ? 'addon' : 'service';
+            $qty = max(1, (int)($item['quantity'] ?? 1));
+            $uPrice = (float)($item['unit_price'] ?? 0);
+            $tPrice = (float)($item['total_price'] ?? ($uPrice * $qty));
+            $badge = trim((string)($item['badge'] ?? ''));
+
+            $formatted[] = [
+                'service_id'  => $sid,
+                'name'        => $name,
+                'item_type'   => $type,
+                'quantity'    => $qty,
+                'unit_price'  => $uPrice,
+                'total_price' => $tPrice,
+                'badge'       => $badge,
+            ];
+
+            try {
+                Database::execute(
+                    "INSERT INTO booking_items (booking_id, service_id, item_type, name, quantity, unit_price, total_price, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, NOW())",
+                    [$bookingId, $sid, $type, $name, $qty, $uPrice, $tPrice]
+                );
+            } catch (\Throwable $e) {}
+        }
+
+        // Update items_json on bookings table for ultra-fast single-query access
+        try {
+            $json = json_encode($formatted, JSON_UNESCAPED_UNICODE);
+            Database::execute("UPDATE bookings SET items_json = ? WHERE id = ?", [$json, $bookingId]);
+        } catch (\Throwable $e) {}
+    }
+
+    /**
+     * Retrieve all itemized services and add-ons for a booking.
+     * Features self-healing fallback for legacy bookings where total_amount > starting_price.
+     */
+    public static function getItems(int $bookingId, ?array $bookingContext = null): array
+    {
+        // 1. Check items_json from context or database
+        $json = $bookingContext['items_json'] ?? null;
+        if (empty($json) && $bookingId > 0) {
+            try {
+                $row = Database::fetchOne("SELECT items_json FROM bookings WHERE id = :id LIMIT 1", ['id' => $bookingId]);
+                $json = $row['items_json'] ?? null;
+            } catch (\Throwable $e) {}
+        }
+
+        if (!empty($json)) {
+            $decoded = json_decode((string)$json, true);
+            if (is_array($decoded) && !empty($decoded)) {
+                return $decoded;
+            }
+        }
+
+        // 2. Check booking_items table
+        if ($bookingId > 0) {
+            try {
+                $dbItems = Database::fetchAll(
+                    "SELECT service_id, name, item_type, quantity, unit_price, total_price
+                     FROM booking_items WHERE booking_id = :bid ORDER BY id ASC",
+                    ['bid' => $bookingId]
+                );
+                if (!empty($dbItems)) {
+                    return $dbItems;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 3. Fallback / legacy auto-resolution (e.g. Booking #BK-CCC5EF70 where total_amount = ₹1198 vs base = ₹899)
+        $ctx = $bookingContext;
+        if (empty($ctx) && $bookingId > 0) {
+            $ctx = Database::fetchOne(
+                "SELECT b.*, s.name as service_name, s.starting_price 
+                 FROM bookings b 
+                 LEFT JOIN services s ON b.service_id = s.id 
+                 WHERE b.id = :id LIMIT 1",
+                ['id' => $bookingId]
+            );
+        }
+
+        if (!$ctx) {
+            return [];
+        }
+
+        $totalAmount = (float)($ctx['total_amount'] ?? 0);
+        $basePrice = (float)($ctx['starting_price'] ?? 0);
+        $serviceName = !empty($ctx['service_name']) ? $ctx['service_name'] : 'Primary Service';
+        $serviceId = (int)($ctx['service_id'] ?? 0);
+
+        if ($totalAmount <= 0) {
+            $totalAmount = $basePrice;
+        }
+
+        $diff = round($totalAmount - $basePrice, 2);
+        if ($diff <= 0 || $basePrice <= 0) {
+            return [[
+                'service_id'  => $serviceId,
+                'name'        => $serviceName,
+                'item_type'   => 'service',
+                'quantity'    => 1,
+                'unit_price'  => $totalAmount,
+                'total_price' => $totalAmount,
+            ]];
+        }
+
+        // Main Service
+        $items = [
+            [
+                'service_id'  => $serviceId,
+                'name'        => $serviceName,
+                'item_type'   => 'service',
+                'quantity'    => 1,
+                'unit_price'  => $basePrice,
+                'total_price' => $basePrice,
+            ]
+        ];
+
+        // Attempt exact or closest match from companion add-ons in database
+        $matchedAddon = null;
+        if ($serviceId > 0) {
+            try {
+                $availableAddons = ServiceAddon::forService($serviceId);
+                foreach ($availableAddons as $cand) {
+                    $p = (float)($cand['starting_price'] ?? $cand['base_price'] ?? 0);
+                    if (abs($p - $diff) < 1.0) {
+                        $matchedAddon = $cand;
+                        break;
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        $addonName = $matchedAddon ? ($matchedAddon['name'] ?? 'Companion Add-on') : 'Selected Service Add-on';
+        $addonBadge = $matchedAddon['badge'] ?? '⚡ Add-on';
+
+        $items[] = [
+            'service_id'  => $matchedAddon['id'] ?? null,
+            'name'        => $addonName,
+            'badge'       => $addonBadge,
+            'item_type'   => 'addon',
+            'quantity'    => 1,
+            'unit_price'  => $diff,
+            'total_price' => $diff,
+        ];
+
+        return $items;
     }
 }
