@@ -23,7 +23,10 @@ class Service extends Model
             'tap-leak-repair'                            => 'refixel-plumber.jpg',
             'furniture-assembly'                         => 'refixel-carpenter.jpg',
             'ac-jet-service'                             => 'refixel-ac-service.jpg',
-            'fan-switchboard-repair'                     => 'refixel-electrician.jpg',
+            'fan-switchboard-repair'                     => 'service-fan-switchboard-repair.jpg',
+            'light-fitting-installation'                 => 'service-light-fitting-installation.jpg',
+            'wiring-mcb-repair'                          => 'service-wiring-mcb-repair.jpg',
+            'appliance-installation'                     => 'service-appliance-installation.jpg',
             'appliance-diagnostic-repair'                => 'refixel-appliance-repair.jpg',
             'fall-ceiling-installation'                  => 'refixel-fall-ceiling.jpg',
             'fall-ceiling-repair-modification'           => 'refixel-fall-ceiling.jpg',
@@ -114,6 +117,62 @@ class Service extends Model
                 $in = "'" . implode("','", $slugs) . "'";
                 Database::execute("UPDATE services SET image = '{$img}' WHERE slug IN ({$in})");
             }
+        } catch (\Throwable $e) {}
+
+        try {
+            $elecServices = [
+                [
+                    'category_id'      => 7,
+                    'name'             => 'Light & Fitting Installation',
+                    'slug'             => 'light-fitting-installation',
+                    'description'      => 'Bulb, tube light, LED panel, chandelier, wall light fitting, holder aur wiring fix',
+                    'starting_price'   => 149.00,
+                    'duration_minutes' => 45,
+                    'image'            => 'service-light-fitting-installation.jpg',
+                ],
+                [
+                    'category_id'      => 7,
+                    'name'             => 'Wiring & MCB Repair',
+                    'slug'             => 'wiring-mcb-repair',
+                    'description'      => 'Short circuit fix, MCB / fuse / DB box change, burnt wire replace, loose connection check, earthing check',
+                    'starting_price'   => 249.00,
+                    'duration_minutes' => 60,
+                    'image'            => 'service-wiring-mcb-repair.jpg',
+                ],
+                [
+                    'category_id'      => 7,
+                    'name'             => 'Appliance Installation',
+                    'slug'             => 'appliance-installation',
+                    'description'      => 'Geyser, AC electrical point, exhaust fan, cooler, water pump aur washing machine ka connection',
+                    'starting_price'   => 299.00,
+                    'duration_minutes' => 60,
+                    'image'            => 'service-appliance-installation.jpg',
+                ],
+            ];
+            foreach ($elecServices as $es) {
+                $chk = Database::fetchOne("SELECT id FROM services WHERE slug = :s", ['s' => $es['slug']]);
+                if (!$chk) {
+                    Database::execute(
+                        "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, is_addon, created_at)
+                         VALUES (:cid, :name, :slug, :desc, :price, :duration, :img, 1, 0, NOW())",
+                        [
+                            'cid'      => $es['category_id'],
+                            'name'     => $es['name'],
+                            'slug'     => $es['slug'],
+                            'desc'     => $es['description'],
+                            'price'    => $es['starting_price'],
+                            'duration' => $es['duration_minutes'],
+                            'img'      => $es['image'],
+                        ]
+                    );
+                } else {
+                    Database::execute(
+                        "UPDATE services SET image = :img, is_addon = 0, is_active = 1 WHERE slug = :s",
+                        ['img' => $es['image'], 's' => $es['slug']]
+                    );
+                }
+            }
+            Database::execute("UPDATE services SET image = 'service-fan-switchboard-repair.jpg' WHERE slug = 'fan-switchboard-repair' AND (image IS NULL OR image = '' OR image = 'refixel-electrician.jpg')");
         } catch (\Throwable $e) {}
     }
 
