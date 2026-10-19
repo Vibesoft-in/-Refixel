@@ -429,6 +429,17 @@ class BookingController extends Controller
             }
             $phoneInput = preg_replace('/\D/', '', (string)$request->input('phone'));
             $emailInput = $request->input('email') ? trim((string)$request->input('email')) : null;
+            if (empty($emailInput)) {
+                $currAuth = \App\Core\Auth::user();
+                if ($currAuth && !empty($currAuth['email'])) {
+                    $emailInput = trim((string)$currAuth['email']);
+                } elseif (!empty($phoneInput)) {
+                    $uByPhone = \App\Models\User::findByPhone($phoneInput);
+                    if ($uByPhone && !empty($uByPhone['email'])) {
+                        $emailInput = trim((string)$uByPhone['email']);
+                    }
+                }
+            }
             $nameInput = trim((string)$request->input('name'));
             
             $priority = in_array($request->input('priority'), ['high', 'urgent']) ? (string)$request->input('priority') : 'normal';
@@ -726,6 +737,7 @@ class BookingController extends Controller
                     $directRecord = [
                         'id'             => $bookingId,
                         'booking_id'     => $bookingId,
+                        'customer_id'    => $validCustomerId ?? ($customerId ?? null),
                         'booking_no'     => $bookingNo,
                         'service_name'   => $service['name'] ?? 'Doorstep Service',
                         'name'           => $nameInput,
@@ -779,6 +791,7 @@ class BookingController extends Controller
                 $directRecord = [
                     'id'             => $bookingId,
                     'booking_id'     => $bookingId,
+                    'customer_id'    => $validCustomerId ?? ($customerId ?? null),
                     'booking_no'     => $bookingNo,
                     'service_name'   => $service['name'] ?? 'Doorstep Service',
                     'name'           => $nameInput,
@@ -913,6 +926,7 @@ class BookingController extends Controller
             $bookingRecord = [
                 'id'             => $bookingId,
                 'booking_id'     => $bookingId,
+                'customer_id'    => $booking['customer_id'] ?? null,
                 'booking_no'     => $booking['booking_no'],
                 'service_name'   => $request->input('service_name', 'Doorstep Service'),
                 'name'           => $booking['name'],

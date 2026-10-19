@@ -164,6 +164,26 @@ class Notifier
         $template = $isEnquiry ? 'customer_enquiry_confirmed' : ($isNew ? 'customer_welcome_booking' : 'booking_confirmation');
         $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
 
+        // Robust customer email auto-resolution (handles cases where email input was optional/empty during booking)
+        $targetEmail = !empty($booking['email']) ? trim((string)$booking['email']) : (!empty($booking['customer_email']) ? trim((string)$booking['customer_email']) : '');
+        if (empty($targetEmail) && !empty($booking['customer_id'])) {
+            try {
+                $u = \App\Models\User::find((int)$booking['customer_id']);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+        if (empty($targetEmail) && !empty($booking['phone'])) {
+            try {
+                $cleanP = preg_replace('/\D/', '', (string)$booking['phone']);
+                $u = \App\Models\User::findByPhone($cleanP);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+
         $data = [
             'booking_no'         => $booking['booking_no'] ?? '',
             'customer_name'      => $booking['name'] ?? ($booking['customer_name'] ?? 'Customer'),
@@ -172,16 +192,19 @@ class Notifier
             'preferred_time'     => $booking['preferred_time'] ?? 'Flexible',
             'address'            => $booking['address'] ?? '',
             'phone'              => $booking['phone'] ?? '',
-            'email'              => $booking['email'] ?? null,
+            'email'              => !empty($targetEmail) ? $targetEmail : null,
             'generated_password' => $booking['generated_password'] ?? null,
-            'identifier'         => $booking['identifier'] ?? ($booking['email'] ?? $booking['phone'] ?? null),
+            'identifier'         => $booking['identifier'] ?? ($targetEmail ?: ($booking['phone'] ?? null)),
             'login_url'          => !empty($booking['login_url']) ? $booking['login_url'] : View::fullUrl('/login'),
             'booking_url'        => View::fullUrl('/account/bookings/' . $bId),
             'is_enquiry'         => $isEnquiry,
         ];
 
-        if (!empty($booking['email'])) {
-            self::send('email', $booking['email'], $template, $data);
+        if (!empty($targetEmail) && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            self::send('email', $targetEmail, $template, $data);
+            Logger::info("Dispatched customer booking confirmation email ({$template}) to [{$targetEmail}] for booking #{$data['booking_no']}");
+        } else {
+            Logger::warning("Customer confirmation email skipped for booking #{$data['booking_no']}: No recipient email found.");
         }
 
         if (!empty($booking['phone'])) {
