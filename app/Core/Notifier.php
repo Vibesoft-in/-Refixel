@@ -263,21 +263,40 @@ class Notifier
     }
 
     /**
-     * Event 3B: Admin Assigns Technician -> SMS/WA to Customer (Email channel silenced for 4-email rule)
+     * Event 3B: Admin Assigns Technician -> Email, SMS, WhatsApp to Customer
      */
     public static function notifyTechnicianAssignedCustomer(array $booking, array $staff): void
     {
         $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
-        $customerEmail = !empty($booking['email']) ? $booking['email'] : ($booking['customer_email'] ?? null);
         $customerPhone = !empty($booking['phone']) ? $booking['phone'] : ($booking['customer_phone'] ?? '');
         $customerName  = !empty($booking['name']) ? $booking['name'] : ($booking['customer_name'] ?? 'Customer');
+
+        // Robust customer email auto-resolution (handles cases where email input was optional/empty during booking)
+        $targetEmail = !empty($booking['email']) ? trim((string)$booking['email']) : (!empty($booking['customer_email']) ? trim((string)$booking['customer_email']) : '');
+        if (empty($targetEmail) && !empty($booking['customer_id'])) {
+            try {
+                $u = \App\Models\User::find((int)$booking['customer_id']);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+        if (empty($targetEmail) && !empty($customerPhone)) {
+            try {
+                $cleanP = preg_replace('/\D/', '', (string)$customerPhone);
+                $u = \App\Models\User::findByPhone($cleanP);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
 
         $data = [
             'booking_id'     => $bId,
             'booking_no'     => $booking['booking_no'] ?? '',
             'customer_name'  => $customerName,
             'customer_phone' => $customerPhone,
-            'customer_email' => $customerEmail,
+            'customer_email' => $targetEmail,
             'service_name'   => $booking['service_name'] ?? 'Home Service',
             'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Certified Technician'),
             'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
@@ -288,7 +307,14 @@ class Notifier
             'login_url'      => View::fullUrl('/login'),
         ];
 
-        // Email channel intentionally disabled: per business flow, customer receives Booking Confirmation, and final GST Invoice upon completion.
+        // Dispatch Customer Notification Email
+        if (!empty($targetEmail) && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            self::send('email', $targetEmail, 'technician_assigned_customer', $data);
+            Logger::info("Dispatched technician assigned email to customer [{$targetEmail}] for booking #{$data['booking_no']}");
+        } else {
+            Logger::warning("Technician assigned customer email skipped for booking #{$data['booking_no']}: No recipient email found.");
+        }
+
         if (!empty($customerPhone)) {
             self::send('sms', $customerPhone, 'technician_assigned_sms', $data);
 
@@ -299,15 +325,65 @@ class Notifier
     }
 
     /**
-     * Event 4: Technician Accepts Job (Email silenced to prevent inbox spam)
+     * Event 4: Technician Accepts Job -> Email to Customer & Admin
      */
     public static function notifyTechnicianAccepted(array $booking, array $staff): void
     {
-        // Email intentionally silenced to adhere to strict 4-email lifecycle
+        $bId = $booking['id'] ?? $booking['booking_id'] ?? '';
+        $customerPhone = !empty($booking['phone']) ? $booking['phone'] : ($booking['customer_phone'] ?? '');
+        $customerName  = !empty($booking['name']) ? $booking['name'] : ($booking['customer_name'] ?? 'Customer');
+
+        // Robust customer email auto-resolution
+        $targetEmail = !empty($booking['email']) ? trim((string)$booking['email']) : (!empty($booking['customer_email']) ? trim((string)$booking['customer_email']) : '');
+        if (empty($targetEmail) && !empty($booking['customer_id'])) {
+            try {
+                $u = \App\Models\User::find((int)$booking['customer_id']);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+        if (empty($targetEmail) && !empty($customerPhone)) {
+            try {
+                $cleanP = preg_replace('/\D/', '', (string)$customerPhone);
+                $u = \App\Models\User::findByPhone($cleanP);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        $data = [
+            'booking_id'     => $bId,
+            'booking_no'     => $booking['booking_no'] ?? '',
+            'customer_name'  => $customerName,
+            'customer_phone' => $customerPhone,
+            'customer_email' => $targetEmail,
+            'service_name'   => $booking['service_name'] ?? 'Home Service',
+            'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Certified Technician'),
+            'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
+            'preferred_date' => $booking['preferred_date'] ?? date('Y-m-d'),
+            'preferred_time' => $booking['preferred_time'] ?? 'Flexible',
+            'address'        => $booking['address'] ?? '',
+            'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
+            'admin_url'      => View::fullUrl('/admin/bookings/' . $bId),
+        ];
+
+        // Customer Email
+        if (!empty($targetEmail) && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            self::send('email', $targetEmail, 'technician_accepted_customer', $data);
+            Logger::info("Dispatched technician accepted email to customer [{$targetEmail}] for booking #{$data['booking_no']}");
+        }
+
+        // Admin Email
+        $adminEmail = Setting::get('admin_notification_email', Setting::get('company_email', 'contact@refixel.com'));
+        if (!empty($adminEmail) && filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+            self::send('email', $adminEmail, 'technician_accepted_admin', $data);
+        }
     }
 
     /**
-     * Event 4B: Technician On The Way -> SMS to Customer (Email silenced)
+     * Event 4B: Technician On The Way -> Email & SMS to Customer
      */
     public static function notifyTechnicianOnTheWay(array $booking, array $staff): void
     {
@@ -315,11 +391,32 @@ class Notifier
         $customerPhone = !empty($booking['phone']) ? $booking['phone'] : ($booking['customer_phone'] ?? '');
         $customerName  = !empty($booking['name']) ? $booking['name'] : ($booking['customer_name'] ?? 'Customer');
 
+        // Robust customer email auto-resolution
+        $targetEmail = !empty($booking['email']) ? trim((string)$booking['email']) : (!empty($booking['customer_email']) ? trim((string)$booking['customer_email']) : '');
+        if (empty($targetEmail) && !empty($booking['customer_id'])) {
+            try {
+                $u = \App\Models\User::find((int)$booking['customer_id']);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+        if (empty($targetEmail) && !empty($customerPhone)) {
+            try {
+                $cleanP = preg_replace('/\D/', '', (string)$customerPhone);
+                $u = \App\Models\User::findByPhone($cleanP);
+                if ($u && !empty($u['email'])) {
+                    $targetEmail = trim((string)$u['email']);
+                }
+            } catch (\Throwable $e) {}
+        }
+
         $data = [
             'booking_id'     => $bId,
             'booking_no'     => $booking['booking_no'] ?? '',
             'customer_name'  => $customerName,
             'customer_phone' => $customerPhone,
+            'customer_email' => $targetEmail,
             'service_name'   => $booking['service_name'] ?? 'Home Service',
             'staff_name'     => $staff['name'] ?? ($booking['staff_name'] ?? 'Certified Technician'),
             'staff_phone'    => $staff['phone'] ?? ($booking['staff_phone'] ?? ''),
@@ -329,7 +426,14 @@ class Notifier
             'booking_url'    => View::fullUrl('/account/bookings/' . $bId),
         ];
 
-        // Email silenced; send SMS arrival notification if phone is present
+        // Dispatch Customer Notification Email
+        if (!empty($targetEmail) && filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            self::send('email', $targetEmail, 'technician_on_the_way', $data);
+            Logger::info("Dispatched technician on the way email to customer [{$targetEmail}] for booking #{$data['booking_no']}");
+        } else {
+            Logger::warning("Technician on the way customer email skipped for booking #{$data['booking_no']}: No recipient email found.");
+        }
+
         if (!empty($customerPhone)) {
             self::send('sms', $customerPhone, 'technician_on_the_way_sms', $data);
         }

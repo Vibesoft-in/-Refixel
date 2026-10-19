@@ -310,6 +310,13 @@ class BookingController extends Controller
                         $staffMember = !empty($bDetails['staff_name']) ? ['name' => $bDetails['staff_name'], 'phone' => $bDetails['staff_phone'] ?? ''] : null;
                         \App\Core\Notifier::notifyFinalCompletedInvoice($finalInvoice, $bDetails, $staffMember);
                     }
+                } elseif ($newStatus === 'assigned') {
+                    $staffUser = !empty($bDetails['staff_id']) ? Database::fetchOne("SELECT id, name, email, phone FROM users WHERE id = :sid", ['sid' => $bDetails['staff_id']]) : null;
+                    if ($staffUser) {
+                        \App\Core\Notifier::notifyTechnicianAssignedCustomer($bDetails, $staffUser);
+                    } else {
+                        \App\Core\Notifier::notifyBookingStatusChange($bDetails, $newStatus, $notes);
+                    }
                 } else {
                     \App\Core\Notifier::notifyBookingStatusChange($bDetails, $newStatus, $notes);
                 }
