@@ -689,7 +689,7 @@ foreach ($checklist ?? [] as $item) {
               <?php foreach ($addonsList as $aItem): ?>
                 <?php 
                   $aPrice = (float)($aItem['starting_price'] ?? $aItem['price'] ?? 0);
-                  $aImg = !empty($aItem['image']) ? (str_starts_with($aItem['image'], 'http') ? $aItem['image'] : \App\Core\View::url($aItem['image'])) : \App\Core\View::url('/assets/images/service-default.jpg');
+                  $aImg = \App\Core\View::asset($aItem['image'] ?? 'Full-home-clean.jpg');
                   $aBadge = $aItem['badge'] ?? 'Special Match';
                   $aNote = $aItem['savings_note'] ?? '';
                 ?>
@@ -703,7 +703,7 @@ foreach ($checklist ?? [] as $item) {
                            data-price="<?= $aPrice ?>">
                   </div>
                   <div class="addon-row-thumb mr-2">
-                    <img src="<?= htmlspecialchars($aImg) ?>" alt="<?= htmlspecialchars($aItem['name']) ?>" loading="lazy" onerror="this.onerror=null; this.src='<?= \App\Core\View::url('/assets/images/service-default.jpg') ?>';">
+                    <img src="<?= htmlspecialchars($aImg) ?>" alt="<?= htmlspecialchars($aItem['name']) ?>" loading="lazy" onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
                   </div>
                   <div class="addon-row-content flex-grow-1" style="min-width: 0;">
                     <div class="d-flex align-items-center justify-content-between">

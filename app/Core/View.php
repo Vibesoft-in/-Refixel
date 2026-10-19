@@ -94,12 +94,22 @@ class View
     public static function asset(string $path): string
     {
         $path = trim($path);
+        if (empty($path)) {
+            return self::url('assets/img/Full-home-clean.jpg');
+        }
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
             return $path;
         }
         $path = ltrim($path, '/');
         if (str_starts_with($path, 'assets/') || str_starts_with($path, 'uploads/')) {
             return self::url($path);
+        }
+        if (str_starts_with($path, 'img/') || str_starts_with($path, 'icons/')) {
+            return self::url('assets/' . $path);
+        }
+        // If image filename without directory prefix, default to assets/img/
+        if (preg_match('/\.(jpg|jpeg|png|webp|svg|gif)$/i', $path)) {
+            return self::url('assets/img/' . $path);
         }
         return self::url('assets/' . $path);
     }

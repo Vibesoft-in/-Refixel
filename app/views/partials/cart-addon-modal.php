@@ -707,9 +707,17 @@
     if (addedTitle) addedTitle.textContent = added.name || 'Service Added';
     if (addedCat) addedCat.textContent = added.category_name || 'Home Maintenance';
     if (addedPrice) addedPrice.textContent = '₹' + Number(added.starting_price || 0).toLocaleString('en-IN');
+    function resolveAssetUrl(img) {
+      if (!img) return baseUrl + '/assets/img/Full-home-clean.jpg';
+      if (img.indexOf('http://') === 0 || img.indexOf('https://') === 0) return img;
+      var clean = img.replace(/^\/+/, '');
+      if (clean.indexOf('assets/') === 0 || clean.indexOf('uploads/') === 0) return baseUrl + '/' + clean;
+      if (clean.indexOf('img/') === 0) return baseUrl + '/assets/' + clean;
+      return baseUrl + '/assets/img/' + clean;
+    }
+
     if (addedImg) {
-      var imgName = added.image || 'Full-home-clean.jpg';
-      addedImg.src = baseUrl + '/assets/img/' + imgName;
+      addedImg.src = resolveAssetUrl(added.image);
     }
 
     if (totalEl) {
@@ -728,7 +736,7 @@
           card.className = 'rf-addon-card-item';
           card.setAttribute('data-addon-id', item.id);
 
-          var imgPath = baseUrl + '/assets/img/' + (item.image || 'Full-home-clean.jpg');
+          var imgPath = resolveAssetUrl(item.image);
           var badgeText = item.badge || 'Recommended Add-on';
           var priceText = '₹' + Number(item.starting_price || 0).toLocaleString('en-IN');
           var noteText = item.duration_minutes ? ('~' + item.duration_minutes + ' mins') : 'Special rate';

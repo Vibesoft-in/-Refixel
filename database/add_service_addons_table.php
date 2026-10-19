@@ -60,7 +60,7 @@ $sensibleServices = [
         'description'      => 'High-temperature food-grade degreasing of chimney filters, baffles, motor casing, and exhaust ducting.',
         'starting_price'   => 299.00,
         'duration_minutes' => 30,
-        'image'            => 'refixel-kitchen-cleaning.jpg',
+        'image'            => 'addon-chimney-degreasing.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -69,7 +69,7 @@ $sensibleServices = [
         'description'      => 'Steam sterilization, burnt carbon removal, and food-safe wipe of oven racks, glass turntables, and cavity.',
         'starting_price'   => 199.00,
         'duration_minutes' => 25,
-        'image'            => 'refixel-kitchen-cleaning.jpg',
+        'image'            => 'addon-microwave-oven-deep-clean.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -78,7 +78,7 @@ $sensibleServices = [
         'description'      => 'De-frost scrub, shelf wash, antibacterial deodorization, and door gasket mould removal.',
         'starting_price'   => 249.00,
         'duration_minutes' => 35,
-        'image'            => 'refixel-kitchen-cleaning.jpg',
+        'image'            => 'addon-refrigerator-interior-sanitization.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -87,7 +87,7 @@ $sensibleServices = [
         'description'      => 'Specialized acid-free descaling paste treatment for wall tiles, glass partitions, and grout lines.',
         'starting_price'   => 249.00,
         'duration_minutes' => 30,
-        'image'            => 'refixel-bathroom-cleaning.jpg',
+        'image'            => 'addon-bathroom-tile-stain-removal.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -96,7 +96,7 @@ $sensibleServices = [
         'description'      => 'Deep scale dissolution, spray nozzle unclogging, and mirror chrome shine polish for all bathroom fittings.',
         'starting_price'   => 149.00,
         'duration_minutes' => 20,
-        'image'            => 'refixel-bathroom-cleaning.jpg',
+        'image'            => 'addon-tap-shower-chrome-descaling.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -105,7 +105,7 @@ $sensibleServices = [
         'description'      => 'Removal of accumulated dust, moisture grime, blade degreasing, and motor lubrication.',
         'starting_price'   => 129.00,
         'duration_minutes' => 20,
-        'image'            => 'refixel-bathroom-cleaning.jpg',
+        'image'            => 'addon-bathroom-exhaust-fan-clean.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -114,7 +114,7 @@ $sensibleServices = [
         'description'      => 'High-pressure steam vacuuming to eliminate dust mites, allergens, body sweat stains, and odor.',
         'starting_price'   => 499.00,
         'duration_minutes' => 45,
-        'image'            => 'refixel-cleaning.jpg',
+        'image'            => 'addon-mattress-steam-cleaning.jpg',
     ],
     [
         'category_id'      => 1, // Cleaning
@@ -123,7 +123,7 @@ $sensibleServices = [
         'description'      => 'Static dust extraction, blade degreasing, crystal/glass wipe, and motor housing polish.',
         'starting_price'   => 199.00,
         'duration_minutes' => 25,
-        'image'            => 'refixel-cleaning.jpg',
+        'image'            => 'addon-ceiling-fan-chandelier-detailing.jpg',
     ],
     [
         'category_id'      => 6, // AC Services
@@ -132,7 +132,7 @@ $sensibleServices = [
         'description'      => 'Germicidal active foam treatment to eliminate indoor mold, bacteria, foul smell, and allergen buildup.',
         'starting_price'   => 199.00,
         'duration_minutes' => 25,
-        'image'            => 'refixel-ac-service.jpg',
+        'image'            => 'addon-ac-antibacterial-foam-wash.jpg',
     ],
     [
         'category_id'      => 4, // Plumbers
@@ -141,7 +141,7 @@ $sensibleServices = [
         'description'      => 'Heavy-duty mechanical spring snaking and organic enzyme flush to clear slow kitchen or bathroom drains.',
         'starting_price'   => 199.00,
         'duration_minutes' => 30,
-        'image'            => 'refixel-plumber.jpg',
+        'image'            => 'addon-drain-unclogging-blockage-removal.jpg',
     ],
 ];
 
@@ -155,7 +155,10 @@ foreach ($sensibleServices as $s) {
         );
         echo "✓ Added service: {$s['name']} (slug: {$s['slug']})\n";
     } else {
-        Database::query("UPDATE services SET is_addon = 1 WHERE id = :id", ['id' => $exists['id']]);
+        Database::query("UPDATE services SET is_addon = 1, image = :image WHERE id = :id", [
+            'id'    => $exists['id'],
+            'image' => $s['image'],
+        ]);
     }
 }
 

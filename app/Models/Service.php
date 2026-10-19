@@ -12,26 +12,51 @@ class Service extends Model
     public static function resolveImage(string $slug, ?string $currentImage = null): string
     {
         $map = [
-            'balcony-deep-pressure-wash'         => 'refixel-balcony-pressure-wash.png',
-            'full-home-cleaning'                 => 'refixel-cleaning.jpg',
-            'bathroom-deep-cleaning'             => 'refixel-bathroom-cleaning.jpg',
-            'kitchen-deep-cleaning'              => 'refixel-kitchen-cleaning.jpg',
-            'sofa-cleaning'                      => 'refixel-sofa-cleaning.jpg',
-            'office-cleaning'                    => 'refixel-office-cleaning.jpg',
-            'interior-painting'                  => 'refixel-painting.jpg',
-            'cockroach-pest-control'             => 'service-pest-control.jpg',
-            'tap-leak-repair'                    => 'refixel-plumber.jpg',
-            'furniture-assembly'                 => 'refixel-carpenter.jpg',
-            'ac-jet-service'                     => 'refixel-ac-service.jpg',
-            'fan-switchboard-repair'             => 'refixel-electrician.jpg',
-            'appliance-diagnostic-repair'        => 'refixel-appliance-repair.jpg',
-            'fall-ceiling-installation'          => 'refixel-fall-ceiling.jpg',
-            'fall-ceiling-repair-modification'   => 'refixel-fall-ceiling.jpg',
+            'balcony-deep-pressure-wash'                 => 'refixel-balcony-pressure-wash.png',
+            'full-home-cleaning'                         => 'refixel-cleaning.jpg',
+            'bathroom-deep-cleaning'                     => 'refixel-bathroom-cleaning.jpg',
+            'kitchen-deep-cleaning'                      => 'refixel-kitchen-cleaning.jpg',
+            'sofa-cleaning'                              => 'refixel-sofa-cleaning.jpg',
+            'office-cleaning'                            => 'refixel-office-cleaning.jpg',
+            'interior-painting'                          => 'refixel-painting.jpg',
+            'cockroach-pest-control'                     => 'service-pest-control.jpg',
+            'tap-leak-repair'                            => 'refixel-plumber.jpg',
+            'furniture-assembly'                         => 'refixel-carpenter.jpg',
+            'ac-jet-service'                             => 'refixel-ac-service.jpg',
+            'fan-switchboard-repair'                     => 'refixel-electrician.jpg',
+            'appliance-diagnostic-repair'                => 'refixel-appliance-repair.jpg',
+            'fall-ceiling-installation'                  => 'refixel-fall-ceiling.jpg',
+            'fall-ceiling-repair-modification'           => 'refixel-fall-ceiling.jpg',
+            // Distinct Add-on Services
+            'chimney-exhaust-degreasing'                 => 'addon-chimney-degreasing.jpg',
+            'kitchen-chimney-degreasing'                 => 'addon-chimney-degreasing.jpg',
+            'microwave-oven-deep-clean'                  => 'addon-microwave-oven-deep-clean.jpg',
+            'refrigerator-interior-sanitization'         => 'addon-refrigerator-interior-sanitization.jpg',
+            'bathroom-tile-stain-removal'                => 'addon-bathroom-tile-stain-removal.jpg',
+            'tap-shower-chrome-descaling'                => 'addon-tap-shower-chrome-descaling.jpg',
+            'bathroom-exhaust-fan-clean'                 => 'addon-bathroom-exhaust-fan-clean.jpg',
+            'bathroom-exhaust-fan-detailing'             => 'addon-bathroom-exhaust-fan-clean.jpg',
+            'mattress-steam-cleaning'                    => 'addon-mattress-steam-cleaning.jpg',
+            'ceiling-fan-chandelier-detailing'           => 'addon-ceiling-fan-chandelier-detailing.jpg',
+            'ac-antibacterial-foam-wash'                 => 'addon-ac-antibacterial-foam-wash.jpg',
+            'drain-unclogging-blockage-removal'          => 'addon-drain-unclogging-blockage-removal.jpg',
         ];
 
         $cur = trim((string)$currentImage);
-        if (isset($map[$slug]) && (empty($cur) || ($cur === 'refixel-cleaning.jpg' && $slug !== 'full-home-cleaning') || $cur === 'Full-home-clean.jpg' || $cur === '5_1_Full-home-clean.jpg')) {
-            return $map[$slug];
+        $genericImages = [
+            'refixel-cleaning.jpg',
+            'refixel-kitchen-cleaning.jpg',
+            'refixel-bathroom-cleaning.jpg',
+            'refixel-ac-service.jpg',
+            'refixel-plumber.jpg',
+            'Full-home-clean.jpg',
+            '5_1_Full-home-clean.jpg',
+        ];
+
+        if (isset($map[$slug])) {
+            if (empty($cur) || (in_array($cur, $genericImages, true) && !in_array($slug, ['full-home-cleaning', 'kitchen-deep-cleaning', 'bathroom-deep-cleaning', 'ac-jet-service', 'tap-leak-repair'], true))) {
+                return $map[$slug];
+            }
         }
 
         if (!empty($cur)) {
@@ -57,17 +82,38 @@ class Service extends Model
 
         try {
             Database::execute("UPDATE services SET is_addon = 1 WHERE slug IN (
+                'chimney-exhaust-degreasing',
                 'kitchen-chimney-degreasing',
                 'microwave-oven-deep-clean',
                 'refrigerator-interior-sanitization',
                 'bathroom-tile-stain-removal',
                 'tap-shower-chrome-descaling',
+                'bathroom-exhaust-fan-clean',
                 'bathroom-exhaust-fan-detailing',
                 'mattress-steam-cleaning',
                 'ceiling-fan-chandelier-detailing',
                 'ac-antibacterial-foam-wash',
                 'drain-unclogging-blockage-removal'
             ) OR id IN (52, 53, 54, 55, 56, 57, 58, 59, 60, 61)");
+        } catch (\Throwable $e) {}
+
+        try {
+            $addonImageUpdates = [
+                'addon-chimney-degreasing.jpg'                 => ['chimney-exhaust-degreasing', 'kitchen-chimney-degreasing'],
+                'addon-microwave-oven-deep-clean.jpg'          => ['microwave-oven-deep-clean'],
+                'addon-refrigerator-interior-sanitization.jpg' => ['refrigerator-interior-sanitization'],
+                'addon-bathroom-tile-stain-removal.jpg'        => ['bathroom-tile-stain-removal'],
+                'addon-tap-shower-chrome-descaling.jpg'        => ['tap-shower-chrome-descaling'],
+                'addon-bathroom-exhaust-fan-clean.jpg'         => ['bathroom-exhaust-fan-clean', 'bathroom-exhaust-fan-detailing'],
+                'addon-mattress-steam-cleaning.jpg'            => ['mattress-steam-cleaning'],
+                'addon-ceiling-fan-chandelier-detailing.jpg'   => ['ceiling-fan-chandelier-detailing'],
+                'addon-ac-antibacterial-foam-wash.jpg'         => ['ac-antibacterial-foam-wash'],
+                'addon-drain-unclogging-blockage-removal.jpg'  => ['drain-unclogging-blockage-removal'],
+            ];
+            foreach ($addonImageUpdates as $img => $slugs) {
+                $in = "'" . implode("','", $slugs) . "'";
+                Database::execute("UPDATE services SET image = '{$img}' WHERE slug IN ({$in})");
+            }
         } catch (\Throwable $e) {}
     }
 
