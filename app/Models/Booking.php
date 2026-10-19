@@ -55,6 +55,44 @@ class Booking extends Model
     }
 
     /**
+     * Self-healing migration for items_json column and booking_items table.
+     */
+    public static function ensureItemsSchema(): void
+    {
+        static $ensured = false;
+        if ($ensured) return;
+        $ensured = true;
+
+        try {
+            Database::execute("
+            CREATE TABLE IF NOT EXISTS `booking_items` (
+              `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+              `booking_id` INT UNSIGNED NOT NULL,
+              `service_id` INT UNSIGNED NULL,
+              `item_type` ENUM('service', 'addon') NOT NULL DEFAULT 'service',
+              `name` VARCHAR(150) NOT NULL,
+              `quantity` INT NOT NULL DEFAULT 1,
+              `unit_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+              `total_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              KEY `idx_booking_id` (`booking_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        } catch (\Throwable $e) {}
+
+        try {
+            $cols = Database::fetchAll("SHOW COLUMNS FROM bookings");
+            $fields = array_column($cols, 'Field');
+            if (!in_array('items_json', $fields, true)) {
+                try {
+                    Database::execute("ALTER TABLE bookings ADD COLUMN items_json TEXT NULL AFTER issue_details");
+                } catch (\Throwable $e) {}
+            }
+        } catch (\Throwable $e) {}
+    }
+
+    /**
      * Record itemized line items (main service + add-ons) for a booking.
      */
     public static function recordItems(int $bookingId, array $items): void
@@ -62,6 +100,8 @@ class Booking extends Model
         if (empty($items)) {
             return;
         }
+
+        self::ensureItemsSchema();
 
         $formatted = [];
         foreach ($items as $item) {
@@ -105,6 +145,8 @@ class Booking extends Model
      */
     public static function getItems(int $bookingId, ?array $bookingContext = null): array
     {
+        self::ensureItemsSchema();
+
         // 1. Check items_json from context or database
         $json = $bookingContext['items_json'] ?? null;
         if (empty($json) && $bookingId > 0) {
