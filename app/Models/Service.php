@@ -41,13 +41,45 @@ class Service extends Model
         return $map[$slug] ?? 'refixel-cleaning.jpg';
     }
 
-    public static function getActive(): array
+    public static function ensureServiceSchema(): void
     {
+        static $ensured = false;
+        if ($ensured) return;
+        $ensured = true;
+
+        try {
+            $cols = Database::fetchAll("SHOW COLUMNS FROM services");
+            $fields = array_column($cols, 'Field');
+            if (!in_array('is_addon', $fields, true)) {
+                Database::execute("ALTER TABLE services ADD COLUMN is_addon TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
+            }
+        } catch (\Throwable $e) {}
+
+        try {
+            Database::execute("UPDATE services SET is_addon = 1 WHERE slug IN (
+                'kitchen-chimney-degreasing',
+                'microwave-oven-deep-clean',
+                'refrigerator-interior-sanitization',
+                'bathroom-tile-stain-removal',
+                'tap-shower-chrome-descaling',
+                'bathroom-exhaust-fan-detailing',
+                'mattress-steam-cleaning',
+                'ceiling-fan-chandelier-detailing',
+                'ac-antibacterial-foam-wash',
+                'drain-unclogging-blockage-removal'
+            ) OR id IN (52, 53, 54, 55, 56, 57, 58, 59, 60, 61)");
+        } catch (\Throwable $e) {}
+    }
+
+    public static function getActive(bool $includeAddons = false): array
+    {
+        self::ensureServiceSchema();
+        $addonCondition = $includeAddons ? "" : " AND (s.is_addon = 0 OR s.is_addon IS NULL)";
         $rows = Database::fetchAll(
             "SELECT s.*, c.name as category_name, c.slug as category_slug 
              FROM services s 
              JOIN categories c ON s.category_id = c.id 
-             WHERE s.is_active = 1 
+             WHERE s.is_active = 1 {$addonCondition}
              ORDER BY c.sort_order ASC, s.name ASC"
         );
         foreach ($rows as &$row) {
@@ -56,10 +88,12 @@ class Service extends Model
         return $rows;
     }
 
-    public static function getActiveByCategory(int $categoryId): array
+    public static function getActiveByCategory(int $categoryId, bool $includeAddons = false): array
     {
+        self::ensureServiceSchema();
+        $addonCondition = $includeAddons ? "" : " AND (is_addon = 0 OR is_addon IS NULL)";
         $rows = Database::fetchAll(
-            "SELECT * FROM services WHERE category_id = :cid AND is_active = 1 ORDER BY name ASC",
+            "SELECT * FROM services WHERE category_id = :cid AND is_active = 1 {$addonCondition} ORDER BY name ASC",
             ['cid' => $categoryId]
         );
         foreach ($rows as &$row) {
@@ -84,18 +118,20 @@ class Service extends Model
         return $row;
     }
 
-    public static function search(string $query, ?int $limit = 10): array
+    public static function search(string $query, ?int $limit = 10, bool $includeAddons = false): array
     {
+        self::ensureServiceSchema();
         $q = trim(strtolower($query));
         if (strlen($q) < 2) {
             return [];
         }
 
+        $addonCondition = $includeAddons ? "" : " AND (s.is_addon = 0 OR s.is_addon IS NULL)";
         $allServices = Database::fetchAll(
             "SELECT s.*, c.name as category_name, c.slug as category_slug 
              FROM services s 
              JOIN categories c ON s.category_id = c.id 
-             WHERE s.is_active = 1"
+             WHERE s.is_active = 1 {$addonCondition}"
         );
 
         $isShort = strlen($q) <= 3;

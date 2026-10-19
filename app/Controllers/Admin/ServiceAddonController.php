@@ -418,9 +418,11 @@ class ServiceAddonController extends Controller
             $slug .= '-' . rand(100, 999);
         }
 
+        Service::ensureServiceSchema();
+
         Database::query(
-            "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, created_at)
-             VALUES (:cid, :name, :slug, :desc, :price, :duration, :img, 1, NOW())",
+            "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, is_addon, created_at)
+             VALUES (:cid, :name, :slug, :desc, :price, :duration, :img, 1, 1, NOW())",
             [
                 'cid'      => $categoryId,
                 'name'     => $name,

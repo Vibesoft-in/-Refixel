@@ -226,6 +226,7 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/{id}/update', 'Admin\\ServiceController@updateService', ['VerifyCsrf']);
     Router::post('/admin/services/{id}/delete', 'Admin\\ServiceController@deleteService', ['VerifyCsrf']);
     Router::post('/admin/services/{id}/toggle-status', 'Admin\\ServiceController@toggleServiceStatus', ['VerifyCsrf']);
+    Router::post('/admin/services/{id}/toggle-addon', 'Admin\\ServiceController@toggleAddonStatus', ['VerifyCsrf']);
     Router::get('/admin/services/categories', 'Admin\\ServiceController@categories');
     Router::post('/admin/services/categories', 'Admin\\ServiceController@storeCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/update', 'Admin\\ServiceController@updateCategory', ['VerifyCsrf']);

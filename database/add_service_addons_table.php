@@ -41,6 +41,16 @@ if (Setting::get('addons_auto_sensible_enabled') === null) {
     echo "✓ Default setting 'addons_auto_sensible_enabled' set to 1.\n";
 }
 
+// 2b. Ensure is_addon column exists on services table
+try {
+    $cols = Database::fetchAll("SHOW COLUMNS FROM services");
+    $fields = array_column($cols, 'Field');
+    if (!in_array('is_addon', $fields, true)) {
+        Database::execute("ALTER TABLE services ADD COLUMN is_addon TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
+        echo "✓ Column 'is_addon' added to 'services'.\n";
+    }
+} catch (Throwable $e) {}
+
 // 3. Insert Sensible Add-on Services into `services` if they don't already exist
 $sensibleServices = [
     [
@@ -139,11 +149,13 @@ foreach ($sensibleServices as $s) {
     $exists = Database::fetchOne("SELECT id FROM services WHERE slug = :slug", ['slug' => $s['slug']]);
     if (!$exists) {
         Database::query(
-            "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, created_at)
-             VALUES (:category_id, :name, :slug, :description, :starting_price, :duration_minutes, :image, 1, NOW())",
+            "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, is_addon, created_at)
+             VALUES (:category_id, :name, :slug, :description, :starting_price, :duration_minutes, :image, 1, 1, NOW())",
             $s
         );
         echo "✓ Added service: {$s['name']} (slug: {$s['slug']})\n";
+    } else {
+        Database::query("UPDATE services SET is_addon = 1 WHERE id = :id", ['id' => $exists['id']]);
     }
 }
 

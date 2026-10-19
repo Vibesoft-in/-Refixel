@@ -32,6 +32,7 @@ $categories = $categories ?? [];
             <th class="py-3 text-dark" style="width: 70px;">Image</th>
             <th class="py-3 text-dark">Service Name</th>
             <th class="py-3 text-dark">Category</th>
+            <th class="py-3 text-dark">Type</th>
             <th class="py-3 text-dark">Starting Price</th>
             <th class="py-3 text-dark">Duration</th>
             <th class="py-3 text-dark">Status</th>
@@ -41,7 +42,7 @@ $categories = $categories ?? [];
         <tbody>
           <?php if (empty($services)): ?>
             <tr>
-              <td colspan="7" class="text-center py-5 text-muted">No services registered in catalog. Click "Add New Service" above.</td>
+              <td colspan="8" class="text-center py-5 text-muted">No services registered in catalog. Click "Add New Service" above.</td>
             </tr>
           <?php else: ?>
             <?php foreach ($services as $s): ?>
@@ -83,6 +84,17 @@ $categories = $categories ?? [];
                   </span>
                 </td>
                 <td class="align-middle">
+                  <?php if (!empty($s['is_addon'])): ?>
+                    <span class="badge badge-warning text-dark px-2 py-1" style="background:#fff3cd; border: 1px solid #ffeeba;" title="Add-on Only (Hidden from main catalog & packages)">
+                      <i class="fa fa-puzzle-piece mr-1 text-warning"></i>Add-on Only
+                    </span>
+                  <?php else: ?>
+                    <span class="badge badge-primary px-2 py-1" style="background:#e0f2fe; color:#0369a1; border: 1px solid #bae6fd;" title="Public Main Service (Visible in catalog & packages)">
+                      <i class="fa fa-cubes mr-1"></i>Main Service
+                    </span>
+                  <?php endif; ?>
+                </td>
+                <td class="align-middle">
                   <strong class="text-success font-weight-bold" style="font-size: 15px;">₹<?= number_format((float)$s['starting_price'], 2) ?></strong>
                 </td>
                 <td class="align-middle text-muted small">
@@ -95,7 +107,14 @@ $categories = $categories ?? [];
                     <span class="badge badge-danger px-2 py-1">Disabled</span>
                   <?php endif; ?>
                 </td>
-                <td class="align-middle text-right">
+                <td class="align-middle text-right text-nowrap">
+                  <form method="POST" action="<?= View::url('/admin/services/' . $s['id'] . '/toggle-addon') ?>" class="d-inline mr-1">
+                    <?= View::csrfField() ?>
+                    <button type="submit" class="btn btn-sm <?= !empty($s['is_addon']) ? 'btn-outline-info' : 'btn-outline-warning' ?> py-1 px-2 font-weight-bold" title="Toggle between Main Service and Add-on Only">
+                      <?= !empty($s['is_addon']) ? '<i class="fa fa-cubes mr-1"></i>Make Main' : '<i class="fa fa-puzzle-piece mr-1"></i>Make Addon' ?>
+                    </button>
+                  </form>
+
                   <form method="POST" action="<?= View::url('/admin/services/' . $s['id'] . '/toggle-status') ?>" class="d-inline mr-1">
                     <?= View::csrfField() ?>
                     <button type="submit" class="btn btn-sm <?= !empty($s['is_active']) ? 'btn-outline-secondary' : 'btn-outline-success' ?> py-1 px-2 font-weight-bold" title="Toggle active status">
@@ -111,6 +130,7 @@ $categories = $categories ?? [];
                     data-duration="<?= (int)($s['duration_minutes'] ?? 60) ?>"
                     data-description="<?= View::e($s['description'] ?? '') ?>"
                     data-image="<?= View::e($s['image'] ?? '') ?>"
+                    data-is-addon="<?= !empty($s['is_addon']) ? '1' : '0' ?>"
                     title="Edit service">
                     <i class="fa fa-pencil"></i>
                   </button>
@@ -178,6 +198,16 @@ $categories = $categories ?? [];
             <label class="font-weight-bold small">Short Description</label>
             <textarea name="description" class="form-control" rows="3" placeholder="Brief scope of work included in this service..."></textarea>
           </div>
+
+          <div class="form-group mb-2 p-2 rounded bg-light border">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" name="is_addon" value="1" class="custom-control-input" id="new_is_addon">
+              <label class="custom-control-label font-weight-bold small text-dark" for="new_is_addon">
+                Treat as Add-on Only (Hide from main services catalog &amp; packages list)
+              </label>
+            </div>
+            <small class="form-text text-muted pl-4">Add-ons only appear in the add-on modal during checkout or when explicitly paired with main services.</small>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
@@ -235,6 +265,16 @@ $categories = $categories ?? [];
             <label class="font-weight-bold small">Short Description</label>
             <textarea name="description" id="edit_svc_description" class="form-control" rows="3"></textarea>
           </div>
+
+          <div class="form-group mb-2 p-2 rounded bg-light border">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" name="is_addon" value="1" class="custom-control-input" id="edit_svc_is_addon">
+              <label class="custom-control-label font-weight-bold small text-dark" for="edit_svc_is_addon">
+                Treat as Add-on Only (Hide from main services catalog &amp; packages list)
+              </label>
+            </div>
+            <small class="form-text text-muted pl-4">Add-ons only appear in the add-on modal during checkout or when explicitly paired with main services.</small>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
@@ -257,6 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var duration = this.getAttribute('data-duration');
       var description = this.getAttribute('data-description');
       var image = this.getAttribute('data-image');
+      var isAddon = this.getAttribute('data-is-addon');
 
       var form = document.getElementById('editServiceForm');
       form.action = baseUrl + '/admin/services/' + id + '/update';
@@ -267,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('edit_svc_duration').value = duration;
       document.getElementById('edit_svc_description').value = description;
       document.getElementById('edit_svc_image_path').value = image;
+      document.getElementById('edit_svc_is_addon').checked = (isAddon === '1');
 
       $('#editServiceModal').modal('show');
     });

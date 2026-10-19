@@ -16,6 +16,7 @@ class ServiceController extends Controller
 {
     public function index(Request $request): Response
     {
+        Service::ensureServiceSchema();
         $services = Database::fetchAll(
             "SELECT s.*, c.name as category_name, c.slug as category_slug
              FROM services s
@@ -33,11 +34,13 @@ class ServiceController extends Controller
 
     public function storeService(Request $request): Response
     {
+        Service::ensureServiceSchema();
         $name = trim((string)$request->input('name'));
         $categoryId = (int)$request->input('category_id');
         $startingPrice = (float)$request->input('starting_price');
         $durationMinutes = (int)$request->input('duration_minutes', 60);
         $description = trim((string)$request->input('description'));
+        $isAddon = (int)$request->input('is_addon', 0);
 
         if (empty($name) || $categoryId <= 0 || $startingPrice < 0) {
             View::setFlash('error', 'Please provide a valid service name, category, and price.');
@@ -67,6 +70,7 @@ class ServiceController extends Controller
             'duration_minutes' => $durationMinutes > 0 ? $durationMinutes : 60,
             'description'      => $description,
             'image'            => $imagePath,
+            'is_addon'         => $isAddon ? 1 : 0,
             'is_active'        => 1,
         ]);
 
@@ -76,6 +80,7 @@ class ServiceController extends Controller
 
     public function updateService(Request $request, string $id): Response
     {
+        Service::ensureServiceSchema();
         $service = Service::find((int)$id);
         if (!$service) {
             View::setFlash('error', 'Service not found.');
@@ -102,6 +107,7 @@ class ServiceController extends Controller
             'starting_price'   => $startingPrice,
             'duration_minutes' => $durationMinutes > 0 ? $durationMinutes : 60,
             'description'      => $description,
+            'is_addon'         => $request->has('is_addon') ? ((int)$request->input('is_addon') ? 1 : 0) : 0,
         ];
 
         $fileImage = $request->file('image');
@@ -140,6 +146,23 @@ class ServiceController extends Controller
         Service::update((int)$id, ['is_active' => $newActive]);
 
         View::setFlash('success', "Service '{$service['name']}' " . ($newActive ? 'activated' : 'deactivated') . ".");
+        return $this->redirect('/admin/services');
+    }
+
+    public function toggleAddonStatus(Request $request, string $id): Response
+    {
+        Service::ensureServiceSchema();
+        $service = Service::find((int)$id);
+        if (!$service) {
+            View::setFlash('error', 'Service not found.');
+            return $this->redirect('/admin/services');
+        }
+
+        $newAddon = empty($service['is_addon']) ? 1 : 0;
+        Service::update((int)$id, ['is_addon' => $newAddon]);
+
+        $statusText = $newAddon ? 'marked as Add-on Only (hidden from main catalog)' : 'marked as Main Public Service (visible in catalog)';
+        View::setFlash('success', "Service '{$service['name']}' {$statusText}.");
         return $this->redirect('/admin/services');
     }
 
