@@ -44,6 +44,16 @@ class SmtpEmailService implements EmailProviderInterface
             return true;
         }
 
+        // Brevo REST API delivery (Fast, highly reliable, bypasses local SMTP port blocks)
+        $brevoApiKey = (string)Env::get('BREVO_API_KEY', '');
+        if (!empty($brevoApiKey) && (Env::get('MAIL_MAILER') === 'brevo' || str_starts_with($brevoApiKey, 'xkeysib-'))) {
+            $brevoOk = $this->sendViaBrevoApi($to, $subject, $htmlBody, $headers, $brevoApiKey);
+            if ($brevoOk) {
+                return true;
+            }
+            Logger::warning("Brevo API delivery failed for {$to}, attempting SMTP fallback...");
+        }
+
         // Attempt SMTP socket delivery if credentials are provided or mailer is smtp
         if (!empty($this->username) && !empty($this->password) || Env::get('MAIL_MAILER') === 'smtp') {
             $smtpOk = $this->sendViaSmtp($to, $subject, $htmlBody, $headers);
@@ -62,6 +72,65 @@ class SmtpEmailService implements EmailProviderInterface
 
         // Fallback to standard PHP mail()
         return $this->sendViaPhpMail($to, $subject, $htmlBody, $headers);
+    }
+
+    protected function sendViaBrevoApi(string $to, string $subject, string $htmlBody, array $headers = [], string $apiKey = ''): bool
+    {
+        $apiKey = !empty($apiKey) ? $apiKey : (string)Env::get('BREVO_API_KEY', '');
+        if (empty($apiKey)) {
+            Logger::error("Brevo API key is not configured.");
+            return false;
+        }
+
+        $payload = [
+            'sender' => [
+                'name'  => $this->fromName,
+                'email' => $this->fromAddress,
+            ],
+            'to' => [
+                [
+                    'email' => $to,
+                ],
+            ],
+            'subject'     => $subject,
+            'htmlContent' => $htmlBody,
+        ];
+
+        if (!empty($headers['Reply-To'])) {
+            $payload['replyTo'] = ['email' => $headers['Reply-To']];
+        }
+
+        try {
+            $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST           => true,
+                CURLOPT_HTTPHEADER     => [
+                    'api-key: ' . $apiKey,
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                ],
+                CURLOPT_POSTFIELDS     => json_encode($payload),
+                CURLOPT_TIMEOUT        => 12,
+                CURLOPT_SSL_VERIFYPEER => false,
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlErr  = curl_error($ch);
+            curl_close($ch);
+
+            if ($httpCode >= 200 && $httpCode < 300) {
+                Logger::info("Brevo API email dispatched successfully to {$to} [Subject: {$subject}]");
+                return true;
+            }
+
+            Logger::error("Brevo API error (HTTP {$httpCode}) to {$to}: {$response}" . ($curlErr ? " (curl: {$curlErr})" : ""));
+            return false;
+        } catch (\Throwable $e) {
+            Logger::error("Brevo API exception for {$to}: " . $e->getMessage());
+            return false;
+        }
     }
 
     protected function sendViaPhpMail(string $to, string $subject, string $htmlBody, array $headers = []): bool
