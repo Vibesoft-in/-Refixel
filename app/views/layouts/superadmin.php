@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
   <title><?= \App\Core\View::e($title ?? 'Super Admin Panel | REFIXEL') ?></title>
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="shortcut icon" type="image/png" />
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="icon" type="image/png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=3" rel="shortcut icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=3" rel="icon" type="image/png" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <?= \App\Core\Theme::renderHead() ?>
   <style>
     :root {
       --sa-primary: #6366f1;
@@ -417,10 +417,15 @@
           </a>
         </li>
 
-        <li class="nav-heading">Governance</li>
+        <li class="nav-heading">Governance & White-Label</li>
         <li class="<?= str_contains($uri, '/superadmin/admins') ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/superadmin/admins') ?>">
             <span class="d-flex align-items-center"><i class="fa fa-user-secret"></i> Admin Accounts</span>
+          </a>
+        </li>
+        <li class="<?= str_contains($uri, '/superadmin/theme') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/superadmin/theme') ?>">
+            <span class="d-flex align-items-center"><i class="fa fa-paint-brush text-warning"></i> Theme & White-Label</span>
           </a>
         </li>
 

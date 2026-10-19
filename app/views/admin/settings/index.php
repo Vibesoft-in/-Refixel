@@ -34,6 +34,11 @@ $settings = $settings ?? [];
           <i class="fa fa-globe mr-1"></i>Social & Channels
         </a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link font-weight-bold text-primary" href="<?= View::url('/superadmin/theme') ?>">
+          <i class="fa fa-paint-brush mr-1"></i>Theme & White-Label <span class="badge badge-warning text-dark ml-1" style="font-size:10px;">Super Admin</span>
+        </a>
+      </li>
     </ul>
 
     <div class="tab-content mb-4">

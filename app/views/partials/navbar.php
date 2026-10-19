@@ -66,7 +66,7 @@ if ($initialCartCount > 0 && class_exists('\App\Core\Cart')) {
         }
       ?>
       <img src="<?= \App\Core\View::asset($siteLogo) ?>" 
-           alt="REFIXEL" 
+           alt="<?= \App\Core\View::e(\App\Core\Theme::getBrandName()) ?>" 
            class="nav-brand-logo" 
            style="max-height: 48px; width: auto; object-fit: contain;"
            onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>';">

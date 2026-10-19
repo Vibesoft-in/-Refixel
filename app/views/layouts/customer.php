@@ -50,20 +50,22 @@
     <?= json_encode($activeSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
   </script>
 
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="icon" type="image/png" />
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="shortcut icon" type="image/png" />
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=2" rel="apple-touch-icon" />
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=2" rel="icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=2" rel="shortcut icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=2" rel="apple-touch-icon" />
 
   <!-- Fonts & Libraries -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 
   <!-- REFIXEL Live Visual Stylesheets -->
   <link rel="stylesheet" href="<?= \App\Core\View::asset('css/style.css') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/css/style.css') ?>" />
   <link rel="stylesheet" href="<?= \App\Core\View::asset('css/page-style.css') ?>?v=<?= filemtime(ROOT_PATH . '/public/assets/css/page-style.css') ?>" />
+
+  <!-- Dynamic White-Label Brand Theme & Fonts -->
+  <?= \App\Core\Theme::renderHead() ?>
 
   <style>
   .top_offer_bar {

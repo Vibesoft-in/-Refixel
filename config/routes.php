@@ -181,6 +181,11 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::get('/superadmin/payouts', 'Admin\\PayoutController@index');
     Router::post('/superadmin/payouts/{id}/settle', 'Admin\\PayoutController@settle', ['VerifyCsrf']);
     Router::post('/superadmin/payouts/technicians/{id}/settle-all', 'Admin\\PayoutController@settleAll', ['VerifyCsrf']);
+
+    // White-Label Branding & Theme Customizer (Exclusively Super Admin)
+    Router::get('/superadmin/theme', 'SuperAdmin\\ThemeController@index');
+    Router::post('/superadmin/theme/save', 'SuperAdmin\\ThemeController@save', ['VerifyCsrf']);
+    Router::post('/superadmin/theme/reset', 'SuperAdmin\\ThemeController@reset', ['VerifyCsrf']);
 });
 
 // ==========================================

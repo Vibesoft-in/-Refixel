@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
   <title><?= \App\Core\View::e($title ?? 'GST Tax Invoice | REFIXEL') ?></title>
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="shortcut icon" type="image/png" />
-  <link href="<?= \App\Core\View::asset('img/favicon.png') ?>?v=3" rel="icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=3" rel="shortcut icon" type="image/png" />
+  <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=3" rel="icon" type="image/png" />
 
   <!-- Typography & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <?= \App\Core\Theme::renderHead() ?>
 
   <style>
     :root {
-      --brand-primary: #f25b29;
-      --brand-primary-dark: #dc4a18;
-      --brand-dark: #0a1c33;
+      --brand-primary: var(--primary-color, #f25b29);
+      --brand-primary-dark: var(--primary-hover, #dc4a18);
+      --brand-dark: var(--secondary-color, #0a1c33);
       --text-main: #0f172a;
       --text-muted: #64748b;
       --border-soft: #e2e8f0;

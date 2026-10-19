@@ -548,7 +548,7 @@
   <div class="container">
     <div class="row align-items-center">
       <div class="col-12 text-center">
-        <p class="mb-0">&copy; <?= date('Y') ?> REFIXEL Home Services. All Rights Reserved. Built / Design <span style="color: #ef4444;">❤️</span> by Vibesoft.</p>
+        <p class="mb-0">&copy; <?= date('Y') ?> <?= \App\Core\View::e(\App\Core\Theme::getBrandName()) ?>. All Rights Reserved. Built / Design <span style="color: #ef4444;">❤️</span> by Vibesoft.</p>
       </div>
     </div>
   </div>

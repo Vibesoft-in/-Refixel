@@ -24,14 +24,14 @@ ob_start();
     letter-spacing: 0.3px;
   }
   .soft-btn-primary {
-    background-color: #f25b29;
+    background-color: var(--primary-color, #f25b29);
     color: #ffffff;
     border: none;
   }
   .soft-btn-primary:hover {
-    background-color: #db4918;
+    background-color: var(--primary-hover, #db4918);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25);
+    box-shadow: 0 4px 12px var(--primary-glow, rgba(242, 91, 41, 0.25));
   }
   .soft-btn-outline {
     background-color: transparent;
