@@ -91,7 +91,7 @@ class Database
             }
 
             // Ensure active admin notification email and brand details are REFIXEL
-            $pdo->exec("UPDATE settings SET setting_value = 'wearerefixel@gmail.com' WHERE setting_key = 'admin_notification_email' AND (setting_value LIKE '%primodomus%' OR setting_value = '' OR setting_value IS NULL)");
+            $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'admin_notification_email' AND (setting_value LIKE '%primodomus%' OR setting_value LIKE '%wearerefixel%' OR setting_value LIKE '%dispatch%' OR setting_value = '' OR setting_value IS NULL)");
             $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'company_email' AND (setting_value LIKE '%primodomus%' OR setting_value = '' OR setting_value IS NULL)");
             $pdo->exec("UPDATE settings SET setting_value = REPLACE(setting_value, 'Primodomus', 'REFIXEL') WHERE setting_value LIKE '%Primodomus%'");
             $pdo->exec("UPDATE faqs SET question = REPLACE(question, 'Primodomus', 'Refixel') WHERE question LIKE '%Primodomus%'");

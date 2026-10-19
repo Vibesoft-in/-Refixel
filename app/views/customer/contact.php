@@ -53,7 +53,7 @@
         <?php
           $contactPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
           $contactCleanPhone = preg_replace('/[^0-9+]/', '', $contactPhone);
-          $contactEmail = \App\Models\Setting::get('support_email', 'wearerefixel@gmail.com');
+          $contactEmail = \App\Models\Setting::get('support_email', 'contact@refixel.com');
           $contactLandmark = \App\Models\Setting::get('office_landmark', 'Jaspur - Kashipur Road');
           $contactSubtext = \App\Models\Setting::get('office_subtext', 'In front of BSV Girls Degree College, Jaspur');
           $contactAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road, in front of BSV Girls Degree College, Jaspur, Uttarakhand (PIN: 244712)');

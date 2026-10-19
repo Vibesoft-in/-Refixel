@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 /**
  * Migration: Update admin notification email settings
- * Sets active admin email to wearerefixel@gmail.com and company email to contact@refixel.com
+ * Sets active admin email and company email to contact@refixel.com
  */
 
 require_once __DIR__ . '/../app/Core/Env.php';
@@ -15,7 +15,7 @@ try {
     $pdo = \App\Core\Database::getConnection();
 
     echo "1. Updating admin_notification_email in settings table..." . PHP_EOL;
-    $pdo->exec("UPDATE settings SET setting_value = 'wearerefixel@gmail.com' WHERE setting_key = 'admin_notification_email'");
+    $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'admin_notification_email'");
 
     echo "2. Updating company_email in settings table..." . PHP_EOL;
     $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'company_email'");

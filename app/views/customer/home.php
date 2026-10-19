@@ -4261,7 +4261,7 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>
               <div class="help_item">
                 <i class="fa fa-envelope"></i>
-                <a href="mailto:wearerefixel@gmail.com">wearerefixel@gmail.com</a>
+                <a href="mailto:contact@refixel.com">contact@refixel.com</a>
               </div>
               <div class="help_item">
                 <i class="fa fa-map-marker"></i>

@@ -247,7 +247,7 @@ $isCodAdvance = ($dueAmt > 0 || ($invoice['booking_priority'] ?? '') === 'normal
         <div><strong>REFIXEL Home Services Pvt. Ltd.</strong></div>
         <div>Station Road, Kashipur, Uttarakhand - 244713</div>
         <div>GSTIN: <strong class="text-dark">07AAAAA0000A1Z5</strong> &bull; State Code: <strong>05 (UK) / 07 (DL)</strong></div>
-        <div>Support: <strong>wearerefixel@gmail.com</strong> &bull; Helpline: <strong>+91 87911 54730</strong></div>
+        <div>Support: <strong>contact@refixel.com</strong> &bull; Helpline: <strong>+91 87911 54730</strong></div>
       </div>
     </div>
 

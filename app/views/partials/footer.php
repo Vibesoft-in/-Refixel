@@ -413,7 +413,7 @@
           <h4 class="footer-title" style="color: #ffffff !important;">Contact Us</h4>
           <?php
             $fAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand');
-            $fEmail = \App\Models\Setting::get('support_email', 'wearerefixel@gmail.com');
+            $fEmail = \App\Models\Setting::get('support_email', 'contact@refixel.com');
             $fPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
             $fCleanPhone = preg_replace('/[^0-9+]/', '', $fPhone);
             $fHours = \App\Models\Setting::get('operating_hours', 'Mon - Sun: 08:00 AM - 09:00 PM');

@@ -24,7 +24,7 @@ class SmtpEmailService implements EmailProviderInterface
         $this->username    = (string)Env::get('MAIL_USERNAME', '');
         $this->password    = (string)Env::get('MAIL_PASSWORD', '');
         $this->encryption  = strtolower((string)Env::get('MAIL_ENCRYPTION', 'tls'));
-        $this->fromAddress = (string)Env::get('MAIL_FROM_ADDRESS', 'wearerefixel@gmail.com');
+        $this->fromAddress = (string)Env::get('MAIL_FROM_ADDRESS', 'contact@refixel.com');
         $this->fromName    = (string)Env::get('MAIL_FROM_NAME', 'REFIXEL Home Services');
     }
 
@@ -877,7 +877,7 @@ class SmtpEmailService implements EmailProviderInterface
         // Brand Footer
         $body .= "<div style='background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 18px 24px; font-size: 12px; color: #64748b; text-align: center; line-height: 1.5;'>";
         $body .= "<p style='margin: 0 0 6px;'>&copy; " . date('Y') . " REFIXEL Home Services. All rights reserved.</p>";
-        $body .= "<p style='margin: 0;'>For support, email <a href='mailto:wearerefixel@gmail.com' style='color: #f25b29; text-decoration: none;'>wearerefixel@gmail.com</a> or visit <a href='" . htmlspecialchars(View::fullUrl('/')) . "' style='color: #0a1c33; font-weight: 600;'>refixel.com</a></p>";
+        $body .= "<p style='margin: 0;'>For support, email <a href='mailto:contact@refixel.com' style='color: #f25b29; text-decoration: none;'>contact@refixel.com</a> or visit <a href='" . htmlspecialchars(View::fullUrl('/')) . "' style='color: #0a1c33; font-weight: 600;'>refixel.com</a></p>";
         $body .= "</div>";
 
         $body .= "</div></body></html>";

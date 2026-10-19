@@ -63,7 +63,7 @@ $settings = $settings ?? [];
 
             <div class="col-md-6 form-group mb-3">
               <label class="font-weight-bold small text-dark">Official Support Email</label>
-              <input type="email" name="support_email" class="form-control" value="<?= View::e($settings['support_email'] ?? 'wearerefixel@gmail.com') ?>">
+              <input type="email" name="support_email" class="form-control" value="<?= View::e($settings['support_email'] ?? 'contact@refixel.com') ?>">
               <small class="form-text text-muted">Displayed on Contact Us and customer communications.</small>
             </div>
           </div>
@@ -199,7 +199,7 @@ $settings = $settings ?? [];
 
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">Admin Alert Notification Email</label>
-            <input type="email" name="admin_notification_email" class="form-control" value="<?= View::e($settings['admin_notification_email'] ?? 'wearerefixel@gmail.com') ?>">
+            <input type="email" name="admin_notification_email" class="form-control" value="<?= View::e($settings['admin_notification_email'] ?? 'contact@refixel.com') ?>">
             <small class="form-text text-muted">Receives instant notifications whenever a new booking or enquiry is placed.</small>
           </div>
 

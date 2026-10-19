@@ -110,11 +110,11 @@ class Notifier
             ?: Setting::get('company_email')
             ?: Env::get('ADMIN_NOTIFICATION_EMAIL')
             ?: Env::get('MAIL_FROM_ADDRESS')
-            ?: 'wearerefixel@gmail.com'
+            ?: 'contact@refixel.com'
         );
         $email = trim($email);
         if (empty($email) || str_contains($email, 'primodomus.com') || str_contains($email, 'example.com')) {
-            return 'wearerefixel@gmail.com';
+            return 'contact@refixel.com';
         }
         return $email;
     }
@@ -149,8 +149,8 @@ class Notifier
         self::send('email', $adminEmail, 'admin_new_booking', $payload);
 
         // Also notify super admin mailbox if different
-        if ($adminEmail !== 'wearerefixel@gmail.com') {
-            self::send('email', 'wearerefixel@gmail.com', 'admin_new_booking', $payload);
+        if ($adminEmail !== 'contact@refixel.com') {
+            self::send('email', 'contact@refixel.com', 'admin_new_booking', $payload);
         }
     }
 
