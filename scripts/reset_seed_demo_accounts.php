@@ -61,11 +61,10 @@ foreach ($users as $u) {
     $newHash = password_hash($randomSecret, PASSWORD_BCRYPT);
     unset($randomSecret); // Immediately destroy plaintext in memory
 
-    // 2. Update user: new bcrypt hash, plain_password NULL, must_change_password 1
+    // 2. Update user: new bcrypt hash, must_change_password 1
     Database::query(
         "UPDATE users 
          SET password_hash = :hash, 
-             plain_password = NULL, 
              must_change_password = 1, 
              updated_at = NOW() 
          WHERE id = :id",

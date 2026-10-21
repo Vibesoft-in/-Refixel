@@ -85,11 +85,11 @@ $gateways = [
     [
         'code'           => 'razorpay',
         'name'           => 'Razorpay Payment Gateway',
-        'environment'    => 'live',
+        'environment'    => (string)Env::get('RAZORPAY_ENV', 'test'),
         'is_active'      => 1,
-        'key_id'         => 'rzp_live_R72df4G16qv1Rh',
-        'key_secret'     => 'ZxuiIKL44pv12Ba5b8rwnwuH',
-        'webhook_secret' => '',
+        'key_id'         => (string)Env::get('RAZORPAY_KEY_ID', ''),
+        'key_secret'     => (string)Env::get('RAZORPAY_KEY_SECRET', ''),
+        'webhook_secret' => (string)Env::get('RAZORPAY_WEBHOOK_SECRET', ''),
         'merchant_email' => 'payments@refixel.com',
         'merchant_name'  => 'REFIXEL Technologies',
         'currency'       => 'INR',
@@ -178,9 +178,9 @@ if ((int)($existingRules['c'] ?? 0) === 0) {
 }
 
 // 6. Sync settings table for instant key retrieval
-Setting::set('razorpay_key_id', 'rzp_live_R72df4G16qv1Rh');
-Setting::set('razorpay_key_secret', 'ZxuiIKL44pv12Ba5b8rwnwuH');
-Setting::set('razorpay_environment', 'live');
+Setting::set('razorpay_key_id', (string)Env::get('RAZORPAY_KEY_ID', ''));
+Setting::set('razorpay_key_secret', (string)Env::get('RAZORPAY_KEY_SECRET', ''));
+Setting::set('razorpay_environment', (string)Env::get('RAZORPAY_ENV', 'test'));
 Setting::set('razorpay_is_active', '1');
 Setting::set('global_admin_commission_pct', '25');
 Setting::set('global_worker_commission_pct', '75');

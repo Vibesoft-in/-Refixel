@@ -59,7 +59,7 @@ Database::query("
 ");
 
 // 2. Fetch all users and check their hashes
-$users = Database::fetchAll("SELECT id, name, email, phone, role, password_hash, plain_password FROM users");
+$users = Database::fetchAll("SELECT id, name, email, phone, role, password_hash FROM users");
 echo "Found " . count($users) . " total user account(s) in database.\n\n";
 
 $migratedCount = 0;
@@ -68,7 +68,6 @@ $alreadyValidCount = 0;
 foreach ($users as $u) {
     $userId = (int)$u['id'];
     $currentHash = (string)($u['password_hash'] ?? '');
-    $plain = (string)($u['plain_password'] ?? '');
     $info = password_get_info($currentHash);
 
     $needsMigration = false;
