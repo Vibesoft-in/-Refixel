@@ -19,6 +19,12 @@ class UploadController extends Controller
             return $this->json(['status' => 'error', 'message' => 'No file uploaded.'], 400);
         }
 
+        // Restrict API upload subfolders (only 'issues' allowed for unauthenticated visitors)
+        $allowedPublicFolders = ['issues'];
+        if (!in_array($subfolder, $allowedPublicFolders, true) && !\App\Core\Auth::isAdmin()) {
+            return $this->json(['status' => 'error', 'message' => 'Unauthorized upload destination.'], 403);
+        }
+
         try {
             $path = Upload::process($file, $subfolder);
             return $this->json(['status' => 'success', 'path' => $path]);

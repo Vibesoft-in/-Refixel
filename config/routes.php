@@ -358,5 +358,8 @@ Router::post('/api/search', 'Api\\ServiceAreaController@search', ['VerifyCsrf'])
 Router::post('/api/job/status', 'Api\\JobStatusController@update', ['RequireLogin', 'VerifyCsrf']);
 Router::get('/api/notifications', 'Api\\NotificationController@recent', ['RequireLogin']);
 
+// Authenticated Secure Document Serving (Outside Webroot)
+Router::get('/documents/{folder}/{filename}', 'DocumentController@serve', ['RequireLogin']);
+
 // Fallback for single clean service/category slugs (e.g. /full-home-cleaning, /bathroom-deep-cleaning)
 Router::get('/{service}', 'ServiceController@serviceClean');

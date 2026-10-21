@@ -115,5 +115,76 @@ class Upload
 
         return $results;
     }
+
+    public static function getSecureStoragePath(string $subfolder = ''): string
+    {
+        $base = dirname(__DIR__, 2) . '/storage/private_documents';
+        if ($subfolder !== '') {
+            $subfolder = preg_replace('/[^a-zA-Z0-9_\-]/', '', $subfolder);
+            $base .= '/' . $subfolder;
+        }
+        return $base;
+    }
+
+    /**
+     * Store sensitive files (KYC, partner documents, ID proofs) outside webroot in storage/private_documents.
+     */
+    public static function processSecure(array $file, string $subfolder = 'partner_docs'): array
+    {
+        if (!isset($file['error']) || is_array($file['error'])) {
+            throw new RuntimeException('Invalid file upload parameters.');
+        }
+
+        switch ($file['error']) {
+            case UPLOAD_ERR_OK:
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                throw new RuntimeException('No file sent.');
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                throw new RuntimeException('File exceeds maximum upload size limit.');
+            default:
+                throw new RuntimeException('Unknown file upload error.');
+        }
+
+        if ($file['size'] > self::MAX_SIZE_BYTES) {
+            throw new RuntimeException('File size must not exceed 5MB.');
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+
+        if (!array_key_exists($mime, self::ALLOWED_MIMES)) {
+            throw new RuntimeException('Invalid file format. Allowed types: JPG, PNG, WEBP, PDF.');
+        }
+
+        $extension = self::ALLOWED_MIMES[$mime];
+        $targetDir = self::getSecureStoragePath($subfolder);
+
+        if (!is_dir($targetDir)) {
+            @mkdir($targetDir, 0750, true);
+        }
+
+        $randomName = bin2hex(random_bytes(20)) . '.' . $extension;
+        $destination = $targetDir . '/' . $randomName;
+
+        $moved = @move_uploaded_file($file['tmp_name'], $destination);
+        if (!$moved && (PHP_SAPI === 'cli' || defined('TESTING'))) {
+            $moved = @copy($file['tmp_name'], $destination);
+        }
+
+        if (!$moved) {
+            throw new RuntimeException('Failed to store private document securely.');
+        }
+
+        return [
+            'relative_path' => $subfolder . '/' . $randomName,
+            'full_path'     => $destination,
+            'filename'      => $randomName,
+            'subfolder'     => $subfolder,
+            'mime'          => $mime,
+            'size'          => (int)filesize($destination),
+        ];
+    }
 }
 

@@ -62,7 +62,12 @@ set_exception_handler(function (\Throwable $e) use ($isDebug) {
         echo "<p><strong>File:</strong> " . htmlspecialchars($e->getFile()) . " (Line " . $e->getLine() . ")</p>";
         echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
     } else {
-        echo "<!DOCTYPE html><html><head><title>System Error</title><style>body{font-family:sans-serif;padding:40px;color:#333;text-align:center;}h1{color:#e53e3e;}</style></head><body><h1>Something went wrong</h1><p>Our engineering team has been notified. Please try again shortly.</p></body></html>";
+        try {
+            $resp = \App\Core\View::render('partials.500', ['title' => 'System Error | REFIXEL'], 'customer');
+            echo $resp->getBody();
+        } catch (\Throwable $renderErr) {
+            echo "<!DOCTYPE html><html><head><title>System Error</title><style>body{font-family:sans-serif;padding:40px;color:#333;text-align:center;}h1{color:#e53e3e;}</style></head><body><h1>Something went wrong</h1><p>Our engineering team has been notified. Please try again shortly.</p></body></html>";
+        }
     }
     exit;
 });
