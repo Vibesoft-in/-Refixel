@@ -787,9 +787,15 @@ function fallbackModalCopy(text, cb) {
                 verifyData.append('razorpay_order_id', paymentResponse.razorpay_order_id);
                 verifyData.append('razorpay_payment_id', paymentResponse.razorpay_payment_id);
                 verifyData.append('razorpay_signature', paymentResponse.razorpay_signature);
+                if (d.guest_token) {
+                  verifyData.append('guest_token', d.guest_token);
+                }
                 if (activeBookingForm) {
                   var csrfEl = activeBookingForm.querySelector('[name="_csrf"]');
                   if (csrfEl) verifyData.append('_csrf', csrfEl.value);
+                }
+                if (!verifyData.has('_csrf') && window.REFIXEL_CSRF_TOKEN) {
+                  verifyData.append('_csrf', window.REFIXEL_CSRF_TOKEN);
                 }
 
                 var verifyUrl = window.REFIXEL_BASE_URL ? (window.REFIXEL_BASE_URL + '/book/verify-payment') : '/book/verify-payment';

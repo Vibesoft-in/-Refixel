@@ -96,7 +96,7 @@ class RazorpayGateway implements PaymentGatewayInterface
         $paymentId = $payload['razorpay_payment_id'] ?? '';
         $signature = $payload['razorpay_signature'] ?? '';
 
-        if (empty($orderId) || empty($paymentId) || empty($signature)) {
+        if (empty($orderId) || empty($paymentId) || empty($signature) || empty($this->keySecret)) {
             return false;
         }
 

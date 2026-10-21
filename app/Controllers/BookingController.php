@@ -19,6 +19,7 @@ use App\Models\Service;
 use App\Models\ServiceArea;
 use App\Models\User;
 use App\Services\Payment\RazorpayGateway;
+use PDO;
 
 class BookingController extends Controller
 {
@@ -690,6 +691,8 @@ class BookingController extends Controller
                 'priority'       => $priority,
             ]);
 
+            $_SESSION['guest_account_created_booking_id'] = $bookingId;
+
             // Process issue photo attachments securely if uploaded
             $files = $_FILES['photos'] ?? null;
             if ($files && is_array($files['name'])) {
@@ -1005,9 +1008,9 @@ class BookingController extends Controller
     {
         $bookingId = (int)$request->input('booking_id');
         $bookingNo = (string)$request->input('booking_no');
-        $orderId = (string)$request->input('razorpay_order_id');
-        $paymentId = (string)$request->input('razorpay_payment_id');
-        $signature = (string)$request->input('razorpay_signature');
+        $orderId = trim((string)$request->input('razorpay_order_id'));
+        $paymentId = trim((string)$request->input('razorpay_payment_id'));
+        $signature = trim((string)$request->input('razorpay_signature'));
 
         if (empty($bookingId) || empty($orderId) || empty($paymentId) || empty($signature)) {
             return Response::json([
@@ -1024,6 +1027,42 @@ class BookingController extends Controller
             ], 404);
         }
 
+        // Ownership Check: Validate current authenticated user or matching guest_token
+        $isOwner = false;
+        $currentUserId = \App\Core\Auth::id();
+        if ($currentUserId && !empty($booking['customer_id']) && (int)$booking['customer_id'] === (int)$currentUserId) {
+            $isOwner = true;
+        }
+
+        $providedGuestToken = trim((string)$request->input('guest_token', ''));
+        if (!empty($booking['guest_token']) && !empty($providedGuestToken)) {
+            if (hash_equals((string)$booking['guest_token'], $providedGuestToken)) {
+                $isOwner = true;
+            }
+        }
+
+        if (!$isOwner && !empty($_SESSION['guest_account_created_booking_id']) && (int)$_SESSION['guest_account_created_booking_id'] === $bookingId) {
+            $isOwner = true;
+        }
+
+        if (!$isOwner) {
+            Logger::warning("Unauthorized payment verification attempt for booking #{$bookingId}");
+            return Response::json([
+                'success' => false,
+                'message' => 'Unauthorized payment verification access.',
+            ], 403);
+        }
+
+        // Validate gateway_order_id match with booking record if stored
+        if (!empty($booking['gateway_order_id']) && !hash_equals((string)$booking['gateway_order_id'], $orderId)) {
+            Logger::warning("Booking gateway_order_id mismatch for booking #{$bookingId}: expected {$booking['gateway_order_id']}, got {$orderId}");
+            return Response::json([
+                'success' => false,
+                'message' => 'Payment order mismatch with booking record.',
+            ], 400);
+        }
+
+        // HMAC SHA256 Signature Verification
         $rzpGateway = new RazorpayGateway();
         $isValid = $rzpGateway->verifySignature([
             'razorpay_order_id'   => $orderId,
@@ -1039,88 +1078,138 @@ class BookingController extends Controller
             ], 400);
         }
 
+        // Amount Calculation & Verification
         $totalAmount = (float)($booking['total_amount'] ?? 0);
         if ($totalAmount <= 0) {
             $totalAmount = 899.00;
         }
         $paymentType = (string)($booking['payment_type'] ?? 'cod');
         $advanceAmount = ($paymentType === 'online') ? $totalAmount : 49.00;
+        if ((float)($booking['advance_amount'] ?? 0) > 0) {
+            $advanceAmount = (float)$booking['advance_amount'];
+        }
         $dueAmount = max(0.00, round($totalAmount - $advanceAmount, 2));
 
-        // Update payment record in database as paid
-        $payment = Database::fetchOne("SELECT * FROM payments WHERE booking_id = ? ORDER BY id DESC LIMIT 1", [$bookingId]);
-        if ($payment) {
-            Database::execute(
-                "UPDATE payments SET status = 'paid', method = 'upi', amount = ?, transaction_ref = ?, paid_at = NOW() WHERE id = ?",
-                [$advanceAmount, $paymentId, $payment['id']]
-            );
-            $paymentIdDb = (int)$payment['id'];
-        } else {
-            $paymentIdDb = (int)Database::execute(
-                "INSERT INTO payments (booking_id, amount, method, status, transaction_ref, paid_at) VALUES (?, ?, 'upi', 'paid', ?, NOW())",
-                [$bookingId, $advanceAmount, $paymentId],
-                true
-            );
+        // Enforce server-side pending payment amount matching if pending record exists
+        $pendingPayment = Database::fetchOne(
+            "SELECT * FROM payments WHERE booking_id = ? AND (gateway_order_id = ? OR gateway_order_id IS NULL) ORDER BY id DESC LIMIT 1",
+            [$bookingId, $orderId]
+        );
+        if ($pendingPayment && (float)$pendingPayment['amount'] > 0) {
+            $expectedAmount = (float)$pendingPayment['amount'];
+            if (abs($expectedAmount - $advanceAmount) > 0.01) {
+                Logger::error("Payment amount mismatch for booking #{$bookingId}: expected {$expectedAmount}, calculated {$advanceAmount}");
+                return Response::json([
+                    'success' => false,
+                    'message' => 'Payment amount verification mismatch.',
+                ], 400);
+            }
         }
 
-        // Generate GST Invoice with total, advance_paid and due_amount
-        $invoiceRecord = null;
+        // Atomic Payment State Transition
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+        $isAlreadyPaid = false;
+        $paymentIdDb = 0;
+
         try {
-            $existingInvoice = Database::fetchOne("SELECT * FROM invoices WHERE payment_id = ? LIMIT 1", [$paymentIdDb]);
-            if (!$existingInvoice && $paymentIdDb > 0) {
-                $subtotal = round($totalAmount / 1.18, 2);
-                $invoiceRecord = InvoiceBuilder::createForPayment($paymentIdDb, $subtotal, 18.00, $advanceAmount, $dueAmount);
+            $stmt = $pdo->prepare("SELECT id, status, amount FROM payments WHERE booking_id = ? AND (gateway_order_id = ? OR gateway_order_id IS NULL) ORDER BY id DESC LIMIT 1 FOR UPDATE");
+            $stmt->execute([$bookingId, $orderId]);
+            $paymentRow = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($paymentRow && $paymentRow['status'] === 'paid') {
+                $isAlreadyPaid = true;
+                $paymentIdDb = (int)$paymentRow['id'];
+            } elseif ($paymentRow) {
+                $updStmt = $pdo->prepare(
+                    "UPDATE payments SET status = 'paid', method = 'upi', amount = ?, gateway_order_id = ?, gateway_payment_id = ?, transaction_ref = ?, paid_at = NOW() WHERE id = ? AND status = 'pending'"
+                );
+                $updStmt->execute([$advanceAmount, $orderId, $paymentId, $paymentId, $paymentRow['id']]);
+                $affected = $updStmt->rowCount();
+                $paymentIdDb = (int)$paymentRow['id'];
+                if ($affected === 0) {
+                    $isAlreadyPaid = true;
+                }
             } else {
-                $invoiceRecord = $existingInvoice;
+                $insStmt = $pdo->prepare(
+                    "INSERT INTO payments (booking_id, amount, method, status, gateway_order_id, gateway_payment_id, transaction_ref, paid_at, recorded_by) VALUES (?, ?, 'upi', 'paid', ?, ?, ?, NOW(), ?)"
+                );
+                $insStmt->execute([$bookingId, $advanceAmount, $orderId, $paymentId, $paymentId, $booking['customer_id'] ?: null]);
+                $paymentIdDb = (int)$pdo->lastInsertId();
             }
+
+            // Update booking record gateway_order_id if not previously set
+            $pdo->prepare("UPDATE bookings SET gateway_order_id = COALESCE(gateway_order_id, ?) WHERE id = ?")
+                ->execute([$orderId, $bookingId]);
+
+            $pdo->commit();
         } catch (\Throwable $e) {
-            Logger::error("Invoice generation skipped: " . $e->getMessage());
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            Logger::error("Payment atomic commit failed for booking #{$bookingId}: " . $e->getMessage());
+            return Response::json(['success' => false, 'message' => 'Failed to record verified payment.'], 500);
         }
 
         // Update booking status and priority (self-healing & backward-compatible)
         $prio = ($paymentType === 'online') ? 'high' : 'normal';
         $this->updateBookingFinancials($bookingId, $totalAmount, $advanceAmount, $dueAmount, $paymentType, $prio, 'new');
 
-        // Send booking confirmation notifications
-        try {
-            $isNewAcc = !empty($_SESSION['guest_account_created']);
-            $bookingRecord = [
-                'id'             => $bookingId,
-                'booking_id'     => $bookingId,
-                'customer_id'    => $booking['customer_id'] ?? null,
-                'booking_no'     => $booking['booking_no'],
-                'service_name'   => $request->input('service_name', 'Doorstep Service'),
-                'name'           => $booking['name'],
-                'phone'          => $booking['phone'],
-                'email'          => $booking['email'] ?? null,
-                'address'        => $booking['address'],
-                'city'           => $booking['pincode'] ? "Pincode: {$booking['pincode']}" : 'Service Area',
-                'preferred_date' => (string)$booking['preferred_date'],
-                'preferred_time' => (string)$booking['preferred_time'],
-                'total_amount'   => $totalAmount,
-                'advance_amount' => $advanceAmount,
-                'due_amount'     => $dueAmount,
-                'payment_type'   => $paymentType,
-                'priority'       => $prio,
-                'is_new_customer'=> $isNewAcc,
-                'login_url'      => View::fullUrl('/login'),
-                'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
-            ];
-
-            if ($isNewAcc) {
-                $bookingRecord['set_password_url'] = $_SESSION['guest_set_password_url'] ?? null;
-                $bookingRecord['identifier'] = $_SESSION['guest_account_identifier'] ?? $booking['phone'];
+        // Only generate invoice and dispatch confirmation notifications if transitioning to paid for the first time
+        if (!$isAlreadyPaid) {
+            $invoiceRecord = null;
+            try {
+                $existingInvoice = Database::fetchOne("SELECT * FROM invoices WHERE payment_id = ? LIMIT 1", [$paymentIdDb]);
+                if (!$existingInvoice && $paymentIdDb > 0) {
+                    $subtotal = round($totalAmount / 1.18, 2);
+                    $invoiceRecord = InvoiceBuilder::createForPayment($paymentIdDb, $subtotal, 18.00, $advanceAmount, $dueAmount);
+                } else {
+                    $invoiceRecord = $existingInvoice;
+                }
+            } catch (\Throwable $e) {
+                Logger::error("Invoice generation skipped: " . $e->getMessage());
             }
 
-            Notifier::notifyNewBookingAdmin($bookingRecord);
-            Notifier::notifyBookingConfirmationCustomer($bookingRecord);
+            // Send booking confirmation notifications
+            try {
+                $isNewAcc = !empty($_SESSION['guest_account_created']);
+                $bookingRecord = [
+                    'id'             => $bookingId,
+                    'booking_id'     => $bookingId,
+                    'customer_id'    => $booking['customer_id'] ?? null,
+                    'booking_no'     => $booking['booking_no'],
+                    'service_name'   => $request->input('service_name', 'Doorstep Service'),
+                    'name'           => $booking['name'],
+                    'phone'          => $booking['phone'],
+                    'email'          => $booking['email'] ?? null,
+                    'address'        => $booking['address'],
+                    'city'           => $booking['pincode'] ? "Pincode: {$booking['pincode']}" : 'Service Area',
+                    'preferred_date' => (string)$booking['preferred_date'],
+                    'preferred_time' => (string)$booking['preferred_time'],
+                    'total_amount'   => $totalAmount,
+                    'advance_amount' => $advanceAmount,
+                    'due_amount'     => $dueAmount,
+                    'payment_type'   => $paymentType,
+                    'priority'       => $prio,
+                    'is_new_customer'=> $isNewAcc,
+                    'login_url'      => View::fullUrl('/login'),
+                    'admin_url'      => View::fullUrl('/admin/bookings/' . $bookingId),
+                ];
 
-            // If prepaid online full payment was made, also send the Advance Payment Receipt noting "Work is Due"
-            if ($paymentType === 'online' && $invoiceRecord) {
-                Notifier::notifyPrepaidInvoiceWorkDue($invoiceRecord, $bookingRecord);
+                if ($isNewAcc) {
+                    $bookingRecord['set_password_url'] = $_SESSION['guest_set_password_url'] ?? null;
+                    $bookingRecord['identifier'] = $_SESSION['guest_account_identifier'] ?? $booking['phone'];
+                }
+
+                Notifier::notifyNewBookingAdmin($bookingRecord);
+                Notifier::notifyBookingConfirmationCustomer($bookingRecord);
+
+                if ($paymentType === 'online' && $invoiceRecord) {
+                    Notifier::notifyPrepaidInvoiceWorkDue($invoiceRecord, $bookingRecord);
+                }
+            } catch (\Throwable $e) {
+                Logger::error("Booking notification error post-payment: " . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            Logger::error("Booking notification error post-payment: " . $e->getMessage());
         }
 
         // Clear cart

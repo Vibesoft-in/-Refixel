@@ -52,7 +52,7 @@ Router::get('/{service}-in-{city}', 'ServiceController@serviceInCity');
 // Booking Flow & Cart
 Router::get('/book', 'BookingController@showForm');
 Router::post('/book', 'BookingController@submit', ['VerifyCsrf']);
-Router::post('/book/verify-payment', 'BookingController@verifyPayment');
+Router::post('/book/verify-payment', 'BookingController@verifyPayment', ['VerifyCsrf']);
 Router::get('/book-success', 'BookingController@success');
 Router::post('/quick-enquiry', 'BookingController@quickEnquiry');
 Router::get('/enquiry-success', 'BookingController@enquirySuccess');

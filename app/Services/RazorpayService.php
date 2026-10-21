@@ -44,8 +44,8 @@ class RazorpayService implements PaymentGatewayInterface
 
     public function verifyPayment(string $paymentId, string $orderId, string $signature): bool
     {
-        if (empty($this->keySecret)) {
-            return true; // Mock verified in local/testing
+        if (empty($this->keySecret) || empty($paymentId) || empty($orderId) || empty($signature)) {
+            return false;
         }
 
         $generatedSignature = hash_hmac('sha256', $orderId . '|' . $paymentId, $this->keySecret);
