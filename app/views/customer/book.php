@@ -299,8 +299,9 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                   <select name="service_id" id="serviceIdSelect" class="form-control" required>
                     <option value="">-- Choose a service package --</option>
                     <?php foreach ($allServices ?? [] as $s): ?>
-                      <option value="<?= (int)$s['id'] ?>" data-price="<?= (float)$s['starting_price'] ?>">
-                        <?= \App\Core\View::e($s['name']) ?> (Starting at ₹<?= number_format((float)$s['starting_price'], 0) ?>)
+                      <?php $sComingSoon = !empty($s['is_coming_soon']); ?>
+                      <option value="<?= (int)$s['id'] ?>" data-price="<?= (float)$s['starting_price'] ?>" <?= $sComingSoon ? 'disabled style="color: #94a3b8;"' : '' ?>>
+                        <?= \App\Core\View::e($s['name']) ?> <?= $sComingSoon ? '(Coming Soon)' : '(Starting at ₹' . number_format((float)$s['starting_price'], 0) . ')' ?>
                       </option>
                     <?php endforeach; ?>
                   </select>

@@ -81,6 +81,9 @@ class Service extends Model
             if (!in_array('is_addon', $fields, true)) {
                 Database::execute("ALTER TABLE services ADD COLUMN is_addon TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
             }
+            if (!in_array('is_coming_soon', $fields, true)) {
+                Database::execute("ALTER TABLE services ADD COLUMN is_coming_soon TINYINT(1) NOT NULL DEFAULT 0 AFTER is_addon");
+            }
         } catch (\Throwable $e) {}
 
         try {

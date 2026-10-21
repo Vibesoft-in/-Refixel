@@ -232,6 +232,7 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/{id}/delete', 'Admin\\ServiceController@deleteService', ['VerifyCsrf']);
     Router::post('/admin/services/{id}/toggle-status', 'Admin\\ServiceController@toggleServiceStatus', ['VerifyCsrf']);
     Router::post('/admin/services/{id}/toggle-addon', 'Admin\\ServiceController@toggleAddonStatus', ['VerifyCsrf']);
+    Router::post('/admin/services/{id}/toggle-coming-soon', 'Admin\\ServiceController@toggleComingSoon', ['VerifyCsrf']);
     Router::get('/admin/services/categories', 'Admin\\ServiceController@categories');
     Router::post('/admin/services/categories', 'Admin\\ServiceController@storeCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/update', 'Admin\\ServiceController@updateCategory', ['VerifyCsrf']);
@@ -243,6 +244,7 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/addons', 'Admin\\ServiceAddonController@store', ['VerifyCsrf']);
     Router::post('/admin/services/addons/toggle-auto-engine', 'Admin\\ServiceAddonController@toggleAutoEngine', ['VerifyCsrf']);
     Router::post('/admin/services/addons/create-addon-service', 'Admin\\ServiceAddonController@createAddonService', ['VerifyCsrf']);
+    Router::post('/admin/services/addons/rename', 'Admin\\ServiceAddonController@updateAddonName', ['VerifyCsrf']);
     Router::post('/admin/services/addons/{id}/update', 'Admin\\ServiceAddonController@update', ['VerifyCsrf']);
     Router::post('/admin/services/addons/{id}/delete', 'Admin\\ServiceAddonController@delete', ['VerifyCsrf']);
     Router::post('/admin/services/addons/{id}/toggle-status', 'Admin\\ServiceAddonController@toggleStatus', ['VerifyCsrf']);

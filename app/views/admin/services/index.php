@@ -35,6 +35,7 @@ $categories = $categories ?? [];
             <th class="py-3 text-dark">Type</th>
             <th class="py-3 text-dark">Starting Price</th>
             <th class="py-3 text-dark">Duration</th>
+            <th class="py-3 text-dark text-center">Coming Soon</th>
             <th class="py-3 text-dark">Status</th>
             <th class="py-3 text-right text-dark">Actions</th>
           </tr>
@@ -42,7 +43,7 @@ $categories = $categories ?? [];
         <tbody>
           <?php if (empty($services)): ?>
             <tr>
-              <td colspan="8" class="text-center py-5 text-muted">No services registered in catalog. Click "Add New Service" above.</td>
+              <td colspan="9" class="text-center py-5 text-muted">No services registered in catalog. Click "Add New Service" above.</td>
             </tr>
           <?php else: ?>
             <?php foreach ($services as $s): ?>
@@ -100,14 +101,40 @@ $categories = $categories ?? [];
                 <td class="align-middle text-muted small">
                   <?= !empty($s['duration_minutes']) ? ((int)$s['duration_minutes'] . ' mins') : '60 mins' ?>
                 </td>
-                <td class="align-middle">
+                <td class="align-middle text-center text-nowrap">
+                  <form method="POST" action="<?= View::url('/admin/services/' . $s['id'] . '/toggle-coming-soon') ?>" class="d-inline">
+                    <?= View::csrfField() ?>
+                    <?php if (!empty($s['is_coming_soon'])): ?>
+                      <button type="submit" class="btn btn-sm font-weight-bold px-3 py-1 shadow-sm" style="background: #fef3c7; color: #92400e; border: 1.5px solid #f59e0b; border-radius: 20px; font-size: 11.5px; transition: all 0.2s;" title="Coming Soon is currently ON. Click to turn OFF (Make Live)">
+                        <i class="fa fa-clock-o mr-1 text-warning"></i> Coming Soon: <strong class="text-danger">ON</strong>
+                      </button>
+                    <?php else: ?>
+                      <button type="submit" class="btn btn-sm font-weight-bold px-3 py-1 text-muted" style="background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 11.5px; transition: all 0.2s;" title="Coming Soon is currently OFF. Click to turn ON">
+                        <i class="fa fa-clock-o mr-1"></i> Coming Soon: <strong>OFF</strong>
+                      </button>
+                    <?php endif; ?>
+                  </form>
+                </td>
+                <td class="align-middle text-nowrap">
                   <?php if (!empty($s['is_active'])): ?>
                     <span class="badge badge-success px-2 py-1">Active</span>
                   <?php else: ?>
                     <span class="badge badge-danger px-2 py-1">Disabled</span>
                   <?php endif; ?>
+                  <?php if (!empty($s['is_coming_soon'])): ?>
+                    <span class="badge badge-warning text-dark px-2 py-1 ml-1" style="background:#fef3c7; color:#92400e; border: 1px solid #fde68a;" title="Customers can view service, but Booking & Add-to-Cart will show 'Coming Soon'">
+                      <i class="fa fa-clock-o mr-1"></i>Coming Soon
+                    </span>
+                  <?php endif; ?>
                 </td>
                 <td class="align-middle text-right text-nowrap">
+                  <form method="POST" action="<?= View::url('/admin/services/' . $s['id'] . '/toggle-coming-soon') ?>" class="d-inline mr-1">
+                    <?= View::csrfField() ?>
+                    <button type="submit" class="btn btn-sm <?= !empty($s['is_coming_soon']) ? 'btn-warning font-weight-bold text-dark' : 'btn-outline-warning' ?> py-1 px-2 font-weight-bold" title="<?= !empty($s['is_coming_soon']) ? 'Turn OFF Coming Soon' : 'Turn ON Coming Soon' ?>" style="<?= !empty($s['is_coming_soon']) ? 'background: #f59e0b; color: #fff !important;' : 'color: #d97706; border-color: #f59e0b;' ?>">
+                      <i class="fa fa-clock-o mr-1"></i><?= !empty($s['is_coming_soon']) ? 'Soon: ON' : 'Soon: OFF' ?>
+                    </button>
+                  </form>
+
                   <form method="POST" action="<?= View::url('/admin/services/' . $s['id'] . '/toggle-addon') ?>" class="d-inline mr-1">
                     <?= View::csrfField() ?>
                     <button type="submit" class="btn btn-sm <?= !empty($s['is_addon']) ? 'btn-outline-info' : 'btn-outline-warning' ?> py-1 px-2 font-weight-bold" title="Toggle between Main Service and Add-on Only">
@@ -131,6 +158,7 @@ $categories = $categories ?? [];
                     data-description="<?= View::e($s['description'] ?? '') ?>"
                     data-image="<?= View::e($s['image'] ?? '') ?>"
                     data-is-addon="<?= !empty($s['is_addon']) ? '1' : '0' ?>"
+                    data-is-coming-soon="<?= !empty($s['is_coming_soon']) ? '1' : '0' ?>"
                     title="Edit service">
                     <i class="fa fa-pencil"></i>
                   </button>
@@ -197,6 +225,16 @@ $categories = $categories ?? [];
           <div class="form-group mb-3">
             <label class="font-weight-bold small">Short Description</label>
             <textarea name="description" class="form-control" rows="3" placeholder="Brief scope of work included in this service..."></textarea>
+          </div>
+
+          <div class="form-group mb-2 p-2 rounded bg-light border">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" name="is_coming_soon" value="1" class="custom-control-input" id="new_is_coming_soon">
+              <label class="custom-control-label font-weight-bold small text-dark" for="new_is_coming_soon">
+                <i class="fa fa-clock-o text-warning mr-1"></i> Mark as "Coming Soon" (Customers can view details, but Booking &amp; Add-to-Cart are paused)
+              </label>
+            </div>
+            <small class="form-text text-muted pl-4">When enabled, the service displays "Coming Soon" badges and buttons across all customer pages.</small>
           </div>
 
           <div class="form-group mb-2 p-2 rounded bg-light border">
@@ -268,6 +306,16 @@ $categories = $categories ?? [];
 
           <div class="form-group mb-2 p-2 rounded bg-light border">
             <div class="custom-control custom-checkbox">
+              <input type="checkbox" name="is_coming_soon" value="1" class="custom-control-input" id="edit_svc_is_coming_soon">
+              <label class="custom-control-label font-weight-bold small text-dark" for="edit_svc_is_coming_soon">
+                <i class="fa fa-clock-o text-warning mr-1"></i> Mark as "Coming Soon" (Customers can view details, but Booking &amp; Add-to-Cart are paused)
+              </label>
+            </div>
+            <small class="form-text text-muted pl-4">When enabled, the service displays "Coming Soon" badges and buttons across all customer pages.</small>
+          </div>
+
+          <div class="form-group mb-2 p-2 rounded bg-light border">
+            <div class="custom-control custom-checkbox">
               <input type="checkbox" name="is_addon" value="1" class="custom-control-input" id="edit_svc_is_addon">
               <label class="custom-control-label font-weight-bold small text-dark" for="edit_svc_is_addon">
                 Treat as Add-on Only (Hide from main services catalog &amp; packages list)
@@ -298,6 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var description = this.getAttribute('data-description');
       var image = this.getAttribute('data-image');
       var isAddon = this.getAttribute('data-is-addon');
+      var isComingSoon = this.getAttribute('data-is-coming-soon');
 
       var form = document.getElementById('editServiceForm');
       form.action = baseUrl + '/admin/services/' + id + '/update';
@@ -309,6 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('edit_svc_description').value = description;
       document.getElementById('edit_svc_image_path').value = image;
       document.getElementById('edit_svc_is_addon').checked = (isAddon === '1');
+      document.getElementById('edit_svc_is_coming_soon').checked = (isComingSoon === '1');
 
       $('#editServiceModal').modal('show');
     });

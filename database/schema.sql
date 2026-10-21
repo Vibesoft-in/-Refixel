@@ -147,6 +147,8 @@ CREATE TABLE services (
     duration_minutes SMALLINT UNSIGNED NULL,
     image VARCHAR(255) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    is_addon TINYINT(1) NOT NULL DEFAULT 0,
+    is_coming_soon TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_svc_cat_active (category_id, is_active),
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT

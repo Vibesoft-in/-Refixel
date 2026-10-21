@@ -52,6 +52,7 @@ class ServiceAddon extends Model
              WHERE sa.source_service_id = :sid
                AND sa.is_active = 1
                AND s.is_active = 1
+               AND (s.is_coming_soon = 0 OR s.is_coming_soon IS NULL)
              ORDER BY sa.sort_order ASC, sa.id ASC",
             ['sid' => $serviceId]
         );
@@ -86,6 +87,7 @@ class ServiceAddon extends Model
                    AND sa.source_service_id IS NULL
                    AND sa.is_active = 1
                    AND s.is_active = 1
+                   AND (s.is_coming_soon = 0 OR s.is_coming_soon IS NULL)
                  ORDER BY sa.sort_order ASC, sa.id ASC",
                 ['cid' => $catId]
             );
@@ -126,6 +128,7 @@ class ServiceAddon extends Model
                  FROM services s
                  LEFT JOIN categories c ON s.category_id = c.id
                  WHERE s.is_active = 1
+                   AND (s.is_coming_soon = 0 OR s.is_coming_soon IS NULL)
                  ORDER BY s.starting_price ASC"
             );
 
@@ -198,7 +201,9 @@ class ServiceAddon extends Model
                        c.name as category_name
                 FROM services s
                 LEFT JOIN categories c ON s.category_id = c.id
-                WHERE s.is_active = 1 AND (" . implode(' OR ', $whereClauses) . ")
+                WHERE s.is_active = 1
+                  AND (s.is_coming_soon = 0 OR s.is_coming_soon IS NULL)
+                  AND (" . implode(' OR ', $whereClauses) . ")
                 ORDER BY s.starting_price ASC";
 
         return Database::fetchAll($sql, $params);

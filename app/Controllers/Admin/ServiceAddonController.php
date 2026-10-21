@@ -239,6 +239,12 @@ class ServiceAddonController extends Controller
         $sourceServiceId = $request->has('source_service_id') ? (int)$request->input('source_service_id') : (int)($rule['source_service_id'] ?? 0);
         $addonServiceId = $request->has('addon_service_id') ? (int)$request->input('addon_service_id') : (int)($rule['addon_service_id'] ?? 0);
 
+        // Update Add-on Service Name if provided
+        $addonName = trim((string)$request->input('addon_name', ''));
+        if (!empty($addonName) && $addonServiceId > 0) {
+            Service::update($addonServiceId, ['name' => $addonName]);
+        }
+
         // Process Add-on Image Upload
         $uploadedImagePath = null;
         if ($request->hasFile('image')) {
@@ -452,5 +458,44 @@ class ServiceAddonController extends Controller
 
         View::setFlash('success', "New add-on service '{$name}' created and added to catalog!");
         return $this->redirect('/admin/services/addons' . ($pairWithServiceId > 0 ? '?service_id=' . $pairWithServiceId : ''));
+    }
+
+    /**
+     * Rename an Add-on Service.
+     */
+    public function updateAddonName(Request $request): Response
+    {
+        $addonServiceId = (int)$request->input('addon_service_id', 0);
+        $newName = trim((string)$request->input('name', ''));
+
+        if ($addonServiceId <= 0 || empty($newName)) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'error' => 'Please provide a valid add-on name.'], 400);
+            }
+            View::setFlash('error', 'Please provide a valid add-on name.');
+            return $this->redirect('/admin/services/addons');
+        }
+
+        $service = Service::find($addonServiceId);
+        if (!$service) {
+            if ($request->isAjax()) {
+                return Response::json(['success' => false, 'error' => 'Add-on service not found.'], 404);
+            }
+            View::setFlash('error', 'Add-on service not found.');
+            return $this->redirect('/admin/services/addons');
+        }
+
+        Service::update($addonServiceId, ['name' => $newName]);
+
+        if ($request->isAjax()) {
+            return Response::json([
+                'success' => true,
+                'message' => "Add-on name successfully updated to '{$newName}'.",
+                'name'    => $newName,
+            ]);
+        }
+
+        View::setFlash('success', "Add-on name successfully updated to '{$newName}'.");
+        return $this->redirect('/admin/services/addons');
     }
 }

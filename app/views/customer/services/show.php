@@ -4,6 +4,7 @@ $cityName = \App\Core\View::e($city);
 $price = number_format((float)$service['starting_price'], 0);
 $duration = (int)($service['duration_minutes'] ?? 60);
 $imgFile = \App\Models\Service::resolveImage($service['slug'] ?? '', $service['image'] ?? null);
+$isComingSoon = !empty($service['is_coming_soon']);
 
 // Split checklist into included and excluded
 $includedItems = [];
@@ -36,13 +37,19 @@ foreach ($checklist ?? [] as $item) {
                alt="<?= $svcName ?>"
                class="service-detail-hero-img"
                onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
-          <button type="button" 
-                  class="btn-add-to-cart hero-img-cart-btn" 
-                  data-service-id="<?= (int)$service['id'] ?>" 
-                  title="Add to Cart" 
-                  aria-label="Add <?= $svcName ?> to cart">
-            <i class="fa fa-shopping-cart"></i>
-          </button>
+          <?php if ($isComingSoon): ?>
+            <span class="hero-coming-soon-badge" style="position: absolute; right: 14px; bottom: 14px; z-index: 6; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(6px); color: #f59e0b; font-weight: 700; font-size: 13px; padding: 7px 16px; border-radius: 24px; border: 1.5px solid rgba(245, 158, 11, 0.5); box-shadow: 0 4px 14px rgba(0,0,0,0.3); display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa fa-clock-o text-warning"></i> Coming Soon
+            </span>
+          <?php else: ?>
+            <button type="button" 
+                    class="btn-add-to-cart hero-img-cart-btn" 
+                    data-service-id="<?= (int)$service['id'] ?>" 
+                    title="Add to Cart" 
+                    aria-label="Add <?= $svcName ?> to cart">
+              <i class="fa fa-shopping-cart"></i>
+            </button>
+          <?php endif; ?>
         </div>
 
         <div class="card-body p-4 p-md-5">
@@ -50,6 +57,18 @@ foreach ($checklist ?? [] as $item) {
             <span class="badge mr-2 font-weight-bold px-2.5 py-1.5" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf;">Verified Service</span>
             <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in <?= $cityName ?></span>
           </div>
+
+          <?php if ($isComingSoon): ?>
+            <div class="coming-soon-banner p-3 mb-4 rounded border d-flex align-items-center" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-color: #fde68a !important; border-radius: 12px;">
+              <div class="mr-3 text-warning d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; min-width: 44px; border-radius: 50%; background: #ffffff; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25); font-size: 22px;">
+                <i class="fa fa-clock-o"></i>
+              </div>
+              <div>
+                <div class="font-weight-bold" style="color: #92400e; font-size: 15px;">Coming Soon in <?= $cityName ?>!</div>
+                <div class="small" style="color: #b45309;">We are getting ready to launch this service in your area. Online booking and orders will open soon!</div>
+              </div>
+            </div>
+          <?php endif; ?>
 
           <h1 class="font-weight-bold mb-2 service-detail-title">
             <?= $svcName ?>
@@ -652,28 +671,40 @@ foreach ($checklist ?? [] as $item) {
           <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> 24-Hour satisfaction re-clean guarantee</li>
         </ul>
 
-        <div class="service-action-btns-wrap mb-2">
-          <button type="button" 
-                  class="btn btn-add-to-cart desktop-cart-btn" 
-                  data-service-id="<?= (int)$service['id'] ?>"
-                  title="Add to Cart"
-                  aria-label="Add <?= $svcName ?> to cart">
-            <i class="fa fa-shopping-cart mr-1"></i> Add to Cart
-          </button>
-          <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn service-book-visit-btn" data-service-id="<?= (int)$service['id'] ?>">
-            Book Doorstep Visit
+        <?php if ($isComingSoon): ?>
+          <div class="coming-soon-actions-wrap mb-3">
+            <button type="button" class="btn btn-block py-3 font-weight-bold" disabled style="background: #f1f5f9; color: #64748b; border: 1.5px dashed #cbd5e1; border-radius: 8px; cursor: not-allowed; font-size: 14.5px;">
+              <i class="fa fa-clock-o text-warning mr-2" style="font-size: 17px;"></i>Coming Soon • Bookings Opening Soon
+            </button>
+          </div>
+          <?php $swNum = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
+          <a href="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20when%20will%20<?= urlencode($service['name']) ?>%20be%20available%20for%20booking%20in%20<?= urlencode($city) ?>%3F" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100" id="serviceWhatsAppBtn">
+            <i class="fa fa-whatsapp mr-1"></i> Enquire Launch Date via WhatsApp
           </a>
-        </div>
+        <?php else: ?>
+          <div class="service-action-btns-wrap mb-2">
+            <button type="button" 
+                    class="btn btn-add-to-cart desktop-cart-btn" 
+                    data-service-id="<?= (int)$service['id'] ?>"
+                    title="Add to Cart"
+                    aria-label="Add <?= $svcName ?> to cart">
+              <i class="fa fa-shopping-cart mr-1"></i> Add to Cart
+            </button>
+            <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn service-book-visit-btn" data-service-id="<?= (int)$service['id'] ?>">
+              Book Doorstep Visit
+            </a>
+          </div>
 
-        <?php $swNum = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
-        <a href="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100" id="serviceWhatsAppBtn" data-base-url="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>">
-          <i class="fa fa-whatsapp mr-1"></i> Quick Book via WhatsApp
-        </a>
+          <?php $swNum = preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')); ?>
+          <a href="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>" target="_blank" class="btn btn-outline-success service-whatsapp-btn w-100" id="serviceWhatsAppBtn" data-base-url="https://api.whatsapp.com/send?phone=<?= $swNum ?>&text=Hi%20Refixel%2C%20I%20would%20like%20to%20book%20<?= urlencode($service['name']) ?>%20in%20<?= urlencode($city) ?>">
+            <i class="fa fa-whatsapp mr-1"></i> Quick Book via WhatsApp
+          </a>
+        <?php endif; ?>
 
         <?php 
         $addonsList = !empty($addons) ? $addons : \App\Models\ServiceAddon::forService((int)$service['id'], [], 6);
         ?>
-        <?php if (!empty($addonsList)): ?>
+        <?php if (!$isComingSoon && !empty($addonsList)): ?>
           <div class="service-addons-widget mt-3 pt-3 border-top" id="serviceAddonsWidget" data-base-price="<?= (float)preg_replace('/[^0-9.]/', '', (string)$price) ?>">
             <div class="d-flex align-items-center justify-content-between mb-2">
               <span class="service-addons-header-title">
@@ -749,16 +780,22 @@ foreach ($checklist ?? [] as $item) {
       <span class="smb-price">₹<?= $price ?></span>
     </div>
     <div class="d-flex align-items-center" style="gap: 10px;">
-      <button type="button" 
-              class="btn btn-add-to-cart smb-cart-btn" 
-              data-service-id="<?= (int)$service['id'] ?>" 
-              title="Add to Cart" 
-              aria-label="Add <?= $svcName ?> to cart">
-        <i class="fa fa-shopping-cart"></i>
-      </button>
-      <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn" data-service-id="<?= (int)$service['id'] ?>">
-        Book Now &rarr;
-      </a>
+      <?php if ($isComingSoon): ?>
+        <span class="badge py-2 px-3 font-weight-bold" style="background: #fef3c7; color: #92400e; border: 1.5px solid #fde68a; font-size: 13px; border-radius: 20px;">
+          <i class="fa fa-clock-o mr-1 text-warning"></i> Coming Soon
+        </span>
+      <?php else: ?>
+        <button type="button" 
+                class="btn btn-add-to-cart smb-cart-btn" 
+                data-service-id="<?= (int)$service['id'] ?>" 
+                title="Add to Cart" 
+                aria-label="Add <?= $svcName ?> to cart">
+          <i class="fa fa-shopping-cart"></i>
+        </button>
+        <a href="<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>" class="btn text-white font-weight-bold smb-book-btn" data-service-id="<?= (int)$service['id'] ?>">
+          Book Now &rarr;
+        </a>
+      <?php endif; ?>
     </div>
   </div>
 </div>

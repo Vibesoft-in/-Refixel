@@ -45,8 +45,8 @@ class Cart
             if ($qty <= 0) continue;
 
             $service = Service::find((int)$serviceId);
-            if (!$service || empty($service['is_active'])) {
-                // Remove inactive or deleted service automatically
+            if (!$service || empty($service['is_active']) || !empty($service['is_coming_soon'])) {
+                // Remove inactive, deleted, or coming soon service automatically
                 unset($_SESSION[self::SESSION_KEY][$serviceId]);
                 continue;
             }
@@ -87,6 +87,14 @@ class Cart
         $service = Service::find($serviceId);
         if (!$service || empty($service['is_active'])) {
             return ['success' => false, 'error' => 'Service unavailable'];
+        }
+
+        if (!empty($service['is_coming_soon'])) {
+            return [
+                'success'        => false,
+                'error'          => "Service '{$service['name']}' is coming soon and cannot be added to cart yet.",
+                'is_coming_soon' => true,
+            ];
         }
 
         if (isset($_SESSION[self::SESSION_KEY][$serviceId])) {

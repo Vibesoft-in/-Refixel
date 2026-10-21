@@ -1413,6 +1413,7 @@ if (empty($activeCategory)) {
                   $targetBookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
                   $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
                   $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
+                  $isComingSoon = !empty($svc['is_coming_soon']);
                 ?>
                   <div class="package-card-item">
                     <div class="card h-100 shadow-sm border-0 service-package-card" data-service-url="<?= $svcUrl ?>">
@@ -1422,14 +1423,26 @@ if (empty($activeCategory)) {
                              loading="lazy"
                              decoding="async"
                              onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/refixel-cleaning.jpg') ?>';">
-                        <!-- Floating Add to Cart Icon Button on Image (Right Corner) -->
-                        <button type="button" 
-                                class="btn-add-to-cart card-img-cart-btn" 
-                                data-service-id="<?= $svcId ?>" 
-                                title="Add to Cart" 
-                                aria-label="Add <?= $svcName ?> to cart">
-                          <i class="fa fa-shopping-cart"></i>
-                        </button>
+                        <!-- Floating Add to Cart Icon Button on Image (Right Corner) or Coming Soon Badge -->
+                        <?php if ($isComingSoon): ?>
+                          <span class="badge-coming-soon" style="position: absolute; top: 10px; left: 10px; z-index: 6; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(4px); color: #f59e0b; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.4);"><i class="fa fa-clock-o mr-1"></i>Coming Soon</span>
+                          <button type="button" 
+                                  class="btn-coming-soon-badge card-img-cart-btn" 
+                                  data-service-name="<?= $svcName ?>" 
+                                  title="<?= $svcName ?> is Coming Soon" 
+                                  aria-label="<?= $svcName ?> is Coming Soon"
+                                  style="position: absolute; right: 10px; bottom: 10px; z-index: 6; width: 34px; height: 34px; border-radius: 50%; background: #ffffff; color: #f59e0b; border: 1.5px solid #fde68a; box-shadow: 0 3px 10px rgba(0,0,0,0.18); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
+                            <i class="fa fa-clock-o" style="font-size: 14px;"></i>
+                          </button>
+                        <?php else: ?>
+                          <button type="button" 
+                                  class="btn-add-to-cart card-img-cart-btn" 
+                                  data-service-id="<?= $svcId ?>" 
+                                  title="Add to Cart" 
+                                  aria-label="Add <?= $svcName ?> to cart">
+                            <i class="fa fa-shopping-cart"></i>
+                          </button>
+                        <?php endif; ?>
                       </div>
                       <div class="card-body d-flex flex-column p-3">
                         <h4 class="font-weight-bold mb-1" style="font-size: 15.5px; color: #1a1a1a; letter-spacing: -0.2px;">
@@ -1454,10 +1467,16 @@ if (empty($activeCategory)) {
                           <a href="<?= $svcUrl ?>" class="btn btn-outline-secondary btn-sm flex-grow-1 font-weight-bold text-center btn-package-details" style="border-radius: 7px; font-size: 12px; padding: 6px 10px; white-space: nowrap;">
                             <i class="fa fa-list-ul mr-1"></i> Checklist
                           </a>
-                          <!-- Book Now on the Right -->
-                          <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold text-center btn-package-book" data-service-id="<?= (int)$svcId ?>" data-is-logged-in="<?= $isCustomerLoggedIn ? '1' : '0' ?>" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
-                            Book Now
-                          </a>
+                          <!-- Book Now or Coming Soon on the Right -->
+                          <?php if ($isComingSoon): ?>
+                            <button type="button" class="btn btn-sm px-2.5 font-weight-bold btn-package-coming-soon text-center" data-service-name="<?= $svcName ?>" style="background: #f1f5f9; color: #64748b; border: 1.5px dashed #cbd5e1; border-radius: 7px; font-size: 12px; padding: 6px 12px; white-space: nowrap; cursor: pointer;" title="This service is coming soon!">
+                              <i class="fa fa-clock-o mr-1 text-warning"></i>Coming Soon
+                            </button>
+                          <?php else: ?>
+                            <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold text-center btn-package-book" data-service-id="<?= (int)$svcId ?>" data-is-logged-in="<?= $isCustomerLoggedIn ? '1' : '0' ?>" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                              Book Now
+                            </a>
+                          <?php endif; ?>
                         </div>
                       </div>
                     </div>
@@ -1697,29 +1716,35 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      // Mark as added in our client-side set
-      window._refixelCartIds.add(serviceId);
+      if (data && data.success) {
+        // Mark as added in our client-side set
+        window._refixelCartIds.add(serviceId);
 
-      cartBtn.innerHTML = '<i class="fa fa-check"></i>';
-      cartBtn.style.background = '#3b82f6';
-      cartBtn.style.borderColor = '#3b82f6';
-      cartBtn.style.color = '#ffffff';
+        cartBtn.innerHTML = '<i class="fa fa-check"></i>';
+        cartBtn.style.background = '#3b82f6';
+        cartBtn.style.borderColor = '#3b82f6';
+        cartBtn.style.color = '#ffffff';
 
-      if (window.syncCartUI) {
-        window.syncCartUI();
-      }
+        if (window.syncCartUI) {
+          window.syncCartUI();
+        }
 
-      if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
-        window.openRefixelAddonModal(data);
-      }
+        if (window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+          window.openRefixelAddonModal(data);
+        }
 
-      setTimeout(function () {
+        setTimeout(function () {
+          cartBtn.innerHTML = origHtml;
+          cartBtn.style.background = '';
+          cartBtn.style.borderColor = '';
+          cartBtn.style.color = '';
+          cartBtn.disabled = false;
+        }, 1600);
+      } else {
         cartBtn.innerHTML = origHtml;
-        cartBtn.style.background = '';
-        cartBtn.style.borderColor = '';
-        cartBtn.style.color = '';
         cartBtn.disabled = false;
-      }, 1600);
+        showComingSoonToast(data && data.service_name ? data.service_name : 'This service');
+      }
     })
     .catch(function () {
       cartBtn.innerHTML = origHtml;
@@ -1789,7 +1814,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!card) return;
 
     // Do nothing if clicked on Add to Cart, Book Now, or Details button directly
-    if (e.target.closest('.btn-add-to-cart') || e.target.closest('.btn-package-book') || e.target.closest('.btn-package-details')) {
+    if (e.target.closest('.btn-add-to-cart') || e.target.closest('.btn-package-book') || e.target.closest('.btn-package-details') || e.target.closest('.btn-package-coming-soon') || e.target.closest('.btn-coming-soon-badge')) {
       return;
     }
 
@@ -1797,6 +1822,29 @@ document.addEventListener('DOMContentLoaded', function () {
     if (serviceUrl) {
       window.location.href = serviceUrl;
     }
+  });
+
+  /* Coming Soon Button & Badge Notification */
+  function showComingSoonToast(svcName) {
+    var toast = document.createElement('div');
+    toast.className = 'rf-coming-soon-toast';
+    toast.style.cssText = 'position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #ffffff; padding: 12px 22px; border-radius: 30px; font-size: 13.5px; font-weight: 600; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1.5px solid #f59e0b; display: flex; align-items: center; gap: 9px; animation: rfFadeIn 0.25s ease-out;';
+    toast.innerHTML = '<i class="fa fa-clock-o" style="color: #f59e0b; font-size: 16px;"></i> <span><strong>' + (svcName || 'Service') + '</strong> is launching soon in your area! Stay tuned.</span>';
+    document.body.appendChild(toast);
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s ease';
+      setTimeout(function() { toast.remove(); }, 300);
+    }, 2800);
+  }
+
+  document.addEventListener('click', function(e) {
+    var csBtn = e.target.closest('.btn-package-coming-soon, .btn-coming-soon-badge');
+    if (!csBtn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var sName = csBtn.getAttribute('data-service-name') || 'This service';
+    showComingSoonToast(sName);
   });
 
   /* ── Touch / Click anywhere on category card switches to category ── */

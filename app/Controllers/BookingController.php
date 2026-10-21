@@ -37,6 +37,10 @@ class BookingController extends Controller
 
         $serviceId = (int)$request->query('service_id', 0);
         $service = $serviceId ? Service::find($serviceId) : null;
+        if ($service && !empty($service['is_coming_soon'])) {
+            View::setFlash('warning', "Service '{$service['name']}' is coming soon and bookings will open shortly!");
+            return $this->redirect('/' . ($service['slug'] ?? 'services'));
+        }
         $allServices = Service::getActive();
 
         return $this->render('customer.book', [
@@ -98,11 +102,33 @@ class BookingController extends Controller
             return Response::json(['success' => false, 'error' => 'Invalid service ID.'], 400);
         }
 
+        $service = Service::find($serviceId);
+        if ($service && !empty($service['is_coming_soon'])) {
+            return Response::json([
+                'success'        => false,
+                'status'         => 'error',
+                'is_coming_soon' => true,
+                'service_name'   => $service['name'],
+                'message'        => "Service '{$service['name']}' is coming soon and cannot be added to cart yet.",
+                'error'          => "Service '{$service['name']}' is coming soon and cannot be added to cart yet.",
+            ], 400);
+        }
+
         $setExact = (bool)($request->input('set_exact', false));
         if ($setExact) {
             $res = Cart::update($serviceId, max(1, $qty));
         } else {
             $res = Cart::add($serviceId, max(1, $qty));
+        }
+
+        if (empty($res['success'])) {
+            return Response::json([
+                'success'        => false,
+                'status'         => 'error',
+                'is_coming_soon' => !empty($res['is_coming_soon']),
+                'error'          => $res['error'] ?? 'Failed to add service to cart.',
+                'message'        => $res['error'] ?? 'Failed to add service to cart.',
+            ], 400);
         }
 
         // Support bundling multiple companion add-on services directly
@@ -391,6 +417,38 @@ class BookingController extends Controller
                 }
                 View::setFlash('error', 'The requested service is currently unavailable.');
                 return $this->redirect('/services');
+            }
+
+            if (!empty($service['is_coming_soon'])) {
+                if ($request->isAjax() || $request->input('is_ajax')) {
+                    return Response::json([
+                        'success'        => false,
+                        'is_coming_soon' => true,
+                        'message'        => "Service '{$service['name']}' is coming soon and cannot be booked yet.",
+                        'error'          => "Service '{$service['name']}' is coming soon and cannot be booked yet.",
+                    ], 400);
+                }
+                View::setFlash('error', "Service '{$service['name']}' is coming soon and cannot be booked yet.");
+                return $this->redirect('/' . ($service['slug'] ?? 'services'));
+            }
+
+            if ($request->input('from_cart')) {
+                $cartItems = Cart::getDetails()['items'] ?? [];
+                foreach ($cartItems as $cItem) {
+                    $cSvc = Service::find((int)$cItem['service_id']);
+                    if ($cSvc && !empty($cSvc['is_coming_soon'])) {
+                        if ($request->isAjax() || $request->input('is_ajax')) {
+                            return Response::json([
+                                'success'        => false,
+                                'is_coming_soon' => true,
+                                'message'        => "Service '{$cSvc['name']}' in your cart is coming soon and cannot be booked yet.",
+                                'error'          => "Service '{$cSvc['name']}' in your cart is coming soon and cannot be booked yet.",
+                            ], 400);
+                        }
+                        View::setFlash('error', "Service '{$cSvc['name']}' in your cart is coming soon and cannot be booked yet.");
+                        return $this->redirect('/cart');
+                    }
+                }
             }
 
             // Validate Preferred Date & Time Slot (30 mins advance booking requirement for today)

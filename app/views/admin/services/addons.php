@@ -219,7 +219,16 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
                       <?php endif; ?>
                     </div>
                     <div>
-                      <div class="font-weight-bold text-dark" style="font-size: 13.5px;"><?= View::e($r['addon_name']) ?></div>
+                      <div class="d-flex align-items-center" style="gap: 7px;">
+                        <span class="font-weight-bold text-dark" style="font-size: 13.5px;"><?= View::e($r['addon_name']) ?></span>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-1 quick-rename-btn"
+                                data-addon-id="<?= (int)$r['addon_service_id'] ?>"
+                                data-addon-name="<?= View::e($r['addon_name']) ?>"
+                                title="Click to rename this add-on"
+                                style="font-size: 10.5px; border-radius: 4px; line-height: 1.2;">
+                          <i class="fa fa-pencil text-primary"></i> Edit Name
+                        </button>
+                      </div>
                       <div class="small text-muted">
                         Base: ₹<?= number_format((float)$r['addon_base_price'], 2) ?>
                         <?php if (!empty($r['addon_category_name'])): ?>
@@ -535,11 +544,25 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
             </label>
             <select name="addon_service_id" id="editAddonServiceId" class="form-control" required>
               <?php foreach ($services as $srv): ?>
-                <option value="<?= $srv['id'] ?>" data-image="<?= htmlspecialchars(\App\Models\Service::resolveImage($srv['slug'] ?? '', $srv['image'] ?? null)) ?>">
+                <option value="<?= $srv['id'] ?>" 
+                        data-name="<?= View::e($srv['name']) ?>" 
+                        data-image="<?= htmlspecialchars(\App\Models\Service::resolveImage($srv['slug'] ?? '', $srv['image'] ?? null)) ?>">
                   <?= View::e($srv['name']) ?> (Base: ₹<?= number_format((float)$srv['starting_price'], 0) ?>)
                 </option>
               <?php endforeach; ?>
             </select>
+          </div>
+
+          <!-- Edit Add-on Name -->
+          <div class="form-group mb-3 p-2.5 rounded border" style="background: #f8fafc; border-color: #e2e8f0;">
+            <label class="font-weight-bold small text-dark mb-1 d-flex align-items-center justify-content-between">
+              <span><i class="fa fa-pencil text-primary mr-1"></i> Edit Add-on Name <span class="text-danger">*</span></span>
+              <span class="badge badge-light border text-muted" style="font-size: 10px;">Editable</span>
+            </label>
+            <input type="text" name="addon_name" id="editAddonNameInput" class="form-control" placeholder="Enter add-on name..." required>
+            <small class="text-muted d-block mt-1" style="font-size: 11px;">
+              <i class="fa fa-info-circle mr-1"></i> Renaming this add-on updates its title in catalog lists, pairing cards, and cart recommendations.
+            </small>
           </div>
 
           <!-- 4. Add-on Image Upload -->
@@ -597,6 +620,43 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
           <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary font-weight-bold px-4">
             Update Rule
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL: QUICK RENAME ADD-ON SERVICE             -->
+<!-- ============================================== -->
+<div class="modal fade" id="quickRenameModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 420px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+      <form method="POST" action="<?= View::url('/admin/services/addons/rename') ?>">
+        <?= View::csrfField() ?>
+        <input type="hidden" name="addon_service_id" id="quickRenameAddonId" value="">
+        <div class="modal-header bg-light py-3 px-4 border-bottom">
+          <h6 class="modal-title font-weight-bold text-dark mb-0">
+            <i class="fa fa-pencil text-primary mr-1"></i> Edit Add-on Name
+          </h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="form-group mb-0">
+            <label class="font-weight-bold small text-dark mb-1">Add-on Display Name <span class="text-danger">*</span></label>
+            <input type="text" name="name" id="quickRenameInput" class="form-control" required placeholder="Enter new add-on name...">
+            <small class="text-muted d-block mt-2" style="font-size: 11.5px; line-height: 1.4;">
+              <i class="fa fa-info-circle mr-1 text-primary"></i> This will immediately update the add-on name across all customer-facing service pages, smart recommendations, and checkout.
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer py-2 px-4 bg-light border-top">
+          <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-sm btn-primary font-weight-bold px-3">
+            <i class="fa fa-save mr-1"></i> Save Name
           </button>
         </div>
       </form>
@@ -848,6 +908,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
       filterServicesByCheckedCategories("edit-modal-cat-chk", "editSourceServiceId", sourceSrvId);
 
+      var addonName = this.getAttribute("data-addon-name") || '';
+      var nameEl = document.getElementById("editAddonNameInput");
+      if (nameEl) {
+        nameEl.value = addonName;
+      }
+
       var addonEl = document.getElementById("editAddonServiceId");
       if (addonEl) {
         addonEl.value = addonSrvId;
@@ -884,6 +950,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
       if (window.$) {
         $('#editPairingModal').modal('show');
+      }
+    });
+  });
+
+  // On addon service dropdown change in edit modal, update the name input to default option name
+  var editAddonSelect = document.getElementById("editAddonServiceId");
+  if (editAddonSelect) {
+    editAddonSelect.addEventListener("change", function() {
+      var opt = editAddonSelect.options[editAddonSelect.selectedIndex];
+      var nameEl = document.getElementById("editAddonNameInput");
+      if (opt && nameEl) {
+        nameEl.value = opt.getAttribute("data-name") || opt.text.split(' (Base:')[0];
+      }
+    });
+  }
+
+  // Quick Rename button click handler
+  document.querySelectorAll('.quick-rename-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var aId = this.getAttribute('data-addon-id');
+      var aName = this.getAttribute('data-addon-name');
+      var idInput = document.getElementById('quickRenameAddonId');
+      var nameInput = document.getElementById('quickRenameInput');
+      if (idInput) idInput.value = aId;
+      if (nameInput) nameInput.value = aName;
+      if (window.$) {
+        $('#quickRenameModal').modal('show');
       }
     });
   });
