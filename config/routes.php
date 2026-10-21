@@ -19,7 +19,7 @@ Router::get('/gallery', 'PageController@gallery');
 
 Router::get('/contact', 'PageController@contact');
 Router::get('/contact-us.php', 'PageController@contact');
-Router::post('/contact', 'PageController@submitContact', ['RateLimit:5,60']);
+Router::post('/contact', 'PageController@submitContact', ['RateLimit:5,60', 'VerifyCsrf']);
 
 Router::get('/terms', 'PageController@terms');
 Router::get('/terms-and-conditions.php', 'PageController@terms');
@@ -34,7 +34,7 @@ Router::get('/blog', 'PageController@blog');
 Router::get('/blog.php', 'PageController@blog');
 
 Router::get('/partner', 'PageController@partner');
-Router::post('/partner', 'PageController@submitPartner', ['RateLimit:5,60']);
+Router::post('/partner', 'PageController@submitPartner', ['RateLimit:5,60', 'VerifyCsrf']);
 
 Router::get('/services', 'ServiceController@index');
 
@@ -60,19 +60,19 @@ Router::get('/cart', 'BookingController@cart');
 Router::get('/cart.php', 'BookingController@cart');
 Router::get('/api/cart', 'BookingController@apiCart');
 Router::get('/api/cart/addons', 'BookingController@apiCartAddons');
-Router::post('/api/cart/add', 'BookingController@addToCart', ['RateLimit:60,60']);
-Router::post('/api/cart/update', 'BookingController@updateCart', ['RateLimit:60,60']);
-Router::post('/api/cart/remove', 'BookingController@removeFromCart', ['RateLimit:60,60']);
-Router::post('/api/cart/clear', 'BookingController@clearCart', ['RateLimit:60,60']);
+Router::post('/api/cart/add', 'BookingController@addToCart', ['RateLimit:60,60', 'VerifyCsrf']);
+Router::post('/api/cart/update', 'BookingController@updateCart', ['RateLimit:60,60', 'VerifyCsrf']);
+Router::post('/api/cart/remove', 'BookingController@removeFromCart', ['RateLimit:60,60', 'VerifyCsrf']);
+Router::post('/api/cart/clear', 'BookingController@clearCart', ['RateLimit:60,60', 'VerifyCsrf']);
 Router::get('/api/services', 'ServiceController@apiSearch');
-Router::post('/api/customer/save-address', 'AccountController@apiSaveAddress');
+Router::post('/api/customer/save-address', 'AccountController@apiSaveAddress', ['RequireLogin', 'VerifyCsrf']);
 Router::get('/api/customer/profile', 'AccountController@apiGetProfile');
 Router::get('/api/customer/addresses', 'AccountController@apiGetSavedAddresses');
-Router::post('/api/customer/delete-address', 'AccountController@apiDeleteAddress');
+Router::post('/api/customer/delete-address', 'AccountController@apiDeleteAddress', ['RequireLogin', 'VerifyCsrf']);
 
 // Legacy ajax endpoints compatibility
-Router::post('/cartajax/ajax_cart_add.php', 'BookingController@addToCart', ['RateLimit:60,60']);
-Router::post('/cartajax/ajax_cart_update.php', 'BookingController@updateCart', ['RateLimit:60,60']);
+Router::post('/cartajax/ajax_cart_add.php', 'BookingController@addToCart', ['RateLimit:60,60', 'VerifyCsrf']);
+Router::post('/cartajax/ajax_cart_update.php', 'BookingController@updateCart', ['RateLimit:60,60', 'VerifyCsrf']);
 
 
 // ==========================================
@@ -196,7 +196,7 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
 Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::get('/admin', 'Admin\\DashboardController@index');
     Router::get('/admin/dashboard', 'Admin\\DashboardController@index');
-    Router::post('/admin/api/toggle-busy-mode', 'Admin\\DashboardController@toggleBusyMode');
+    Router::post('/admin/api/toggle-busy-mode', 'Admin\\DashboardController@toggleBusyMode', ['VerifyCsrf']);
     Router::get('/admin/api/busy-mode-status', 'Admin\\DashboardController@getBusyModeStatus');
 
     // Enquiries
@@ -343,10 +343,10 @@ Router::group(['middleware' => ['RequireRole:staff']], function () {
 // API / AJAX JSON ENDPOINTS
 // ==========================================
 Router::post('/api/upload', 'Api\\UploadController@upload', ['VerifyCsrf']);
-Router::post('/api/service-area/pincode', 'Api\\ServiceAreaController@checkPincode');
-Router::post('/api/service-areas', 'Api\\ServiceAreaController@setCity');
-Router::post('/api/set-city', 'Api\\ServiceAreaController@setCity');
-Router::post('/api/search', 'Api\\ServiceAreaController@search');
+Router::post('/api/service-area/pincode', 'Api\\ServiceAreaController@checkPincode', ['VerifyCsrf']);
+Router::post('/api/service-areas', 'Api\\ServiceAreaController@setCity', ['VerifyCsrf']);
+Router::post('/api/set-city', 'Api\\ServiceAreaController@setCity', ['VerifyCsrf']);
+Router::post('/api/search', 'Api\\ServiceAreaController@search', ['VerifyCsrf']);
 Router::post('/api/job/status', 'Api\\JobStatusController@update', ['RequireLogin', 'VerifyCsrf']);
 Router::get('/api/notifications', 'Api\\NotificationController@recent', ['RequireLogin']);
 

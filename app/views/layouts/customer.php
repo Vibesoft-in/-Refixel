@@ -10,6 +10,7 @@
   <meta name="author" content="REFIXEL">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="<?= \App\Core\View::e($canonicalUrl ?? \App\Core\View::url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
+  <?= \App\Core\View::partial('partials.csrf-init') ?>
 
   <meta property="og:title" content="<?= \App\Core\View::e($title ?? 'Professional Home & Commercial Services | REFIXEL') ?>">
   <meta property="og:description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services. Book Now!') ?>">
