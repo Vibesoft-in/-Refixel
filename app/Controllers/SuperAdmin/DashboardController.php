@@ -240,8 +240,9 @@ class DashboardController extends Controller
             return $this->redirect('/superadmin/staff');
         }
 
-        $plainPassword = 'Refixel@' . random_int(1000, 9999);
-        $passwordHash = password_hash($plainPassword, PASSWORD_BCRYPT);
+        $randomSecret = bin2hex(random_bytes(32));
+        $passwordHash = password_hash($randomSecret, PASSWORD_BCRYPT);
+        unset($randomSecret);
 
         User::update($staffId, [
             'status'               => 'active',
@@ -262,11 +263,22 @@ class DashboardController extends Controller
             ]
         );
 
-        // Send approval email with login credentials
+        // Generate 48h set-password activation token
+        $ident = !empty($user['email']) ? $user['email'] : ($user['phone'] ?? (string)$staffId);
+        $rawToken = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $rawToken);
+        $expiresAt = date('Y-m-d H:i:s', time() + 86400 * 2);
+        Database::query(
+            "INSERT INTO password_resets (email_or_phone, token_hash, expires_at) VALUES (:ident, :hash, :expires)",
+            ['ident' => $ident, 'hash' => $tokenHash, 'expires' => $expiresAt]
+        );
+        $setPasswordUrl = View::fullUrl('/reset-password?token=' . urlencode($rawToken) . '&email=' . urlencode($ident));
+
+        // Send approval email with set-password link
         $skill = Database::fetchOne("SELECT c.name FROM staff_skills ss JOIN categories c ON ss.category_id = c.id WHERE ss.staff_id = :uid LIMIT 1", ['uid' => $staffId]);
         $user['trade'] = $skill['name'] ?? 'Home Services Technician';
         $user['city'] = 'Refixel Service Area';
-        Notifier::notifyPartnerApproved($user, $plainPassword);
+        Notifier::notifyPartnerApproved($user, $setPasswordUrl);
 
         Logger::info("Super Admin (ID: " . Auth::id() . ") approved technician #{$staffId} ({$user['name']})");
         View::setFlash('success', "Technician '{$user['name']}' has been approved successfully! Credentials sent to {$user['email']}.");
@@ -588,29 +600,39 @@ class DashboardController extends Controller
             try {
                 $col = Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
                 if ($col) {
-                    $userData['plain_password'] = $password;
+                    $userData['plain_password'] = null;
                 }
             } catch (\Throwable $ignored) {}
 
             User::create($userData);
 
-            // Automatically email login credentials to newly created admin
+            // Automatically email activation invitation to newly created admin
             if (!empty($email)) {
                 try {
+                    $rawToken = bin2hex(random_bytes(32));
+                    $tokenHash = hash('sha256', $rawToken);
+                    $expiresAt = date('Y-m-d H:i:s', time() + 86400 * 2); // 48h
+                    Database::query(
+                        "INSERT INTO password_resets (email_or_phone, token_hash, expires_at) VALUES (:ident, :hash, :expires)",
+                        ['ident' => $email, 'hash' => $tokenHash, 'expires' => $expiresAt]
+                    );
+                    $inviteUrl = View::fullUrl('/reset-password?token=' . urlencode($rawToken) . '&email=' . urlencode($email));
+
                     \App\Core\Notifier::notifyAdminCreated([
-                        'name'      => $name,
-                        'email'     => $email,
-                        'phone'     => $phone,
-                        'role'      => $role,
-                        'password'  => $password,
-                        'login_url' => View::fullUrl('/login'),
+                        'name'             => $name,
+                        'email'            => $email,
+                        'phone'            => $phone,
+                        'role'             => $role,
+                        'set_password_url' => $inviteUrl,
+                        'invite_url'       => $inviteUrl,
+                        'login_url'        => View::fullUrl('/login'),
                     ]);
                 } catch (\Throwable $mailEx) {
                     \App\Core\Logger::error("Failed to send welcome credentials email to admin {$email}: " . $mailEx->getMessage());
                 }
             }
 
-            View::setFlash('success', "New {$role} user '{$name}' created successfully! Login credentials have been emailed to {$email}.");
+            View::setFlash('success', "New {$role} user '{$name}' created successfully! Activation invite sent to {$email}.");
         } catch (\Throwable $e) {
             View::setFlash('error', "Failed to create admin: " . $e->getMessage());
         }
@@ -653,22 +675,32 @@ class DashboardController extends Controller
             try {
                 $col = Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
                 if ($col) {
-                    $updateData['plain_password'] = $password;
+                    $updateData['plain_password'] = null;
                 }
             } catch (\Throwable $ignored) {}
 
             User::update($adminId, $updateData);
 
-            // Automatically email updated login credentials if email exists
+            // Automatically email reset notification with 1h reset link if email exists
             if (!empty($admin['email'])) {
                 try {
+                    $rawToken = bin2hex(random_bytes(32));
+                    $tokenHash = hash('sha256', $rawToken);
+                    $expiresAt = date('Y-m-d H:i:s', time() + 3600); // 1h
+                    Database::query(
+                        "INSERT INTO password_resets (email_or_phone, token_hash, expires_at) VALUES (:ident, :hash, :expires)",
+                        ['ident' => $admin['email'], 'hash' => $tokenHash, 'expires' => $expiresAt]
+                    );
+                    $resetUrl = View::fullUrl('/reset-password?token=' . urlencode($rawToken) . '&email=' . urlencode($admin['email']));
+
                     \App\Core\Notifier::notifyAdminPasswordReset([
-                        'name'      => $admin['name'],
-                        'email'     => $admin['email'],
-                        'phone'     => $admin['phone'],
-                        'role'      => $admin['role'],
-                        'password'  => $password,
-                        'login_url' => View::fullUrl('/login'),
+                        'name'             => $admin['name'],
+                        'email'            => $admin['email'],
+                        'phone'            => $admin['phone'],
+                        'role'             => $admin['role'],
+                        'reset_url'        => $resetUrl,
+                        'set_password_url' => $resetUrl,
+                        'login_url'        => View::fullUrl('/login'),
                     ]);
                 } catch (\Throwable $mailEx) {
                     \App\Core\Logger::error("Failed to email reset credentials to admin {$admin['email']}: " . $mailEx->getMessage());

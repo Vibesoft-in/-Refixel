@@ -50,17 +50,17 @@ $sendData = json_decode($sendResp->getBody(), true);
 assert(!isset($sendData['debug_otp']), "FAIL: debug_otp MUST NOT be present in JSON response");
 assert(!isset($sendData['otp']), "FAIL: otp MUST NOT be present in JSON response");
 
-// Retrieve generated OTP from notifications table for valid test flow
+// Verify generated OTP is sanitized in notifications table ([REDACTED]) and not leaked in API response
 $notifRow = Database::fetchOne("SELECT payload FROM notifications WHERE to_address = :email ORDER BY id DESC LIMIT 1", ['email' => $testEmail]);
 assert($notifRow !== null, "Notification must be logged for test user");
 $notifPayload = json_decode($notifRow['payload'], true);
-$rawOtp = (string)($notifPayload['otp'] ?? '');
-assert(strlen($rawOtp) === 6, "Notification payload should contain valid OTP");
+assert($notifPayload['otp'] === '[REDACTED]', "Notification payload OTP must be sanitized to [REDACTED]");
+assert(isset($_SESSION['enquiry_otp']['otp_hash']), "Session must securely store hashed OTP");
 
-// Verify status message in response does NOT contain the 6-digit OTP
-assert(!str_contains($sendData['message'] ?? '', $rawOtp), "FAIL: Response message must not contain the raw OTP");
+// Verify status message in response does NOT contain any raw 6-digit number
+assert(!preg_match('/\b\d{6}\b/', $sendData['message'] ?? ''), "FAIL: Response message must not contain any 6-digit OTP code");
 
-echo "[PASS] Test 1: debug_otp and raw OTP completely absent from API responses and status messages.\n\n";
+echo "[PASS] Test 1: debug_otp and raw OTP completely absent from API responses, sanitized in DB audit, and securely hashed.\n\n";
 
 // --------------------------------------------------------------------------
 // TEST 2: IDOR Protection & Plain Password Removal on Success Pages

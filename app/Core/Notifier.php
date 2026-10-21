@@ -655,10 +655,10 @@ class Notifier
     /**
      * Event 14: Partner/Technician Approved by Admin
      */
-    public static function notifyPartnerApproved(array $staffData, ?string $plainPassword = null): void
+    public static function notifyPartnerApproved(array $staffData, ?string $setPasswordUrl = null): void
     {
-        if ($plainPassword !== null) {
-            $staffData['password'] = $plainPassword;
+        if ($setPasswordUrl !== null) {
+            $staffData['set_password_url'] = $setPasswordUrl;
         }
         if (!empty($staffData['email'])) {
             self::send('email', $staffData['email'], 'partner_approved', $staffData);

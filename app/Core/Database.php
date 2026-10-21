@@ -83,12 +83,7 @@ class Database
                    AND sp.availability_note LIKE 'City:%'"
             );
 
-            // Check if users.plain_password column exists for Super Admin Governance
-            $plainCol = $pdo->query("SHOW COLUMNS FROM users LIKE 'plain_password'")->fetch(PDO::FETCH_ASSOC);
-            if (!$plainCol) {
-                $pdo->exec("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) NULL DEFAULT NULL AFTER password_hash");
-                $pdo->exec("UPDATE users SET plain_password = 'password123' WHERE email = 'admin@refixel.com' AND (plain_password IS NULL OR plain_password = '')");
-            }
+
 
             // Ensure active admin notification email and brand details are REFIXEL
             $pdo->exec("UPDATE settings SET setting_value = 'contact@refixel.com' WHERE setting_key = 'admin_notification_email' AND (setting_value LIKE '%primodomus%' OR setting_value LIKE '%wearerefixel%' OR setting_value LIKE '%dispatch%' OR setting_value = '' OR setting_value IS NULL)");

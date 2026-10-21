@@ -1,15 +1,16 @@
 -- =====================================================================
 -- REFIXEL Service Platform - Seed Data (Demo Environment)
 -- NOTE: Demo data is explicitly marked as demo per prompt instructions.
--- Default Password for all demo accounts: password123
+-- Initial accounts are provisioned with secure, randomized bcrypt hashes.
+-- Passwords must be activated via password reset.
 -- =====================================================================
 
 -- 1. Initial Users (Admin, Technician, Customer)
 INSERT INTO users (id, role, name, email, phone, password_hash, status, must_change_password) VALUES
-(1, 'admin', 'System Administrator', 'admin@refixel.com', '9876543210', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
-(2, 'staff', 'Rajesh Sharma (Demo Tech)', 'tech@refixel.com', '9876543211', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
-(3, 'customer', 'Ananya Verma (Demo Customer)', 'customer@refixel.com', '9876543212', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0),
-(4, 'super_admin', 'Master Super Admin', 'superadmin@refixel.com', '9876543200', '$2y$10$V21Wpw7.mv3a45OVT1nrc.CihUsOWwC/ve4.HaRwqXP.loXmoUeh.', 'active', 0);
+(1, 'admin', 'System Administrator', 'admin@refixel.com', '9876543210', '$2y$10$msYTmVX9Q5d3mOZMq.bA7edxN8eTbfUrinmg0wg.Px5LHU1jQR2iy', 'active', 1),
+(2, 'staff', 'Rajesh Sharma (Demo Tech)', 'tech@refixel.com', '9876543211', '$2y$10$y9wlaWu2vTuyT7Si5LoTCOo7T5TqfujwPISZVHk8n805Eet8tw5Dy', 'active', 1),
+(3, 'customer', 'Ananya Verma (Demo Customer)', 'customer@refixel.com', '9876543212', '$2y$10$2n.e84ruMFlcqvbqkm8hR.QUCk7kytoRwvO1kMTqwnXXaxfHkR/.a', 'active', 1),
+(4, 'super_admin', 'Master Super Admin', 'superadmin@refixel.com', '9876543200', '$2y$10$uDyi9L5skv5aCqX0XZXy7.P0Fo3NNUEm9WdD6dO4doMw.y/pfyGo.', 'active', 1);
 
 -- 2. Customer Profile
 INSERT INTO customer_profiles (user_id, address, city, pincode, lat, lng) VALUES

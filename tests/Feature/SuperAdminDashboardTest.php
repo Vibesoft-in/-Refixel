@@ -19,7 +19,7 @@ echo "=== RUNNING SUPER ADMIN DASHBOARD & 4-TIER ROLE ARCHITECTURE TESTS ===\n\n
 $superAdmin = User::findByEmailOrPhone('superadmin@refixel.com');
 assert($superAdmin !== null, "Super Admin user superadmin@refixel.com should exist in database");
 assert($superAdmin['role'] === 'super_admin', "User role must be 'super_admin'");
-assert(password_verify('password123', $superAdmin['password_hash']), "Super Admin password should match password123");
+assert(!empty($superAdmin['password_hash']) && (password_get_info($superAdmin['password_hash'])['algoName'] === 'bcrypt'), "Super Admin password must be a valid bcrypt hash");
 echo "[PASS] Test 1: Super Admin user account & credentials verified\n";
 
 // Test 2: Verify all 4 roles exist in system
@@ -30,7 +30,7 @@ if (!$admin) {
         'name'          => 'Demo Operations Admin',
         'email'         => 'admin@refixel.com',
         'phone'         => '9876543201',
-        'password_hash' => password_hash('password123', PASSWORD_BCRYPT),
+        'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
         'status'        => 'active',
     ]);
     $admin = User::find($adminId);
@@ -42,7 +42,7 @@ if (!$staff) {
         'name'          => 'Demo Technician',
         'email'         => 'tech@refixel.com',
         'phone'         => '9876543211',
-        'password_hash' => password_hash('password123', PASSWORD_BCRYPT),
+        'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
         'status'        => 'active',
     ]);
     $staff = User::find($staffId);
@@ -55,7 +55,7 @@ if (!$customer) {
         'name'          => 'Demo Customer',
         'email'         => 'customer@refixel.com',
         'phone'         => '9876543212',
-        'password_hash' => password_hash('password123', PASSWORD_BCRYPT),
+        'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
         'status'        => 'active',
     ]);
     $customer = User::find($custId);
@@ -98,18 +98,18 @@ echo "[PASS] Test 3: Auth helper methods behave correctly for all 4 roles\n";
 $reqRole = new RequireRole();
 
 // Super admin passes super_admin and admin middleware (returns null = allowed)
-$_SESSION['user'] = $superAdmin;
+$_SESSION['user'] = array_merge($superAdmin, ['must_change_password' => 0]);
 assert($reqRole->handle(new \App\Core\Request([]), 'super_admin') === null, "Super admin can access super_admin routes");
 assert($reqRole->handle(new \App\Core\Request([]), 'admin') === null, "Super admin can access admin routes");
 
 // Standard admin is BLOCKED from super_admin routes (returns redirect Response)
-$_SESSION['user'] = $admin;
+$_SESSION['user'] = array_merge($admin, ['must_change_password' => 0]);
 $adminBlocked = $reqRole->handle(new \App\Core\Request([]), 'super_admin');
 assert($adminBlocked instanceof \App\Core\Response, "Admin must be blocked from super_admin routes with a redirect response");
 assert($adminBlocked->getStatusCode() === 302, "Must return HTTP 302 redirect");
 
 // Customer is BLOCKED from super_admin and admin routes
-$_SESSION['user'] = $customer;
+$_SESSION['user'] = array_merge($customer, ['must_change_password' => 0]);
 $custBlockedAdmin = $reqRole->handle(new \App\Core\Request([]), 'admin');
 $custBlockedSuper = $reqRole->handle(new \App\Core\Request([]), 'super_admin');
 assert($custBlockedAdmin instanceof \App\Core\Response && $custBlockedAdmin->getStatusCode() === 302, "Customer blocked from admin");
@@ -169,7 +169,7 @@ assert(str_contains($cssContent, '.whatsapchat') && str_contains($cssContent, 'z
 echo "[PASS] Test 7: CSS header shadow & WhatsApp z-index verified in public stylesheet\n";
 
 // Test 8: End-to-end Controller Action Invocation & View Rendering
-$_SESSION['user'] = $superAdmin;
+$_SESSION['user'] = array_merge($superAdmin, ['must_change_password' => 0]);
 $indexRes = $saController->index(new \App\Core\Request([]));
 assert($indexRes instanceof \App\Core\Response && $indexRes->getStatusCode() === 200, "SuperAdmin index renders successfully with HTTP 200");
 assert(str_contains($indexRes->getContent(), 'Super Admin Control Center'), "SuperAdmin dashboard output contains page title");
@@ -224,7 +224,7 @@ assert($hackerUser !== null && $hackerUser['role'] === 'customer', "Public signu
 Database::query("DELETE FROM users WHERE phone = '9111223344'");
 
 // Case C: Super Admin creates valid Operations Admin
-$_SESSION['user'] = $superAdmin;
+$_SESSION['user'] = array_merge($superAdmin, ['must_change_password' => 0]);
 Database::query("DELETE FROM users WHERE email = 'ops.manager@refixel.com'");
 $validCreate = $saController->storeAdmin(new \App\Core\Request([
     'name'     => 'Operations Manager',
@@ -232,15 +232,16 @@ $validCreate = $saController->storeAdmin(new \App\Core\Request([
     'phone'    => '9888001122',
     'password' => 'managerpass123',
     'role'     => 'admin',
-]));
+], ['_csrf' => \App\Core\Csrf::token()], ['REQUEST_METHOD' => 'POST']));
 $createdAdmin = User::findBy('email', 'ops.manager@refixel.com');
 assert($createdAdmin !== null && $createdAdmin['role'] === 'admin', "Super Admin successfully created Operations Admin");
-assert($createdAdmin['plain_password'] === 'managerpass123', "Created admin plain_password must be saved for Super Admin visibility");
+assert(password_verify('managerpass123', $createdAdmin['password_hash']), "Created admin password_hash must verify with managerpass123");
+assert(empty($createdAdmin['plain_password']), "Created admin plain_password must NOT be stored in plaintext");
 Database::query("DELETE FROM users WHERE email = 'ops.manager@refixel.com'");
 echo "[PASS] Test 9: Exclusive Super Admin provisioning of Admin accounts verified (No self/public admin creation possible)\n";
 
-// Test 10: Super Admin Governance - Normal Admin ID & Password Visibility and Reset
-$_SESSION['user'] = $superAdmin;
+// Test 10: Super Admin Governance - Normal Admin ID & Hashed Password Status and Reset
+$_SESSION['user'] = array_merge($superAdmin, ['must_change_password' => 0]);
 Database::query("DELETE FROM users WHERE email = 'testgoverned@refixel.com'");
 $saController->storeAdmin(new \App\Core\Request([
     'name'     => 'Governed Admin',
@@ -248,41 +249,43 @@ $saController->storeAdmin(new \App\Core\Request([
     'phone'    => '9777112233',
     'password' => 'GovSecure99!',
     'role'     => 'admin',
-]));
+], ['_csrf' => \App\Core\Csrf::token()], ['REQUEST_METHOD' => 'POST']));
 $govAdmin = User::findBy('email', 'testgoverned@refixel.com');
 assert($govAdmin !== null, "Governed admin must exist");
 $govAdminId = (int)$govAdmin['id'];
-assert($govAdmin['plain_password'] === 'GovSecure99!', "Admin plain_password must match GovSecure99!");
+assert(password_verify('GovSecure99!', $govAdmin['password_hash']), "Admin password_hash must match GovSecure99!");
+assert(empty($govAdmin['plain_password']), "Admin plain_password must NOT be stored in plaintext");
 
-// View /superadmin/admins and verify ID and password appear in view
+// View /superadmin/admins and verify ID and account info appear in view without plaintext password
 $adminsViewRes = $saController->admins(new \App\Core\Request([]));
 $adminsHtml = $adminsViewRes->getContent();
 assert(str_contains($adminsHtml, "#{$govAdminId}"), "Super Admin view must show admin account ID");
 assert(str_contains($adminsHtml, 'testgoverned@refixel.com'), "Super Admin view must show admin login email");
-assert(str_contains($adminsHtml, 'GovSecure99!'), "Super Admin view must reveal/contain admin plain password for governance");
-assert(str_contains($adminsHtml, 'toggleAdminPassword'), "Super Admin view must contain password toggle handler");
+assert(!str_contains($adminsHtml, 'GovSecure99!'), "Super Admin view must NOT reveal/contain admin plain password");
+assert(str_contains($adminsHtml, 'Bcrypt Hashed'), "Super Admin view must contain Bcrypt Hashed badge");
 
 // Update / Reset password as Super Admin
 $resetReq = new \App\Core\Request([
     'password' => 'UpdatedSecret77!',
-]);
+], ['_csrf' => \App\Core\Csrf::token()], ['REQUEST_METHOD' => 'POST']);
 $resetRes = $saController->updateAdminPassword($resetReq, (string)$govAdminId);
 assert($resetRes instanceof \App\Core\Response && $resetRes->getStatusCode() === 302, "updateAdminPassword returns 302 redirect");
 
 $refreshedAdmin = User::find($govAdminId);
-assert($refreshedAdmin['plain_password'] === 'UpdatedSecret77!', "plain_password updated in DB");
+assert(empty($refreshedAdmin['plain_password']), "plain_password must remain NULL in DB");
 assert(password_verify('UpdatedSecret77!', $refreshedAdmin['password_hash']), "password_hash updated and valid in DB");
 
-// Verify view now shows the new updated password
+// Verify view does not leak updated password
 $refreshedView = $saController->admins(new \App\Core\Request([]));
-assert(str_contains($refreshedView->getContent(), 'UpdatedSecret77!'), "Super Admin view reflects updated admin password");
+assert(!str_contains($refreshedView->getContent(), 'UpdatedSecret77!'), "Super Admin view must NOT leak updated admin password");
 
 // Verify normal admin cannot call updateAdminPassword
-$_SESSION['user'] = $govAdmin;
+$_SESSION['user'] = array_merge($govAdmin, ['must_change_password' => 0]);
 $unauthorizedReset = $saController->updateAdminPassword($resetReq, (string)$govAdminId);
 assert($unauthorizedReset->getStatusCode() === 302, "Standard admin blocked from reset endpoint");
 
 // Cleanup
+Database::query("DELETE FROM password_resets WHERE email_or_phone = 'testgoverned@refixel.com'");
 Database::query("DELETE FROM users WHERE email = 'testgoverned@refixel.com'");
 echo "[PASS] Test 10: Super Admin Governance - Normal admin ID & password visibility and reset mechanism verified\n";
 

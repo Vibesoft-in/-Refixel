@@ -28,10 +28,12 @@ try {
             $update->execute(['id' => $existing['id']]);
             echo "Updated existing user ID {$existing['id']} to super_admin." . PHP_EOL;
         } else {
+            $randomPass = bin2hex(random_bytes(32));
             $insert = $pdo->prepare("INSERT INTO users (role, name, email, phone, password_hash, status, must_change_password) 
-                                      VALUES ('super_admin', 'Master Super Admin', 'superadmin@refixel.com', '9876543200', :hash, 'active', 0)");
-            $insert->execute(['hash' => password_hash('password123', PASSWORD_BCRYPT)]);
-            echo "Created new Super Admin (email: superadmin@refixel.com, pass: password123, phone: 9876543200)." . PHP_EOL;
+                                      VALUES ('super_admin', 'Master Super Admin', 'superadmin@refixel.com', '9876543200', :hash, 'active', 1)");
+            $insert->execute(['hash' => password_hash($randomPass, PASSWORD_BCRYPT)]);
+            unset($randomPass);
+            echo "Created new Super Admin (email: superadmin@refixel.com, phone: 9876543200, secure random hash set, password reset required)." . PHP_EOL;
         }
     } else {
         echo "Super Admin already exists with ID: " . $superAdmin['id'] . PHP_EOL;
