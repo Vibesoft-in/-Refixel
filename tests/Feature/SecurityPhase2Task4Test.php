@@ -20,8 +20,7 @@ class SecurityPhase2Task4Test
     public function __construct()
     {
         $this->pdo = Database::getConnection();
-        putenv("RAZORPAY_WEBHOOK_SECRET={$this->testSecret}");
-        $_ENV['RAZORPAY_WEBHOOK_SECRET'] = $this->testSecret;
+        Env::set('RAZORPAY_WEBHOOK_SECRET', $this->testSecret);
     }
 
     public function run(): void
