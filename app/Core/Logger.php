@@ -14,10 +14,11 @@ class Logger
         }
 
         $date = date('Y-m-d H:i:s');
+        $scrubbedMessage = self::scrubString($message);
         $sanitizedContext = self::maskSensitive($context);
         $contextStr = !empty($sanitizedContext) ? ' ' . json_encode($sanitizedContext, JSON_UNESCAPED_SLASHES) : '';
         
-        $logLine = sprintf("[%s] [%s] %s%s\n", $date, strtoupper($level), $message, $contextStr);
+        $logLine = sprintf("[%s] [%s] %s%s\n", $date, strtoupper($level), $scrubbedMessage, $contextStr);
         $logFile = self::$logDir . '/app.log';
 
         @file_put_contents($logFile, $logLine, FILE_APPEND | LOCK_EX);
@@ -45,19 +46,52 @@ class Logger
         }
     }
 
-    protected static function maskSensitive(array $data): array
+    /**
+     * Regex scrubber to mask sensitive values in free-form log messages and string context.
+     */
+    public static function scrubString(string $text): string
     {
-        $sensitiveKeys = [
-            'password', 'password_confirmation', 'token', 'secret', 'card', 'cvv',
-            'auth_token', 'api_key', 'razorpay_secret', 'authorization', 'cookie',
-            'session_id', 'otp', 'pin', 'card_number', 'private_key', 'access_token',
-            'refresh_token', 'smtp_pass', 'db_pass', 'password_hash', 'plain_password'
-        ];
+        if (empty($text)) {
+            return $text;
+        }
+
+        // 1. Credit card numbers (13-16 digits grouped with spaces/hyphens)
+        $text = preg_replace('/\b(?:\d{4}[-\s]?){3}\d{4}\b/', '****-****-****-****', $text);
+
+        // 2. CVV / CVC (3-4 digits after label)
+        $text = preg_replace('/(\b(?:cvv|cvc|security[_\s-]?code)\s*[:=]\s*[\'"]?)(\d{3,4})([\'"]?)/i', '$1***$3', $text);
+
+        // 3. Passwords (key: value or key=value)
+        $text = preg_replace('/(\b(?:password|passwd|plain_password|user_password|pwd)\s*[:=]\s*[\'"]?)([^\s\'",;]+)([\'"]?)/i', '$1********$3', $text);
+
+        // 4. OTPs & verification codes (4-8 digits after label)
+        $text = preg_replace('/(\b(?:otp|debug_otp|verification[_\s-]?code|one[_\s-]?time[_\s-]?pin|auth[_\s-]?code)\s*[:=]\s*[\'"]?)(\d{4,8})([\'"]?)/i', '$1******$3', $text);
+
+        // 5. Razorpay signatures & transaction tokens
+        $text = preg_replace('/(\b(?:razorpay_signature|signature|razorpay_secret)\s*[:=]\s*[\'"]?)([a-zA-Z0-9_\-]{16,})([\'"]?)/i', '$1********$3', $text);
+
+        // 6. Generic tokens, API keys, bearer tokens
+        $text = preg_replace('/(\b(?:api[_\s-]?key|auth_token|access_token|refresh_token|private[_\s-]?key|secret[_\s-]?key)\s*[:=]\s*[\'"]?)([a-zA-Z0-9_\-\.]{12,})([\'"]?)/i', '$1********$3', $text);
+
+        // 7. Authorization Bearer header
+        $text = preg_replace('/(\bBearer\s+)([a-zA-Z0-9_\-\.]{16,})/i', '$1********', $text);
+
+        return $text;
+    }
+
+    public static function maskSensitive(array $data): array
+    {
+        $sensitiveKeyPatterns = '/(?:password|secret|token|card|cvv|cvc|auth|cookie|session|otp|pin|key|signature|credential)/i';
+
         foreach ($data as $key => $value) {
+            $keyStr = (string)$key;
+
             if (is_array($value)) {
                 $data[$key] = self::maskSensitive($value);
-            } elseif (in_array(strtolower((string)$key), $sensitiveKeys, true)) {
+            } elseif (preg_match($sensitiveKeyPatterns, $keyStr)) {
                 $data[$key] = '********';
+            } elseif (is_string($value)) {
+                $data[$key] = self::scrubString($value);
             }
         }
         return $data;
