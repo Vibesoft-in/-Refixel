@@ -4463,14 +4463,8 @@ document.addEventListener('DOMContentLoaded', function () {
             </span>
           </div>
 
-          <div class="rfx-cred-row d-flex align-items-center justify-content-between py-1" style="font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 4px; padding-top: 6px;">
-            <span class="rfx-cred-lbl" style="color: #94a3b8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">PASSWORD</span>
-            <span class="rfx-cred-val font-weight-bold d-flex align-items-center" style="font-size: 12.5px; gap: 5px;">
-              <span id="rfxSuccessPassword" style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"></span>
-              <button type="button" class="rfx-copy-btn" id="rfxCopyPasswordBtn" title="Copy Password">
-                <i class="fa fa-copy"></i> Copy
-              </button>
-            </span>
+          <div class="rfx-cred-row py-1 text-center" style="font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 4px; padding-top: 6px;">
+            <i class="fa fa-shield text-warning"></i> A secure set-password link has been sent to your email/SMS.
           </div>
         </div>
 
@@ -4855,7 +4849,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var successPhone = document.getElementById("rfxSuccessPhone");
   var successEmail = document.getElementById("rfxSuccessEmail");
   var successEmailRow = document.getElementById("rfxSuccessEmailRow");
-  var successPassword = document.getElementById("rfxSuccessPassword");
   var successService = document.getElementById("rfxSuccessService");
   var successName = document.getElementById("rfxSuccessName");
   var successLocation = document.getElementById("rfxSuccessLocation");
@@ -4864,7 +4857,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var copyIdBtn = document.getElementById("rfxCopyIdBtn");
   var copyPhoneBtn = document.getElementById("rfxCopyPhoneBtn");
   var copyEmailBtn = document.getElementById("rfxCopyEmailBtn");
-  var copyPasswordBtn = document.getElementById("rfxCopyPasswordBtn");
 
   var countdownInterval = null;
   var currentEmail = '';
@@ -5176,11 +5168,10 @@ document.addEventListener("DOMContentLoaded", function () {
     var bNo = enquiry.booking_no || '';
     var phone = enquiry.phone || '';
     var email = enquiry.email || '';
-    var password = enquiry.generated_password || ('Refixel@' + (phone.replace(/\D/g, '').slice(-4) || '1234'));
     var service = enquiry.service_name || 'Home Maintenance Service';
     var name = enquiry.name || 'Guest';
     var location = enquiry.location || 'Uttarakhand Service Area';
-    var dashUrl = enquiry.dashboard_url || '<?= \App\Core\View::url("/account") ?>';
+    var dashUrl = enquiry.set_password_url || enquiry.dashboard_url || '<?= \App\Core\View::url("/account") ?>';
 
     if (successBookingNo) successBookingNo.textContent = bNo;
     if (successPhone) successPhone.textContent = phone;
@@ -5192,17 +5183,22 @@ document.addEventListener("DOMContentLoaded", function () {
         if (successEmailRow) successEmailRow.style.display = 'none';
       }
     }
-    if (successPassword) successPassword.textContent = password;
     if (successService) successService.textContent = service;
     if (successName) successName.textContent = name;
     if (successLocation) successLocation.textContent = location;
-    if (successDashboardBtn) successDashboardBtn.href = dashUrl;
+    if (successDashboardBtn) {
+      successDashboardBtn.href = dashUrl;
+      if (enquiry.set_password_url) {
+        successDashboardBtn.innerHTML = 'Set Your Password &rarr;';
+      } else {
+        successDashboardBtn.innerHTML = 'Open Dashboard &rarr;';
+      }
+    }
 
     // Attach copy actions
     setupCopyBtn(copyIdBtn, bNo);
     setupCopyBtn(copyPhoneBtn, phone);
     setupCopyBtn(copyEmailBtn, email);
-    setupCopyBtn(copyPasswordBtn, password);
 
     // Show modal with animation
     successModal.style.display = "flex";

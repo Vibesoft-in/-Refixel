@@ -32,7 +32,7 @@
             <th style="white-space: nowrap;">Administrator</th>
             <th style="white-space: nowrap;">Role Tier</th>
             <th style="white-space: nowrap;">Login Identifier (Email / Phone)</th>
-            <th style="white-space: nowrap;">Account Password</th>
+            <th style="white-space: nowrap;">Password Security</th>
             <th style="white-space: nowrap;">Status</th>
             <th style="white-space: nowrap;">Last Login</th>
             <th class="text-right" style="white-space: nowrap;">Governance Actions</th>
@@ -102,43 +102,13 @@
 
               <!-- Password / Credentials View & Reveal -->
               <td style="white-space: nowrap; vertical-align: middle;">
-                <?php if ($a['role'] === 'super_admin'): ?>
-                  <?php if ($a['id'] === \App\Core\Auth::id() && !empty($a['plain_password'])): ?>
-                    <div class="d-inline-flex align-items-center bg-light border px-2 py-1 rounded" style="font-size: 12.5px;">
-                      <span class="pwd-mask font-monospace text-muted font-weight-bold" style="letter-spacing: 2px;">••••••••</span>
-                      <span class="pwd-text font-monospace text-dark font-weight-bold d-none" style="letter-spacing: 0.5px;"><?= \App\Core\View::e($a['plain_password']) ?></span>
-                      <button type="button" class="btn btn-xs btn-link text-secondary ml-2 p-0" onclick="toggleAdminPassword(this)" title="Toggle View / Hide Password">
-                        <i class="fa fa-eye"></i>
-                      </button>
-                      <button type="button" class="btn btn-xs btn-link text-primary ml-2 p-0" onclick="copyToClipboard('<?= \App\Core\View::e($a['plain_password']) ?>', this, 'Password Copied!')" title="Copy Password">
-                        <i class="fa fa-clipboard"></i>
-                      </button>
-                    </div>
-                  <?php else: ?>
-                    <span class="badge badge-light border text-muted px-2 py-1" title="Protected Root Security Barrier">
-                      <i class="fa fa-shield text-danger mr-1"></i>Protected (Root)
-                    </span>
-                  <?php endif; ?>
-                <?php else: ?>
-                  <?php if (!empty($a['plain_password'])): ?>
-                    <div class="d-inline-flex align-items-center bg-light border px-2 py-1 rounded shadow-2xs" style="font-size: 13px;">
-                      <span class="pwd-mask font-monospace text-muted font-weight-bold" style="letter-spacing: 2.5px;">••••••••</span>
-                      <span class="pwd-text font-monospace text-dark font-weight-bold d-none" style="letter-spacing: 0.5px; font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;"><?= \App\Core\View::e($a['plain_password']) ?></span>
-                      <button type="button" class="btn btn-xs btn-link text-secondary ml-2 p-0" onclick="toggleAdminPassword(this)" title="Toggle View / Hide Password">
-                        <i class="fa fa-eye"></i>
-                      </button>
-                      <button type="button" class="btn btn-xs btn-link text-primary ml-2 p-0" onclick="copyToClipboard('<?= \App\Core\View::e($a['plain_password']) ?>', this, 'Password Copied!')" title="Copy Password">
-                        <i class="fa fa-clipboard"></i>
-                      </button>
-                    </div>
-                  <?php else: ?>
-                    <span class="badge badge-warning text-dark px-2 py-1" title="Legacy Bcrypt hashed without plain cache">
-                      <i class="fa fa-lock mr-1"></i>Hashed
-                    </span>
-                    <button type="button" class="btn btn-xs btn-outline-primary ml-1" data-toggle="modal" data-target="#modalResetPass<?= $a['id'] ?>" title="Set Viewable Password">
-                      <i class="fa fa-key mr-1"></i>Set Password
-                    </button>
-                  <?php endif; ?>
+                <span class="badge badge-secondary px-2 py-1" title="Passwords are cryptographically hashed and never stored or displayed in plain text">
+                  <i class="fa fa-shield mr-1"></i>Bcrypt Hashed
+                </span>
+                <?php if ($a['role'] !== 'super_admin'): ?>
+                  <button type="button" class="btn btn-xs btn-outline-primary ml-1" data-toggle="modal" data-target="#modalResetPass<?= $a['id'] ?>" title="Reset Admin Password">
+                    <i class="fa fa-key mr-1"></i>Reset Password
+                  </button>
                 <?php endif; ?>
               </td>
 
@@ -156,10 +126,10 @@
               <td class="text-right" style="white-space: nowrap; vertical-align: middle;">
                 <?php if ($a['role'] !== 'super_admin'): ?>
                   <?php
-                    $fullCreds = "REFIXEL Administrator Credentials\nAccount ID: #" . $a['id'] . "\nName: " . $a['name'] . "\nLogin Email: " . ($a['email'] ?? 'N/A') . "\nMobile Phone: " . ($a['phone'] ?? 'N/A') . (!empty($a['plain_password']) ? "\nPassword: " . $a['plain_password'] : "\nPassword: (See Super Admin Dashboard)") . "\nSign-in URL: " . \App\Core\View::fullUrl('/login');
+                    $fullCreds = "REFIXEL Administrator Profile\nAccount ID: #" . $a['id'] . "\nName: " . $a['name'] . "\nLogin Email: " . ($a['email'] ?? 'N/A') . "\nMobile Phone: " . ($a['phone'] ?? 'N/A') . "\nSign-in URL: " . \App\Core\View::fullUrl('/login');
                   ?>
-                  <button type="button" class="btn btn-xs btn-outline-secondary mr-1" onclick="copyToClipboard(<?= json_encode($fullCreds) ?>, this, 'Credentials Copied!')" title="Copy Full Login Info (ID, Email, Password)">
-                    <i class="fa fa-copy mr-1"></i>Copy Login
+                  <button type="button" class="btn btn-xs btn-outline-secondary mr-1" onclick="copyToClipboard(<?= json_encode($fullCreds) ?>, this, 'Profile Info Copied!')" title="Copy Login Profile Info (ID, Email, Phone)">
+                    <i class="fa fa-copy mr-1"></i>Copy Info
                   </button>
                   <button type="button" class="btn btn-xs btn-outline-primary mr-1" data-toggle="modal" data-target="#modalResetPass<?= $a['id'] ?>" title="Edit / Reset Admin Password">
                     <i class="fa fa-key mr-1"></i>Edit Password
@@ -222,14 +192,10 @@
                   </div>
                 <?php endif; ?>
                 <div class="d-flex align-items-center justify-content-between pt-2 border-top">
-                  <span class="text-muted small">Current Saved Password:</span>
-                  <?php if (!empty($a['plain_password'])): ?>
-                    <span class="font-weight-bold font-monospace text-success bg-white px-2 py-1 border rounded">
-                      <?= \App\Core\View::e($a['plain_password']) ?>
-                    </span>
-                  <?php else: ?>
-                    <span class="text-warning small font-weight-bold"><i class="fa fa-lock mr-1"></i>Hashed (Not recorded in plaintext)</span>
-                  <?php endif; ?>
+                  <span class="text-muted small">Password Security:</span>
+                  <span class="badge badge-light border text-muted px-2 py-1 font-weight-bold">
+                    <i class="fa fa-lock mr-1 text-success"></i>Bcrypt Hash Protected (No Plaintext Stored)
+                  </span>
                 </div>
               </div>
 
@@ -249,13 +215,13 @@
                     </button>
                   </div>
                 </div>
-                <small class="form-text text-muted">Setting a new password will save the cleartext for Super Admin inspection and update the secure bcrypt authentication hash.</small>
+                <small class="form-text text-muted">Setting a new password will securely hash it using Bcrypt and invalidate previous credentials. Plaintext passwords are never stored.</small>
               </div>
 
               <?php if (!empty($a['email'])): ?>
                 <div class="alert alert-light border small text-muted mt-3 mb-0 p-2">
                   <i class="fa fa-envelope-o text-primary mr-1"></i>
-                  An automated email with the updated password and login link will be sent to <strong><?= \App\Core\View::e($a['email']) ?></strong> upon submission.
+                  An automated email with a secure password notification will be sent to <strong><?= \App\Core\View::e($a['email']) ?></strong> upon submission.
                 </div>
               <?php endif; ?>
             </div>
@@ -310,7 +276,7 @@
                 </button>
               </div>
             </div>
-            <small class="form-text text-muted">This password will be visible to Super Admin in this Governance table at all times.</small>
+            <small class="form-text text-muted">This initial password will be securely hashed with Bcrypt immediately. Plaintext passwords are never stored or displayed.</small>
           </div>
           <div class="form-group mb-0">
             <label class="small font-weight-bold text-dark">Role Authorization Tier</label>
@@ -379,7 +345,13 @@ function copyToClipboard(text, btn, successMsg) {
 }
 
 function generatePasswordForInput(inputId) {
-  var pass = 'Refixel@' + Math.floor(1000 + Math.random() * 9000);
+  var charset = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&*';
+  var arr = new Uint8Array(14);
+  window.crypto.getRandomValues(arr);
+  var pass = '';
+  for (var i = 0; i < arr.length; i++) {
+    pass += charset[arr[i] % charset.length];
+  }
   var input = document.getElementById(inputId);
   if (input) {
     input.value = pass;

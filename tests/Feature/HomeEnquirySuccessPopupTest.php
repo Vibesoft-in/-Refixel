@@ -72,10 +72,11 @@ assert($enquiry['phone'] === '9876500001', "Customer phone in enquiry must match
 assert($enquiry['email'] === $testEmail, "Customer email in enquiry must match");
 assert($enquiry['service_name'] === 'Professional Full Home Cleaning', "Service name in enquiry must match");
 assert($enquiry['location'] === 'Kashipur, Udham Singh Nagar', "Location in enquiry must match");
-assert(!empty($enquiry['generated_password']), "Generated password must be provided in enquiry object");
+assert(!isset($enquiry['generated_password']), "Plaintext password must NOT be leaked in modal enquiry payload");
+assert(!empty($enquiry['set_password_url']), "Set password URL must be provided in enquiry object for new guest");
 assert(str_contains($enquiry['dashboard_url'], '/account'), "Dashboard URL must route to customer account");
 
-echo "[PASS] Test 2: apiVerifyEnquiryOtp returns enriched JSON payload with credentials & booking details for modal\n";
+echo "[PASS] Test 2: apiVerifyEnquiryOtp returns enriched JSON payload with secure set-password link & booking details for modal\n";
 
 // 3. Verify home.php template has all required modal UI elements and scripts
 $homeViewPath = __DIR__ . '/../../app/views/customer/home.php';
@@ -94,8 +95,6 @@ $requiredHtmlTokens = [
     'id="rfxCopyPhoneBtn"',
     'id="rfxSuccessEmail"',
     'id="rfxCopyEmailBtn"',
-    'id="rfxSuccessPassword"',
-    'id="rfxCopyPasswordBtn"',
     'id="rfxSuccessService"',
     'id="rfxSuccessName"',
     'id="rfxSuccessLocation"',

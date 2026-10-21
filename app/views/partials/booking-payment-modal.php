@@ -145,14 +145,8 @@
               </button>
             </span>
           </div>
-          <div class="d-flex align-items-center justify-content-between pt-1" style="font-size: 12px;">
-            <span style="color: #94a3b8; font-size: 10.5px; text-transform: uppercase; font-weight: 700;">Password</span>
-            <span class="font-weight-bold d-flex align-items-center" style="gap: 5px;">
-              <span id="rfxSuccessPassword" style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;">Refixel@1234</span>
-              <button type="button" id="rfxSuccessPasswordCopyBtn" class="btn btn-xs py-0 px-1 border-0 rounded text-white" style="background: rgba(255,255,255,0.18); font-size: 9.5px;" onclick="rfxModalCopyText(document.getElementById('rfxSuccessPassword').innerText, this)">
-                <i class="fa fa-copy"></i> Copy
-              </button>
-            </span>
+          <div class="text-center pt-1" style="font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 4px;">
+            <i class="fa fa-shield text-warning"></i> A secure set-password link has been sent to your email/SMS.
           </div>
         </div>
 
@@ -670,16 +664,8 @@ function fallbackModalCopy(text, cb) {
               emailRow.style.display = 'none';
             }
             
-            var pwdElem = document.getElementById('rfxSuccessPassword');
-            var pwdBtn = document.getElementById('rfxSuccessPasswordCopyBtn');
-            var shownPwd = d.generated_password || ('Refixel@' + (rawDigits ? rawDigits.slice(-4) : '1234'));
-            if (pwdElem) {
-              pwdElem.innerText = shownPwd;
-              pwdElem.style.color = '#fde047';
-            }
-            if (pwdBtn) {
-              pwdBtn.style.display = 'inline-block';
-              pwdBtn.onclick = function() { rfxModalCopyText(shownPwd, pwdBtn); };
+            if (d.set_password_url && dashBtn) {
+              dashBtn.innerText = 'Set Your Password & View Booking →';
             }
 
             document.getElementById('rfxSuccessService').innerText = d.service_name || 'Doorstep Service';

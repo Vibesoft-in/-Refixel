@@ -291,8 +291,8 @@ class SmtpEmailService implements EmailProviderInterface
     public function sendTemplate(string $to, string $template, array $data = []): bool
     {
         $subject = match ($template) {
-            'customer_welcome_booking'    => 'Booking Confirmed #' . ($data['booking_no'] ?? '') . ' & Your REFIXEL Account Details',
-            'customer_enquiry_confirmed'  => '✅ Service Enquiry Received #' . ($data['booking_no'] ?? '') . ' & Your REFIXEL Account Details',
+            'customer_welcome_booking'    => 'Booking Confirmed #' . ($data['booking_no'] ?? '') . ' · Set Up Your REFIXEL Account',
+            'customer_enquiry_confirmed'  => '✅ Service Enquiry Received #' . ($data['booking_no'] ?? '') . ' · Set Up Your REFIXEL Account',
             'booking_confirmation'        => 'Your REFIXEL Booking is Confirmed - #' . ($data['booking_no'] ?? ''),
             'admin_new_booking'           => '🚨 New Booking Received: #' . ($data['booking_no'] ?? '') . ' (' . ($data['service_name'] ?? 'Home Service') . ')',
             'staff_assigned'              => '🔧 New Job Assigned: #' . ($data['booking_no'] ?? '') . ' - ' . ($data['service_name'] ?? 'Service'),
@@ -313,8 +313,8 @@ class SmtpEmailService implements EmailProviderInterface
             'partner_rejected'            => 'Update on Your REFIXEL Partner Application',
             'partner_welcome'             => 'Welcome to REFIXEL Partner Network - Your Technician Portal Access',
             'admin_new_partner'           => '👷 New Service Partner Registered: ' . ($data['name'] ?? 'Technician') . ' (' . ($data['trade'] ?? 'Trade') . ')',
-            'admin_welcome_credentials'   => '🔐 Welcome to REFIXEL - Your Admin Account Login Credentials',
-            'admin_password_reset'        => '🔑 REFIXEL Admin Security - Your Account Password Has Been Updated',
+            'admin_welcome_credentials'   => '🔐 Welcome to REFIXEL - Activate Your Admin Account',
+            'admin_password_reset'        => '🔑 REFIXEL Admin Security - Reset Your Account Password',
             'enquiry_email_otp'           => '🔐 ' . ($data['otp'] ?? '') . ' is your REFIXEL Enquiry Verification Code',
             default                       => 'Notification from REFIXEL',
         };
@@ -366,7 +366,7 @@ class SmtpEmailService implements EmailProviderInterface
                 $adminName = htmlspecialchars($data['name'] ?? 'Admin');
                 $adminEmail = htmlspecialchars($data['email'] ?? '');
                 $adminPhone = htmlspecialchars($data['phone'] ?? '');
-                $adminPassword = htmlspecialchars($data['password'] ?? '');
+                $inviteUrl = !empty($data['invite_url']) ? $data['invite_url'] : (!empty($data['set_password_url']) ? $data['set_password_url'] : $loginUrl);
 
                 $body .= "<div style='text-align: center; margin-bottom: 22px;'>";
                 $body .= "<div style='display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: #eff6ff; color: #2563eb; font-size: 28px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(37,99,235,0.15);'><i style='font-style: normal;'>🛡️</i></div><br>";
@@ -375,10 +375,10 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>An administrative account has been created for you on the REFIXEL Management Platform.</p>";
                 $body .= "</div>";
 
-                // Account Credentials Box
+                // Account Activation Box
                 $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 12px; padding: 22px; margin-bottom: 24px; border-left: 5px solid #f25b29; box-shadow: 0 4px 16px rgba(10,28,51,0.15);'>";
-                $body .= "<h3 style='margin: 0 0 12px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Your Platform Login Credentials</h3>";
-                $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13px;'>Use the credentials below to log into the administrative management portal:</p>";
+                $body .= "<h3 style='margin: 0 0 12px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🛡️</span> Activate Your Administrative Account</h3>";
+                $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13px;'>Your profile has been created. Click the button below to set your password and access the management portal (valid for 48 hours):</p>";
                 $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 14px;'>";
                 if (!empty($adminEmail)) {
                     $body .= "<div style='margin-bottom: 8px;'><strong>Login Email:</strong> <span style='color: #38bdf8; font-weight: 600; font-family: monospace;'>" . $adminEmail . "</span></div>";
@@ -386,15 +386,14 @@ class SmtpEmailService implements EmailProviderInterface
                 if (!empty($adminPhone)) {
                     $body .= "<div style='margin-bottom: 8px;'><strong>Registered Phone:</strong> <span style='color: #e2e8f0; font-weight: 500; font-family: monospace;'>" . $adminPhone . "</span></div>";
                 }
-                $body .= "<div style='margin-bottom: 8px;'><strong>Assigned Role:</strong> <span style='color: #fcd34d; font-weight: 600;'>" . htmlspecialchars($roleBadge) . "</span></div>";
-                $body .= "<div><strong>Temporary Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 3px 10px; border-radius: 4px; font-family: Monaco, Menlo, Consolas, monospace; font-weight: 700; font-size: 15px; letter-spacing: 0.5px;'>" . $adminPassword . "</span></div>";
+                $body .= "<div><strong>Assigned Role:</strong> <span style='color: #fcd34d; font-weight: 600;'>" . htmlspecialchars($roleBadge) . "</span></div>";
                 $body .= "</div>";
-                $body .= "<p style='margin: 12px 0 0; color: #94a3b8; font-size: 12px;'>⚠️ For security, please keep these credentials safe and update your password upon your first login.</p>";
+                $body .= "<p style='margin: 12px 0 0; color: #94a3b8; font-size: 12px;'>⚠️ For security, this single-use activation invitation is valid for 48 hours.</p>";
                 $body .= "</div>";
 
                 // CTA Button
                 $body .= "<div style='text-align: center; margin: 26px 0;'>";
-                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Sign In to Admin Portal &rarr;</a>";
+                $body .= "<a href='" . htmlspecialchars($inviteUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Set Admin Password &rarr;</a>";
                 $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px;'>Portal URL: <a href='" . htmlspecialchars($loginUrl) . "' style='color: #0284c7;'>" . htmlspecialchars($loginUrl) . "</a></p>";
                 $body .= "</div>";
                 break;
@@ -406,19 +405,19 @@ class SmtpEmailService implements EmailProviderInterface
                 $adminName = htmlspecialchars($data['name'] ?? 'Admin');
                 $adminEmail = htmlspecialchars($data['email'] ?? '');
                 $adminPhone = htmlspecialchars($data['phone'] ?? '');
-                $adminPassword = htmlspecialchars($data['password'] ?? '');
+                $resetUrl = !empty($data['reset_url']) ? $data['reset_url'] : (!empty($data['set_password_url']) ? $data['set_password_url'] : $loginUrl);
 
                 $body .= "<div style='text-align: center; margin-bottom: 22px;'>";
                 $body .= "<div style='display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: #fef3c7; color: #d97706; font-size: 28px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(217,119,6,0.15);'><i style='font-style: normal;'>🔑</i></div><br>";
                 $body .= "<span style='background: {$roleBadgeBg}; color: {$roleBadgeColor}; font-weight: 700; font-size: 12px; padding: 5px 14px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;'>{$roleBadge}</span>";
-                $body .= "<h2 style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Password Updated, " . $adminName . "!</h2>";
-                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>Your REFIXEL administrative access password has been updated by Super Admin Governance.</p>";
+                $body .= "<h2 style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Password Reset Request, " . $adminName . "!</h2>";
+                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>A password reset link has been generated for your REFIXEL administrative access.</p>";
                 $body .= "</div>";
 
-                // Account Credentials Box
+                // Password Reset Box
                 $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 12px; padding: 22px; margin-bottom: 24px; border-left: 5px solid #f25b29; box-shadow: 0 4px 16px rgba(10,28,51,0.15);'>";
-                $body .= "<h3 style='margin: 0 0 12px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Updated Sign-In Credentials</h3>";
-                $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13px;'>Your updated sign-in credentials are shown below:</p>";
+                $body .= "<h3 style='margin: 0 0 12px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Password Reset Link</h3>";
+                $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13px;'>Click the link below to select a new password for your account (link valid for 1 hour):</p>";
                 $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; font-size: 14px;'>";
                 if (!empty($adminEmail)) {
                     $body .= "<div style='margin-bottom: 8px;'><strong>Login Email:</strong> <span style='color: #38bdf8; font-weight: 600; font-family: monospace;'>" . $adminEmail . "</span></div>";
@@ -426,15 +425,14 @@ class SmtpEmailService implements EmailProviderInterface
                 if (!empty($adminPhone)) {
                     $body .= "<div style='margin-bottom: 8px;'><strong>Registered Phone:</strong> <span style='color: #e2e8f0; font-weight: 500; font-family: monospace;'>" . $adminPhone . "</span></div>";
                 }
-                $body .= "<div style='margin-bottom: 8px;'><strong>Assigned Role:</strong> <span style='color: #fcd34d; font-weight: 600;'>" . htmlspecialchars($roleBadge) . "</span></div>";
-                $body .= "<div><strong>New Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 3px 10px; border-radius: 4px; font-family: Monaco, Menlo, Consolas, monospace; font-weight: 700; font-size: 15px; letter-spacing: 0.5px;'>" . $adminPassword . "</span></div>";
+                $body .= "<div><strong>Assigned Role:</strong> <span style='color: #fcd34d; font-weight: 600;'>" . htmlspecialchars($roleBadge) . "</span></div>";
                 $body .= "</div>";
-                $body .= "<p style='margin: 12px 0 0; color: #94a3b8; font-size: 12px;'>⚠️ If you did not request this update, contact your Super Administrator immediately.</p>";
+                $body .= "<p style='margin: 12px 0 0; color: #94a3b8; font-size: 12px;'>⚠️ This password reset link expires in 1 hour. If you did not request this, please contact Super Admin immediately.</p>";
                 $body .= "</div>";
 
                 // CTA Button
                 $body .= "<div style='text-align: center; margin: 26px 0;'>";
-                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Sign In to Admin Portal &rarr;</a>";
+                $body .= "<a href='" . htmlspecialchars($resetUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 14px 34px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 14px rgba(242,91,41,0.3);'>Reset Your Password &rarr;</a>";
                 $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px;'>Portal URL: <a href='" . htmlspecialchars($loginUrl) . "' style='color: #0284c7;'>" . htmlspecialchars($loginUrl) . "</a></p>";
                 $body .= "</div>";
                 break;
@@ -460,25 +458,28 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div><strong style='color: #0a1c33;'>Service Area:</strong> " . htmlspecialchars($data['address'] ?? 'Uttarakhand Service Area') . "</div>";
                 $body .= "</div>";
 
-                // Account Credentials Box
-                if (!empty($data['generated_password'])) {
+                // Account Set Password Box
+                if (!empty($data['set_password_url'])) {
+                    $setPasswordUrl = $data['set_password_url'];
                     $body .= "<div class='email-credentials' style='background: #0a1c33; color: #ffffff; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 5px solid #f25b29;'>";
-                    $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Your Customer Account Login Credentials</h3>";
-                    $body .= "<p style='margin: 0 0 12px; color: #cbd5e1; font-size: 13px;'>Your REFIXEL customer portal account is active so you can track technician assignment, chat with support, and view GST invoices:</p>";
+                    $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔐</span> Set Up Your Customer Account</h3>";
+                    $body .= "<p style='margin: 0 0 12px; color: #cbd5e1; font-size: 13px;'>Your REFIXEL customer portal account is ready. Please set your secure password to access your dashboard:</p>";
                     $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; font-size: 14px;'>";
                     $body .= "<div style='margin-bottom: 6px;'><strong>Login Phone / ID:</strong> <span style='color: #38bdf8; font-weight: 600; font-family: monospace;'>" . htmlspecialchars($data['identifier'] ?? ($data['phone'] ?? $data['email'] ?? '')) . "</span></div>";
                     if (!empty($data['email'])) {
-                        $body .= "<div style='margin-bottom: 6px;'><strong>Registered Email:</strong> <span style='color: #e2e8f0; font-weight: 500;'>" . htmlspecialchars($data['email']) . "</span></div>";
+                        $body .= "<div><strong>Registered Email:</strong> <span style='color: #e2e8f0; font-weight: 500;'>" . htmlspecialchars($data['email']) . "</span></div>";
                     }
-                    $body .= "<div><strong>Temporary Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-weight: 700; font-size: 15px;'>" . htmlspecialchars($data['generated_password']) . "</span></div>";
                     $body .= "</div>";
-                    $body .= "<p style='margin: 10px 0 0; color: #94a3b8; font-size: 12px;'>You can change this password at any time in your profile.</p>";
+                    $body .= "<div style='text-align: center; margin: 16px 0 8px;'>";
+                    $body .= "<a href='" . htmlspecialchars($setPasswordUrl) . "' class='email-btn' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 6px; display: inline-block;'>Set Your Password &rarr;</a>";
+                    $body .= "</div>";
+                    $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px; text-align: center;'>For your security, this set-password link is valid for 24-48 hours.</p>";
                     $body .= "</div>";
                 }
 
                 // CTA Button
                 $body .= "<div style='text-align: center; margin: 26px 0;'>";
-                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' class='email-btn' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(242,91,41,0.3);'>Log In to Customer Portal &rarr;</a>";
+                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' class='email-btn' style='background: #0a1c33; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block;'>Go to Customer Portal &rarr;</a>";
                 $body .= "</div>";
                 break;
 
@@ -503,22 +504,25 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div><strong style='color: #0a1c33;'>Service Location:</strong> " . htmlspecialchars($data['address'] ?? 'Service Address') . "</div>";
                 $body .= "</div>";
 
-                // Account Credentials Box
-                if (!empty($data['generated_password'])) {
+                // Account Set Password Box
+                if (!empty($data['set_password_url'])) {
+                    $setPasswordUrl = $data['set_password_url'];
                     $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 5px solid #f25b29;'>";
-                    $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔑</span> Your Account Login Credentials</h3>";
-                    $body .= "<p style='margin: 0 0 12px; color: #cbd5e1; font-size: 13px;'>We generated an account so you can track your technician in real-time, view GST invoices, and manage bookings anytime:</p>";
+                    $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔐</span> Set Up Your Customer Account</h3>";
+                    $body .= "<p style='margin: 0 0 12px; color: #cbd5e1; font-size: 13px;'>An account has been created so you can track your technician in real-time, view GST invoices, and manage bookings:</p>";
                     $body .= "<div style='background: rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; font-size: 14px;'>";
                     $body .= "<div style='margin-bottom: 6px;'><strong>Login Phone / Email:</strong> <span style='color: #38bdf8; font-weight: 600;'>" . htmlspecialchars($data['identifier'] ?? ($data['phone'] ?? $data['email'] ?? '')) . "</span></div>";
-                    $body .= "<div><strong>Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-weight: 700; font-size: 15px;'>" . htmlspecialchars($data['generated_password']) . "</span></div>";
                     $body .= "</div>";
-                    $body .= "<p style='margin: 10px 0 0; color: #94a3b8; font-size: 12px;'>You can change this password at any time in your profile.</p>";
+                    $body .= "<div style='text-align: center; margin: 16px 0 8px;'>";
+                    $body .= "<a href='" . htmlspecialchars($setPasswordUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 6px; display: inline-block;'>Set Your Password &rarr;</a>";
+                    $body .= "</div>";
+                    $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px; text-align: center;'>For your security, this set-password link is valid for 24-48 hours.</p>";
                     $body .= "</div>";
                 }
 
                 // CTA Button
                 $body .= "<div style='text-align: center; margin: 26px 0;'>";
-                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(242,91,41,0.3);'>Login to Your Account &rarr;</a>";
+                $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #0a1c33; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 13px 32px; border-radius: 8px; display: inline-block;'>Go to Customer Portal &rarr;</a>";
                 $body .= "</div>";
                 break;
 
@@ -824,8 +828,8 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div style='font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;'>Technician Portal Login Credentials</div>";
                 $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Login ID (Phone):</span><span style='font-weight: 700; font-family: monospace; color: #38bdf8;'>" . htmlspecialchars($data['phone'] ?? '') . "</span></div>";
                 $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Registered Email:</span><span style='font-weight: 700; color: #ffffff;'>" . htmlspecialchars($data['email'] ?? '') . "</span></div>";
-                if (!empty($data['password'])) {
-                    $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Portal Password:</span><span style='font-family: monospace; font-weight: 700; color: #fde047; letter-spacing: 1px;'>" . htmlspecialchars($data['password']) . "</span></div>";
+                if (!empty($data['set_password_url'])) {
+                    $body .= "<div style='margin-bottom: 8px; text-align: center; padding: 10px 0;'><a href='" . htmlspecialchars($data['set_password_url']) . "' style='background: #f25b29; color: #ffffff; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-block;'>Set Your Portal Password &rarr;</a></div>";
                 }
                 $body .= "<div style='display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;'><span style='color: #94a3b8;'>Primary Trade:</span><span style='font-weight: 600; color: #ffffff;'>" . htmlspecialchars($data['trade'] ?? '') . "</span></div>";
                 $body .= "<div style='display: flex; justify-content: space-between; font-size: 13px;'><span style='color: #94a3b8;'>City:</span><span style='font-weight: 600; color: #ffffff;'>" . htmlspecialchars($data['city'] ?? '') . "</span></div>";
