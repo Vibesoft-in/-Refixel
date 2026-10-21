@@ -230,21 +230,19 @@
         </div>
       </div>
 
-      <!-- Credentials Box: Mobile Number, Email & Password -->
+      <!-- Contact Info Box: Mobile Number & Email -->
       <?php 
         $hasGuestAcc = isset($_SESSION['guest_account_created']) && $_SESSION['guest_account_created'] === true;
         $guestId = $_SESSION['guest_account_identifier'] ?? ($booking['phone'] ?? '');
-        $guestPwd = $_SESSION['guest_account_password'] ?? null;
         $cleanPhone = preg_replace('/\D/', '', (string)($guestId ?: ($booking['phone'] ?? '')));
         if (str_starts_with($cleanPhone, '91') && strlen($cleanPhone) === 12) {
             $cleanPhone = substr($cleanPhone, 2);
         }
         $customerEmail = !empty($booking['email']) ? $booking['email'] : null;
-        $displayPassword = !empty($guestPwd) ? $guestPwd : ('Refixel@' . substr($cleanPhone ?: '1234', -4));
       ?>
       <div class="rfx-cred-box">
         <div class="rfx-cred-row">
-          <span class="rfx-cred-lbl">Mobile Number</span>
+          <span class="rfx-cred-lbl">Contact Mobile</span>
           <span class="rfx-cred-val">
             <?= \App\Core\View::e($cleanPhone ?: 'Registered User') ?>
             <?php if (!empty($cleanPhone)): ?>
@@ -267,15 +265,14 @@
         </div>
         <?php endif; ?>
 
+        <?php if ($hasGuestAcc): ?>
         <div class="rfx-cred-row">
-          <span class="rfx-cred-lbl">Password</span>
-          <span class="rfx-cred-val">
-            <span style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"><?= \App\Core\View::e($displayPassword) ?></span>
-            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($displayPassword) ?>', this)" title="Copy Password">
-              <i class="fa fa-copy"></i> Copy
-            </button>
+          <span class="rfx-cred-lbl">Account</span>
+          <span class="rfx-cred-val" style="font-size: 11px; color: #86efac;">
+            <i class="fa fa-check-circle mr-1"></i> Active (Login via Mobile)
           </span>
         </div>
+        <?php endif; ?>
       </div>
       <?php
         if ($hasGuestAcc) {

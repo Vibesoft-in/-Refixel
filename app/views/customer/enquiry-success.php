@@ -230,10 +230,10 @@
         </div>
       </div>
 
-      <!-- Mobile Number, Email & Password Credentials -->
+      <!-- Mobile Number & Email Information -->
       <div class="rfx-cred-box">
         <div class="rfx-cred-row">
-          <span class="rfx-cred-lbl">Mobile Number</span>
+          <span class="rfx-cred-lbl">Contact Mobile</span>
           <span class="rfx-cred-val">
             <?= \App\Core\View::e($enquiry['phone'] ?? $enquiry['identifier'] ?? '') ?>
             <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($enquiry['phone'] ?? $enquiry['identifier'] ?? '') ?>', this)" title="Copy Mobile">
@@ -253,21 +253,6 @@
           </span>
         </div>
         <?php endif; ?>
-
-        <div class="rfx-cred-row">
-          <span class="rfx-cred-lbl">Password</span>
-          <span class="rfx-cred-val">
-            <?php 
-              $displayPassword = !empty($enquiry['generated_password']) 
-                ? $enquiry['generated_password'] 
-                : ('Refixel@' . substr(preg_replace('/\D/', '', (string)($enquiry['phone'] ?? '1234')), -4));
-            ?>
-            <span style="font-family: monospace; color: #fde047; letter-spacing: 0.5px;"><?= \App\Core\View::e($displayPassword) ?></span>
-            <button type="button" class="rfx-copy-btn" onclick="rfxCopy('<?= \App\Core\View::e($displayPassword) ?>', this)" title="Copy Password">
-              <i class="fa fa-copy"></i> Copy
-            </button>
-          </span>
-        </div>
       </div>
 
       <!-- Enquiry Summary (Short & Small Display) -->

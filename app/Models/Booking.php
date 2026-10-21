@@ -14,6 +14,26 @@ class Booking extends Model
         return 'BK-' . strtoupper(bin2hex(random_bytes(4)));
     }
 
+    public static function generateGuestToken(): string
+    {
+        return bin2hex(random_bytes(32));
+    }
+
+    public static function findByGuestToken(string $token): ?array
+    {
+        if (empty($token) || strlen($token) < 32) {
+            return null;
+        }
+        return Database::fetchOne(
+            "SELECT b.*, s.name as service_name 
+             FROM bookings b 
+             LEFT JOIN services s ON b.service_id = s.id 
+             WHERE b.guest_token = :tok 
+             LIMIT 1",
+            ['tok' => $token]
+        );
+    }
+
     public static function findByCustomer(int $customerId): array
     {
         return Database::fetchAll(

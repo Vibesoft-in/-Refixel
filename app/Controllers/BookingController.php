@@ -658,8 +658,11 @@ class BookingController extends Controller
                 $priority = 'high';
             }
 
+            $guestToken = Booking::generateGuestToken();
+
             $bookingId = Booking::create([
                 'booking_no'     => $bookingNo,
+                'guest_token'    => $guestToken,
                 'customer_id'    => $validCustomerId,
                 'service_id'     => $service['id'],
                 'name'           => trim((string)$request->input('name')),
@@ -921,7 +924,8 @@ class BookingController extends Controller
                     'is_new_customer'    => $isNewAcc,
                     'generated_password' => $genPwd,
                     'identifier'         => $ident,
-                    'redirect_url'       => View::url('/account/bookings'),
+                    'redirect_url'       => View::url('/book-success?token=' . urlencode($guestToken)),
+                    'guest_token'        => $guestToken,
                 ]);
             }
 
@@ -957,7 +961,7 @@ class BookingController extends Controller
                 Notifier::notifyBookingConfirmationCustomer($directRecord);
             } catch (\Throwable $ne) {}
 
-            return $this->redirect('/book-success?booking_no=' . urlencode($bookingNo));
+            return $this->redirect('/book-success?token=' . urlencode($guestToken));
         } catch (\Throwable $e) {
             Logger::error("Booking submission exception: " . $e->getMessage(), [
                 'file'  => $e->getFile(),
@@ -1137,23 +1141,38 @@ class BookingController extends Controller
 
     public function success(Request $request): Response
     {
-        $bookingNo = (string)$request->query('booking_no', '');
+        $token = trim((string)$request->query('token', ''));
+        $bookingNo = trim((string)$request->query('booking_no', ''));
 
         $booking = null;
-        if (!empty($bookingNo)) {
+
+        // 1. Guest access via secure 32+ character random token
+        if (!empty($token)) {
+            $booking = Booking::findByGuestToken($token);
+        } elseif (!empty($bookingNo) && Auth::check()) {
+            // 2. Logged-in user: Must match customer_id
+            $currentUserId = Auth::id();
             $booking = Database::fetchOne(
                 "SELECT b.*, s.name as service_name 
                  FROM bookings b 
                  LEFT JOIN services s ON b.service_id = s.id 
-                 WHERE b.booking_no = ? 
+                 WHERE b.booking_no = :bno AND b.customer_id = :cid 
                  LIMIT 1",
-                [$bookingNo]
+                ['bno' => $bookingNo, 'cid' => $currentUserId]
             );
+        }
+
+        // Strict 404 if not found or unauthorized
+        if (!$booking) {
+            return $this->render('partials.404', [
+                'title'   => 'Booking Not Found | REFIXEL',
+                'message' => 'The requested booking could not be found or you do not have permission to view it.',
+            ], null)->setStatusCode(404);
         }
 
         return $this->render('customer.book-success', [
             'title'       => 'Booking Done | REFIXEL',
-            'booking_no'  => $bookingNo,
+            'booking_no'  => $booking['booking_no'],
             'booking'     => $booking,
         ], null);
     }
@@ -1249,9 +1268,12 @@ class BookingController extends Controller
             $displayPassword = !empty($currentUser['plain_password']) ? $currentUser['plain_password'] : '(Your Existing Account Password)';
         }
 
+        $guestToken = Booking::generateGuestToken();
+
         // Insert booking / enquiry record with status 'new'
         $bookingId = Booking::create([
             'booking_no'     => $bookingNo,
+            'guest_token'    => $guestToken,
             'customer_id'    => $customerId ?: null,
             'service_id'     => $serviceId,
             'name'           => $name,
@@ -1367,7 +1389,7 @@ class BookingController extends Controller
 
         // Fallback direct creation
         $res = $this->executeEnquiryCreation($request->all());
-        return $this->redirect('/enquiry-success?booking_no=' . urlencode($res['booking_no']));
+        return $this->redirect('/enquiry-success?token=' . urlencode($res['guest_token'] ?? ''));
     }
 
     public function apiSendEnquiryOtp(Request $request): Response
@@ -1549,12 +1571,14 @@ class BookingController extends Controller
 
         $res = $this->executeEnquiryCreation($formData);
         $enquiryData = $_SESSION['last_enquiry'] ?? [];
+        $guestToken = $res['guest_token'] ?? '';
 
         return Response::json([
             'status'       => 'success',
             'message'      => 'Enquiry successfully verified and submitted!',
             'booking_no'   => $res['booking_no'],
-            'redirect_url' => View::url('/enquiry-success?booking_no=' . urlencode($res['booking_no'])),
+            'guest_token'  => $guestToken,
+            'redirect_url' => View::url('/enquiry-success?token=' . urlencode($guestToken)),
             'enquiry'      => [
                 'booking_no'         => $res['booking_no'],
                 'booking_id'         => $res['booking_id'] ?? 0,
@@ -1571,46 +1595,53 @@ class BookingController extends Controller
 
     public function enquirySuccess(Request $request): Response
     {
-        $bookingNo = (string)$request->query('booking_no', '');
-        $enquiryData = $_SESSION['last_enquiry'] ?? null;
+        $token = trim((string)$request->query('token', ''));
+        $bookingNo = trim((string)$request->query('booking_no', ''));
 
-        // Fallback: If session data was lost or page was reloaded, fetch from DB
-        if ((!$enquiryData || ($enquiryData['booking_no'] ?? '') !== $bookingNo) && !empty($bookingNo)) {
+        $row = null;
+
+        // 1. Guest access via secure 32+ character random token
+        if (!empty($token)) {
+            $row = Booking::findByGuestToken($token);
+        } elseif (!empty($bookingNo) && Auth::check()) {
+            // 2. Logged-in user: Must match customer_id
+            $currentUserId = Auth::id();
             $row = Database::fetchOne(
-                "SELECT b.*, s.name as service_name, u.plain_password as user_plain_password
+                "SELECT b.*, s.name as service_name 
                  FROM bookings b 
                  LEFT JOIN services s ON b.service_id = s.id 
-                 LEFT JOIN users u ON b.customer_id = u.id
-                 WHERE b.booking_no = ? 
+                 WHERE b.booking_no = :bno AND b.customer_id = :cid 
                  LIMIT 1",
-                [$bookingNo]
+                ['bno' => $bookingNo, 'cid' => $currentUserId]
             );
-            if ($row) {
-                $fallbackDigits = substr(preg_replace('/\D/', '', (string)($row['phone'] ?? '1234')), -4);
-                $resolvedPassword = !empty($row['user_plain_password'])
-                    ? $row['user_plain_password']
-                    : ('Refixel@' . ($fallbackDigits ?: '1234'));
-                $enquiryData = [
-                    'booking_no'         => $row['booking_no'],
-                    'booking_id'         => $row['id'],
-                    'name'               => $row['name'],
-                    'phone'              => $row['phone'],
-                    'email'              => $row['email'] ?? null,
-                    'service_name'       => $row['service_name'] ?? 'Home Service',
-                    'location'           => $row['address'],
-                    'message'            => $row['issue_details'],
-                    'is_new_customer'    => false,
-                    'identifier'         => $row['phone'],
-                    'generated_password' => $resolvedPassword,
-                ];
-            }
         }
+
+        // Strict 404 if not found or unauthorized
+        if (!$row) {
+            return $this->render('partials.404', [
+                'title'   => 'Booking Not Found | REFIXEL',
+                'message' => 'The requested booking enquiry could not be found or you do not have permission to view it.',
+            ], null)->setStatusCode(404);
+        }
+
+        $enquiryData = [
+            'booking_no'      => $row['booking_no'],
+            'booking_id'      => $row['id'],
+            'name'            => $row['name'],
+            'phone'           => $row['phone'],
+            'email'           => $row['email'] ?? null,
+            'service_name'    => $row['service_name'] ?? 'Home Service',
+            'location'        => $row['address'],
+            'message'         => $row['issue_details'],
+            'is_new_customer' => false,
+            'identifier'      => $row['phone'],
+        ];
 
         return $this->render('customer.enquiry-success', [
             'title'       => 'Booking Done | REFIXEL',
             'description' => 'Your booking enquiry has been registered with REFIXEL.',
             'enquiry'     => $enquiryData,
-            'booking_no'  => $bookingNo,
+            'booking_no'  => $row['booking_no'],
         ], null);
     }
 
