@@ -54,30 +54,12 @@ class AuthController extends Controller
         }
 
         $passwordMatches = false;
-        if ($user) {
+        if ($user && !empty($user['password_hash'])) {
             if (password_verify($password, $user['password_hash'])) {
                 $passwordMatches = true;
-            } elseif (!empty($user['plain_password']) && hash_equals($user['plain_password'], $password)) {
-                $passwordMatches = true;
-                User::update((int)$user['id'], [
-                    'password_hash' => password_hash($password, PASSWORD_BCRYPT),
-                ]);
-            } elseif (!empty($user['plain_password']) && strcasecmp($user['plain_password'], $password) === 0) {
-                // Case-insensitive match for auto-generated passwords (e.g. refixel@1234 vs Refixel@1234)
-                $passwordMatches = true;
-                User::update((int)$user['id'], [
-                    'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
-                    'plain_password' => $password,
-                ]);
-            } elseif (($user['role'] ?? '') === 'customer') {
-                // Check if user entered Refixel@<last 4 digits of mobile>
-                $cleanDigits = substr(preg_replace('/\D/', '', (string)($user['phone'] ?? '')), -4);
-                $expectedGenPass = 'Refixel@' . $cleanDigits;
-                if (!empty($cleanDigits) && strcasecmp($expectedGenPass, $password) === 0) {
-                    $passwordMatches = true;
+                if (password_needs_rehash($user['password_hash'], PASSWORD_BCRYPT)) {
                     User::update((int)$user['id'], [
-                        'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
-                        'plain_password' => $password,
+                        'password_hash' => password_hash($password, PASSWORD_BCRYPT),
                     ]);
                 }
             }
@@ -156,13 +138,12 @@ class AuthController extends Controller
 
         // Public signup creates customers only - role cannot be overridden from request
         $userId = User::create([
-            'role'           => 'customer',
-            'name'           => trim((string)$request->input('name')),
-            'phone'          => $phone,
-            'email'          => $email,
-            'password_hash'  => password_hash($plainPass, PASSWORD_BCRYPT),
-            'plain_password' => $plainPass,
-            'status'         => 'active',
+            'role'          => 'customer',
+            'name'          => trim((string)$request->input('name')),
+            'phone'         => $phone,
+            'email'         => $email,
+            'password_hash' => password_hash($plainPass, PASSWORD_BCRYPT),
+            'status'        => 'active',
         ]);
 
         // Seed default customer profile
@@ -198,6 +179,22 @@ class AuthController extends Controller
     public function forgotPassword(Request $request): Response
     {
         $identifier = trim((string)$request->input('identifier', ''));
+        if (empty($identifier)) {
+            View::setFlash('error', 'Please enter your email or mobile number.');
+            return $this->redirect('/forgot-password');
+        }
+
+        // Rate limiting: Allow max 3 reset requests per 5 minutes per identifier
+        $recentRow = Database::fetchOne(
+            "SELECT COUNT(*) as cnt FROM password_resets 
+             WHERE email_or_phone = :ident AND created_at > (NOW() - INTERVAL 5 MINUTE)",
+            ['ident' => $identifier]
+        );
+        if ((int)($recentRow['cnt'] ?? 0) >= 3) {
+            View::setFlash('warning', 'Too many password reset requests. Please wait 5 minutes before trying again.');
+            return $this->redirect('/forgot-password');
+        }
+
         $user = User::findByEmailOrPhone($identifier);
 
         if ($user) {
@@ -324,14 +321,6 @@ class AuthController extends Controller
             'password_hash'        => password_hash((string)$request->input('new_password'), PASSWORD_BCRYPT),
             'must_change_password' => 0,
         ];
-        if (($user['role'] ?? '') === 'admin') {
-            try {
-                $col = \App\Core\Database::fetchOne("SHOW COLUMNS FROM users LIKE 'plain_password'");
-                if ($col) {
-                    $updateData['plain_password'] = (string)$request->input('new_password');
-                }
-            } catch (\Throwable $ignored) {}
-        }
 
         User::update($user['id'], $updateData);
 

@@ -559,8 +559,8 @@ class BookingController extends Controller
                 } else {
                     try {
                         $customerId = (int)\App\Core\Database::execute(
-                            "INSERT INTO users (name, phone, email, password_hash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, 'customer', 'active')",
-                            [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword, $generatedPassword],
+                            "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
+                            [$nameInput, !empty($phoneInput) ? $phoneInput : null, !empty($emailInput) ? $emailInput : null, $hashedPassword],
                             true // Return last insert ID
                         );
                     } catch (\Throwable $e) {
@@ -1231,8 +1231,8 @@ class BookingController extends Controller
                 Auth::login($existingUser);
             } else {
                 $customerId = (int)Database::execute(
-                    "INSERT INTO users (name, phone, email, password_hash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, 'customer', 'active')",
-                    [$name, $cleanPhone, !empty($rawEmail) ? $rawEmail : null, $hashedPassword, $generatedPassword],
+                    "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
+                    [$name, $cleanPhone, !empty($rawEmail) ? $rawEmail : null, $hashedPassword],
                     true
                 );
 
