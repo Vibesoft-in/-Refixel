@@ -67,18 +67,26 @@ set_exception_handler(function (\Throwable $e) use ($isDebug) {
     exit;
 });
 
+// Remove server fingerprinting headers
+@ini_set('expose_php', '0');
+if (function_exists('header_remove')) {
+    @header_remove('X-Powered-By');
+}
+
+// 301 HTTPS Enforcement (respects TRUSTED_PROXIES to avoid redirect loops)
+if ((bool)\App\Core\Env::get('FORCE_HTTPS', false) && !\App\Core\Request::isHttpsConnection()) {
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $uri = $_SERVER['REQUEST_URI'] ?? '/';
+    $target = "https://{$host}{$uri}";
+    http_response_code(301);
+    header("Location: {$target}");
+    exit;
+}
+
 // Apply Baseline Security Headers
 if (!headers_sent()) {
-    header('X-Frame-Options: SAMEORIGIN');
-    header('X-Content-Type-Options: nosniff');
-    header('X-XSS-Protection: 1; mode=block');
-    header('Referrer-Policy: strict-origin-when-cross-origin');
-    header('Permissions-Policy: geolocation=(self), microphone=(), camera=()');
-    header("Content-Security-Policy: default-src 'self' 'unsafe-inline' https: data:; frame-src 'self' https://maps.google.com https://www.google.com https://*.google.com https:; frame-ancestors 'self';");
-    $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-        || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-    if ($isHttps) {
-        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    foreach (\App\Core\Response::buildSecurityHeaders() as $name => $value) {
+        header("{$name}: {$value}");
     }
 }
 

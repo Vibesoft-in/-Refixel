@@ -52,26 +52,43 @@ class Response
         return $this->content;
     }
 
-    public function applySecurityHeaders(): self
+    public static function buildSecurityHeaders(): array
     {
-        $defaultHeaders = [
+        $reportOnly = (bool)Env::get('CSP_REPORT_ONLY', true);
+        $cspHeader = $reportOnly ? 'Content-Security-Policy-Report-Only' : 'Content-Security-Policy';
+
+        $cspPolicy = implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://checkout.razorpay.com",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+            "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com",
+            "img-src 'self' data: https:",
+            "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com",
+            "frame-src 'self' https://api.razorpay.com https://maps.google.com https://www.google.com",
+            "frame-ancestors 'self'",
+            "base-uri 'self'",
+        ]);
+
+        $headers = [
             'X-Frame-Options'        => 'SAMEORIGIN',
             'X-Content-Type-Options' => 'nosniff',
             'X-XSS-Protection'       => '1; mode=block',
             'Referrer-Policy'        => 'strict-origin-when-cross-origin',
             'Permissions-Policy'     => 'geolocation=(self), microphone=(), camera=()',
+            $cspHeader               => $cspPolicy,
         ];
 
-        if (!isset($this->headers['Content-Security-Policy'])) {
-            $defaultHeaders['Content-Security-Policy'] = "default-src 'self' 'unsafe-inline' https: data:; frame-src 'self' https://maps.google.com https://www.google.com https://*.google.com https:; frame-ancestors 'self';";
+        if (Request::isHttpsConnection()) {
+            // Strict-Transport-Security WITHOUT preload (as explicitly requested by user)
+            $headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
         }
 
-        $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-        if ($isHttps) {
-            $defaultHeaders['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
-        }
+        return $headers;
+    }
 
+    public function applySecurityHeaders(): self
+    {
+        $defaultHeaders = self::buildSecurityHeaders();
         foreach ($defaultHeaders as $name => $value) {
             if (!isset($this->headers[$name])) {
                 $this->headers[$name] = $value;
