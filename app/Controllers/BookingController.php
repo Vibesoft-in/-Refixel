@@ -837,15 +837,24 @@ class BookingController extends Controller
                     'due_amount'     => (string)$dueAmount,
                 ]);
 
-                \App\Models\Payment::create([
-                    'booking_id'      => $bookingId,
-                    'amount'          => $advanceAmount,
-                    'method'          => 'upi',
-                    'status'          => 'pending',
-                    'transaction_ref' => $rzpOrder['order_id'] ?? null,
-                    'paid_at'         => null,
-                    'recorded_by'     => $validCustomerId ?: null,
-                ]);
+                $orderId = $rzpOrder['order_id'] ?? null;
+                if (!empty($orderId)) {
+                    \App\Core\Database::getInstance()->query(
+                        "UPDATE bookings SET gateway_order_id = ? WHERE id = ?",
+                        [$orderId, $bookingId]
+                    );
+
+                    \App\Models\Payment::create([
+                        'booking_id'       => $bookingId,
+                        'amount'           => $advanceAmount,
+                        'method'           => 'upi',
+                        'status'           => 'pending',
+                        'gateway_order_id' => $orderId,
+                        'transaction_ref'  => $orderId,
+                        'paid_at'          => null,
+                        'recorded_by'      => $validCustomerId ?: null,
+                    ]);
+                }
             } catch (\Throwable $e) {
                 Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
             }

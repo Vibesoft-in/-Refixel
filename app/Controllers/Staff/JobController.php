@@ -503,6 +503,20 @@ class JobController extends Controller
                 'type'         => 'balance_collection_by_staff',
             ]);
 
+            $orderId = $order['order_id'] ?? null;
+            if (!empty($orderId)) {
+                \App\Models\Payment::create([
+                    'booking_id'       => (int)$job['booking_id'],
+                    'amount'           => $dueAmt,
+                    'method'           => 'upi',
+                    'status'           => 'pending',
+                    'gateway_order_id' => $orderId,
+                    'transaction_ref'  => $orderId,
+                    'paid_at'          => null,
+                    'recorded_by'      => (int)($_SESSION['staff_id'] ?? 0) ?: null,
+                ]);
+            }
+
             return Response::json([
                 'success'           => true,
                 'razorpay_order_id' => $order['order_id'],
