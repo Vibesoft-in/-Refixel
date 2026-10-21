@@ -99,6 +99,12 @@ Router::post('/reset-password', 'AuthController@resetPassword', ['RateLimit:5,30
 Router::get('/change-password', 'AuthController@showChangePassword', ['RequireLogin']);
 Router::post('/change-password', 'AuthController@changePassword', ['RequireLogin', 'VerifyCsrf']);
 
+// Two-Factor Authentication (2FA - TOTP)
+Router::get('/login/2fa', 'AuthController@show2fa');
+Router::post('/login/2fa', 'AuthController@verify2fa', ['RateLimit:5,900', 'VerifyCsrf']);
+Router::get('/2fa/setup', 'AuthController@show2faSetup', ['RequireLogin']);
+Router::post('/2fa/setup', 'AuthController@confirm2faSetup', ['RequireLogin', 'VerifyCsrf']);
+
 Router::get('/logout', 'AuthController@logout');
 Router::get('/logout.php', 'AuthController@logout');
 
@@ -162,7 +168,9 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::get('/superadmin/admins', 'SuperAdmin\\DashboardController@admins');
     Router::post('/superadmin/admins', 'SuperAdmin\\DashboardController@storeAdmin', ['VerifyCsrf']);
     Router::post('/superadmin/admins/{id}/reset-password', 'SuperAdmin\\DashboardController@updateAdminPassword', ['VerifyCsrf']);
+    Router::post('/superadmin/admins/{id}/reset-2fa', 'SuperAdmin\\DashboardController@resetAdmin2fa', ['VerifyCsrf']);
     Router::post('/superadmin/admins/{id}/delete', 'SuperAdmin\\DashboardController@deleteAdmin', ['VerifyCsrf']);
+    Router::post('/superadmin/users/{id}/reset-2fa', 'SuperAdmin\\DashboardController@resetUser2fa', ['VerifyCsrf']);
 
     // Payment Gateways & API Credentials (Exclusively Super Admin)
     Router::get('/superadmin/gateways', 'SuperAdmin\\GatewayController@index');

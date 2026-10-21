@@ -531,7 +531,7 @@ class DashboardController extends Controller
     public function admins(Request $request): Response
     {
         $admins = Database::fetchAll(
-            "SELECT id, role, name, email, phone, status, last_login_at, created_at 
+            "SELECT id, role, name, email, phone, status, totp_enabled, totp_confirmed_at, last_login_at, created_at 
              FROM users 
              WHERE role IN ('admin', 'super_admin') 
              ORDER BY (role = 'super_admin') DESC, id ASC"
@@ -711,6 +711,78 @@ class DashboardController extends Controller
         }
 
         return $this->redirect('/superadmin/admins');
+    }
+
+    public function resetAdmin2fa(Request $request, string $id): Response
+    {
+        // Enforce strict platform security: ONLY Super Admin can reset 2FA
+        if (!Auth::isSuperAdmin()) {
+            View::setFlash('error', 'Security Policy Violation: Only Super Admin can reset 2FA.');
+            return $this->redirect('/admin');
+        }
+
+        // SUDO / RE-AUTHENTICATION: Re-verify Super Admin password
+        $sudoPassword = (string)$request->input('superadmin_password', '');
+        $currentSuperAdmin = User::find((int)Auth::id());
+        if (!$currentSuperAdmin || empty($sudoPassword) || !password_verify($sudoPassword, $currentSuperAdmin['password_hash'])) {
+            View::setFlash('error', 'Re-authentication failed: Incorrect Super Admin password. 2FA reset was rejected.');
+            return $this->redirect('/superadmin/admins');
+        }
+
+        $adminId = (int)$id;
+        $target = User::find($adminId);
+        if (!$target || !in_array($target['role'], ['admin', 'super_admin'], true)) {
+            View::setFlash('error', 'Target administrative account not found.');
+            return $this->redirect('/superadmin/admins');
+        }
+
+        User::update($adminId, [
+            'totp_secret'         => null,
+            'totp_enabled'        => 0,
+            'totp_recovery_codes' => null,
+            'totp_last_step'      => null,
+            'totp_confirmed_at'   => null,
+        ]);
+
+        Logger::warning("Super Admin (ID: " . Auth::id() . ") reset 2FA for admin {$target['name']} (ID: {$adminId}) after password re-authentication.");
+        View::setFlash('success', "2FA has been successfully reset for '{$target['name']}'. They will be prompted to set up 2FA anew upon next login.");
+
+        return $this->redirect('/superadmin/admins');
+    }
+
+    public function resetUser2fa(Request $request, string $id): Response
+    {
+        if (!Auth::isSuperAdmin()) {
+            View::setFlash('error', 'Security Policy Violation: Only Super Admin can reset 2FA.');
+            return $this->redirect('/admin');
+        }
+
+        $sudoPassword = (string)$request->input('superadmin_password', '');
+        $currentSuperAdmin = User::find((int)Auth::id());
+        if (!$currentSuperAdmin || empty($sudoPassword) || !password_verify($sudoPassword, $currentSuperAdmin['password_hash'])) {
+            View::setFlash('error', 'Re-authentication failed: Incorrect Super Admin password. 2FA reset was rejected.');
+            return $this->redirect('/superadmin');
+        }
+
+        $userId = (int)$id;
+        $target = User::find($userId);
+        if (!$target) {
+            View::setFlash('error', 'User account not found.');
+            return $this->redirect('/superadmin');
+        }
+
+        User::update($userId, [
+            'totp_secret'         => null,
+            'totp_enabled'        => 0,
+            'totp_recovery_codes' => null,
+            'totp_last_step'      => null,
+            'totp_confirmed_at'   => null,
+        ]);
+
+        Logger::warning("Super Admin (ID: " . Auth::id() . ") reset 2FA for user {$target['name']} (ID: {$userId}) after password re-authentication.");
+        View::setFlash('success', "2FA has been successfully reset for '{$target['name']}'.");
+
+        return $this->redirect('/superadmin/staff');
     }
 
     // =========================================================================

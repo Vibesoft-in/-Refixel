@@ -33,6 +33,7 @@
             <th style="white-space: nowrap;">Role Tier</th>
             <th style="white-space: nowrap;">Login Identifier (Email / Phone)</th>
             <th style="white-space: nowrap;">Password Security</th>
+            <th style="white-space: nowrap;">2FA Security</th>
             <th style="white-space: nowrap;">Status</th>
             <th style="white-space: nowrap;">Last Login</th>
             <th class="text-right" style="white-space: nowrap;">Governance Actions</th>
@@ -109,6 +110,22 @@
                   <button type="button" class="btn btn-xs btn-outline-primary ml-1" data-toggle="modal" data-target="#modalResetPass<?= $a['id'] ?>" title="Reset Admin Password">
                     <i class="fa fa-key mr-1"></i>Reset Password
                   </button>
+                <?php endif; ?>
+              </td>
+
+              <!-- 2FA Security -->
+              <td style="white-space: nowrap; vertical-align: middle;">
+                <?php if (!empty($a['totp_enabled'])): ?>
+                  <span class="badge badge-success px-2 py-1" title="2FA Active (Confirmed: <?= \App\Core\View::e($a['totp_confirmed_at'] ?? 'N/A') ?>)">
+                    <i class="fa fa-shield mr-1"></i>Active (TOTP)
+                  </span>
+                  <button type="button" class="btn btn-xs btn-outline-warning ml-1" data-toggle="modal" data-target="#modalReset2fa<?= $a['id'] ?>" title="Emergency 2FA Reset">
+                    <i class="fa fa-refresh mr-1"></i>Reset 2FA
+                  </button>
+                <?php else: ?>
+                  <span class="badge badge-warning px-2 py-1" style="background: #fef3c7; color: #92400e;">
+                    <i class="fa fa-exclamation-circle mr-1"></i>Pending Setup
+                  </span>
                 <?php endif; ?>
               </td>
 
@@ -229,6 +246,45 @@
               <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-primary font-weight-bold px-4">
                 <i class="fa fa-check mr-1"></i> Save Password
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
+<?php endforeach; ?>
+
+<!-- Modals for Resetting Admin 2FA with Password Re-authentication -->
+<?php foreach ($admins as $a): ?>
+  <?php if (!empty($a['totp_enabled'])): ?>
+    <div class="modal fade" id="modalReset2fa<?= $a['id'] ?>" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title font-weight-bold" style="font-size: 16px;">
+              <i class="fa fa-shield text-warning mr-2"></i>Reset Two-Factor Authentication (2FA)
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+          </div>
+          <form action="<?= \App\Core\View::url('/superadmin/admins/' . $a['id'] . '/reset-2fa') ?>" method="POST">
+            <?= \App\Core\View::csrfField() ?>
+            <div class="modal-body p-4">
+              <div class="alert alert-warning small mb-3">
+                <i class="fa fa-exclamation-triangle mr-1"></i>
+                You are about to reset 2FA for <strong><?= \App\Core\View::e($a['name']) ?></strong> (#<?= $a['id'] ?>).
+                Their existing authenticator secret and all emergency recovery codes will be immediately purged.
+              </div>
+              <div class="form-group mb-0">
+                <label class="font-weight-bold text-dark small">Super Admin Password (Re-authentication required):</label>
+                <input type="password" name="superadmin_password" class="form-control" placeholder="Enter YOUR Super Admin password to authorize" required>
+                <small class="form-text text-muted">For security, you must re-enter your password to execute a 2FA reset.</small>
+              </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+              <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-danger btn-sm font-weight-bold">
+                <i class="fa fa-refresh mr-1"></i> Authorize & Reset 2FA
               </button>
             </div>
           </form>

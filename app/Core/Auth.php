@@ -41,6 +41,7 @@ class Auth
             'name'  => (string)$user['name'],
             'email' => $user['email'] ?? null,
             'phone' => $user['phone'] ?? null,
+            'totp_enabled' => (bool)($user['totp_enabled'] ?? false),
             'must_change_password' => (bool)($user['must_change_password'] ?? false),
         ];
 

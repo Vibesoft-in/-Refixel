@@ -64,6 +64,26 @@ class RequireRole
             return Response::redirect('/change-password');
         }
 
+        // Mandatory 2FA Enforcement for Admin & Super Admin accounts
+        if (in_array($userRole, ['admin', 'super_admin'], true)) {
+            $userSession = Auth::user();
+            $totpEnabled = !empty($userSession['totp_enabled']);
+            
+            // If session flag says not enabled, double check DB once in case just enabled/disabled
+            if (!$totpEnabled) {
+                $dbUser = \App\Models\User::find((int)Auth::id());
+                if ($dbUser && !empty($dbUser['totp_enabled'])) {
+                    $_SESSION['user']['totp_enabled'] = true;
+                    $totpEnabled = true;
+                }
+            }
+
+            if (!$totpEnabled && !in_array($request->path(), ['/2fa/setup', '/logout'], true)) {
+                View::setFlash('warning', 'Two-Factor Authentication (2FA) is mandatory for administrator accounts. Please complete 2FA setup to continue.');
+                return Response::redirect('/2fa/setup');
+            }
+        }
+
         return null;
     }
 }
