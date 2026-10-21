@@ -349,13 +349,25 @@ class AuthController extends Controller
     protected function isLockedOut(string $ip, string $identifier): bool
     {
         $since = date('Y-m-d H:i:s', time() - (self::LOCKOUT_MINUTES * 60));
+        // Combination of IP + Account prevents an attacker from locking out a victim's account from a different IP
         $res = Database::fetchOne(
             "SELECT COUNT(*) as attempts FROM login_attempts 
-             WHERE (ip = :ip OR identifier = :ident) AND attempted_at > :since",
+             WHERE ip = :ip AND identifier = :ident AND attempted_at > :since",
             ['ip' => $ip, 'ident' => $identifier, 'since' => $since]
         );
 
-        return ((int)($res['attempts'] ?? 0)) >= self::MAX_LOGIN_ATTEMPTS;
+        if (((int)($res['attempts'] ?? 0)) >= self::MAX_LOGIN_ATTEMPTS) {
+            return true;
+        }
+
+        // Global IP threshold (brute force spraying across many accounts from same IP)
+        $ipRes = Database::fetchOne(
+            "SELECT COUNT(*) as attempts FROM login_attempts 
+             WHERE ip = :ip AND attempted_at > :since",
+            ['ip' => $ip, 'since' => $since]
+        );
+
+        return ((int)($ipRes['attempts'] ?? 0)) >= (self::MAX_LOGIN_ATTEMPTS * 5);
     }
 
     protected function recordFailedAttempt(string $ip, string $identifier): void
@@ -369,7 +381,7 @@ class AuthController extends Controller
     protected function clearFailedAttempts(string $ip, string $identifier): void
     {
         Database::query(
-            "DELETE FROM login_attempts WHERE ip = :ip OR identifier = :ident",
+            "DELETE FROM login_attempts WHERE ip = :ip AND identifier = :ident",
             ['ip' => $ip, 'ident' => $identifier]
         );
     }

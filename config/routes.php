@@ -19,7 +19,7 @@ Router::get('/gallery', 'PageController@gallery');
 
 Router::get('/contact', 'PageController@contact');
 Router::get('/contact-us.php', 'PageController@contact');
-Router::post('/contact', 'PageController@submitContact');
+Router::post('/contact', 'PageController@submitContact', ['RateLimit:5,60']);
 
 Router::get('/terms', 'PageController@terms');
 Router::get('/terms-and-conditions.php', 'PageController@terms');
@@ -34,7 +34,7 @@ Router::get('/blog', 'PageController@blog');
 Router::get('/blog.php', 'PageController@blog');
 
 Router::get('/partner', 'PageController@partner');
-Router::post('/partner', 'PageController@submitPartner');
+Router::post('/partner', 'PageController@submitPartner', ['RateLimit:5,60']);
 
 Router::get('/services', 'ServiceController@index');
 
@@ -51,19 +51,19 @@ Router::get('/{service}-in-{city}', 'ServiceController@serviceInCity');
 
 // Booking Flow & Cart
 Router::get('/book', 'BookingController@showForm');
-Router::post('/book', 'BookingController@submit', ['VerifyCsrf']);
-Router::post('/book/verify-payment', 'BookingController@verifyPayment', ['VerifyCsrf']);
+Router::post('/book', 'BookingController@submit', ['RateLimit:60,60', 'VerifyCsrf']);
+Router::post('/book/verify-payment', 'BookingController@verifyPayment', ['RateLimit:30,60', 'VerifyCsrf']);
 Router::get('/book-success', 'BookingController@success');
-Router::post('/webhook/razorpay', 'WebhookController@razorpay'); // Webhook exempt from CSRF, secured by HMAC
+Router::post('/webhook/razorpay', 'WebhookController@razorpay'); // Webhook exempt from CSRF and RateLimit, secured by HMAC
 
 Router::get('/cart', 'BookingController@cart');
 Router::get('/cart.php', 'BookingController@cart');
 Router::get('/api/cart', 'BookingController@apiCart');
 Router::get('/api/cart/addons', 'BookingController@apiCartAddons');
-Router::post('/api/cart/add', 'BookingController@addToCart');
-Router::post('/api/cart/update', 'BookingController@updateCart');
-Router::post('/api/cart/remove', 'BookingController@removeFromCart');
-Router::post('/api/cart/clear', 'BookingController@clearCart');
+Router::post('/api/cart/add', 'BookingController@addToCart', ['RateLimit:60,60']);
+Router::post('/api/cart/update', 'BookingController@updateCart', ['RateLimit:60,60']);
+Router::post('/api/cart/remove', 'BookingController@removeFromCart', ['RateLimit:60,60']);
+Router::post('/api/cart/clear', 'BookingController@clearCart', ['RateLimit:60,60']);
 Router::get('/api/services', 'ServiceController@apiSearch');
 Router::post('/api/customer/save-address', 'AccountController@apiSaveAddress');
 Router::get('/api/customer/profile', 'AccountController@apiGetProfile');
@@ -71,24 +71,30 @@ Router::get('/api/customer/addresses', 'AccountController@apiGetSavedAddresses')
 Router::post('/api/customer/delete-address', 'AccountController@apiDeleteAddress');
 
 // Legacy ajax endpoints compatibility
-Router::post('/cartajax/ajax_cart_add.php', 'BookingController@addToCart');
-Router::post('/cartajax/ajax_cart_update.php', 'BookingController@updateCart');
+Router::post('/cartajax/ajax_cart_add.php', 'BookingController@addToCart', ['RateLimit:60,60']);
+Router::post('/cartajax/ajax_cart_update.php', 'BookingController@updateCart', ['RateLimit:60,60']);
 
 
 // ==========================================
 // UNIFIED AUTHENTICATION (ALL ROLES)
 // ==========================================
 Router::get('/login', 'AuthController@showLogin');
-Router::post('/login', 'AuthController@login', ['VerifyCsrf', 'RateLimit:5,60']);
+Router::post('/login', 'AuthController@login', ['RateLimit:5,900', 'VerifyCsrf']);
+
+// Dedicated Admin & SuperAdmin Login Aliases
+Router::get('/admin/login', 'AuthController@showLogin');
+Router::post('/admin/login', 'AuthController@login', ['RateLimit:5,900', 'VerifyCsrf']);
+Router::get('/superadmin/login', 'AuthController@showLogin');
+Router::post('/superadmin/login', 'AuthController@login', ['RateLimit:5,900', 'VerifyCsrf']);
 
 Router::get('/signup', 'AuthController@showSignup');
-Router::post('/signup', 'AuthController@signup', ['VerifyCsrf', 'RateLimit:5,60']);
+Router::post('/signup', 'AuthController@signup', ['RateLimit:5,300', 'VerifyCsrf']);
 
 Router::get('/forgot-password', 'AuthController@showForgotPassword');
-Router::post('/forgot-password', 'AuthController@forgotPassword', ['VerifyCsrf', 'RateLimit:5,60']);
+Router::post('/forgot-password', 'AuthController@forgotPassword', ['RateLimit:5,300', 'VerifyCsrf']);
 
 Router::get('/reset-password', 'AuthController@showResetPassword');
-Router::post('/reset-password', 'AuthController@resetPassword', ['VerifyCsrf']);
+Router::post('/reset-password', 'AuthController@resetPassword', ['RateLimit:5,300', 'VerifyCsrf']);
 
 Router::get('/change-password', 'AuthController@showChangePassword', ['RequireLogin']);
 Router::post('/change-password', 'AuthController@changePassword', ['RequireLogin', 'VerifyCsrf']);

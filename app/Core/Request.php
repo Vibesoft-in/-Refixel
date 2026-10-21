@@ -157,16 +157,127 @@ class Request
         return $this->json;
     }
 
+    public static function ipMatchesCidr(string $ip, string $cidr): bool
+    {
+        $cidr = trim($cidr);
+        if ($cidr === '') {
+            return false;
+        }
+
+        if (!str_contains($cidr, '/')) {
+            return $ip === $cidr;
+        }
+
+        [$subnet, $mask] = explode('/', $cidr, 2);
+        $mask = (int)$mask;
+
+        // IPv4 CIDR matching
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            if ($mask < 0 || $mask > 32) return false;
+            $ipLong = ip2long($ip);
+            $subnetLong = ip2long($subnet);
+            $bitmask = $mask === 0 ? 0 : (~0 << (32 - $mask));
+            return ($ipLong & $bitmask) === ($subnetLong & $bitmask);
+        }
+
+        // IPv6 CIDR matching
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            if ($mask < 0 || $mask > 128) return false;
+            $ipBytes = inet_pton($ip);
+            $subnetBytes = inet_pton($subnet);
+            if ($ipBytes === false || $subnetBytes === false) return false;
+
+            $bytes = (int)($mask / 8);
+            $bits = $mask % 8;
+
+            if ($bytes > 0 && strncmp($ipBytes, $subnetBytes, $bytes) !== 0) {
+                return false;
+            }
+
+            if ($bits > 0 && isset($ipBytes[$bytes], $subnetBytes[$bytes])) {
+                $charMask = ~(0xff >> $bits);
+                return (ord($ipBytes[$bytes]) & $charMask) === (ord($subnetBytes[$bytes]) & $charMask);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isFromTrustedProxy(?string $remoteAddr = null): bool
+    {
+        $remoteAddr = $remoteAddr ?? ($this->server['REMOTE_ADDR'] ?? '127.0.0.1');
+        $rawProxies = (string)Env::get('TRUSTED_PROXIES', '');
+        if ($rawProxies === '') {
+            return false;
+        }
+
+        $proxies = array_filter(array_map('trim', explode(',', $rawProxies)));
+        foreach ($proxies as $proxy) {
+            if (self::ipMatchesCidr($remoteAddr, $proxy)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function getIp(): string
     {
-        if (!empty($this->server['HTTP_CLIENT_IP'])) {
-            return $this->server['HTTP_CLIENT_IP'];
+        $remoteAddr = $this->server['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        // Only trust client IP headers if request originated from an explicitly trusted proxy
+        if ($this->isFromTrustedProxy($remoteAddr)) {
+            // Cloudflare header
+            if (!empty($this->server['HTTP_CF_CONNECTING_IP'])) {
+                $cfIp = trim((string)$this->server['HTTP_CF_CONNECTING_IP']);
+                if (filter_var($cfIp, FILTER_VALIDATE_IP)) {
+                    return $cfIp;
+                }
+            }
+
+            // Standard X-Forwarded-For (take leftmost valid client IP)
+            if (!empty($this->server['HTTP_X_FORWARDED_FOR'])) {
+                $parts = explode(',', (string)$this->server['HTTP_X_FORWARDED_FOR']);
+                foreach ($parts as $part) {
+                    $ip = trim($part);
+                    if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                        return $ip;
+                    }
+                }
+            }
+
+            if (!empty($this->server['HTTP_CLIENT_IP'])) {
+                $clientIp = trim((string)$this->server['HTTP_CLIENT_IP']);
+                if (filter_var($clientIp, FILTER_VALIDATE_IP)) {
+                    return $clientIp;
+                }
+            }
         }
-        if (!empty($this->server['HTTP_X_FORWARDED_FOR'])) {
-            $list = explode(',', $this->server['HTTP_X_FORWARDED_FOR']);
-            return trim($list[0]);
+
+        return $remoteAddr;
+    }
+
+    public function isHttps(): bool
+    {
+        if (!empty($this->server['HTTPS']) && strtolower((string)$this->server['HTTPS']) !== 'off') {
+            return true;
         }
-        return $this->server['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        if (isset($this->server['SERVER_PORT']) && (int)$this->server['SERVER_PORT'] === 443) {
+            return true;
+        }
+
+        // X-Forwarded-Proto is ONLY trusted if coming from a trusted proxy
+        $remoteAddr = $this->server['REMOTE_ADDR'] ?? '127.0.0.1';
+        if ($this->isFromTrustedProxy($remoteAddr)) {
+            $proto = strtolower((string)($this->server['HTTP_X_FORWARDED_PROTO'] ?? ''));
+            if ($proto === 'https') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getUserAgent(): string
