@@ -1434,9 +1434,9 @@ class BookingController extends Controller
         $maskedName = strlen($namePart) > 2 ? substr($namePart, 0, 1) . str_repeat('*', max(1, strlen($namePart) - 2)) . substr($namePart, -1) : substr($namePart, 0, 1) . '***';
         $maskedEmail = $maskedName . '@' . $domainPart;
 
-        $msg = 'A 6-digit verification code has been sent to ' . $rawEmail;
+        $msg = 'A 6-digit verification code has been sent to ' . $maskedEmail . '.';
         if (!$sent) {
-            $msg = 'Verification code generated: ' . $otp . ' (Hostinger outbound email is currently suspended for contact@refixel.com. Use the code displayed on screen to proceed.)';
+            Logger::error("Enquiry OTP email dispatch failed for: {$rawEmail}");
         }
 
         return Response::json([
@@ -1445,7 +1445,6 @@ class BookingController extends Controller
             'masked_email' => $maskedEmail,
             'email'        => $rawEmail,
             'cooldown'     => 30,
-            'debug_otp'    => $otp,
             'email_sent'   => $sent,
         ]);
     }
@@ -1487,14 +1486,13 @@ class BookingController extends Controller
 
         $msg = 'A fresh verification code has been sent to ' . $email . '.';
         if (!$sent) {
-            $msg = 'Fresh verification code generated: ' . $otp . ' (Hostinger outbound email suspended. Use the code shown on screen.)';
+            Logger::error("Resend Enquiry OTP dispatch failed for: {$email}");
         }
 
         return Response::json([
             'status'     => 'success',
             'message'    => $msg,
             'cooldown'   => 30,
-            'debug_otp'  => $otp,
             'email_sent' => $sent,
         ]);
     }

@@ -4904,7 +4904,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1000);
   }
 
-  function openModal(email, maskedEmail, debugOtp, emailSent) {
+  function openModal(email, maskedEmail, emailSent) {
     currentEmail = email;
     targetEmailEl.textContent = email;
     hideAlert();
@@ -4912,17 +4912,6 @@ document.addEventListener("DOMContentLoaded", function () {
       inp.value = "";
       inp.classList.remove("has_value");
     });
-
-    if (debugOtp) {
-      if (emailSent === false) {
-        showAlert("Hostinger SMTP outbound email is suspended for contact@refixel.com. Use the code <strong>" + debugOtp + "</strong> below to verify.", false);
-      }
-      var strOtp = String(debugOtp);
-      for (var i = 0; i < digitInputs.length && i < strOtp.length; i++) {
-        digitInputs[i].value = strOtp.charAt(i);
-        digitInputs[i].classList.add("has_value");
-      }
-    }
 
     modal.style.display = "flex";
     document.body.style.overflow = "hidden";
@@ -5010,7 +4999,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sendBtn.innerHTML = originalBtnHtml;
 
       if (data.status === 'success') {
-        openModal(emailVal, data.masked_email || emailVal, data.debug_otp, data.email_sent);
+        openModal(emailVal, data.masked_email || emailVal, data.email_sent);
       } else {
         alert(data.message || 'Unable to send OTP. Please try again.');
       }
@@ -5165,13 +5154,7 @@ document.addEventListener("DOMContentLoaded", function () {
             inp.value = "";
             inp.classList.remove("has_value");
           });
-          if (data.debug_otp) {
-            var strOtp = String(data.debug_otp);
-            for (var i = 0; i < digitInputs.length && i < strOtp.length; i++) {
-              digitInputs[i].value = strOtp.charAt(i);
-              digitInputs[i].classList.add("has_value");
-            }
-          } else if (digitInputs[0]) {
+          if (digitInputs[0]) {
             digitInputs[0].focus();
           }
         } else {
