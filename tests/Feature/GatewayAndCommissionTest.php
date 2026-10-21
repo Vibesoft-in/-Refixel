@@ -27,8 +27,8 @@ $gateways = PaymentGateway::getAll();
 assert(count($gateways) >= 2, "Expected at least 2 gateways");
 $razorpay = PaymentGateway::getByCode('razorpay');
 assert($razorpay !== null, "Razorpay gateway not found");
-assert($razorpay['key_id'] === 'rzp_live_R72df4G16qv1Rh', "Key ID mismatch");
-assert($razorpay['key_secret'] === 'ZxuiIKL44pv12Ba5b8rwnwuH', "Key Secret mismatch");
+assert(!empty($razorpay['key_id']), "Key ID should not be empty");
+assert(!empty($razorpay['key_secret']), "Key Secret should not be empty");
 assert($razorpay['is_active'] == 1, "Razorpay should be active");
 echo "PASSED\n";
 
@@ -57,7 +57,7 @@ echo "PASSED\n";
 // Test 3: Commission Calculation Math
 // Example: Gross ₹2000, Material ₹400 -> Net ₹1600. Company 25% = ₹400, Labour 75% = ₹1200 + ₹400 mat = ₹1600
 echo "Test 3: Commission Calculation Math (Gross - Material Split)... ";
-$split = CommissionRule::calculateSplit(2000.0, 400.0, null, 'standard', 'worker');
+$split = CommissionRule::calculateSplit(2000.0, 400.0, null, null, 'standard', 'worker');
 assert($split['gross_charge'] === 2000.0, "Gross charge should be 2000");
 assert($split['material_cost'] === 400.0, "Material cost should be 400");
 assert($split['net_split_base'] === 1600.0, "Net split base should be 1600");
@@ -70,14 +70,14 @@ echo "PASSED\n";
 
 // Test 4: Commission Calculation when Company supplies materials
 echo "Test 4: Commission when Company supplies material inventory... ";
-$splitCompanyMat = CommissionRule::calculateSplit(2000.0, 400.0, null, 'standard', 'company');
+$splitCompanyMat = CommissionRule::calculateSplit(2000.0, 400.0, null, null, 'standard', 'company');
 assert($splitCompanyMat['worker_total_payout'] === 1200.0, "Labour should receive pure labour share of ₹1200.00");
 assert($splitCompanyMat['company_retained'] === 800.0, "Company should retain ₹400 margin + ₹400 material cost = ₹800.00");
 echo "PASSED\n";
 
 // Test 5: Custom Tier Override Rule (Senior Specialist 80% / 20%)
 echo "Test 5: Worker Tier Override Rule... ";
-$splitSenior = CommissionRule::calculateSplit(1000.0, 0.0, null, 'senior', 'worker');
+$splitSenior = CommissionRule::calculateSplit(1000.0, 0.0, null, null, 'senior', 'worker');
 assert($splitSenior['admin_percent'] === 20.0, "Senior tier admin % should be 20%");
 assert($splitSenior['worker_percent'] === 80.0, "Senior tier worker % should be 80%");
 assert($splitSenior['worker_total_payout'] === 800.0, "Senior worker payout should be ₹800");

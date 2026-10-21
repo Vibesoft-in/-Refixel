@@ -156,7 +156,7 @@ assert(str_contains($html, View::e($renamedTitle3)), "Expected newly renamed add
 echo "[PASS] Test 5: Admin Addons page displays Edit Name buttons, quick rename modal, and updated add-on title.\n\n";
 
 // Cleanup test records
-Database::execute("DELETE FROM service_addons WHERE id = :id", ['id' => $pairRuleId]);
+Database::execute("DELETE FROM service_addons WHERE addon_service_id = :aid OR id = :id", ['aid' => $testAddonId, 'id' => $pairRuleId]);
 Database::execute("DELETE FROM services WHERE id = :id", ['id' => $testAddonId]);
 
 echo "=== ALL AdminAddonRenameTest TESTS PASSED! ===\n";

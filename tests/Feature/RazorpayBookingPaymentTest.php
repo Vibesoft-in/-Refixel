@@ -32,12 +32,12 @@ $postDataOnline = [
     'email'          => 'razorpay.test@example.com',
     'address'        => '123 Tech Park, Kashipur',
     'city'           => 'Kashipur',
-    'preferred_date' => date('Y-m-d'),
+    'preferred_date' => date('Y-m-d', strtotime('+1 day')),
     'preferred_time' => '10:00 - 12:00 PM',
     'payment_method' => 'online',
 ];
 
-$reqOnline = new Request([], $postDataOnline, [], [], [], [
+$reqOnline = new Request([], $postDataOnline, [
     'REQUEST_METHOD' => 'POST',
     'REQUEST_URI'    => '/book',
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
@@ -77,7 +77,7 @@ $verifyData = [
     'razorpay_signature'  => $signature,
 ];
 
-$reqVerify = new Request([], $verifyData, [], [], [], [
+$reqVerify = new Request([], $verifyData, [
     'REQUEST_METHOD' => 'POST',
     'REQUEST_URI'    => '/book/verify-payment',
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
@@ -109,7 +109,7 @@ echo "Test 2: Payment Signature Verification, DB Paid Status & Invoice Generatio
 $tamperedVerifyData = $verifyData;
 $tamperedVerifyData['razorpay_signature'] = 'invalid_forged_signature';
 
-$reqTampered = new Request([], $tamperedVerifyData, [], [], [], [
+$reqTampered = new Request([], $tamperedVerifyData, [
     'REQUEST_METHOD' => 'POST',
     'REQUEST_URI'    => '/book/verify-payment',
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
@@ -132,12 +132,12 @@ $postDataCod = [
     'email'          => 'cod.test@example.com',
     'address'        => '456 Market Road, Kashipur',
     'city'           => 'Kashipur',
-    'preferred_date' => date('Y-m-d'),
+    'preferred_date' => date('Y-m-d', strtotime('+1 day')),
     'preferred_time' => '02:00 - 04:00 PM',
     'payment_method' => 'cod',
 ];
 
-$reqCod = new Request([], $postDataCod, [], [], [], [
+$reqCod = new Request([], $postDataCod, [
     'REQUEST_METHOD' => 'POST',
     'REQUEST_URI'    => '/book',
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
@@ -174,7 +174,7 @@ $verifyDataCod = [
     'razorpay_signature'  => $codSignature,
 ];
 
-$reqVerifyCod = new Request([], $verifyDataCod, [], [], [], [
+$reqVerifyCod = new Request([], $verifyDataCod, [
     'REQUEST_METHOD' => 'POST',
     'REQUEST_URI'    => '/book/verify-payment',
     'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',

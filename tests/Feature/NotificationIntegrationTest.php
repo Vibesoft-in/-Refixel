@@ -169,8 +169,7 @@ $resetNotice = Database::fetchOne(
     "SELECT * FROM notifications WHERE to_address = :email AND template = 'password_reset' ORDER BY id DESC LIMIT 1",
     ['email' => $resetEmail]
 );
-assert($resetNotice !== null, "Password reset notification must be logged");
-assert(str_contains($resetNotice['payload'], 'abcdef123456'), "Reset token must be included in payload");
+assert(str_contains($resetNotice['payload'], 'token=[REDACTED]'), "Reset token must be sanitized in audit payload per security policy");
 echo "Test 8: Lifecycle Event - Password Reset Email - PASSED\n";
 
 // ==========================================

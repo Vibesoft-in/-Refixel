@@ -129,7 +129,7 @@ assert($attachments[0]['mime'] === 'image/jpeg', "Expected image/jpeg mime");
 echo "Test 8: Customer issue photo attachment storage - PASSED\n";
 
 // Test 9: Success screen rendering
-$successReq = new Request(['booking_no' => $latestBooking['booking_no']], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/book-success']);
+$successReq = new Request(['token' => $latestBooking['guest_token']], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/book-success']);
 $successResp = $ctrl->success($successReq);
 assert($successResp->getStatusCode() === 200, "Expected 200 for /book-success");
 assert(str_contains($successResp->getContent(), $latestBooking['booking_no']), "Success page must display booking reference");

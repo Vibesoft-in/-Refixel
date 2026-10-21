@@ -29,10 +29,23 @@ $earnCtrl = new EarningsController();
 $profCtrl = new ProfileController();
 $requireRole = new RequireRole();
 
-// Setup: Ensure Tech 1 (ID: 2) exists and is active
+// Setup: Ensure Tech 1 (tech@refixel.com) exists and is active
 $tech = Database::fetchOne("SELECT * FROM users WHERE role = 'staff' AND email = 'tech@refixel.com'");
+if (!$tech) {
+    Database::execute(
+        "INSERT INTO users (role, name, email, phone, password_hash, status, must_change_password)
+         VALUES ('staff', 'Technician One', 'tech@refixel.com', '9812345678', :hash, 'active', 0)",
+        ['hash' => password_hash('TechPassword#2026', PASSWORD_BCRYPT)]
+    );
+    $tech = Database::fetchOne("SELECT * FROM users WHERE role = 'staff' AND email = 'tech@refixel.com'");
+}
 assert($tech !== null, "Staff user tech@refixel.com must exist");
 $techId = (int)$tech['id'];
+
+$staffProf = Database::fetchOne("SELECT id FROM staff_profiles WHERE user_id = :uid", ['uid' => $techId]);
+if (!$staffProf) {
+    Database::execute("INSERT INTO staff_profiles (user_id, rating_avg, is_available) VALUES (:uid, 4.9, 1)", ['uid' => $techId]);
+}
 
 // Test 1: Role protection & unauthenticated blocking
 Auth::logout();
@@ -70,7 +83,9 @@ echo "Test 4: Technician Dashboard rendering - PASSED\n";
 // Ensure we have a dedicated clean test job for technician 2
 $existingTestJob = Database::fetchOne("SELECT id FROM jobs WHERE staff_id = :sid ORDER BY id ASC LIMIT 1", ['sid' => $techId]);
 if (!$existingTestJob) {
-    Database::query("INSERT INTO bookings (booking_no, service_id, name, phone, address, status, created_at) VALUES ('BK-TEST-WF-01', 1, 'Workflow Cust', '9876543210', '123 Test Rd', 'assigned', NOW())");
+    Database::query("DELETE FROM jobs WHERE booking_id IN (SELECT id FROM bookings WHERE booking_no = 'BK-TEST-WF-01')");
+    Database::query("DELETE FROM bookings WHERE booking_no = 'BK-TEST-WF-01'");
+    Database::query("INSERT INTO bookings (booking_no, service_id, name, phone, address, status, total_amount, due_amount, advance_amount, created_at) VALUES ('BK-TEST-WF-01', 1, 'Workflow Cust', '9876543210', '123 Test Rd', 'assigned', 899.00, 899.00, 0.00, NOW())");
     $bId = (int)Database::lastInsertId();
     Database::query("INSERT INTO jobs (booking_id, staff_id, status, created_at) VALUES (:bid, :sid, 'assigned', NOW())", ['bid' => $bId, 'sid' => $techId]);
     $existingTestJob = Database::fetchOne("SELECT id FROM jobs WHERE staff_id = :sid ORDER BY id ASC LIMIT 1", ['sid' => $techId]);
@@ -79,7 +94,7 @@ $testJobId = (int)$existingTestJob['id'];
 
 // Reset test job status to 'assigned' for deterministic testing
 Database::query("UPDATE jobs SET status = 'assigned', accepted_at = NULL, started_at = NULL, completed_at = NULL, work_summary = NULL, final_notes = NULL WHERE id = :id", ['id' => $testJobId]);
-Database::query("UPDATE bookings SET status = 'assigned' WHERE id = (SELECT booking_id FROM jobs WHERE id = :id)", ['id' => $testJobId]);
+Database::query("UPDATE bookings SET status = 'assigned', total_amount = 899.00, due_amount = 899.00, advance_amount = 0.00 WHERE id = (SELECT booking_id FROM jobs WHERE id = :id)", ['id' => $testJobId]);
 
 // Test 5: Strict query isolation (WHERE staff_id = current_user_id)
 // Create a separate staff user (id: 9999) and assign a mock job

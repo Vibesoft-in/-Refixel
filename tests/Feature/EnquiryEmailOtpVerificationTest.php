@@ -1,137 +1,57 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * EnquiryEmailOtpVerificationTest.php
+ *
+ * NOTE: Homepage Enquiry Email OTP Verification was decommissioned and replaced by
+ * direct WhatsApp Enquiry flow per explicit user instruction (commit ce3c288).
+ * 
+ * This test suite verifies:
+ * 1. Legacy OTP methods are removed from BookingController
+ * 2. Legacy OTP endpoints return 404 via Router
+ * 3. Client form in home.php handles enquiry directly via WhatsApp without backend OTP
+ */
+
 require_once __DIR__ . '/../bootstrap.php';
 
-use App\Core\Auth;
-use App\Core\Csrf;
-use App\Core\Database;
 use App\Core\Request;
-use App\Models\Booking;
+use App\Core\Router;
 use App\Controllers\BookingController;
-use App\Services\AutoDispatchService;
 
-echo "=== RUNNING HOMEPAGE ENQUIRY EMAIL OTP VERIFICATION TESTS ===\n";
-
-$prevBusyMode = AutoDispatchService::isBusyModeEnabled();
-AutoDispatchService::setBusyMode(false);
-
-// Cleanup old test data
-Database::query("DELETE FROM notifications WHERE to_address = 'enquiry_otp_test@refixel.com'");
-Database::query("DELETE FROM jobs WHERE booking_id IN (SELECT id FROM bookings WHERE email = 'enquiry_otp_test@refixel.com')");
-Database::query("DELETE FROM bookings WHERE email = 'enquiry_otp_test@refixel.com'");
-Database::query("DELETE FROM users WHERE email = 'enquiry_otp_test@refixel.com'");
-unset($_SESSION['enquiry_otp'], $_SESSION['last_enquiry']);
+echo "=== RUNNING HOMEPAGE ENQUIRY RETIREMENT & WHATSAPP MIGRATION TESTS ===\n";
 
 $controller = new BookingController();
 
-// 1. Test Validation in Send OTP
-$invalidReq = new Request([], [
-    '_csrf' => Csrf::token(),
-    'name'  => '',
-    'phone' => '123',
-    'email' => 'bad-email',
-], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/enquiry/send-otp']);
+// 1. Verify legacy methods are removed from controller
+assert(!method_exists($controller, 'apiSendEnquiryOtp'), "apiSendEnquiryOtp must be removed");
+assert(!method_exists($controller, 'apiVerifyEnquiryOtp'), "apiVerifyEnquiryOtp must be removed");
+assert(!method_exists($controller, 'apiResendEnquiryOtp'), "apiResendEnquiryOtp must be removed");
+echo "[PASS] Test 1: Legacy OTP methods removed from BookingController\n";
 
-$invalidResp = $controller->apiSendEnquiryOtp($invalidReq);
-assert($invalidResp->getStatusCode() === 422, "Expected 422 for invalid form inputs");
-echo "[PASS] Test 1: API correctly validates required name, phone, and valid email\n";
+// 2. Verify legacy routes return 404 via Router
+$legacyEndpoints = [
+    ['POST', '/quick-enquiry'],
+    ['GET',  '/enquiry-success'],
+    ['POST', '/api/enquiry/send-otp'],
+    ['POST', '/api/enquiry/verify-otp'],
+    ['POST', '/api/enquiry/resend-otp'],
+];
 
-// 2. Test Successful OTP Generation & Email Dispatch
-$sendReq = new Request([], [
-    '_csrf'     => Csrf::token(),
-    'name'      => 'Aakash Verma',
-    'phone'     => '9876543219',
-    'email'     => 'enquiry_otp_test@refixel.com',
-    'service'   => 'AC Jet Service',
-    'location'  => 'Mallital, Nainital',
-    'message'   => 'Need AC high pressure cleaning service urgently',
-], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/enquiry/send-otp']);
+foreach ($legacyEndpoints as [$method, $endpoint]) {
+    $req = new Request([], [], [
+        'REQUEST_METHOD' => $method,
+        'REQUEST_URI'    => $endpoint,
+    ]);
+    $res = Router::dispatch($req);
+    assert($res->getStatusCode() === 404, "Legacy route {$method} {$endpoint} must return 404");
+}
+echo "[PASS] Test 2: Legacy OTP and enquiry routes return 404 via Router\n";
 
-$sendResp = $controller->apiSendEnquiryOtp($sendReq);
-assert($sendResp->getStatusCode() === 200, "Expected 200 for successful OTP generation");
+// 3. Verify home.php handles enquiry via WhatsApp without backend OTP dependency
+$homeHtml = file_get_contents(ROOT_PATH . '/app/views/customer/home.php');
+assert(str_contains($homeHtml, 'handleHomeEnquiryWhatsApp'), "home.php must utilize direct WhatsApp enquiry handler");
+assert(!str_contains($homeHtml, '/api/enquiry/send-otp'), "home.php must not reference legacy /api/enquiry/send-otp");
+echo "[PASS] Test 3: home.php enquiry form transitioned completely to WhatsApp flow\n";
 
-$sendData = json_decode($sendResp->getBody(), true);
-assert($sendData['status'] === 'success', "Response status must be success");
-assert(isset($_SESSION['enquiry_otp']), "Session enquiry_otp must be populated");
-assert(!empty($_SESSION['enquiry_otp']['otp_hash']), "Session must hold hashed OTP");
-
-// Verify OTP notification in database
-$otpNotif = Database::fetchOne("SELECT * FROM notifications 
-                                WHERE to_address = 'enquiry_otp_test@refixel.com' 
-                                AND template = 'enquiry_email_otp' 
-                                ORDER BY id DESC LIMIT 1");
-assert($otpNotif !== null, "OTP notification must be recorded in notifications table");
-$notifPayload = json_decode($otpNotif['payload'], true);
-$actualOtp = $notifPayload['otp'] ?? '';
-assert(strlen((string)$actualOtp) === 6, "Generated OTP in email payload must be exactly 6 digits");
-echo "[PASS] Test 2: OTP successfully generated ({$actualOtp}), hashed in session, and emailed to customer\n";
-
-// 3. Test Resend Cooldown
-$resendReq = new Request([], ['_csrf' => Csrf::token()], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/enquiry/resend-otp']);
-$resendBlockedResp = $controller->apiResendEnquiryOtp($resendReq);
-assert($resendBlockedResp->getStatusCode() === 429, "Expected 429 cooldown protection on immediate resend");
-
-// Fast forward cooldown time
-$_SESSION['enquiry_otp']['resend_at'] = time() - 5;
-$resendAllowedResp = $controller->apiResendEnquiryOtp($resendReq);
-assert($resendAllowedResp->getStatusCode() === 200, "Expected 200 after cooldown expires");
-echo "[PASS] Test 3: OTP resend cooldown (rate-limiting) strictly enforced\n";
-
-// Fetch updated OTP
-$updatedOtpNotif = Database::fetchOne("SELECT * FROM notifications 
-                                       WHERE to_address = 'enquiry_otp_test@refixel.com' 
-                                       AND template = 'enquiry_email_otp' 
-                                       ORDER BY id DESC LIMIT 1");
-$latestOtp = json_decode($updatedOtpNotif['payload'], true)['otp'] ?? '';
-
-// 4. Test Rejecting Invalid OTP
-$wrongVerifyReq = new Request([], [
-    '_csrf' => Csrf::token(),
-    'otp'   => '000000',
-], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/enquiry/verify-otp']);
-
-$wrongResp = $controller->apiVerifyEnquiryOtp($wrongVerifyReq);
-assert($wrongResp->getStatusCode() === 400, "Expected 400 for incorrect OTP");
-$wrongData = json_decode($wrongResp->getBody(), true);
-assert(str_contains(strtolower($wrongData['message']), 'invalid otp'), "Error message must state invalid OTP");
-echo "[PASS] Test 4: Incorrect OTP correctly rejected with attempt tracking\n";
-
-// 5. Test Successful OTP Verification and Enquiry Submission
-$correctVerifyReq = new Request([], [
-    '_csrf' => Csrf::token(),
-    'otp'   => (string)$latestOtp,
-], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/enquiry/verify-otp']);
-
-$correctResp = $controller->apiVerifyEnquiryOtp($correctVerifyReq);
-assert($correctResp->getStatusCode() === 200, "Expected 200 for correct OTP");
-$correctData = json_decode($correctResp->getBody(), true);
-assert($correctData['status'] === 'success', "Response status must be success");
-assert(!empty($correctData['booking_no']), "Booking number must be returned");
-assert(!isset($_SESSION['enquiry_otp']), "OTP session must be cleared after verification");
-
-// Verify booking in database
-$createdBooking = Database::fetchOne("SELECT * FROM bookings WHERE booking_no = :bno", ['bno' => $correctData['booking_no']]);
-assert($createdBooking !== null, "Booking record must exist in database");
-assert($createdBooking['name'] === 'Aakash Verma', "Customer name must match");
-assert($createdBooking['phone'] === '9876543219', "Customer phone must match");
-assert($createdBooking['email'] === 'enquiry_otp_test@refixel.com', "Customer email must match");
-assert($createdBooking['status'] === 'new', "Booking status must be 'new'");
-
-// Verify Customer Confirmation Email dispatched
-$confirmNotif = Database::fetchOne("SELECT * FROM notifications 
-                                    WHERE to_address = 'enquiry_otp_test@refixel.com' 
-                                    AND template IN ('booking_confirmation', 'customer_welcome_booking', 'customer_enquiry_confirmed') 
-                                    ORDER BY id DESC LIMIT 1");
-assert($confirmNotif !== null, "Customer must receive booking confirmation email after successful OTP verification");
-echo "[PASS] Test 5: Verified OTP successfully creates booking (#{$correctData['booking_no']}), clears OTP session, and dispatches confirmation\n";
-
-// Cleanup
-Database::query("DELETE FROM notifications WHERE to_address = 'enquiry_otp_test@refixel.com'");
-Database::query("DELETE FROM jobs WHERE booking_id IN (SELECT id FROM bookings WHERE email = 'enquiry_otp_test@refixel.com')");
-Database::query("DELETE FROM bookings WHERE email = 'enquiry_otp_test@refixel.com'");
-Database::query("DELETE FROM users WHERE email = 'enquiry_otp_test@refixel.com'");
-unset($_SESSION['enquiry_otp'], $_SESSION['last_enquiry']);
-AutoDispatchService::setBusyMode($prevBusyMode);
-
-echo "\n=== ALL 5 HOMEPAGE ENQUIRY OTP TESTS PASSED SUCCESSFULLY! ===\n";
+echo "\n=== ALL HOMEPAGE ENQUIRY DECOMMISSIONING TESTS PASSED SUCCESSFULLY! ===\n";

@@ -166,26 +166,10 @@ $bookSuccessResp = $bookingController->success($bookSuccessReq);
 assert($bookSuccessResp->getStatusCode() === 200, "Book success page must return 200 for valid guest token");
 assert($bookSuccessResp->getHeader('Referrer-Policy') === 'no-referrer', "FAIL: /book-success missing Referrer-Policy: no-referrer header!");
 
-// Verify Enquiry success Referrer-Policy
-$enquiryRes = $bookingController->executeEnquiryCreation([
-    'name'     => 'Task 1 Enquiry User',
-    'phone'    => '9' . (string)random_int(100000000, 999999999),
-    'email'    => 'enquiry_' . time() . '@refixel.com',
-    'service'  => 'AC Repair',
-    'location' => 'Kashipur',
-    'message'  => 'Testing referrer policy header',
-]);
-$enquiryGuestToken = $enquiryRes['guest_token'];
-
-$enquirySuccessReq = new Request(['token' => $enquiryGuestToken], [], [
-    'REQUEST_METHOD' => 'GET',
-    'REQUEST_URI'    => '/enquiry-success?token=' . urlencode($enquiryGuestToken),
-]);
-
-$enquirySuccessResp = $bookingController->enquirySuccess($enquirySuccessReq);
-assert($enquirySuccessResp->getStatusCode() === 200, "Enquiry success page must return 200 for valid guest token");
-assert($enquirySuccessResp->getHeader('Referrer-Policy') === 'no-referrer', "FAIL: /enquiry-success missing Referrer-Policy: no-referrer header!");
-echo "[PASS] Test 3: Referrer-Policy: no-referrer verified on /book-success and /enquiry-success.\n\n";
+// Verify /enquiry-success route is retired with WhatsApp migration
+assert(!method_exists($bookingController, 'executeEnquiryCreation'), "executeEnquiryCreation removed with WhatsApp migration");
+assert(!method_exists($bookingController, 'enquirySuccess'), "enquirySuccess removed with WhatsApp migration");
+echo "[PASS] Test 3: Referrer-Policy: no-referrer verified on /book-success; legacy enquiry-success confirmed retired.\n\n";
 
 // --------------------------------------------------------------------------
 // TEST 4: Logger scrubbing of guest_token

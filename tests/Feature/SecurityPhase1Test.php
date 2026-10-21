@@ -29,38 +29,23 @@ $bookingController = new BookingController();
 $authController = new AuthController();
 
 // --------------------------------------------------------------------------
-// TEST 1: debug_otp and OTP leakage removal
+// TEST 1: debug_otp and OTP leakage removal / Legacy OTP Endpoint Retired
 // --------------------------------------------------------------------------
-echo "[TEST 1] Verifying OTP is never leaked in API response or status messages...\n";
+echo "[TEST 1] Verifying legacy enquiry OTP is retired and OTPs are never leaked...\n";
 
+assert(!method_exists($bookingController, 'apiSendEnquiryOtp'), "apiSendEnquiryOtp method was intentionally removed in WhatsApp flow conversion");
+
+// Verify generated OTP is sanitized in notifications table ([REDACTED])
 $testEmail = 'phase1_test_' . time() . '@refixel.com';
-$sendReq = new Request([], [
-    '_csrf'        => Csrf::token(),
-    'name'         => 'Security Audit User',
-    'phone'        => '9876543210',
-    'email'        => $testEmail,
-    'service_name' => 'AC Servicing',
-    'location'     => 'Kashipur',
-], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/api/enquiry/send-otp']);
+\App\Core\Notifier::send('email', $testEmail, 'password_reset_otp', ['name' => 'Security Audit', 'otp' => '654321']);
 
-$sendResp = $bookingController->apiSendEnquiryOtp($sendReq);
-assert($sendResp->getStatusCode() === 200, "Send OTP response code must be 200");
-$sendData = json_decode($sendResp->getBody(), true);
-
-assert(!isset($sendData['debug_otp']), "FAIL: debug_otp MUST NOT be present in JSON response");
-assert(!isset($sendData['otp']), "FAIL: otp MUST NOT be present in JSON response");
-
-// Verify generated OTP is sanitized in notifications table ([REDACTED]) and not leaked in API response
 $notifRow = Database::fetchOne("SELECT payload FROM notifications WHERE to_address = :email ORDER BY id DESC LIMIT 1", ['email' => $testEmail]);
 assert($notifRow !== null, "Notification must be logged for test user");
 $notifPayload = json_decode($notifRow['payload'], true);
 assert($notifPayload['otp'] === '[REDACTED]', "Notification payload OTP must be sanitized to [REDACTED]");
-assert(isset($_SESSION['enquiry_otp']['otp_hash']), "Session must securely store hashed OTP");
+Database::query("DELETE FROM notifications WHERE to_address = :email", ['email' => $testEmail]);
 
-// Verify status message in response does NOT contain any raw 6-digit number
-assert(!preg_match('/\b\d{6}\b/', $sendData['message'] ?? ''), "FAIL: Response message must not contain any 6-digit OTP code");
-
-echo "[PASS] Test 1: debug_otp and raw OTP completely absent from API responses, sanitized in DB audit, and securely hashed.\n\n";
+echo "[PASS] Test 1: Legacy enquiry OTP retired, notifications table audit sanitizes OTP to [REDACTED].\n\n";
 
 // --------------------------------------------------------------------------
 // TEST 2: IDOR Protection & Plain Password Removal on Success Pages
@@ -90,9 +75,7 @@ $unauthReq = new Request(['booking_no' => $bookingNo], [], ['REQUEST_METHOD' => 
 $unauthResp = $bookingController->success($unauthReq);
 assert($unauthResp->getStatusCode() === 404, "FAIL: Unauthenticated access without guest token must return 404, got " . $unauthResp->getStatusCode());
 
-$unauthEnquiryReq = new Request(['booking_no' => $bookingNo], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/enquiry-success']);
-$unauthEnquiryResp = $bookingController->enquirySuccess($unauthEnquiryReq);
-assert($unauthEnquiryResp->getStatusCode() === 404, "FAIL: Unauthenticated enquiry access without guest token must return 404, got " . $unauthEnquiryResp->getStatusCode());
+assert(!method_exists($bookingController, 'enquirySuccess'), "FAIL: enquirySuccess must be removed with WhatsApp flow migration");
 
 // Case B: Another logged-in user (User #30 superadmin or User #56 tech) attempts to view customer #57's booking -> MUST RETURN 404
 $attackerUser = User::find(56);
@@ -119,9 +102,12 @@ $bookSuccessHtml = file_get_contents(ROOT_PATH . '/app/views/customer/book-succe
 assert(!str_contains($bookSuccessHtml, '$displayPassword'), "FAIL: book-success.php must not reference displayPassword");
 assert(!str_contains($bookSuccessHtml, 'onclick="rfxCopy(\'<?= \App\Core\View::e($displayPassword)'), "FAIL: Password copy button must be removed from book-success.php");
 
-$enquirySuccessHtml = file_get_contents(ROOT_PATH . '/app/views/customer/enquiry-success.php');
-assert(!str_contains($enquirySuccessHtml, '$displayPassword'), "FAIL: enquiry-success.php must not reference displayPassword");
-assert(!str_contains($enquirySuccessHtml, 'Copy Password'), "FAIL: Copy Password button must be removed from enquiry-success.php");
+$enquirySuccessFile = ROOT_PATH . '/app/views/customer/enquiry-success.php';
+if (file_exists($enquirySuccessFile)) {
+    $enquirySuccessHtml = file_get_contents($enquirySuccessFile);
+    assert(!str_contains($enquirySuccessHtml, '$displayPassword'), "FAIL: enquiry-success.php must not reference displayPassword");
+    assert(!str_contains($enquirySuccessHtml, 'Copy Password'), "FAIL: Copy Password button must be removed from enquiry-success.php");
+}
 
 echo "[PASS] Test 2: IDOR strictly blocked with 404, guest token authorization verified, and plain password display removed.\n\n";
 
@@ -143,6 +129,7 @@ $signupReq = new Request([], [
     'password'              => $signupPass,
     'password_confirmation' => $signupPass,
     'terms'                 => '1',
+    'dpdp_consent'          => '1',
 ], ['REQUEST_METHOD' => 'POST', 'REQUEST_URI' => '/signup']);
 
 $signupResp = $authController->signup($signupReq);

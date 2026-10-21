@@ -667,7 +667,8 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
           <div class="solution_media_wrapper">
             <img src="<?= $bannerSrc ?>"
                  alt="<?= \App\Core\View::e($cat['name']) ?>"
-                 width="380" height="178" loading="lazy"
+                 width="380" height="178" loading="lazy" decoding="async"
+                 <?= ($cat === reset($activeCategories)) ? 'fetchpriority="high"' : '' ?>
                  onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/service-pest-control.jpg') ?>';">
             <div class="solution_icon_wrap" title="<?= \App\Core\View::e($cat['name']) ?>">
               <?php if ($iconData['type'] === 'fa'): ?>

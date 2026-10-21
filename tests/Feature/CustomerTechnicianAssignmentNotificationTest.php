@@ -68,12 +68,12 @@ assert((int)$job['staff_id'] === $techId, "Job staff_id must match assigned tech
 assert($job['status'] === 'assigned', "Job status must be 'assigned'");
 echo "[PASS] Test 1: Booking & Job updated to 'assigned' with correct technician and priority\n";
 
-// 4. Verify Customer Notification in Database (Email silenced per 4-email rule, SMS dispatched)
+// 4. Verify Customer Notification in Database (Email & SMS dispatched per commit 15fcab9)
 $customerEmailNotif = Database::fetchOne("SELECT * FROM notifications 
                                           WHERE to_address = 'cust.assign_test@refixel.com' 
                                           AND template = 'technician_assigned_customer' 
                                           ORDER BY id DESC LIMIT 1");
-assert($customerEmailNotif === null, "Customer assignment email MUST be silenced per strict 4-email lifecycle rule");
+assert($customerEmailNotif !== null, "Customer assignment email must be dispatched to customer");
 
 $customerSmsNotif = Database::fetchOne("SELECT * FROM notifications 
                                         WHERE to_address = '9898000001' 

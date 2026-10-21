@@ -98,7 +98,7 @@ echo "[PASS] Test 3: Auth helper methods behave correctly for all 4 roles\n";
 $reqRole = new RequireRole();
 
 // Super admin passes super_admin and admin middleware (returns null = allowed)
-$_SESSION['user'] = array_merge($superAdmin, ['must_change_password' => 0]);
+$_SESSION['user'] = array_merge($superAdmin, ['must_change_password' => 0, 'totp_enabled' => 1]);
 assert($reqRole->handle(new \App\Core\Request([]), 'super_admin') === null, "Super admin can access super_admin routes");
 assert($reqRole->handle(new \App\Core\Request([]), 'admin') === null, "Super admin can access admin routes");
 
@@ -215,6 +215,7 @@ $signupRequest = new \App\Core\Request([
     'password'              => 'hackpass123',
     'password_confirmation' => 'hackpass123',
     'role'                  => 'admin',
+    'dpdp_consent'          => '1',
 ]);
 $authCtrl = new \App\Controllers\AuthController();
 Database::query("DELETE FROM users WHERE phone = '9111223344'");

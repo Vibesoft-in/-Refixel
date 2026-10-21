@@ -27,10 +27,11 @@ $cleaningCat = Database::fetchOne("SELECT id FROM categories WHERE slug = 'clean
 $electricianCat = Database::fetchOne("SELECT id FROM categories WHERE slug = 'electrician' OR name LIKE '%Electric%'")['id'] ?? 7;
 
 // Find or create test staff user for category
-$staffEmail = 'test.electrician.' . time() . '@refixel.com';
+$staffEmail = 'test.electrician.' . time() . '_' . rand(100, 999) . '@refixel.com';
+$staffPhone = '9' . (string)rand(100000000, 999999999);
 Database::query("INSERT INTO users (name, email, phone, password_hash, role, status, created_at)
-                 VALUES ('Test Electrician Free', :email, '9876543210', 'hash', 'staff', 'active', NOW())",
-                 ['email' => $staffEmail]);
+                 VALUES ('Test Electrician Free', :email, :phone, 'hash', 'staff', 'active', NOW())",
+                 ['email' => $staffEmail, 'phone' => $staffPhone]);
 $staffId = (int)Database::lastInsertId();
 
 Database::query("INSERT INTO staff_profiles (user_id, is_available, availability_note, rating_avg, rating_count, created_at)
@@ -147,8 +148,8 @@ echo "Test 5: Dashboard View UI elements & interactive toggle verification - PAS
 
 // Clean up
 AutoDispatchService::setBusyMode(false);
-Database::query("DELETE FROM status_history WHERE job_id IN (SELECT id FROM jobs WHERE booking_id IN (:b1, :b2))", ['b1' => $pendingBookingId, 'b2' => $newBookingId]);
-Database::query("DELETE FROM jobs WHERE booking_id IN (:b1, :b2)", ['b1' => $pendingBookingId, 'b2' => $newBookingId]);
+Database::query("DELETE FROM status_history WHERE job_id IN (SELECT id FROM jobs WHERE booking_id IN (:b1, :b2) OR staff_id = :sid)", ['b1' => $pendingBookingId, 'b2' => $newBookingId, 'sid' => $staffId]);
+Database::query("DELETE FROM jobs WHERE booking_id IN (:b1, :b2) OR staff_id = :sid", ['b1' => $pendingBookingId, 'b2' => $newBookingId, 'sid' => $staffId]);
 Database::query("DELETE FROM bookings WHERE id IN (:b1, :b2)", ['b1' => $pendingBookingId, 'b2' => $newBookingId]);
 Database::query("DELETE FROM staff_skills WHERE staff_id = :sid", ['sid' => $staffId]);
 Database::query("DELETE FROM staff_profiles WHERE user_id = :sid", ['sid' => $staffId]);

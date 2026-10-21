@@ -276,7 +276,7 @@ class SecurityPhase2Task3Test
     private function testRouteProtectedByCsrf(): void
     {
         $routesContent = file_get_contents(__DIR__ . '/../../config/routes.php');
-        $hasCsrf = (bool)preg_match('/Router::post\(\s*\'\/book\/verify-payment\'\s*,\s*\'BookingController@verifyPayment\'\s*,\s*\[\s*\'VerifyCsrf\'\s*\]\s*\)/', $routesContent);
+        $hasCsrf = (bool)preg_match('/Router::post\(\s*\'\/book\/verify-payment\'\s*,\s*\'BookingController@verifyPayment\'\s*,\s*\[([^\]]*\'VerifyCsrf\'[^\]]*)\]\s*\)/', $routesContent);
 
         if ($hasCsrf) {
             echo "  ✓ PASS: /book/verify-payment is guarded by VerifyCsrf middleware in routes.php\n";
