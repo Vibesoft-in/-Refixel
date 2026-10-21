@@ -320,8 +320,7 @@ class PageController extends Controller
             );
 
             // Generate initial password hash (kept secure and unrevealed until admin approval)
-            $defaultDigits = substr($cleanPhone, -4) ?: '1234';
-            $initialPassword = 'Refixel@' . $defaultDigits;
+            $initialPassword = bin2hex(random_bytes(16));
             $passwordHash = password_hash($initialPassword, PASSWORD_BCRYPT);
 
             if ($existingUser) {

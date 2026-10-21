@@ -76,6 +76,9 @@ class Logger
         // 7. Authorization Bearer header
         $text = preg_replace('/(\bBearer\s+)([a-zA-Z0-9_\-\.]{16,})/i', '$1********', $text);
 
+        // 8. Guest authorization tokens
+        $text = preg_replace('/(\b(?:guest_token)\s*[:=]\s*[\'"]?)([a-zA-Z0-9_\-]{20,})([\'"]?)/i', '$1********$3', $text);
+
         return $text;
     }
 
