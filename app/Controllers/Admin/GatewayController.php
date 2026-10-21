@@ -34,8 +34,10 @@ class GatewayController extends Controller
         $name           = trim((string)$request->input('name', $gateway['name']));
         $environment    = in_array($request->input('environment'), ['test', 'live'], true) ? $request->input('environment') : 'live';
         $keyId          = trim((string)$request->input('key_id', ''));
-        $keySecret      = trim((string)$request->input('key_secret', ''));
-        $webhookSecret  = trim((string)$request->input('webhook_secret', ''));
+        $keySecretInput = trim((string)$request->input('key_secret', ''));
+        $keySecret      = !empty($keySecretInput) ? $keySecretInput : (string)($gateway['key_secret'] ?? '');
+        $webhookInput   = trim((string)$request->input('webhook_secret', ''));
+        $webhookSecret  = !empty($webhookInput) ? $webhookInput : (string)($gateway['webhook_secret'] ?? '');
         $merchantEmail  = trim((string)$request->input('merchant_email', ''));
         $merchantName   = trim((string)$request->input('merchant_name', ''));
         $currency       = trim((string)$request->input('currency', 'INR'));

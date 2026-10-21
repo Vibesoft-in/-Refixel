@@ -108,15 +108,10 @@
               <div class="row mb-2">
                 <div class="col-12 col-sm-4 text-muted font-weight-bold mb-1 mb-sm-0">Key ID / API Key:</div>
                 <div class="col-12 col-sm-8">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <span class="font-monospace text-dark text-break" id="key-id-display-<?= $gw['id'] ?>">
-                      <?= !empty($gw['key_id']) ? \App\Core\View::e(substr($gw['key_id'], 0, 8) . '••••••••' . substr($gw['key_id'], -4)) : '<em class="text-muted">Not Set</em>' ?>
+                  <div class="d-flex align-items-center">
+                    <span class="font-monospace text-dark text-break">
+                      <?= !empty($gw['key_id']) ? \App\Core\View::e($gw['key_id']) : '<em class="text-muted">Not Set</em>' ?>
                     </span>
-                    <?php if (!empty($gw['key_id'])): ?>
-                      <button type="button" class="btn btn-sm btn-link p-0 text-secondary ml-2 flex-shrink-0" onclick="toggleMask('key-id-display-<?= $gw['id'] ?>', '<?= \App\Core\View::e($gw['key_id']) ?>', '<?= \App\Core\View::e(substr($gw['key_id'], 0, 8) . '••••••••' . substr($gw['key_id'], -4)) ?>')">
-                        <i class="fa fa-eye"></i>
-                      </button>
-                    <?php endif; ?>
                   </div>
                 </div>
               </div>
@@ -124,15 +119,10 @@
               <div class="row mb-2">
                 <div class="col-12 col-sm-4 text-muted font-weight-bold mb-1 mb-sm-0">Key Secret:</div>
                 <div class="col-12 col-sm-8">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <span class="font-monospace text-dark text-break" id="key-sec-display-<?= $gw['id'] ?>">
-                      <?= !empty($gw['key_secret']) ? '••••••••••••••••' : '<em class="text-muted">Not Set</em>' ?>
+                  <div class="d-flex align-items-center">
+                    <span class="font-monospace text-dark text-break">
+                      <?= !empty($gw['has_key_secret']) ? '<span class="badge badge-success px-2 py-1"><i class="fa fa-lock mr-1"></i>Configured &amp; Secured</span>' : '<em class="text-muted">Not Set</em>' ?>
                     </span>
-                    <?php if (!empty($gw['key_secret'])): ?>
-                      <button type="button" class="btn btn-sm btn-link p-0 text-secondary ml-2 flex-shrink-0" onclick="toggleMask('key-sec-display-<?= $gw['id'] ?>', '<?= \App\Core\View::e($gw['key_secret']) ?>', '••••••••••••••••')">
-                        <i class="fa fa-eye"></i>
-                      </button>
-                    <?php endif; ?>
                   </div>
                 </div>
               </div>
@@ -235,16 +225,17 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                      <label class="font-weight-bold small text-muted">Key Secret / Secret Key *</label>
-                      <input type="text" name="key_secret" class="form-control font-monospace" value="<?= \App\Core\View::e($gw['key_secret'] ?? '') ?>" placeholder="e.g. Secret Key" required>
-                      <small class="form-text text-muted">Confidential server secret used to verify payment signatures.</small>
+                      <label class="font-weight-bold small text-muted">Key Secret / Secret Key</label>
+                      <input type="password" name="key_secret" class="form-control font-monospace" value="" placeholder="<?= !empty($gw['has_key_secret']) ? '•••••••• (Leave blank to keep current)' : 'Enter Secret Key' ?>" autocomplete="new-password">
+                      <small class="form-text text-muted">Confidential server secret. Never rendered to browser.</small>
                     </div>
                   </div>
 
                   <div class="row">
                     <div class="col-md-6 mb-3">
                       <label class="font-weight-bold small text-muted">Webhook Secret (Optional)</label>
-                      <input type="text" name="webhook_secret" class="form-control font-monospace" value="<?= \App\Core\View::e($gw['webhook_secret'] ?? '') ?>" placeholder="Secret for verifying webhook payloads">
+                      <input type="password" name="webhook_secret" class="form-control font-monospace" value="" placeholder="<?= !empty($gw['has_webhook_secret']) ? '•••••••• (Leave blank to keep current)' : 'Enter Webhook Secret' ?>" autocomplete="new-password">
+                      <small class="form-text text-muted">Secret for verifying webhook payloads.</small>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -290,17 +281,3 @@
     <?php endforeach; ?>
   </div>
 </div>
-
-<script>
-function toggleMask(elementId, fullText, maskedText) {
-  var el = document.getElementById(elementId);
-  if (!el) return;
-  if (el.dataset.revealed === "true") {
-    el.innerText = maskedText;
-    el.dataset.revealed = "false";
-  } else {
-    el.innerText = fullText;
-    el.dataset.revealed = "true";
-  }
-}
-</script>
