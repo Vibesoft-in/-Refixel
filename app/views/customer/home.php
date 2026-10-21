@@ -4232,6 +4232,18 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="home_contact_box">
       <div class="row g-0">
         <!-- Left: Dark Navy Help Card -->
+        <?php
+        $homeWaNumber = \App\Models\Setting::get('whatsapp_number');
+        if (empty($homeWaNumber)) {
+            $homeWaNumber = \App\Core\Env::get('BUSINESS_WHATSAPP_NUMBER', '918791154730');
+        }
+        $homeWaDigits = preg_replace('/\D/', '', (string)$homeWaNumber);
+        if (strlen($homeWaDigits) === 10) {
+            $homeWaDigits = '91' . $homeWaDigits;
+        }
+        $homePhoneFormatted = \App\Models\Setting::get('company_phone', '+91 87911 54730');
+        $homeEmailFormatted = \App\Models\Setting::get('company_email', 'contact@refixel.com');
+        ?>
         <div class="col-lg-4">
           <div class="contact_help_card">
             <span class="help_badge">GET IN TOUCH</span>
@@ -4242,7 +4254,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <!-- Instant WhatsApp Quick Action -->
             <div class="help_action_box">
-              <a href="https://api.whatsapp.com/send?phone=918791154730&text=Hi%20Refixel%2C%20I%20need%20assistance%20with%20booking%20a%20doorstep%20service." target="_blank" rel="noopener noreferrer" class="help_wa_cta_btn" title="Chat on WhatsApp">
+              <a href="https://wa.me/<?= \App\Core\View::e($homeWaDigits) ?>?text=Hi%20Refixel%2C%20I%20need%20assistance%20with%20booking%20a%20doorstep%20service." target="_blank" rel="noopener noreferrer" class="help_wa_cta_btn" title="Chat on WhatsApp">
                 <i class="fa fa-whatsapp"></i>
                 <span>Quick Chat on WhatsApp</span>
               </a>
@@ -4257,11 +4269,11 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="help_items">
               <div class="help_item">
                 <i class="fa fa-phone"></i>
-                <a href="tel:+918791154730">+91 87911 54730</a>
+                <a href="tel:<?= \App\Core\View::e(preg_replace('/[^0-9+]/', '', (string)$homePhoneFormatted)) ?>"><?= \App\Core\View::e($homePhoneFormatted) ?></a>
               </div>
               <div class="help_item">
                 <i class="fa fa-envelope"></i>
-                <a href="mailto:contact@refixel.com">contact@refixel.com</a>
+                <a href="mailto:<?= \App\Core\View::e($homeEmailFormatted) ?>"><?= \App\Core\View::e($homeEmailFormatted) ?></a>
               </div>
               <div class="help_item">
                 <i class="fa fa-map-marker"></i>
@@ -4274,33 +4286,30 @@ document.addEventListener('DOMContentLoaded', function () {
         <!-- Right: Form -->
         <div class="col-lg-8">
           <div class="contact_form_wrap">
-            <form id="homeContactForm" action="<?= \App\Core\View::url('/quick-enquiry') ?>" method="POST">
-              <?= \App\Core\View::csrf() ?>
+            <form id="homeContactForm" data-wa-number="<?= \App\Core\View::e($homeWaDigits) ?>" onsubmit="return handleHomeEnquiryWhatsApp(event);">
+              <!-- Anti-spam Honeypot -->
+              <div style="display:none !important; position:absolute !important; left:-9999px !important;" aria-hidden="true">
+                <input type="text" name="ref_contact_hp" id="homeEnquiryHp" tabindex="-1" autocomplete="off">
+              </div>
               <input type="hidden" name="detected_location" id="homeContactLocation" value="">
               
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="form_field_group">
-                    <label class="form_field_label">NAME</label>
-                    <input type="text" name="name" class="ref_contact_input" placeholder="Your name" required>
+                    <label class="form_field_label">NAME <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="homeEnquiryName" class="ref_contact_input" placeholder="Your full name" required>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="form_field_group">
-                    <label class="form_field_label">PHONE</label>
-                    <input type="tel" name="phone" class="ref_contact_input" placeholder="+91" required>
+                    <label class="form_field_label">PHONE (10 DIGITS) <span class="text-danger">*</span></label>
+                    <input type="tel" name="phone" id="homeEnquiryPhone" class="ref_contact_input" placeholder="e.g. 9876543210" maxlength="14" required>
                   </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                   <div class="form_field_group">
-                    <label class="form_field_label">EMAIL ADDRESS</label>
-                    <input type="email" name="email" class="ref_contact_input" placeholder="name@example.com" value="<?= !empty($user['email']) ? \App\Core\View::e($user['email']) : '' ?>" required>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form_field_group">
-                    <label class="form_field_label">SERVICE</label>
-                    <select name="service" class="ref_contact_select" required>
+                    <label class="form_field_label">SERVICE <span class="text-danger">*</span></label>
+                    <select name="service" id="homeEnquiryService" class="ref_contact_select" required>
                       <option value="" disabled selected>Select a service</option>
                       <option value="Home Deep Cleaning">Full Home Deep Cleaning</option>
                       <option value="Plumbing Solutions">Plumbing Solutions & Pipe Repair</option>
@@ -4315,7 +4324,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="col-12">
                   <div class="form_field_group">
                     <div class="ref_loc_label_row">
-                      <label class="form_field_label">CHOOSE LOCATION</label>
+                      <label class="form_field_label">CHOOSE LOCATION / CITY <span class="text-danger">*</span></label>
                       <button type="button" class="btn_input_detect_loc" id="btnInputDetectLoc" title="Detect Exact GPS Location" aria-label="Auto-Detect Location">
                         <i class="fa fa-crosshairs"></i>
                         <span>Auto-Detect</span>
@@ -4329,13 +4338,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
                 <div class="col-12">
                   <div class="form_field_group">
-                    <label class="form_field_label">MESSAGE</label>
-                    <textarea name="message" class="ref_contact_textarea" rows="4" placeholder="Tell us briefly what you need" required></textarea>
+                    <label class="form_field_label">MESSAGE (OPTIONAL)</label>
+                    <textarea name="message" id="homeEnquiryMessage" class="ref_contact_textarea" rows="3" placeholder="Tell us briefly what you need (e.g. 2 BHK deep clean on Saturday)"></textarea>
                   </div>
                 </div>
                 <div class="col-12">
-                  <button type="submit" class="btn_send_enquiry">
-                    Send Enquiry <i class="fa fa-arrow-right"></i>
+                  <div id="homeEnquiryAlert" style="display: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px;"></div>
+                  <button type="submit" class="btn_send_enquiry" id="homeEnquirySubmitBtn">
+                    <i class="fa fa-whatsapp mr-1" style="font-size: 17px; vertical-align: middle;"></i> Send Enquiry on WhatsApp <i class="fa fa-arrow-right ml-1"></i>
                   </button>
                 </div>
               </div>
@@ -4347,923 +4357,124 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 </section>
 
-<!-- ========================================== -->
-<!-- ENQUIRY EMAIL OTP VERIFICATION MODAL -->
-<!-- ========================================== -->
-<div class="ref_otp_modal_overlay" id="enquiryOtpModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="enquiryOtpModalTitle">
-  <div class="ref_otp_modal_backdrop" id="enquiryOtpBackdrop"></div>
-  <div class="ref_otp_modal_card">
-    <button type="button" class="ref_otp_close_btn" id="enquiryOtpCloseBtn" aria-label="Close verification modal">&times;</button>
-    
-    <div class="ref_otp_card_inner text-center">
-      <!-- Animated Icon Header -->
-      <div class="ref_otp_icon_circle">
-        <i class="fa fa-envelope-o"></i>
-        <span class="ref_otp_lock_badge"><i class="fa fa-shield"></i></span>
-      </div>
-
-      <div class="ref_otp_badge_pill"><i class="fa fa-check-circle mr-1"></i> Email Verification</div>
-      <h3 class="ref_otp_title" id="enquiryOtpModalTitle">Enter Verification OTP</h3>
-      <p class="ref_otp_subtitle">
-        We've sent a 6-digit confirmation code to:<br>
-        <strong id="enquiryOtpTargetEmail" class="ref_otp_email_highlight">your.email@example.com</strong>
-      </p>
-
-      <!-- Alert Notification Box -->
-      <div id="enquiryOtpAlert" class="ref_otp_alert" style="display: none;"></div>
-
-      <!-- 6-Digit OTP Input Boxes -->
-      <div class="ref_otp_inputs_row" id="enquiryOtpDigitsContainer">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="0" autocomplete="off">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="1" autocomplete="off">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="2" autocomplete="off">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="3" autocomplete="off">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="4" autocomplete="off">
-        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="ref_otp_digit" data-idx="5" autocomplete="off">
-      </div>
-
-      <!-- Resend Timer -->
-      <div class="ref_otp_resend_box">
-        <span id="enquiryOtpTimerWrap"><i class="fa fa-clock-o text-muted mr-1"></i> Resend code in <strong id="enquiryOtpCountdown">30</strong>s</span>
-        <button type="button" id="enquiryOtpResendBtn" class="ref_otp_resend_link" style="display: none;">
-          <i class="fa fa-refresh mr-1"></i> Resend Verification Code
-        </button>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="ref_otp_actions">
-        <button type="button" class="btn_verify_enquiry_otp" id="enquiryOtpVerifyBtn">
-          <span class="btn_verify_label">Verify & Submit Enquiry</span> <i class="fa fa-arrow-right ml-1"></i>
-        </button>
-        <button type="button" class="btn_cancel_enquiry_otp" id="enquiryOtpCancelBtn">
-          <i class="fa fa-pencil mr-1"></i> Edit Details / Change Email
-        </button>
-      </div>
-
-      <div class="ref_otp_footer_note">
-        <i class="fa fa-lock text-success mr-1"></i> Verified customer enquiries receive priority dispatch response.
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========================================== -->
-<!-- ENQUIRY BOOKING DONE SUCCESS POPUP MODAL -->
-<!-- ========================================== -->
-<div class="ref_success_modal_overlay" id="enquirySuccessModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="enquirySuccessModalTitle">
-  <div class="ref_success_modal_backdrop" id="enquirySuccessBackdrop"></div>
-  <div class="ref_success_modal_card">
-    <button type="button" class="ref_success_close_btn" id="enquirySuccessXCloseBtn" aria-label="Close dialog">&times;</button>
-
-    <div class="ref_success_card_inner">
-      <!-- Brand Logo -->
-      <div class="rfx-logo text-center mb-2">
-        <img src="<?= \App\Core\View::asset('img/refixel-logo-horizontal.png') ?>" alt="REFIXEL" style="height: 32px; width: auto; object-fit: contain;">
-      </div>
-
-      <!-- Small Card Body -->
-      <div class="rfx-card-body p-0">
-        <!-- Booking Done + ID -->
-        <div class="rfx-top text-center mb-3">
-          <div class="rfx-done-badge d-inline-flex align-items-center" style="gap: 7px; color: #16a34a; font-size: 16px; font-weight: 800;">
-            <span class="tick-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #dcfce7; display: inline-flex; align-items: center; justify-content: center; font-size: 13px;">
-              <i class="fa fa-check"></i>
-            </span>
-            <span id="enquirySuccessModalTitle">Booking Done</span>
-          </div>
-          <div class="mt-1">
-            <span class="rfx-id-tag d-inline-flex align-items-center" style="gap: 5px; background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c; padding: 2px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 700; font-family: monospace;">
-              ID: <span id="rfxSuccessBookingNo">BK-PENDING</span>
-              <button type="button" class="rfx-copy-btn" id="rfxCopyIdBtn" title="Copy ID">
-                <i class="fa fa-copy"></i>
-              </button>
-            </span>
-          </div>
-        </div>
-
-        <!-- Mobile Number, Email & Password Credentials Box -->
-        <div class="rfx-cred-box" style="background: #0a1c33; color: #ffffff; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
-          <div class="rfx-cred-row d-flex align-items-center justify-content-between py-1" style="font-size: 12px;">
-            <span class="rfx-cred-lbl" style="color: #94a3b8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">MOBILE NUMBER</span>
-            <span class="rfx-cred-val font-weight-bold text-white d-flex align-items-center" style="font-size: 12.5px; gap: 5px;">
-              <span id="rfxSuccessPhone"></span>
-              <button type="button" class="rfx-copy-btn" id="rfxCopyPhoneBtn" title="Copy Mobile">
-                <i class="fa fa-copy"></i>
-              </button>
-            </span>
-          </div>
-
-          <div class="rfx-cred-row d-flex align-items-center justify-content-between py-1" id="rfxSuccessEmailRow" style="font-size: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 4px; padding-top: 6px;">
-            <span class="rfx-cred-lbl" style="color: #94a3b8; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">EMAIL</span>
-            <span class="rfx-cred-val font-weight-bold text-white d-flex align-items-center" style="font-size: 11px; gap: 5px;">
-              <span id="rfxSuccessEmail" style="max-width: 175px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
-              <button type="button" class="rfx-copy-btn" id="rfxCopyEmailBtn" title="Copy Email">
-                <i class="fa fa-copy"></i>
-              </button>
-            </span>
-          </div>
-
-          <div class="rfx-cred-row py-1 text-center" style="font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 4px; padding-top: 6px;">
-            <i class="fa fa-shield text-warning"></i> A secure set-password link has been sent to your email/SMS.
-          </div>
-        </div>
-
-        <!-- Enquiry Summary Box -->
-        <div class="rfx-sum-box" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; margin-bottom: 14px; font-size: 12px;">
-          <div class="rfx-sum-title" style="font-size: 10px; text-transform: uppercase; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 4px;">ENQUIRY SUMMARY</div>
-          <div class="rfx-sum-row d-flex justify-content-between align-items-center py-1" style="color: #64748b; border-bottom: 1px dashed #e2e8f0;">
-            <span style="font-size: 11.5px;">Service</span>
-            <strong id="rfxSuccessService" style="color: #f25b29; font-weight: 700; font-size: 12px; text-align: right; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></strong>
-          </div>
-          <div class="rfx-sum-row d-flex justify-content-between align-items-center py-1" style="color: #64748b; border-bottom: 1px dashed #e2e8f0;">
-            <span style="font-size: 11.5px;">Name</span>
-            <strong id="rfxSuccessName" style="color: #0f172a; font-weight: 700; font-size: 12px; text-align: right; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></strong>
-          </div>
-          <div class="rfx-sum-row d-flex justify-content-between align-items-center py-1" style="color: #64748b;">
-            <span style="font-size: 11.5px;">Location</span>
-            <strong id="rfxSuccessLocation" style="color: #0f172a; font-weight: 700; font-size: 12px; text-align: right; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></strong>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div>
-          <a href="<?= \App\Core\View::url('/account') ?>" id="rfxSuccessDashboardBtn" class="rfx-btn-dash text-center text-white d-block" style="background: #f25b29; font-weight: 700; font-size: 13.5px; padding: 9px 14px; border-radius: 8px; text-decoration: none !important; box-shadow: 0 3px 10px rgba(242, 91, 41, 0.25); transition: opacity 0.15s;">
-            Open Dashboard &rarr;
-          </a>
-          <button type="button" id="rfxSuccessReturnBtn" class="rfx-link-home btn btn-link text-center d-block w-100" style="color: #64748b; font-size: 11.5px; font-weight: 600; text-decoration: none !important; margin-top: 8px; background: none; border: none; padding: 4px; cursor: pointer;">
-            Return to Home
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-/* Enquiry Success Modal Styling */
-.ref_success_modal_overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  overflow-y: auto;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
-}
-.ref_success_modal_overlay.ref_show {
-  opacity: 1;
-  visibility: visible;
-}
-.ref_success_modal_backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 28, 51, 0.72);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1;
-}
-.ref_success_modal_card {
-  position: relative;
-  z-index: 2;
-  background: #ffffff;
-  width: 100%;
-  max-width: 380px;
-  border-radius: 16px;
-  padding: 20px 18px 18px 18px;
-  box-shadow: 0 20px 50px rgba(10, 28, 51, 0.3), 0 6px 18px rgba(0,0,0,0.1);
-  border: 1px solid #e2e8f0;
-  transform: scale(0.92) translateY(15px);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  box-sizing: border-box;
-}
-.ref_success_modal_overlay.ref_show .ref_success_modal_card {
-  transform: scale(1) translateY(0);
-}
-.ref_success_close_btn {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  line-height: 1;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 50%;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-.ref_success_close_btn:hover {
-  color: #0f172a;
-  background: #f1f5f9;
-}
-.rfx-copy-btn {
-  background: rgba(255, 255, 255, 0.16);
-  border: none;
-  color: #ffffff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  line-height: 1.2;
-  transition: background 0.15s;
-}
-.rfx-copy-btn:hover {
-  background: #f25b29;
-}
-.rfx-id-tag .rfx-copy-btn {
-  background: rgba(194, 65, 12, 0.12);
-  color: #c2410c;
-}
-.rfx-id-tag .rfx-copy-btn:hover {
-  background: #f25b29;
-  color: #ffffff;
-}
-
-.ref_otp_modal_overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.ref_otp_modal_backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 28, 51, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-.ref_otp_modal_card {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 480px;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(242, 91, 41, 0.15);
-  overflow: hidden;
-  animation: refOtpPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-@keyframes refOtpPopIn {
-  from { opacity: 0; transform: scale(0.92) translateY(12px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-@keyframes refOtpShake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
-}
-.ref_otp_close_btn {
-  position: absolute;
-  top: 14px;
-  right: 18px;
-  background: transparent;
-  border: none;
-  font-size: 28px;
-  line-height: 1;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: color 0.15s ease;
-  z-index: 3;
-}
-.ref_otp_close_btn:hover { color: #0f172a; }
-.ref_otp_card_inner {
-  padding: 34px 28px 26px;
-}
-.ref_otp_icon_circle {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-  color: #f25b29;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  position: relative;
-  margin-bottom: 14px;
-  box-shadow: 0 8px 20px rgba(242, 91, 41, 0.18);
-}
-.ref_otp_lock_badge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #16a34a;
-  color: #ffffff;
-  font-size: 11px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #ffffff;
-}
-.ref_otp_badge_pill {
-  display: inline-block;
-  background: #ffedd5;
-  color: #c2410c;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  margin-bottom: 10px;
-}
-.ref_otp_title {
-  font-size: 22px;
-  font-weight: 800;
-  color: #0a1c33;
-  margin: 0 0 8px;
-  letter-spacing: -0.3px;
-}
-.ref_otp_subtitle {
-  font-size: 14px;
-  color: #64748b;
-  margin: 0 0 20px;
-  line-height: 1.5;
-}
-.ref_otp_email_highlight {
-  color: #0a1c33;
-  word-break: break-all;
-  font-weight: 700;
-}
-.ref_otp_alert {
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 18px;
-  text-align: left;
-}
-.ref_otp_alert.alert_error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
-}
-.ref_otp_alert.alert_success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #15803d;
-}
-.ref_otp_inputs_row {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.ref_otp_digit {
-  width: 48px;
-  height: 56px;
-  font-size: 24px;
-  font-weight: 800;
-  text-align: center;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  background: #f8fafc;
-  color: #0a1c33;
-  outline: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  font-family: Monaco, Menlo, Consolas, monospace;
-}
-.ref_otp_digit:focus {
-  border-color: #f25b29;
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(242, 91, 41, 0.16);
-  transform: translateY(-2px);
-}
-.ref_otp_digit.has_value {
-  border-color: #cbd5e1;
-  background: #ffffff;
-}
-.ref_otp_resend_box {
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 22px;
-}
-.ref_otp_resend_link {
-  background: none;
-  border: none;
-  color: #f25b29;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-  font-size: 13.5px;
-  text-decoration: underline;
-  transition: color 0.15s ease;
-}
-.ref_otp_resend_link:hover { color: #d94819; }
-.ref_otp_actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.btn_verify_enquiry_otp {
-  background: linear-gradient(135deg, #f25b29 0%, #ff7337 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 20px;
-  font-size: 15px;
-  font-weight: 800;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 16px rgba(242, 91, 41, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.btn_verify_enquiry_otp:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(242, 91, 41, 0.45);
-}
-.btn_verify_enquiry_otp:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
-}
-.btn_cancel_enquiry_otp {
-  background: transparent;
-  border: none;
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-.btn_cancel_enquiry_otp:hover { color: #0a1c33; }
-.ref_otp_footer_note {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid #f1f5f9;
-  font-size: 11.5px;
-  color: #94a3b8;
-}
-@media (max-width: 480px) {
-  .ref_otp_inputs_row { gap: 6px; }
-  .ref_otp_digit { width: 42px; height: 50px; font-size: 20px; }
-}
-</style>
-
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+function handleHomeEnquiryWhatsApp(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
   var form = document.getElementById("homeContactForm");
-  var modal = document.getElementById("enquiryOtpModal");
-  if (!form || !modal) return;
+  if (!form) return false;
 
-  var closeBtn = document.getElementById("enquiryOtpCloseBtn");
-  var backdrop = document.getElementById("enquiryOtpBackdrop");
-  var cancelBtn = document.getElementById("enquiryOtpCancelBtn");
-  var verifyBtn = document.getElementById("enquiryOtpVerifyBtn");
-  var resendBtn = document.getElementById("enquiryOtpResendBtn");
-  var targetEmailEl = document.getElementById("enquiryOtpTargetEmail");
-  var alertBox = document.getElementById("enquiryOtpAlert");
-  var timerWrap = document.getElementById("enquiryOtpTimerWrap");
-  var countdownEl = document.getElementById("enquiryOtpCountdown");
-  var digitInputs = Array.from(document.querySelectorAll(".ref_otp_digit"));
-  var sendBtn = form.querySelector('button[type="submit"]');
-
-  // Success Modal Elements
-  var successModal = document.getElementById("enquirySuccessModal");
-  var successBackdrop = document.getElementById("enquirySuccessBackdrop");
-  var successXCloseBtn = document.getElementById("enquirySuccessXCloseBtn");
-  var successReturnBtn = document.getElementById("enquirySuccessReturnBtn");
-  var successBookingNo = document.getElementById("rfxSuccessBookingNo");
-  var successPhone = document.getElementById("rfxSuccessPhone");
-  var successEmail = document.getElementById("rfxSuccessEmail");
-  var successEmailRow = document.getElementById("rfxSuccessEmailRow");
-  var successService = document.getElementById("rfxSuccessService");
-  var successName = document.getElementById("rfxSuccessName");
-  var successLocation = document.getElementById("rfxSuccessLocation");
-  var successDashboardBtn = document.getElementById("rfxSuccessDashboardBtn");
-
-  var copyIdBtn = document.getElementById("rfxCopyIdBtn");
-  var copyPhoneBtn = document.getElementById("rfxCopyPhoneBtn");
-  var copyEmailBtn = document.getElementById("rfxCopyEmailBtn");
-
-  var countdownInterval = null;
-  var currentEmail = '';
-
-  function getCsrfToken() {
-    var inp = form.querySelector('input[name="_csrf"]');
-    return inp ? inp.value : '';
-  }
-
-  function showAlert(msg, isSuccess) {
+  var alertBox = document.getElementById("homeEnquiryAlert");
+  function showFormAlert(msg, isSuccess) {
+    if (!alertBox) return;
     alertBox.style.display = "block";
-    alertBox.className = "ref_otp_alert " + (isSuccess ? "alert_success" : "alert_error");
-    alertBox.innerHTML = (isSuccess ? '<i class="fa fa-check-circle mr-1"></i> ' : '<i class="fa fa-exclamation-circle mr-1"></i> ') + msg;
+    alertBox.style.background = isSuccess ? "#dcfce7" : "#fee2e2";
+    alertBox.style.color = isSuccess ? "#166534" : "#991b1b";
+    alertBox.style.border = isSuccess ? "1px solid #bbf7d0" : "1px solid #fecaca";
+    alertBox.textContent = msg;
+  }
+  function hideFormAlert() {
+    if (alertBox) {
+      alertBox.style.display = "none";
+      alertBox.textContent = "";
+    }
   }
 
-  function hideAlert() {
-    alertBox.style.display = "none";
-    alertBox.innerHTML = "";
+  hideFormAlert();
+
+  // 1. Anti-spam Honeypot Check
+  var hp = document.getElementById("homeEnquiryHp");
+  if (hp && hp.value.trim() !== "") {
+    return false;
   }
 
-  function startCountdown(seconds) {
-    clearInterval(countdownInterval);
-    var remaining = seconds || 30;
-    timerWrap.style.display = "inline";
-    resendBtn.style.display = "none";
-    countdownEl.textContent = remaining;
-
-    countdownInterval = setInterval(function () {
-      remaining--;
-      if (remaining <= 0) {
-        clearInterval(countdownInterval);
-        timerWrap.style.display = "none";
-        resendBtn.style.display = "inline-block";
-      } else {
-        countdownEl.textContent = remaining;
-      }
-    }, 1000);
+  // 2. Client-side Rate Limit (60 seconds)
+  var RATE_LIMIT_SEC = 60;
+  var lastTs = localStorage.getItem("refixel_last_wa_enquiry_ts");
+  var now = Date.now();
+  if (lastTs) {
+    var elapsedSec = Math.floor((now - parseInt(lastTs, 10)) / 1000);
+    if (elapsedSec < RATE_LIMIT_SEC) {
+      var waitSec = RATE_LIMIT_SEC - elapsedSec;
+      showFormAlert("Please wait " + waitSec + "s before sending another WhatsApp enquiry.", false);
+      return false;
+    }
   }
 
-  function openModal(email, maskedEmail, emailSent) {
-    currentEmail = email;
-    targetEmailEl.textContent = email;
-    hideAlert();
-    digitInputs.forEach(function (inp) {
-      inp.value = "";
-      inp.classList.remove("has_value");
-    });
+  // 3. Validation
+  var nameEl = document.getElementById("homeEnquiryName");
+  var phoneEl = document.getElementById("homeEnquiryPhone");
+  var serviceEl = document.getElementById("homeEnquiryService");
+  var locEl = document.getElementById("homeContactLocationInput");
+  var msgEl = document.getElementById("homeEnquiryMessage");
 
-    modal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-    startCountdown(30);
+  var name = nameEl ? nameEl.value.trim() : "";
+  if (!name || name.length < 2) {
+    showFormAlert("Please enter your name.", false);
+    if (nameEl) nameEl.focus();
+    return false;
+  }
+
+  var rawPhone = phoneEl ? phoneEl.value.trim() : "";
+  var cleanDigits = rawPhone.replace(/\D/g, "");
+  if (cleanDigits.length === 12 && cleanDigits.indexOf("91") === 0) {
+    cleanDigits = cleanDigits.substring(2);
+  }
+  if (!/^[6-9]\d{9}$/.test(cleanDigits)) {
+    showFormAlert("Please enter a valid 10-digit Indian mobile number (starts with 6, 7, 8, or 9).", false);
+    if (phoneEl) phoneEl.focus();
+    return false;
+  }
+
+  var service = serviceEl ? serviceEl.value.trim() : "";
+  if (!service) {
+    showFormAlert("Please select a service from the list.", false);
+    if (serviceEl) serviceEl.focus();
+    return false;
+  }
+
+  var city = locEl ? locEl.value.trim() : "";
+  if (!city) {
+    showFormAlert("Please enter your city / location or tap Auto-Detect.", false);
+    if (locEl) locEl.focus();
+    return false;
+  }
+
+  var optionalMsg = msgEl ? msgEl.value.trim() : "";
+
+  // 4. Construct WhatsApp Message (Clean, plain text format)
+  var waLines = [
+    "Hi Refixel,",
+    "Naam: " + name,
+    "Phone: " + cleanDigits,
+    "Service: " + service,
+    "City: " + city
+  ];
+  if (optionalMsg) {
+    waLines.push("Message: " + optionalMsg);
+  }
+  var messageText = waLines.join("\n");
+
+  // 5. Build dynamic WhatsApp URL
+  var waNumber = form.getAttribute("data-wa-number") || "918791154730";
+  var waUrl = "https://wa.me/" + encodeURIComponent(waNumber) + "?text=" + encodeURIComponent(messageText);
+
+  // 6. Set rate limit timestamp
+  localStorage.setItem("refixel_last_wa_enquiry_ts", now.toString());
+
+  // 7. Visual Feedback & Open
+  showFormAlert("Opening WhatsApp...", true);
+  var submitBtn = document.getElementById("homeEnquirySubmitBtn");
+  if (submitBtn) {
+    submitBtn.disabled = true;
     setTimeout(function () {
-      if (digitInputs[0]) digitInputs[0].focus();
-    }, 150);
+      submitBtn.disabled = false;
+    }, 3000);
   }
 
-  function closeModal() {
-    modal.style.display = "none";
-    document.body.style.overflow = "";
-    clearInterval(countdownInterval);
-    hideAlert();
-  }
-
-  if (closeBtn) closeBtn.addEventListener("click", closeModal);
-  if (backdrop) backdrop.addEventListener("click", closeModal);
-  if (cancelBtn) cancelBtn.addEventListener("click", closeModal);
-
-  // Form Submission Intercept -> Send OTP to Email
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    var nameInput = form.querySelector('input[name="name"]');
-    var phoneInput = form.querySelector('input[name="phone"]');
-    var emailInput = form.querySelector('input[name="email"]');
-    var serviceInput = form.querySelector('select[name="service"]');
-    var locationInput = form.querySelector('input[name="location"]');
-    var messageInput = form.querySelector('textarea[name="message"]');
-
-    var nameVal = (nameInput ? nameInput.value : '').trim();
-    var phoneVal = (phoneInput ? phoneInput.value : '').trim();
-    var emailVal = (emailInput ? emailInput.value : '').trim();
-    var serviceVal = (serviceInput ? serviceInput.value : '').trim();
-    var locationVal = (locationInput ? locationInput.value : '').trim();
-    var messageVal = (messageInput ? messageInput.value : '').trim();
-
-    if (!nameVal) {
-      alert("Please enter your name.");
-      if (nameInput) nameInput.focus();
-      return;
-    }
-    if (!phoneVal || phoneVal.replace(/\D/g, '').length < 10) {
-      alert("Please enter a valid 10-digit mobile number.");
-      if (phoneInput) phoneInput.focus();
-      return;
-    }
-    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailVal || !emailRegex.test(emailVal)) {
-      alert("Please enter a valid email address to receive the verification OTP.");
-      if (emailInput) emailInput.focus();
-      return;
-    }
-    if (!serviceVal) {
-      alert("Please select a service category.");
-      if (serviceInput) serviceInput.focus();
-      return;
-    }
-    if (!locationVal) {
-      alert("Please enter your service location or tap Auto-Detect.");
-      if (locationInput) locationInput.focus();
-      return;
-    }
-    if (!messageVal) {
-      alert("Please provide brief details of your requirement.");
-      if (messageInput) messageInput.focus();
-      return;
-    }
-
-    var originalBtnHtml = sendBtn.innerHTML;
-    sendBtn.disabled = true;
-    sendBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Sending Verification OTP...';
-
-    var formData = new FormData(form);
-
-    fetch('<?= \App\Core\View::url("/api/enquiry/send-otp") ?>', {
-      method: 'POST',
-      body: formData,
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      sendBtn.disabled = false;
-      sendBtn.innerHTML = originalBtnHtml;
-
-      if (data.status === 'success') {
-        openModal(emailVal, data.masked_email || emailVal, data.email_sent);
-      } else {
-        alert(data.message || 'Unable to send OTP. Please try again.');
-      }
-    })
-    .catch(function (err) {
-      sendBtn.disabled = false;
-      sendBtn.innerHTML = originalBtnHtml;
-      alert('Network error while requesting verification OTP. Please try again.');
-    });
-  });
-
-  // Digit Input auto-advance & paste handler
-  digitInputs.forEach(function (input, idx) {
-    input.addEventListener("input", function (e) {
-      var val = this.value.replace(/\D/g, '');
-      this.value = val ? val.charAt(val.length - 1) : '';
-      if (this.value) {
-        this.classList.add("has_value");
-        if (idx < digitInputs.length - 1) {
-          digitInputs[idx + 1].focus();
-        }
-      } else {
-        this.classList.remove("has_value");
-      }
-      checkAutoSubmit();
-    });
-
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Backspace" && !this.value && idx > 0) {
-        digitInputs[idx - 1].focus();
-      } else if (e.key === "ArrowLeft" && idx > 0) {
-        digitInputs[idx - 1].focus();
-      } else if (e.key === "ArrowRight" && idx < digitInputs.length - 1) {
-        digitInputs[idx + 1].focus();
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        submitOtpVerification();
-      }
-    });
-
-    input.addEventListener("paste", function (e) {
-      e.preventDefault();
-      var pasted = (e.clipboardData || window.clipboardData).getData('text');
-      var digits = (pasted || '').replace(/\D/g, '').slice(0, 6);
-      if (digits.length) {
-        digits.split('').forEach(function (d, i) {
-          if (digitInputs[i]) {
-            digitInputs[i].value = d;
-            digitInputs[i].classList.add("has_value");
-          }
-        });
-        var targetIdx = Math.min(digits.length, digitInputs.length - 1);
-        digitInputs[targetIdx].focus();
-        checkAutoSubmit();
-      }
-    });
-  });
-
-  function getCombinedOtp() {
-    return digitInputs.map(function (inp) { return inp.value; }).join('').trim();
-  }
-
-  function checkAutoSubmit() {
-    var code = getCombinedOtp();
-    if (code.length === 6) {
-      submitOtpVerification();
-    }
-  }
-
-  function submitOtpVerification() {
-    var code = getCombinedOtp();
-    if (code.length !== 6) {
-      showAlert("Please enter all 6 digits of the verification code.", false);
-      return;
-    }
-
-    hideAlert();
-    verifyBtn.disabled = true;
-    var originalVerifyHtml = verifyBtn.innerHTML;
-    verifyBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> Verifying Code...';
-
-    var bodyPayload = new FormData();
-    bodyPayload.append('otp', code);
-    bodyPayload.append('_csrf', getCsrfToken());
-
-    fetch('<?= \App\Core\View::url("/api/enquiry/verify-otp") ?>', {
-      method: 'POST',
-      body: bodyPayload,
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      if (data.status === 'success') {
-        showAlert("OTP verified successfully!", true);
-        verifyBtn.innerHTML = '<i class="fa fa-check-circle mr-1"></i> Verified & Confirmed!';
-        verifyBtn.style.background = "#16a34a";
-        setTimeout(function () {
-          closeModal();
-          openEnquirySuccessModal(data.enquiry || {
-            booking_no: data.booking_no,
-            phone: form.querySelector('input[name="phone"]') ? form.querySelector('input[name="phone"]').value : '',
-            email: currentEmail,
-            name: form.querySelector('input[name="name"]') ? form.querySelector('input[name="name"]').value : '',
-            service_name: (form.querySelector('select[name="service_name"]') ? form.querySelector('select[name="service_name"]').value : '') || 'Home Maintenance Service',
-            location: form.querySelector('input[name="location"]') ? form.querySelector('input[name="location"]').value : '',
-          });
-        }, 450);
-      } else {
-        verifyBtn.disabled = false;
-        verifyBtn.innerHTML = originalVerifyHtml;
-        showAlert(data.message || "Invalid OTP code. Please try again.", false);
-        var container = document.getElementById("enquiryOtpDigitsContainer");
-        if (container) {
-          container.style.animation = "refOtpShake 0.4s ease";
-          setTimeout(function () { container.style.animation = ""; }, 400);
-        }
-      }
-    })
-    .catch(function (err) {
-      verifyBtn.disabled = false;
-      verifyBtn.innerHTML = originalVerifyHtml;
-      showAlert("Network error during verification. Please try again.", false);
-    });
-  }
-
-  if (verifyBtn) verifyBtn.addEventListener("click", submitOtpVerification);
-
-  // Resend OTP
-  if (resendBtn) {
-    resendBtn.addEventListener("click", function () {
-      resendBtn.disabled = true;
-      var origText = resendBtn.innerHTML;
-      resendBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Resending OTP...';
-
-      var bodyPayload = new FormData();
-      bodyPayload.append('_csrf', getCsrfToken());
-
-      fetch('<?= \App\Core\View::url("/api/enquiry/resend-otp") ?>', {
-        method: 'POST',
-        body: bodyPayload,
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        resendBtn.disabled = false;
-        resendBtn.innerHTML = origText;
-
-        if (data.status === 'success') {
-          showAlert(data.message || "A fresh OTP code has been dispatched to your email!", true);
-          startCountdown(data.cooldown || 30);
-          digitInputs.forEach(function (inp) {
-            inp.value = "";
-            inp.classList.remove("has_value");
-          });
-          if (digitInputs[0]) {
-            digitInputs[0].focus();
-          }
-        } else {
-          showAlert(data.message || "Could not resend OTP right now.", false);
-        }
-      })
-      .catch(function () {
-        resendBtn.disabled = false;
-        resendBtn.innerHTML = origText;
-        showAlert("Network error resending OTP.", false);
-      });
-    });
-  }
-
-  // ── Success Modal Functions ──
-  function openEnquirySuccessModal(enquiry) {
-    if (!successModal || !enquiry) return;
-
-    var bNo = enquiry.booking_no || '';
-    var phone = enquiry.phone || '';
-    var email = enquiry.email || '';
-    var service = enquiry.service_name || 'Home Maintenance Service';
-    var name = enquiry.name || 'Guest';
-    var location = enquiry.location || 'Uttarakhand Service Area';
-    var dashUrl = enquiry.set_password_url || enquiry.dashboard_url || '<?= \App\Core\View::url("/account") ?>';
-
-    if (successBookingNo) successBookingNo.textContent = bNo;
-    if (successPhone) successPhone.textContent = phone;
-    if (successEmail) {
-      if (email) {
-        successEmail.textContent = email;
-        if (successEmailRow) successEmailRow.style.display = 'flex';
-      } else {
-        if (successEmailRow) successEmailRow.style.display = 'none';
-      }
-    }
-    if (successService) successService.textContent = service;
-    if (successName) successName.textContent = name;
-    if (successLocation) successLocation.textContent = location;
-    if (successDashboardBtn) {
-      successDashboardBtn.href = dashUrl;
-      if (enquiry.set_password_url) {
-        successDashboardBtn.innerHTML = 'Set Your Password &rarr;';
-      } else {
-        successDashboardBtn.innerHTML = 'Open Dashboard &rarr;';
-      }
-    }
-
-    // Attach copy actions
-    setupCopyBtn(copyIdBtn, bNo);
-    setupCopyBtn(copyPhoneBtn, phone);
-    setupCopyBtn(copyEmailBtn, email);
-
-    // Show modal with animation
-    successModal.style.display = "flex";
-    void successModal.offsetWidth;
-    successModal.classList.add("ref_show");
-  }
-
-  function closeEnquirySuccessModal() {
-    if (!successModal) return;
-    successModal.classList.remove("ref_show");
-    setTimeout(function () {
-      successModal.style.display = "none";
-    }, 280);
-
-    // Reset home contact form
-    if (form) {
-      form.reset();
-    }
-  }
-
-  function setupCopyBtn(btn, text) {
-    if (!btn) return;
-    btn.onclick = function (e) {
-      e.preventDefault();
-      if (!text) return;
-      var origHtml = btn.innerHTML;
-      var done = function () {
-        btn.innerHTML = '<i class="fa fa-check text-success"></i>';
-        setTimeout(function () { btn.innerHTML = origHtml; }, 1400);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(function () {
-          fallbackCopyText(text, done);
-        });
-      } else {
-        fallbackCopyText(text, done);
-      }
-    };
-  }
-
-  function fallbackCopyText(text, cb) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch(e) {}
-    document.body.removeChild(ta);
-    if (cb) cb();
-  }
-
-  if (successXCloseBtn) successXCloseBtn.addEventListener("click", closeEnquirySuccessModal);
-  if (successReturnBtn) successReturnBtn.addEventListener("click", closeEnquirySuccessModal);
-  if (successBackdrop) successBackdrop.addEventListener("click", closeEnquirySuccessModal);
-
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      if (modal && modal.style.display !== "none") {
-        closeModal();
-      }
-      if (successModal && successModal.classList.contains("ref_show")) {
-        closeEnquirySuccessModal();
-      }
-    }
-  });
-});
+  window.open(waUrl, "_blank", "noopener,noreferrer");
+  return false;
+}
 </script>
 
 <!-- 08. Service Location Section ("Drop your location in one click.") -->

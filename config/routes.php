@@ -55,11 +55,6 @@ Router::post('/book', 'BookingController@submit', ['VerifyCsrf']);
 Router::post('/book/verify-payment', 'BookingController@verifyPayment', ['VerifyCsrf']);
 Router::get('/book-success', 'BookingController@success');
 Router::post('/webhook/razorpay', 'WebhookController@razorpay'); // Webhook exempt from CSRF, secured by HMAC
-Router::post('/quick-enquiry', 'BookingController@quickEnquiry');
-Router::get('/enquiry-success', 'BookingController@enquirySuccess');
-Router::post('/api/enquiry/send-otp', 'BookingController@apiSendEnquiryOtp');
-Router::post('/api/enquiry/resend-otp', 'BookingController@apiResendEnquiryOtp');
-Router::post('/api/enquiry/verify-otp', 'BookingController@apiVerifyEnquiryOtp');
 
 Router::get('/cart', 'BookingController@cart');
 Router::get('/cart.php', 'BookingController@cart');

@@ -315,7 +315,6 @@ class SmtpEmailService implements EmailProviderInterface
             'admin_new_partner'           => '👷 New Service Partner Registered: ' . ($data['name'] ?? 'Technician') . ' (' . ($data['trade'] ?? 'Trade') . ')',
             'admin_welcome_credentials'   => '🔐 Welcome to REFIXEL - Activate Your Admin Account',
             'admin_password_reset'        => '🔑 REFIXEL Admin Security - Reset Your Account Password',
-            'enquiry_email_otp'           => '🔐 ' . ($data['otp'] ?? '') . ' is your REFIXEL Enquiry Verification Code',
             default                       => 'Notification from REFIXEL',
         };
 
@@ -878,30 +877,6 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "</div>";
                 break;
 
-            case 'enquiry_email_otp':
-                $otpCode = htmlspecialchars((string)($data['otp'] ?? '000000'));
-                $serviceName = htmlspecialchars((string)($data['service'] ?? 'Home Maintenance Service'));
-                $customerName = htmlspecialchars((string)($data['name'] ?? 'Valued Customer'));
-
-                $body .= "<div style='text-align: center; margin-bottom: 24px;'>";
-                $body .= "<div style='display: inline-block; width: 64px; height: 64px; line-height: 64px; border-radius: 50%; background: #fff7ed; color: #f25b29; font-size: 28px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(242,91,41,0.15);'><i style='font-style: normal;'>🔐</i></div><br>";
-                $body .= "<span style='background: #ffedd5; color: #c2410c; font-weight: 700; font-size: 12px; padding: 5px 14px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;'>Email Verification Required</span>";
-                $body .= "<h2 style='color: #0a1c33; font-size: 22px; margin: 12px 0 6px;'>Verify Your Service Enquiry</h2>";
-                $body .= "<p style='color: #64748b; font-size: 14px; margin: 0;'>Hello " . $customerName . ", thank you for choosing REFIXEL.</p>";
-                $body .= "</div>";
-
-                $body .= "<div style='background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 22px; text-align: center; margin-bottom: 22px;'>";
-                $body .= "<p style='color: #475569; font-size: 14px; margin: 0 0 16px;'>Please enter this 6-digit One-Time Password (OTP) on the website to confirm your enquiry for <strong>" . $serviceName . "</strong>:</p>";
-                $body .= "<div style='display: inline-block; background: #ffffff; border: 2px dashed #f25b29; border-radius: 12px; padding: 14px 32px; letter-spacing: 8px; font-size: 34px; font-weight: 800; font-family: Monaco, Menlo, Consolas, monospace; color: #f25b29; box-shadow: 0 2px 8px rgba(242,91,41,0.1);'>" . $otpCode . "</div>";
-                $body .= "<p style='color: #94a3b8; font-size: 12px; margin: 14px 0 0;'><i style='font-style: normal;'>⏱️</i> This OTP code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>";
-                $body .= "</div>";
-
-                $body .= "<div style='background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 6px; font-size: 13px; color: #92400e; line-height: 1.5; margin-bottom: 20px;'>";
-                $body .= "<strong>Why verify?</strong> We verify email addresses to ensure genuine customer requests and enable our dispatch team to coordinate your service without delay.";
-                $body .= "</div>";
-
-                $body .= "<p style='font-size: 12px; color: #94a3b8; text-align: center; margin: 0;'>If you did not request this service enquiry on REFIXEL, you can safely ignore this email.</p>";
-                break;
 
             default:
                 $body .= "<p style='font-size: 15px; color: #334155;'>" . htmlspecialchars($data['message'] ?? 'Notification from REFIXEL') . "</p>";
