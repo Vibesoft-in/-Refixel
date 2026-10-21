@@ -303,6 +303,11 @@ class Request
         return $this->server['HTTP_USER_AGENT'] ?? 'Unknown';
     }
 
+    public function server(string $key, mixed $default = null): mixed
+    {
+        return $this->server[$key] ?? $default;
+    }
+
     protected ?string $rawBody = null;
 
     public function getRawBody(): string

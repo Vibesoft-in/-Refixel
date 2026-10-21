@@ -46,6 +46,13 @@
         </button>
       </div>
     </div>
+  <div class="form-group mb-4">
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" name="dpdp_consent" id="signupDpdpConsent" class="custom-control-input" value="1" required>
+      <label class="custom-control-label small" for="signupDpdpConsent" style="color: #475569; line-height: 1.5; cursor: pointer;">
+        I agree to the <a href="<?= \App\Core\View::url('/terms') ?>" target="_blank" style="color:#f25b29; text-decoration:underline;">Terms of Service</a> and <a href="<?= \App\Core\View::url('/privacy') ?>" target="_blank" style="color:#f25b29; text-decoration:underline;">Privacy Policy</a>, and consent to processing of my personal data for service delivery. <span class="text-danger">*</span>
+      </label>
+    </div>
   </div>
   <button type="submit" class="btn btn-primary-custom py-2">Create Account & Continue &rarr;</button>
 </form>

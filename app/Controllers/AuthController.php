@@ -130,6 +130,11 @@ class AuthController extends Controller
             return $this->redirect('/signup');
         }
 
+        if (!$request->input('dpdp_consent')) {
+            View::setFlash('error', 'You must agree to the Terms of Service and Privacy Policy to create an account.');
+            return $this->redirect('/signup');
+        }
+
         $phone = preg_replace('/\D/', '', (string)$request->input('phone'));
         if (strlen($phone) === 12 && str_starts_with($phone, '91')) {
             $phone = substr($phone, 2);
@@ -172,7 +177,7 @@ class AuthController extends Controller
         $user = User::find($userId);
         
         // Record DPDP Act consent
-        \App\Models\Consent::record($userId, 'terms_and_privacy', $request->getIp());
+        \App\Models\Consent::record($userId, 'terms_and_privacy', $request->getIp(), $phone, (string)$request->server('HTTP_USER_AGENT'));
 
         Auth::login($user);
 
@@ -273,6 +278,7 @@ class AuthController extends Controller
         }
 
         $user = User::findByEmailOrPhone($record['email_or_phone']);
+        if ($user) {
             User::update((int)$user['id'], [
                 'password_hash'        => password_hash((string)$request->input('password'), PASSWORD_BCRYPT),
                 'must_change_password' => 0,

@@ -4347,6 +4347,9 @@ document.addEventListener('DOMContentLoaded', function () {
                   <button type="submit" class="btn_send_enquiry" id="homeEnquirySubmitBtn">
                     <i class="fa fa-whatsapp mr-1" style="font-size: 17px; vertical-align: middle;"></i> Send Enquiry on WhatsApp <i class="fa fa-arrow-right ml-1"></i>
                   </button>
+                  <p class="text-muted small mt-2 mb-0" style="font-size: 12px; line-height: 1.5; color: #64748b;">
+                    <i class="fa fa-lock text-success mr-1"></i> By submitting, you agree to receive doorstep service communications and updates via WhatsApp in accordance with our <a href="<?= \App\Core\View::url('/privacy') ?>" target="_blank" style="color: #f25b29; text-decoration: underline;">Privacy Policy</a>.
+                  </p>
                 </div>
               </div>
             </form>

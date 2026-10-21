@@ -9,13 +9,22 @@ class Consent extends Model
 {
     protected static string $table = 'consents';
 
-    public static function record(?int $userId, string $purpose, string $ip): int
+    /**
+     * Record a user or guest consent event for DPDP Act compliance.
+     */
+    public static function record(?int $userId, string $purpose, string $ip, ?string $identifier = null, ?string $userAgent = null): int
     {
+        $now = date('Y-m-d H:i:s');
         return self::create([
-            'user_id'    => $userId,
-            'purpose'    => $purpose,
-            'ip'         => $ip,
-            'granted_at' => date('Y-m-d H:i:s'),
+            'user_id'      => $userId,
+            'identifier'   => $identifier,
+            'purpose'      => $purpose,
+            'consent_type' => $purpose,
+            'ip'           => $ip,
+            'ip_address'   => $ip,
+            'user_agent'   => $userAgent ? substr($userAgent, 0, 255) : null,
+            'granted_at'   => $now,
+            'consented_at' => $now,
         ]);
     }
 
@@ -30,10 +39,9 @@ class Consent extends Model
     public static function hasConsent(int $userId, string $purpose): bool
     {
         $res = Database::fetchOne(
-            "SELECT id FROM consents WHERE user_id = :uid AND purpose = :purpose LIMIT 1",
-            ['uid' => $userId, 'purpose' => $purpose]
+            "SELECT id FROM consents WHERE user_id = :uid AND (purpose = :p1 OR consent_type = :p2) LIMIT 1",
+            ['uid' => $userId, 'p1' => $purpose, 'p2' => $purpose]
         );
         return !empty($res);
     }
 }
-

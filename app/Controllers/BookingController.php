@@ -723,7 +723,7 @@ class BookingController extends Controller
             // Record DPDP Act consent for booking processing
             if ($validCustomerId) {
                 try {
-                    \App\Models\Consent::record($validCustomerId, 'booking_terms_and_data_processing', $request->getIp());
+                    \App\Models\Consent::record($validCustomerId, 'booking_terms_and_data_processing', $request->getIp(), (string)($customerPhone ?? ''), (string)$request->server('HTTP_USER_AGENT'));
                 } catch (\Throwable $consentErr) {
                     Logger::warning("Consent record skipped: " . $consentErr->getMessage());
                 }
