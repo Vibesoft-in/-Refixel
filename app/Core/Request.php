@@ -258,26 +258,44 @@ class Request
         return $remoteAddr;
     }
 
-    public function isHttps(): bool
+    public static function isHttpsConnection(?array $server = null): bool
     {
-        if (!empty($this->server['HTTPS']) && strtolower((string)$this->server['HTTPS']) !== 'off') {
+        $srv = $server ?? $_SERVER;
+        if (!empty($srv['HTTPS']) && strtolower((string)$srv['HTTPS']) !== 'off') {
             return true;
         }
 
-        if (isset($this->server['SERVER_PORT']) && (int)$this->server['SERVER_PORT'] === 443) {
+        if (isset($srv['SERVER_PORT']) && (int)$srv['SERVER_PORT'] === 443) {
             return true;
         }
 
-        // X-Forwarded-Proto is ONLY trusted if coming from a trusted proxy
-        $remoteAddr = $this->server['REMOTE_ADDR'] ?? '127.0.0.1';
-        if ($this->isFromTrustedProxy($remoteAddr)) {
-            $proto = strtolower((string)($this->server['HTTP_X_FORWARDED_PROTO'] ?? ''));
-            if ($proto === 'https') {
-                return true;
+        // X-Forwarded-Proto is ONLY trusted if coming from an explicitly trusted proxy
+        $remoteAddr = $srv['REMOTE_ADDR'] ?? '127.0.0.1';
+        $rawProxies = (string)Env::get('TRUSTED_PROXIES', '');
+        if ($rawProxies !== '') {
+            $proxies = array_filter(array_map('trim', explode(',', $rawProxies)));
+            $isTrusted = false;
+            foreach ($proxies as $proxy) {
+                if (self::ipMatchesCidr($remoteAddr, $proxy)) {
+                    $isTrusted = true;
+                    break;
+                }
+            }
+
+            if ($isTrusted) {
+                $proto = strtolower((string)($srv['HTTP_X_FORWARDED_PROTO'] ?? ''));
+                if ($proto === 'https') {
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    public function isHttps(): bool
+    {
+        return self::isHttpsConnection($this->server);
     }
 
     public function getUserAgent(): string

@@ -273,10 +273,10 @@ class AuthController extends Controller
         }
 
         $user = User::findByEmailOrPhone($record['email_or_phone']);
-        if ($user) {
             User::update((int)$user['id'], [
-                'password_hash' => password_hash((string)$request->input('password'), PASSWORD_BCRYPT),
+                'password_hash'        => password_hash((string)$request->input('password'), PASSWORD_BCRYPT),
                 'must_change_password' => 0,
+                'password_version'     => (int)($user['password_version'] ?? 1) + 1,
             ]);
 
             // Invalidate used reset tokens for this user
@@ -332,14 +332,17 @@ class AuthController extends Controller
             }
         }
 
+        $newPasswordVersion = (int)(Auth::user()['password_version'] ?? 1) + 1;
         $updateData = [
             'password_hash'        => password_hash((string)$request->input('new_password'), PASSWORD_BCRYPT),
             'must_change_password' => 0,
+            'password_version'     => $newPasswordVersion,
         ];
 
         User::update($user['id'], $updateData);
 
         $_SESSION['user']['must_change_password'] = false;
+        $_SESSION['user']['password_version'] = $newPasswordVersion;
 
         View::setFlash('success', 'Password updated successfully!');
         return $this->redirectAfterLogin($user['role']);

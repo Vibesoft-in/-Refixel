@@ -648,7 +648,8 @@ class DashboardController extends Controller
 
         try {
             $updateData = [
-                'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+                'password_hash'    => password_hash($password, PASSWORD_BCRYPT),
+                'password_version' => (int)($admin['password_version'] ?? 1) + 1,
             ];
 
             User::update($adminId, $updateData);

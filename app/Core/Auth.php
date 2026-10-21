@@ -9,11 +9,20 @@ class Auth
     {
         if (session_status() === PHP_SESSION_NONE) {
             $lifetime = (int)Env::get('SESSION_LIFETIME', 7200);
-            $secure   = (bool)Env::get('SESSION_SECURE', false);
+            
+            // Derive secure flag: honor explicit SESSION_SECURE, or automatically check Request::isHttps() (which verifies TRUSTED_PROXIES)
+            $isHttps   = Request::isHttpsConnection();
+            $secureEnv = Env::get('SESSION_SECURE');
+            $secure    = $secureEnv !== null ? (bool)$secureEnv : $isHttps;
+
             $httpOnly = (bool)Env::get('SESSION_HTTPONLY', true);
             $sameSite = (string)Env::get('SESSION_SAMESITE', 'Lax');
 
             if (!headers_sent()) {
+                @ini_set('session.cookie_httponly', '1');
+                @ini_set('session.use_only_cookies', '1');
+                @ini_set('session.use_strict_mode', '1');
+
                 session_set_cookie_params([
                     'lifetime' => $lifetime,
                     'path'     => '/',
@@ -36,12 +45,13 @@ class Auth
         }
 
         $_SESSION['user'] = [
-            'id'    => (int)$user['id'],
-            'role'  => (string)$user['role'],
-            'name'  => (string)$user['name'],
-            'email' => $user['email'] ?? null,
-            'phone' => $user['phone'] ?? null,
-            'totp_enabled' => (bool)($user['totp_enabled'] ?? false),
+            'id'                   => (int)$user['id'],
+            'role'                 => (string)$user['role'],
+            'name'                 => (string)$user['name'],
+            'email'                => $user['email'] ?? null,
+            'phone'                => $user['phone'] ?? null,
+            'totp_enabled'         => (bool)($user['totp_enabled'] ?? false),
+            'password_version'     => (int)($user['password_version'] ?? 1),
             'must_change_password' => (bool)($user['must_change_password'] ?? false),
         ];
 
@@ -85,10 +95,27 @@ class Auth
             return false;
         }
 
-        $maxLifetime = (int)Env::get('SESSION_LIFETIME', 7200);
+        // 1. Role-based Inactivity Timeout: 30 minutes for admin/superadmin, 2 hours for customer/staff
+        $role = (string)($_SESSION['user']['role'] ?? 'customer');
+        $maxLifetime = in_array($role, ['admin', 'super_admin'], true) ? 1800 : (int)Env::get('SESSION_LIFETIME', 7200);
+
         if (!empty($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $maxLifetime)) {
             self::logout();
             return false;
+        }
+
+        // 2. Validate password_version & active status against database (invalidates other sessions upon password change)
+        $userId = (int)$_SESSION['user']['id'];
+        $sessionPasswordVersion = (int)($_SESSION['user']['password_version'] ?? 1);
+
+        try {
+            $dbUser = Database::fetchOne("SELECT status, password_version FROM users WHERE id = :id LIMIT 1", ['id' => $userId]);
+            if (!$dbUser || ($dbUser['status'] ?? 'active') !== 'active' || (int)($dbUser['password_version'] ?? 1) !== $sessionPasswordVersion) {
+                self::logout();
+                return false;
+            }
+        } catch (\Throwable $e) {
+            Logger::error("Error checking user password_version: " . $e->getMessage());
         }
 
         $_SESSION['last_activity'] = time();
