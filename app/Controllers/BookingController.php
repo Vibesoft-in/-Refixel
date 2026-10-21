@@ -328,7 +328,7 @@ class BookingController extends Controller
      * Tries full financial column update first; falls back gracefully to priority/status
      * if the database cannot be altered.
      */
-    protected function updateBookingFinancials(int $bookingId, float $totalAmount, float $advanceAmount, float $dueAmount, string $paymentMethod, string $priority, ?string $status = null): void
+    public function updateBookingFinancials(int $bookingId, float $totalAmount, float $advanceAmount, float $dueAmount, string $paymentMethod, string $priority, ?string $status = null): void
     {
         self::ensureFinancialSchema();
 

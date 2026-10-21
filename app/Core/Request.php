@@ -173,4 +173,43 @@ class Request
     {
         return $this->server['HTTP_USER_AGENT'] ?? 'Unknown';
     }
+
+    protected ?string $rawBody = null;
+
+    public function getRawBody(): string
+    {
+        if ($this->rawBody === null) {
+            $this->rawBody = (string)file_get_contents('php://input');
+        }
+        return $this->rawBody;
+    }
+
+    public function setRawBody(string $rawBody): void
+    {
+        $this->rawBody = $rawBody;
+        $decoded = json_decode($rawBody, true);
+        if (is_array($decoded)) {
+            $this->json = $decoded;
+        }
+    }
+
+    public function getHeader(string $name): ?string
+    {
+        $normalized = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+        if (isset($this->server[$normalized])) {
+            return (string)$this->server[$normalized];
+        }
+        if (isset($this->server[strtoupper($name)])) {
+            return (string)$this->server[strtoupper($name)];
+        }
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            foreach ($headers as $k => $v) {
+                if (strcasecmp($k, $name) === 0) {
+                    return (string)$v;
+                }
+            }
+        }
+        return null;
+    }
 }
