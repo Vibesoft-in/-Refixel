@@ -1411,8 +1411,8 @@ if (empty($activeCategory)) {
                       : \App\Core\View::asset('img/' . $svcImg);
                   $targetSvcUrl = \App\Core\View::url("/{$svcSlug}");
                   $targetBookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
-                  $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
-                  $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
+                  $svcUrl = $targetSvcUrl;
+                  $bookUrl = $targetBookUrl;
                   $isComingSoon = !empty($svc['is_coming_soon']);
                 ?>
                   <div class="package-card-item">
@@ -1757,12 +1757,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var bookBtn = e.target.closest('.btn-package-book');
     if (!bookBtn) return;
 
-    var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1';
-    if (!isLoggedIn) {
-      // Guest user: proceed with default href navigation to login
-      return;
-    }
-
     e.preventDefault();
     e.stopPropagation();
 
@@ -1906,7 +1900,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'cat_name'      => $catName,
       'cat_slug'      => $catSlug,
       'starting_price'=> (float)($s['starting_price'] ?? 0),
-      'url'           => $isCustomerLoggedIn ? \App\Core\View::url('/services/' . $s['slug']) : \App\Core\View::url('/login?redirect=' . urlencode(\App\Core\View::url('/services/' . $s['slug']))),
+      'url'           => \App\Core\View::url('/services/' . $s['slug']),
     ];
   }, $services ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 

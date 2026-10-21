@@ -163,9 +163,9 @@ $refixelTrustData = [
           $svcSlug = \App\Core\View::e($svc['slug']);
           $svcName = \App\Core\View::e($svc['name']);
           $targetSvcUrl = \App\Core\View::url("/{$svcSlug}-in-{$currentCitySlug}");
-          $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
+          $svcUrl = $targetSvcUrl;
           $targetBookUrl = \App\Core\View::url('/book?service_id=' . (int)$svc['id'] . '&city=' . urlencode($city));
-          $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
+          $bookUrl = $targetBookUrl;
           $imgFile = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
           $isComingSoon = !empty($svc['is_coming_soon']);
         ?>
@@ -445,12 +445,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('click', function(e) {
     var bookBtn = e.target.closest('.btn-package-book');
     if (!bookBtn) return;
-
-    var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1';
-    if (!isLoggedIn) {
-      // Guest user: proceed with default href navigation to login
-      return;
-    }
 
     e.preventDefault();
     e.stopPropagation();

@@ -182,10 +182,10 @@
         <!-- Action & Direct Redirect to Dashboard -->
         <div>
           <a href="<?= \App\Core\View::url('/account/bookings') ?>" id="rfxSuccessDashboardBtn" class="btn text-white font-weight-bold w-100 py-2" style="background: #f25b29; border-radius: 8px; font-size: 13.5px; box-shadow: 0 3px 10px rgba(242, 91, 41, 0.25); text-decoration: none !important;">
-            Open My Bookings (Dashboard) &rarr;
+            View Booking Details &rarr;
           </a>
           <div class="text-center mt-2 small text-muted" style="font-size: 11px;">
-            Redirecting to your dashboard in <b id="rfxRedirectCount" style="color: #f25b29;">5</b>s...
+            Redirecting in <b id="rfxRedirectCount" style="color: #f25b29;">5</b>s...
           </div>
           <div class="text-center mt-1">
             <a href="<?= \App\Core\View::url('/') ?>" class="small text-muted text-decoration-none" style="font-size: 11px;">
@@ -664,8 +664,15 @@ function fallbackModalCopy(text, cb) {
               emailRow.style.display = 'none';
             }
             
-            if (d.set_password_url && dashBtn) {
-              dashBtn.innerText = 'Set Your Password & View Booking →';
+            var dashBtn = document.getElementById('rfxSuccessDashboardBtn');
+            if (dashBtn) {
+              if (d.guest_token) {
+                dashBtn.innerText = 'View Booking Details →';
+              } else if (d.set_password_url) {
+                dashBtn.innerText = 'Set Your Password & View Booking →';
+              } else {
+                dashBtn.innerText = 'Open My Bookings (Dashboard) →';
+              }
             }
 
             document.getElementById('rfxSuccessService').innerText = d.service_name || 'Doorstep Service';

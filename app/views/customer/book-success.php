@@ -332,9 +332,19 @@
 
       <!-- Actions -->
       <div>
-        <a href="<?= \App\Core\View::url('/account/bookings') ?>" class="rfx-btn-dash">
-          Open Dashboard &rarr;
-        </a>
+        <?php if (\App\Core\Auth::check()): ?>
+          <a href="<?= \App\Core\View::url('/account/bookings') ?>" class="rfx-btn-dash">
+            Open Dashboard &rarr;
+          </a>
+        <?php else: ?>
+          <?php 
+            $viewBookingToken = $token ?? ($booking['guest_token'] ?? '');
+            $viewBookingUrl = !empty($viewBookingToken) ? \App\Core\View::url('/book-success?token=' . urlencode($viewBookingToken)) : \App\Core\View::url('/');
+          ?>
+          <a href="<?= $viewBookingUrl ?>" class="rfx-btn-dash">
+            <i class="fa fa-ticket mr-1"></i> View Booking Details
+          </a>
+        <?php endif; ?>
         <a href="<?= \App\Core\View::url('/') ?>" class="rfx-link-home">
           Return to Home
         </a>
