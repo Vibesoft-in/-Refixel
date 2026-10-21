@@ -82,8 +82,9 @@ class Notifier
             Logger::error("Notification failed [{$channel} to {$to}]: " . $error);
         }
 
-        // Record in notifications audit log table
+        // Record in notifications audit log table with sensitive data sanitized
         try {
+            $sanitizedPayload = self::sanitizePayload($data);
             Database::query(
                 "INSERT INTO notifications (channel, to_address, template, payload, status, error_message, created_at)
                  VALUES (:channel, :to_address, :template, :payload, :status, :error_message, NOW())",
@@ -91,7 +92,7 @@ class Notifier
                     'channel'       => $channel,
                     'to_address'    => $to,
                     'template'      => $template,
-                    'payload'       => json_encode($data),
+                    'payload'       => json_encode($sanitizedPayload),
                     'status'        => $status,
                     'error_message' => $error,
                 ]
@@ -101,6 +102,34 @@ class Notifier
         }
 
         return $status === 'sent';
+    }
+
+    /**
+     * Redact sensitive credentials, passwords, OTPs, tokens, and secrets before persisting to DB audit logs.
+     */
+    public static function sanitizePayload(array $data): array
+    {
+        $sensitiveKeyRegex = '/(password|pwd|pass|otp|token|secret|signature|api_key)/i';
+        $sanitized = [];
+
+        foreach ($data as $key => $value) {
+            $keyStr = (string)$key;
+            if (is_array($value)) {
+                $sanitized[$key] = self::sanitizePayload($value);
+            } elseif (is_string($key) && preg_match('/_url$/i', $keyStr) && is_string($value)) {
+                // For URL fields (e.g. set_password_url, reset_password_url), sanitize query parameter tokens
+                $sanitized[$key] = preg_replace('/([?&](token|guest_token|otp|secret|password)=)[^&]+/i', '$1[REDACTED]', $value);
+            } elseif (is_string($key) && preg_match($sensitiveKeyRegex, $keyStr)) {
+                $sanitized[$key] = '[REDACTED]';
+            } elseif (is_string($value)) {
+                // Redact query parameter tokens in URLs (e.g. ?token=... or &token=...)
+                $sanitized[$key] = preg_replace('/([?&](token|guest_token|otp|secret|password)=)[^&]+/i', '$1[REDACTED]', $value);
+            } else {
+                $sanitized[$key] = $value;
+            }
+        }
+
+        return $sanitized;
     }
 
     protected static function getAdminEmail(): string
