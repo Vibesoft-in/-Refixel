@@ -472,6 +472,12 @@
           </a>
         </li>
 
+        <li class="<?= str_contains($uri, '/change-password') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/change-password') ?>">
+            <span class="nav-text"><i class="fa fa-key"></i> Change Password</span>
+          </a>
+        </li>
+
         <li class="mt-3 border-top border-secondary pt-2">
           <a href="<?= \App\Core\View::url('/logout') ?>">
             <span class="nav-text"><i class="fa fa-sign-out text-danger"></i> Logout</span>
@@ -499,6 +505,9 @@
               <i class="fa fa-shield mr-1"></i><span class="d-none d-sm-inline">Super Admin</span><span class="d-sm-none">Super</span>
             </a>
           <?php endif; ?>
+          <a href="<?= \App\Core\View::url('/change-password') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold mr-1 mr-sm-2 px-2 py-1" style="border-radius: 6px; font-size: 11.5px;" title="Change Password">
+            <i class="fa fa-key text-warning"></i><span class="d-none d-sm-inline ml-1">Password</span>
+          </a>
           <span class="mr-2 mr-sm-3 text-muted small d-none d-lg-inline text-truncate" style="max-width: 140px;">
             <i class="fa fa-user-circle mr-1" style="color: #f25b29;"></i><?= \App\Core\View::e($user['name'] ?? 'Admin') ?>
           </span>

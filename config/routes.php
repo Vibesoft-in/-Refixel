@@ -196,6 +196,12 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::get('/superadmin/theme', 'SuperAdmin\\ThemeController@index');
     Router::post('/superadmin/theme/save', 'SuperAdmin\\ThemeController@save', ['VerifyCsrf']);
     Router::post('/superadmin/theme/reset', 'SuperAdmin\\ThemeController@reset', ['VerifyCsrf']);
+
+    // Super Admin Profile & Security Controls
+    Router::get('/superadmin/profile', 'SuperAdmin\\DashboardController@profile');
+    Router::post('/superadmin/profile', 'SuperAdmin\\DashboardController@updateProfile', ['VerifyCsrf']);
+    Router::post('/superadmin/profile/password', 'SuperAdmin\\DashboardController@updatePassword', ['VerifyCsrf']);
+    Router::post('/superadmin/profile/disable-2fa', 'SuperAdmin\\DashboardController@disableMy2fa', ['VerifyCsrf']);
 });
 
 // ==========================================

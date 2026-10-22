@@ -430,6 +430,13 @@
           </a>
         </li>
 
+        <li class="nav-heading">Account & Security</li>
+        <li class="<?= str_contains($uri, '/superadmin/profile') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/superadmin/profile') ?>">
+            <span class="d-flex align-items-center"><i class="fa fa-user-circle text-info"></i> Profile & Security</span>
+          </a>
+        </li>
+
         <li class="nav-heading">Portals & Exit</li>
         <li>
           <a href="<?= \App\Core\View::url('/admin') ?>">
@@ -484,6 +491,13 @@
                 <div class="text-muted small text-truncate" style="max-width: 200px;"><?= \App\Core\View::e($user['email'] ?? 'superadmin@refixel.com') ?></div>
                 <span class="badge badge-danger mt-1">Super Administrator</span>
               </div>
+              <a class="dropdown-item py-2" href="<?= \App\Core\View::url('/superadmin/profile') ?>">
+                <i class="fa fa-user-circle mr-2 text-primary"></i> Profile & Security
+              </a>
+              <a class="dropdown-item py-2" href="<?= \App\Core\View::url('/superadmin/profile#password') ?>">
+                <i class="fa fa-key mr-2 text-warning"></i> Change Password
+              </a>
+              <div class="dropdown-divider"></div>
               <a class="dropdown-item py-2" href="<?= \App\Core\View::url('/admin') ?>">
                 <i class="fa fa-dashboard mr-2 text-primary"></i> Operations Admin
               </a>
@@ -571,6 +585,25 @@
         });
       });
     });
+
+    function togglePasswordVisibility(targetId, btn) {
+      var input = document.getElementById(targetId);
+      if (!input) return;
+      var icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+          icon.className = 'fa fa-eye-slash text-danger';
+        }
+        btn.setAttribute('title', 'Hide password');
+      } else {
+        input.type = 'password';
+        if (icon) {
+          icon.className = 'fa fa-eye text-muted';
+        }
+        btn.setAttribute('title', 'Show password');
+      }
+    }
   </script>
 </body>
 </html>

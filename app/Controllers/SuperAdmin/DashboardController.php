@@ -867,4 +867,165 @@ class DashboardController extends Controller
         $redirect = $request->post('redirect', '/admin/calendar');
         return $this->redirect($redirect);
     }
+
+    // =========================================================================
+    // 7. SUPER ADMIN PROFILE & SECURITY MANAGEMENT
+    // =========================================================================
+
+    public function profile(Request $request): Response
+    {
+        $user = User::find((int)Auth::id());
+        if (!$user) {
+            return $this->redirect('/login');
+        }
+
+        return $this->render('superadmin.profile', [
+            'title' => 'Profile & Security Controls | REFIXEL Super Admin',
+            'user'  => $user,
+        ], 'superadmin');
+    }
+
+    public function updateProfile(Request $request): Response
+    {
+        $userId = (int)Auth::id();
+        $user = User::find($userId);
+        if (!$user) {
+            return $this->redirect('/login');
+        }
+
+        $name = trim((string)$request->input('name', ''));
+        $email = strtolower(trim((string)$request->input('email', '')));
+        $phone = preg_replace('/\D/', '', (string)$request->input('phone', ''));
+
+        if (strlen($name) < 2) {
+            View::setFlash('error', 'Full Name must be at least 2 characters.');
+            return $this->redirect('/superadmin/profile');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            View::setFlash('error', 'Please provide a valid email address.');
+            return $this->redirect('/superadmin/profile');
+        }
+
+        // Email uniqueness check
+        $existingEmail = Database::fetchOne("SELECT id FROM users WHERE email = :email AND id != :id LIMIT 1", [
+            'email' => $email,
+            'id'    => $userId,
+        ]);
+        if ($existingEmail) {
+            View::setFlash('error', 'This email address is already in use by another account.');
+            return $this->redirect('/superadmin/profile');
+        }
+
+        // Phone format and uniqueness check (if provided)
+        if (!empty($phone)) {
+            if (strlen($phone) === 12 && str_starts_with($phone, '91')) {
+                $phone = substr($phone, 2);
+            }
+            if (strlen($phone) !== 10) {
+                View::setFlash('error', 'Phone number must be a valid 10-digit mobile number.');
+                return $this->redirect('/superadmin/profile');
+            }
+            $existingPhone = Database::fetchOne("SELECT id FROM users WHERE phone = :phone AND id != :id LIMIT 1", [
+                'phone' => $phone,
+                'id'    => $userId,
+            ]);
+            if ($existingPhone) {
+                View::setFlash('error', 'This phone number is already registered to another account.');
+                return $this->redirect('/superadmin/profile');
+            }
+        } else {
+            $phone = null;
+        }
+
+        User::update($userId, [
+            'name'  => $name,
+            'email' => $email,
+            'phone' => $phone,
+        ]);
+
+        $_SESSION['user']['name']  = $name;
+        $_SESSION['user']['email'] = $email;
+        $_SESSION['user']['phone'] = $phone;
+
+        Logger::info("Super Admin (ID: {$userId}) updated profile details.");
+        View::setFlash('success', 'Your profile details have been updated successfully.');
+        return $this->redirect('/superadmin/profile');
+    }
+
+    public function updatePassword(Request $request): Response
+    {
+        $userId = (int)Auth::id();
+        $user = User::find($userId);
+        if (!$user) {
+            return $this->redirect('/login');
+        }
+
+        $currentPassword = (string)$request->input('current_password', '');
+        $newPassword = (string)$request->input('new_password', '');
+        $confirmPassword = (string)$request->input('new_password_confirmation', '');
+
+        if (empty($currentPassword)) {
+            View::setFlash('error', 'Please enter your current password.');
+            return $this->redirect('/superadmin/profile#password');
+        }
+
+        if (!password_verify($currentPassword, $user['password_hash'])) {
+            View::setFlash('error', 'Your current password was incorrect.');
+            return $this->redirect('/superadmin/profile#password');
+        }
+
+        if (strlen($newPassword) < 6) {
+            View::setFlash('error', 'New password must be at least 6 characters long.');
+            return $this->redirect('/superadmin/profile#password');
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            View::setFlash('error', 'New password and confirmation do not match.');
+            return $this->redirect('/superadmin/profile#password');
+        }
+
+        $newVersion = (int)($user['password_version'] ?? 1) + 1;
+        User::update($userId, [
+            'password_hash'        => password_hash($newPassword, PASSWORD_BCRYPT),
+            'must_change_password' => 0,
+            'password_version'     => $newVersion,
+        ]);
+
+        $_SESSION['user']['password_version'] = $newVersion;
+        $_SESSION['user']['must_change_password'] = false;
+
+        Logger::info("Super Admin (ID: {$userId}) updated their password.");
+        View::setFlash('success', 'Your password has been changed successfully!');
+        return $this->redirect('/superadmin/profile');
+    }
+
+    public function disableMy2fa(Request $request): Response
+    {
+        $userId = (int)Auth::id();
+        $user = User::find($userId);
+        if (!$user) {
+            return $this->redirect('/login');
+        }
+
+        $password = (string)$request->input('password', '');
+        if (empty($password) || !password_verify($password, $user['password_hash'])) {
+            View::setFlash('error', 'Incorrect password. 2FA configuration was not changed.');
+            return $this->redirect('/superadmin/profile#two-factor');
+        }
+
+        User::update($userId, [
+            'totp_secret'         => null,
+            'totp_enabled'        => 0,
+            'totp_recovery_codes' => null,
+            'totp_last_step'      => null,
+            'totp_confirmed_at'   => null,
+        ]);
+
+        $_SESSION['user']['totp_enabled'] = false;
+
+        Logger::info("Super Admin (ID: {$userId}) disabled 2FA on their own account.");
+        View::setFlash('success', 'Two-Factor Authentication (2FA) has been disabled on your account.');
+        return $this->redirect('/superadmin/profile');
+    }
 }
