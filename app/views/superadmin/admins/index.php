@@ -124,7 +124,7 @@
                   </button>
                 <?php else: ?>
                   <span class="badge badge-warning px-2 py-1" style="background: #fef3c7; color: #92400e;">
-                    <i class="fa fa-exclamation-circle mr-1"></i>Pending Setup
+                    <i class="fa fa-info-circle mr-1"></i>Optional (Not Enabled)
                   </span>
                 <?php endif; ?>
               </td>

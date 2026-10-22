@@ -43,12 +43,14 @@ assert($res !== null, "Customer accessing staff route must be intercepted");
 echo "Scenario 3: Customer blocked from /staff (PASSED)\n";
 
 // Scenario 4: Admin accessing Admin route -> Allowed (returns null)
+$adminUser['must_change_password'] = 0;
 Auth::login($adminUser);
 $res = $middleware->handle($request, 'admin');
 assert($res === null, "Admin must be permitted on admin route");
 echo "Scenario 4: Admin authorized for /admin (PASSED)\n";
 
 // Scenario 5: Staff accessing Staff route -> Allowed (returns null)
+$techUser['must_change_password'] = 0;
 Auth::login($techUser);
 $res = $middleware->handle($request, 'staff');
 assert($res === null, "Staff must be permitted on staff route");

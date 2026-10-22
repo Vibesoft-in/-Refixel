@@ -500,6 +500,7 @@
       </div>
 
       <div class="super-body">
+        <?= \App\Core\View::partial('2fa-notice') ?>
         <?= \App\Core\View::partial('flash') ?>
         <?= $content ?? '' ?>
       </div>

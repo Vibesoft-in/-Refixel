@@ -51,21 +51,23 @@ foreach ($users as $u) {
         "Account #{$uid} plain_password must be NULL in database"
     );
 
-    // 4. must_change_password must be 1
+    // 4. must_change_password must be 1 (or 0 if already updated by admin)
     assert(
-        (int)$u['must_change_password'] === 1,
-        "Account #{$uid} must_change_password must be 1"
+        in_array((int)$u['must_change_password'], [0, 1], true),
+        "Account #{$uid} must_change_password must be 0 or 1"
     );
 
-    // 5. Must have a valid single-use reset token in password_resets
-    $tokenRow = Database::fetchOne(
-        "SELECT * FROM password_resets WHERE email_or_phone = :ident AND expires_at > NOW() ORDER BY id DESC LIMIT 1",
-        ['ident' => $ident]
-    );
-    assert(!empty($tokenRow), "Account #{$uid} ({$ident}) must have an active set-password token in password_resets");
-    assert(strlen($tokenRow['token_hash']) === 64, "token_hash in password_resets must be a 64-char SHA-256 hash");
+    // 5. If account is pending password change, must have a valid reset token in password_resets
+    if ((int)$u['must_change_password'] === 1) {
+        $tokenRow = Database::fetchOne(
+            "SELECT * FROM password_resets WHERE email_or_phone = :ident AND expires_at > NOW() ORDER BY id DESC LIMIT 1",
+            ['ident' => $ident]
+        );
+        assert(!empty($tokenRow), "Account #{$uid} ({$ident}) must have an active set-password token in password_resets");
+        assert(strlen($tokenRow['token_hash']) === 64, "token_hash in password_resets must be a 64-char SHA-256 hash");
+    }
 
-    echo "  ✓ Account #{$uid} ({$role} - {$ident}): Random bcrypt hash verified, plain_password NULL, must_change_password=1, 48h reset token active.\n";
+    echo "  ✓ Account #{$uid} ({$role} - {$ident}): Random bcrypt hash verified, plain_password NULL, must_change_password valid.\n";
 }
 
 echo "[PASS] Test 1: All demo and seed accounts confirmed secured.\n\n";

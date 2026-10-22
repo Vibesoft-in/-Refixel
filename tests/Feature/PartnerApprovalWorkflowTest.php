@@ -119,6 +119,11 @@ assert($rejectedUser['status'] === 'rejected', "Technician status must be 'rejec
 $rejectedProfile = Database::fetchOne("SELECT * FROM staff_profiles WHERE user_id = :id", ['id' => $tech2Id]);
 assert($rejectedProfile['rejection_reason'] === 'Incomplete KYC trade certificates', "Rejection reason must be stored");
 
+// In real browser navigation, flash is consumed on the redirect target page.
+View::flash('warning');
+View::flash('success');
+View::flash('error');
+
 // Ensure rejected technician does NOT appear in /admin/staff
 $staffIndexResp2 = $staffCtrl->index($staffIndexReq);
 assert(!str_contains($staffIndexResp2->getBody(), 'Ravi Kumar'), "Rejected technician must NOT appear in /admin/staff!");

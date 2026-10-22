@@ -537,10 +537,12 @@ class AuthController extends Controller
             return $this->redirect('/login');
         }
 
+        $fallbackUrl = Auth::isSuperAdmin() ? '/superadmin' : (Auth::isAdmin() ? '/admin' : '/');
+
         // Fails loudly if APP_KEY is missing
         if (!Encrypter::hasKey()) {
             View::setFlash('error', 'Security Policy Error: APP_KEY is not configured on the server. 2FA setup cannot proceed without an encryption key.');
-            return $this->redirect(Auth::isAdmin() ? '/admin' : '/');
+            return $this->redirect($fallbackUrl);
         }
 
         $user = User::find((int)Auth::id());
@@ -550,7 +552,7 @@ class AuthController extends Controller
 
         if (!empty($user['totp_enabled'])) {
             View::setFlash('info', 'Two-Factor Authentication is already active on your account.');
-            return $this->redirect(Auth::isAdmin() ? '/admin' : '/');
+            return $this->redirect($fallbackUrl);
         }
 
         if (empty($_SESSION['2fa_setup_secret']) || empty($_SESSION['2fa_setup_recovery_codes'])) {

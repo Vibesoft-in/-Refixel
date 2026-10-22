@@ -35,7 +35,8 @@ class TwoFactorAuthenticationTest
             $this->testMissingAppKeyFailsLoudly();
             $this->testAes256GcmSecretEncryption();
             $this->testLoginWith2faPendingAndVerification();
-            $this->testAdminForcedTo2faSetupWhenNotEnrolled();
+            $this->testAdminAllowedToAccessDashboardWhen2faNotEnrolled();
+            $this->testAdminDashboardRendersOptional2faNoticeWhenNotEnrolled();
             $this->testSuperAdminReset2faReAuthentication();
             $this->testCliResetScript();
 
@@ -253,11 +254,11 @@ class TwoFactorAuthenticationTest
     }
 
     /**
-     * Test 7: Verify Admin is forced to /2fa/setup when not enrolled
+     * Test 7: Verify Admin without 2FA can freely access dashboard (non-blocking voluntary 2FA)
      */
-    public function testAdminForcedTo2faSetupWhenNotEnrolled(): void
+    public function testAdminAllowedToAccessDashboardWhen2faNotEnrolled(): void
     {
-        echo "\n[TEST 7] Testing admin forced to /2fa/setup when 2FA is not enrolled...\n";
+        echo "\n[TEST 7] Testing admin allowed to freely access dashboard when 2FA is not enrolled...\n";
 
         $admin = $this->createTestUser([
             'role'         => 'admin',
@@ -274,9 +275,31 @@ class TwoFactorAuthenticationTest
         ]);
 
         $res = $middleware->handle($req, 'admin');
-        $this->assert($res !== null, "RequireRole intercepted request");
-        $this->assert($res->getStatusCode() === 302, "RequireRole returned 302 redirect");
-        $this->assert(str_ends_with((string)$res->getHeader('Location'), '/2fa/setup'), "Admin without 2FA forced to redirect to /2fa/setup");
+        $this->assert($res === null, "RequireRole does NOT block admin without 2FA (passes through freely)");
+    }
+
+    /**
+     * Test: Verify Dashboard renders non-blocking 2FA notice for unenrolled admin
+     */
+    public function testAdminDashboardRendersOptional2faNoticeWhenNotEnrolled(): void
+    {
+        echo "\n[TEST 7b] Testing Dashboard renders non-blocking 2FA notice for unenrolled admin...\n";
+
+        $admin = $this->createTestUser([
+            'role'         => 'admin',
+            'totp_enabled' => 0,
+        ]);
+
+        Auth::login($admin);
+
+        $htmlUnenrolled = View::partial('2fa-notice');
+        $this->assert(str_contains($htmlUnenrolled, 'Two-Factor Authentication (2FA) Recommended'), "Dashboard notice rendered when 2FA is not enabled");
+        $this->assert(str_contains($htmlUnenrolled, '/2fa/setup'), "Dashboard notice contains link to 2FA setup");
+
+        // When 2FA is active, notice must NOT render
+        $_SESSION['user']['totp_enabled'] = true;
+        $htmlEnrolled = View::partial('2fa-notice');
+        $this->assert(empty(trim($htmlEnrolled)), "Dashboard notice is hidden when 2FA is active");
     }
 
     /**
