@@ -27,11 +27,11 @@
             </div>
             <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
               <span class="text-muted font-weight-bold">Pay Now Online (Advance):</span>
-              <span class="font-weight-bold text-success" id="rfxModalPayAdvanceDisplay">₹49 (Online)</span>
+              <span class="font-weight-bold text-success" id="rfxModalPayAdvanceDisplay">₹899 (Prepaid Full)</span>
             </div>
             <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
               <span class="text-muted font-weight-bold">Due to Technician After Service:</span>
-              <span class="font-weight-bold text-danger" id="rfxModalPayDueDisplay">₹850</span>
+              <span class="font-weight-bold text-danger" id="rfxModalPayDueDisplay">₹0 (Fully Paid)</span>
             </div>
           </div>
 
@@ -41,29 +41,9 @@
           <!-- Payment Options -->
           <div class="rfx-payment-options d-flex flex-column" style="gap: 10px;">
 
-            <!-- Option 1: Pay After Service -->
-            <label class="rfx-pay-card active d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardCod" style="cursor: pointer; border: 2px solid #f25b29; background: #fffbf9; transition: all 0.2s ease;">
-              <input type="radio" name="modal_payment_method" value="cod" checked style="margin-top: 3px; accent-color: #f25b29;">
-              <div class="ml-3 flex-grow-1">
-                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
-                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Pay After Service</span>
-                  <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 10px; font-weight: 700; padding: 2px 6px;">
-                    <i class="fa fa-clock-o mr-1"></i>Medium Priority
-                  </span>
-                </div>
-                <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
-                  Pay <strong>₹49 pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹49 deducted) is payable to technician after service.
-                </p>
-                <div class="d-flex align-items-center" style="gap: 5px;">
-                  <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;">₹49 Advance Online</span>
-                  <span class="badge badge-light border text-muted font-weight-bold" style="font-size: 9.5px;">Rest Cash/UPI Later</span>
-                </div>
-              </div>
-            </label>
-
-            <!-- Option 2: Prepaid -->
-            <label class="rfx-pay-card d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardOnline" style="cursor: pointer; border: 1.5px solid #e2e8f0; background: #ffffff; transition: all 0.2s ease;">
-              <input type="radio" name="modal_payment_method" value="online" style="margin-top: 3px; accent-color: #f25b29;">
+            <!-- Option 1: Prepaid (Auto-selected by default) -->
+            <label class="rfx-pay-card active d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardOnline" style="cursor: pointer; border: 2px solid #f25b29; background: #fffbf9; transition: all 0.2s ease;">
+              <input type="radio" name="modal_payment_method" value="online" checked style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
                   <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Prepaid</span>
@@ -83,6 +63,26 @@
               </div>
             </label>
 
+            <!-- Option 2: Pay After Service -->
+            <label class="rfx-pay-card d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardCod" style="cursor: pointer; border: 1.5px solid #e2e8f0; background: #ffffff; transition: all 0.2s ease;">
+              <input type="radio" name="modal_payment_method" value="cod" style="margin-top: 3px; accent-color: #f25b29;">
+              <div class="ml-3 flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
+                  <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Pay After Service</span>
+                  <span class="badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 10px; font-weight: 700; padding: 2px 6px;">
+                    <i class="fa fa-clock-o mr-1"></i>Medium Priority
+                  </span>
+                </div>
+                <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
+                  Pay <strong>₹49 pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹49 deducted) is payable to technician after service.
+                </p>
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                  <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;">₹49 Advance Online</span>
+                  <span class="badge badge-light border text-muted font-weight-bold" style="font-size: 9.5px;">Rest Cash/UPI Later</span>
+                </div>
+              </div>
+            </label>
+
           </div>
 
           <!-- Guarantee Badge -->
@@ -94,7 +94,7 @@
         <!-- Modal Footer CTA -->
         <div class="modal-footer p-3" style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
           <button type="button" id="rfxBtnConfirmPayment" class="btn text-white font-weight-bold w-100 py-2" style="background: #f25b29; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25); border: none;">
-            <span id="rfxBtnConfirmPaymentText">Pay ₹49 Advance & Book (Medium Priority) &rarr;</span>
+            <span id="rfxBtnConfirmPaymentText">Pay Prepaid ₹899 (High Priority) &rarr;</span>
           </button>
         </div>
       </div>
@@ -477,9 +477,9 @@ function fallbackModalCopy(text, cb) {
     var errAlert = document.getElementById('rfxModalErrorAlert');
     if (errAlert) { errAlert.style.display = 'none'; errAlert.innerText = ''; }
 
-    var cardCod = document.getElementById('rfxPayCardCod');
-    var radioCod = cardCod ? cardCod.querySelector('input[type="radio"]') : null;
-    if (radioCod) radioCod.checked = true;
+    var cardOnline = document.getElementById('rfxPayCardOnline');
+    var radioOnline = cardOnline ? cardOnline.querySelector('input[type="radio"]') : null;
+    if (radioOnline) radioOnline.checked = true;
     updatePayCards();
 
     // Show modal popup
