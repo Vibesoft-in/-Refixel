@@ -324,6 +324,16 @@
     line-height: 1.35 !important;
   }
 
+  .footer-map-box {
+    margin-top: 10px;
+  }
+  .footer-map-frame {
+    height: 105px;
+  }
+  .footer-map-link {
+    font-size: 10.5px;
+  }
+
   .bottom_footer {
     padding-bottom: 80px !important;
   }
@@ -334,6 +344,42 @@
   .footer-col-services { flex: 0 0 26%; max-width: 26%; }
   .footer-col-contact { flex: 0 0 22%; max-width: 22%; }
   .footer-col-hours { flex: 0 0 15%; max-width: 15%; }
+}
+.footer-map-box {
+  margin-top: 14px;
+  width: 100%;
+}
+.footer-map-frame {
+  width: 100%;
+  height: 125px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  background: #0f2744;
+  position: relative;
+}
+.footer-map-frame iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display: block !important;
+}
+.footer-map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #f25b29 !important;
+  text-decoration: none !important;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.footer-map-link:hover {
+  color: #ff7a4d !important;
+  transform: translateX(3px);
+  text-decoration: none !important;
 }
 </style>
 <div id="footer" class="footer_main" style="background: #0a1c33; color: #cbd5e1; padding: 24px 0 30px 0; position: relative; z-index: 10;">
@@ -417,6 +463,7 @@
             $fPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
             $fCleanPhone = preg_replace('/[^0-9+]/', '', $fPhone);
             $fHours = \App\Models\Setting::get('operating_hours', 'Mon - Sun: 08:00 AM - 09:00 PM');
+            $fMapEmbed = \App\Models\Setting::get('google_maps_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3479.157801016238!2d78.8243635755258!3d29.307046475303157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390a496b4e5d108d%3A0xf6d218115857576e!2sRefixel%20%7C%20Home%20cleaning%20service!5e0!3m2!1sen!2sin!4v1792744016340!5m2!1sen!2sin');
           ?>
           <ul class="list-unstyled p-0 m-0">
             <li class="footer-contact-item">
@@ -438,6 +485,24 @@
               <a href="tel:<?= \App\Core\View::e($fCleanPhone) ?>" class="footer-contact-link"><?= \App\Core\View::e($fPhone) ?></a>
             </li>
           </ul>
+
+          <div class="footer-map-box">
+            <div class="footer-map-frame">
+              <iframe
+                src="<?= \App\Core\View::e($fMapEmbed) ?>"
+                width="100%"
+                height="100%"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                title="Refixel Location on Google Maps"
+              ></iframe>
+            </div>
+            <a href="https://maps.google.com/?cid=17785210960533280622" target="_blank" rel="noopener noreferrer" class="footer-map-link" title="Open Refixel in Google Maps">
+              <i class="fa fa-map-marker"></i> Open in Maps <i class="fa fa-external-link" style="font-size: 9.5px;"></i>
+            </a>
+          </div>
         </div>
       </div>
 

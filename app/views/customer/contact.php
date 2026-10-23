@@ -58,6 +58,7 @@
           $contactSubtext = \App\Models\Setting::get('office_subtext', 'In front of BSV Girls Degree College, Jaspur');
           $contactAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road, in front of BSV Girls Degree College, Jaspur, Uttarakhand (PIN: 244712)');
           $contactMapQuery = \App\Models\Setting::get('office_map_query', 'BSV Girls Degree College, Kashipur Road, Jaspur, Uttarakhand');
+          $contactMapEmbed = \App\Models\Setting::get('google_maps_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3479.157801016238!2d78.8243635755258!3d29.307046475303157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390a496b4e5d108d%3A0xf6d218115857576e!2sRefixel%20%7C%20Home%20cleaning%20service!5e0!3m2!1sen!2sin!4v1792744016340!5m2!1sen!2sin');
         ?>
         <!-- Item 1: Phone -->
         <div class="contact-item-col">
@@ -191,13 +192,13 @@
             <!-- Interactive Map Card with Google Maps & Floating Info Card -->
             <div class="demo-map-card">
               <iframe
-                src="https://maps.google.com/maps?q=<?= urlencode($contactMapQuery) ?>&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+                src="<?= \App\Core\View::e($contactMapEmbed) ?>"
                 width="100%"
                 height="100%"
                 style="border:0; width:100%; height:100%; min-height:380px; display:block;"
                 allowfullscreen=""
                 loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
+                referrerpolicy="strict-origin-when-cross-origin"
                 aria-label="Refixel Office Location Map"
               ></iframe>
 
@@ -211,7 +212,7 @@
                   <p><?= \App\Core\View::e($contactLandmark) ?></p>
                   <div class="map-badge-rating d-flex align-items-center justify-content-between">
                     <span>★★★★★ <strong>4.8</strong></span>
-                    <a href="https://www.google.com/maps/search/?api=1&amp;query=<?= urlencode($contactMapQuery) ?>" target="_blank" rel="noopener noreferrer" class="map-directions-link ml-2" title="Open in Google Maps">
+                    <a href="https://maps.google.com/?cid=17785210960533280622" target="_blank" rel="noopener noreferrer" class="map-directions-link ml-2" title="Open in Google Maps">
                       <i class="fa fa-external-link"></i> Map
                     </a>
                   </div>
