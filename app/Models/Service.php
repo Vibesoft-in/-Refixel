@@ -30,6 +30,36 @@ class Service extends Model
             'appliance-diagnostic-repair'                => 'refixel-appliance-repair.jpg',
             'fall-ceiling-installation'                  => 'refixel-fall-ceiling.jpg',
             'fall-ceiling-repair-modification'           => 'refixel-fall-ceiling.jpg',
+            // Plumbers
+            'water-tank-cleaning'                        => 'refixel-plumber.jpg',
+            'toilet-sanitary-fitting'                    => 'service-plumber.jpg',
+            'washbasin-sink-drainage-repair'             => 'refixel-plumber.jpg',
+            'water-motor-pump-repair'                    => 'service-plumber.jpg',
+            // Carpenter
+            'door-lock-handle-repair'                    => 'refixel-carpenter.jpg',
+            'kitchen-drawer-channel-cabinet-repair'      => 'service-carpenter.jpg',
+            'mosquito-mesh-net-installation'             => 'refixel-carpenter.jpg',
+            'furniture-polish-surface-restoration'       => 'service-carpenter.jpg',
+            // AC Service & Repair
+            'ac-gas-leakage-refill'                      => 'ac-repair.jpg',
+            'split-ac-installation-mounting'             => 'refixel-ac-service.jpg',
+            'ac-uninstallation-safe-packing'             => 'service-ac-repair.jpg',
+            'ac-pcb-electrical-capacitor-repair'         => 'ac-repair.jpg',
+            // Appliance Repair
+            'washing-machine-repair-service'             => 'service-appliance-repair.jpg',
+            'refrigerator-fridge-repair-service'         => 'refixel-appliance-repair.jpg',
+            'ro-water-purifier-service-filter'           => 'service-appliance-repair.jpg',
+            'microwave-otg-heating-repair'               => 'refixel-appliance-repair.jpg',
+            // Painting Services
+            'exterior-weatherproof-painting'             => 'service-painting.jpg',
+            'wall-waterproofing-dampness-treatment'      => 'refixel-painting.jpg',
+            'designer-accent-texture-wall-painting'      => 'painting.jpg',
+            // Pest Control
+            'termite-deemak-control-treatment'           => 'refixel-pest-control.jpg',
+            'bed-bug-khatmal-intensive-treatment'        => 'service-pest-control.jpg',
+            'mosquito-fly-general-pest-fogging'          => 'pest-control.jpg',
+            // Fall Ceiling
+            'grid-ceiling-acoustic-tile-installation'    => 'refixel-fall-ceiling.jpg',
             // Distinct Add-on Services
             'chimney-exhaust-degreasing'                 => 'addon-chimney-degreasing.jpg',
             'kitchen-chimney-degreasing'                 => 'addon-chimney-degreasing.jpg',
@@ -176,6 +206,19 @@ class Service extends Model
                 }
             }
             Database::execute("UPDATE services SET image = 'service-fan-switchboard-repair.jpg' WHERE slug = 'fan-switchboard-repair' AND (image IS NULL OR image = '' OR image = 'refixel-electrician.jpg')");
+        } catch (\Throwable $e) {}
+
+        try {
+            $hasNewServices = Database::fetchOne("SELECT id FROM services WHERE slug = 'water-tank-cleaning'");
+            if (!$hasNewServices) {
+                $seederFile = dirname(__DIR__, 2) . '/database/add_comprehensive_category_services.php';
+                if (file_exists($seederFile)) {
+                    require_once $seederFile;
+                    if (function_exists('seedComprehensiveCategoryServices')) {
+                        seedComprehensiveCategoryServices();
+                    }
+                }
+            }
         } catch (\Throwable $e) {}
     }
 
