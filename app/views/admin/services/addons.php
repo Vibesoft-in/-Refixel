@@ -35,6 +35,27 @@ $addonServices = $addonServices ?? [];
   background: #cbd5e1;
   border-radius: 4px;
 }
+/* Responsive Table & Dropdown Styles */
+.addons-table-wrap {
+  min-height: 260px;
+}
+.table td, .table th {
+  vertical-align: middle !important;
+}
+.dropdown-menu .dropdown-item {
+  transition: background-color 0.15s ease;
+  font-size: 13px;
+  cursor: pointer;
+}
+.dropdown-menu .dropdown-item:hover {
+  background-color: #f8fafc;
+}
+.dropdown-menu .dropdown-item.text-danger:hover {
+  background-color: #fef2f2;
+}
+.dropdown-menu .dropdown-item.text-success:hover {
+  background-color: #f0fdf4;
+}
 </style>
 
 <div class="admin-addons-page">
@@ -153,8 +174,8 @@ $addonServices = $addonServices ?? [];
   </div>
 
   <!-- Table of Add-on Rules -->
-  <div class="stat-card p-0 overflow-hidden shadow-sm border bg-white" style="border-radius: 12px;">
-    <div class="table-responsive">
+  <div class="stat-card p-0 shadow-sm border bg-white" style="border-radius: 12px;">
+    <div class="table-responsive addons-table-wrap">
       <table class="table table-hover mb-0">
         <thead class="bg-light">
           <tr>
@@ -280,8 +301,8 @@ $addonServices = $addonServices ?? [];
                   </form>
                 </td>
 
-                <!-- Actions -->
-                <td class="align-middle text-right">
+                <!-- Actions Dropdown -->
+                <td class="align-middle text-right text-nowrap">
                   <?php 
                     $curCatId = (int)($r['effective_category_id'] ?? $r['source_category_id'] ?? 0);
                     $allCats = $addonCategoriesMap[(int)$r['addon_service_id']] ?? ($curCatId > 0 ? [$curCatId] : []);
@@ -292,37 +313,52 @@ $addonServices = $addonServices ?? [];
                     $effImg = !empty($r['custom_image']) ? $r['custom_image'] : ($r['addon_image'] ?? '');
                     $effImgUrl = !empty($effImg) ? \App\Models\Service::resolveImage($r['addon_slug'] ?? '', $effImg) : View::asset('img/refixel-cleaning.jpg');
                   ?>
-                  <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold edit-addon-rule-btn"
-                    data-id="<?= (int)$r['id'] ?>"
-                    data-source-category-id="<?= $curCatId ?>"
-                    data-all-category-ids="<?= $allCatsStr ?>"
-                    data-source-service-id="<?= (int)($r['source_service_id'] ?? 0) ?>"
-                    data-addon-service-id="<?= (int)$r['addon_service_id'] ?>"
-                    data-image="<?= htmlspecialchars($effImgUrl) ?>"
-                    data-source-name="<?= View::e($r['source_service_name'] ?: 'All Services in ' . ($r['source_category_name'] ?? 'Category')) ?>"
-                    data-addon-name="<?= View::e($r['addon_name']) ?>"
-                    data-badge="<?= View::e($r['custom_badge'] ?? '') ?>"
-                    data-price="<?= ($r['custom_price'] !== null && (float)$r['custom_price'] > 0) ? (float)$r['custom_price'] : '' ?>"
-                    data-note="<?= View::e($r['custom_note'] ?? '') ?>"
-                    data-order="<?= (int)$r['sort_order'] ?>"
-                    data-active="<?= (int)$r['is_active'] ?>"
-                    title="Edit Rule">
-                    <i class="fa fa-pencil"></i>
-                  </button>
+                  <div class="dropdown d-inline-block">
+                    <button class="btn btn-sm btn-light border dropdown-toggle font-weight-bold px-2 py-1 text-dark" type="button" id="addonActionDropdown_<?= (int)$r['id'] ?>" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 6px; font-size: 12.5px; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
+                      Actions
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right shadow-sm border py-1" aria-labelledby="addonActionDropdown_<?= (int)$r['id'] ?>" style="min-width: 195px; border-radius: 8px; font-size: 13px; z-index: 1060; box-shadow: 0 6px 18px rgba(0,0,0,0.1) !important;">
+                      <!-- Action 1: Edit Rule -->
+                      <button type="button" class="dropdown-item py-2 edit-addon-rule-btn"
+                        data-id="<?= (int)$r['id'] ?>"
+                        data-source-category-id="<?= $curCatId ?>"
+                        data-all-category-ids="<?= $allCatsStr ?>"
+                        data-source-service-id="<?= (int)($r['source_service_id'] ?? 0) ?>"
+                        data-addon-service-id="<?= (int)$r['addon_service_id'] ?>"
+                        data-image="<?= htmlspecialchars($effImgUrl) ?>"
+                        data-source-name="<?= View::e($r['source_service_name'] ?: 'All Services in ' . ($r['source_category_name'] ?? 'Category')) ?>"
+                        data-addon-name="<?= View::e($r['addon_name']) ?>"
+                        data-badge="<?= View::e($r['custom_badge'] ?? '') ?>"
+                        data-price="<?= ($r['custom_price'] !== null && (float)$r['custom_price'] > 0) ? (float)$r['custom_price'] : '' ?>"
+                        data-note="<?= View::e($r['custom_note'] ?? '') ?>"
+                        data-order="<?= (int)$r['sort_order'] ?>"
+                        data-active="<?= (int)$r['is_active'] ?>"
+                        style="color: #1e293b; font-weight: 500;">
+                        <i class="fa fa-pencil text-primary mr-2" style="width: 16px;"></i> Edit Pairing Rule
+                      </button>
 
-                  <form method="POST" action="<?= View::url('/admin/services/' . $r['addon_service_id'] . '/toggle-addon') ?>" class="d-inline ml-1" onsubmit="return confirm('Convert \'<?= View::e(addslashes($r['addon_name'])) ?>\' back to Main Services Catalog?');">
+                      <!-- Action 2: Make Main Service (Restore to Public Catalog) -->
+                      <button type="button" class="dropdown-item py-2 text-success" style="font-weight: 500;" onclick="if(confirm('Convert \'<?= View::e(addslashes($r['addon_name'])) ?>\' back to Main Services Catalog?')) { document.getElementById('makeMainForm_<?= (int)$r['id'] ?>').submit(); }">
+                        <i class="fa fa-cubes text-success mr-2" style="width: 16px;"></i> Make Main Service
+                      </button>
+
+                      <div class="dropdown-divider my-1"></div>
+
+                      <!-- Action 3: Delete Rule -->
+                      <button type="button" class="dropdown-item py-2 text-danger" style="font-weight: 500;" onclick="if(confirm('Remove add-on pairing between \'<?= View::e(addslashes($r['source_service_name'] ?? 'Target')) ?>\' and \'<?= View::e(addslashes($r['addon_name'])) ?>\'?')) { document.getElementById('deleteRuleForm_<?= (int)$r['id'] ?>').submit(); }">
+                        <i class="fa fa-trash text-danger mr-2" style="width: 16px;"></i> Delete Pairing Rule
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Hidden Forms for Actions -->
+                  <form id="makeMainForm_<?= (int)$r['id'] ?>" method="POST" action="<?= View::url('/admin/services/' . $r['addon_service_id'] . '/toggle-addon') ?>" style="display:none;">
                     <?= View::csrfField() ?>
                     <input type="hidden" name="redirect_to" value="<?= View::url('/admin/services/addons') ?>">
-                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2 font-weight-bold" title="Move this service back to Main Services Catalog (Make Main Service)">
-                      <i class="fa fa-cubes mr-1"></i> Make Main
-                    </button>
                   </form>
 
-                  <form method="POST" action="<?= View::url('/admin/services/addons/' . $r['id'] . '/delete') ?>" class="d-inline ml-1" onsubmit="return confirm('Remove add-on pairing between \'<?= View::e(addslashes($r['source_service_name'] ?? 'Target')) ?>\' and \'<?= View::e(addslashes($r['addon_name'])) ?>\'?');">
+                  <form id="deleteRuleForm_<?= (int)$r['id'] ?>" method="POST" action="<?= View::url('/admin/services/addons/' . $r['id'] . '/delete') ?>" style="display:none;">
                     <?= View::csrfField() ?>
-                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 font-weight-bold" title="Delete Rule">
-                      <i class="fa fa-trash"></i>
-                    </button>
                   </form>
                 </td>
               </tr>
