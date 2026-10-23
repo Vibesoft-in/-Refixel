@@ -169,6 +169,7 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
     Router::post('/superadmin/admins', 'SuperAdmin\\DashboardController@storeAdmin', ['VerifyCsrf']);
     Router::post('/superadmin/admins/{id}/reset-password', 'SuperAdmin\\DashboardController@updateAdminPassword', ['VerifyCsrf']);
     Router::post('/superadmin/admins/{id}/reset-2fa', 'SuperAdmin\\DashboardController@resetAdmin2fa', ['VerifyCsrf']);
+    Router::post('/superadmin/admins/delete-all', 'SuperAdmin\\DashboardController@deleteAllAdmins', ['VerifyCsrf']);
     Router::post('/superadmin/admins/{id}/delete', 'SuperAdmin\\DashboardController@deleteAdmin', ['VerifyCsrf']);
     Router::post('/superadmin/users/{id}/reset-2fa', 'SuperAdmin\\DashboardController@resetUser2fa', ['VerifyCsrf']);
 

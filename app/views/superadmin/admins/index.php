@@ -7,6 +7,9 @@
       <p class="text-muted small mb-0">Super Admin exclusive control center: Monitor account IDs, inspect & reveal admin passwords, reset credentials, and provision or revoke administrators.</p>
     </div>
     <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
+      <button type="button" class="btn btn-danger font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalDeleteAllAdmins" <?= empty($opsAdminCount) ? 'disabled' : '' ?>>
+        <i class="fa fa-trash mr-1"></i> Delete All Admins (<?= $opsAdminCount ?? 0 ?>)
+      </button>
       <button type="button" class="btn btn-primary font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalCreateAdmin">
         <i class="fa fa-plus-circle mr-1"></i> Provision Admin Account
       </button>
@@ -101,16 +104,11 @@
                 </div>
               </td>
 
-              <!-- Password / Credentials View & Reveal -->
+              <!-- Password Security Status -->
               <td style="white-space: nowrap; vertical-align: middle;">
                 <span class="badge badge-secondary px-2 py-1" title="Passwords are cryptographically hashed and never stored or displayed in plain text">
                   <i class="fa fa-shield mr-1"></i>Bcrypt Hashed
                 </span>
-                <?php if ($a['role'] !== 'super_admin'): ?>
-                  <button type="button" class="btn btn-xs btn-outline-primary ml-1" data-toggle="modal" data-target="#modalResetPass<?= $a['id'] ?>" title="Reset Admin Password">
-                    <i class="fa fa-key mr-1"></i>Reset Password
-                  </button>
-                <?php endif; ?>
               </td>
 
               <!-- 2FA Security -->
@@ -432,3 +430,34 @@ function toggleInputVisibility(btn, inputId) {
   }
 }
 </script>
+
+<!-- Modal: Delete All Operations Admins -->
+<div class="modal fade" id="modalDeleteAllAdmins" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title font-weight-bold"><i class="fa fa-user-times mr-2"></i>Delete All Operations Admins?</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+      </div>
+      <form action="<?= \App\Core\View::url('/superadmin/admins/delete-all') ?>" method="POST">
+        <?= \App\Core\View::csrfField() ?>
+        <div class="modal-body p-4 text-center">
+          <div class="text-danger mb-3"><i class="fa fa-exclamation-triangle fa-4x"></i></div>
+          <h5 class="font-weight-bold text-dark">Delete all Operations Admin accounts?</h5>
+          <p class="text-muted small mb-3">
+            This will permanently remove all <strong><?= $opsAdminCount ?? 0 ?> Operations Admin accounts</strong> from the database.
+          </p>
+          <div class="alert alert-success border small mb-0 text-left" style="background: #ecfdf5; border-color: #a7f3d0 !important;">
+            <i class="fa fa-shield text-success mr-1"></i> <strong>Strict Protection:</strong> Super Admin accounts (<code>super_admin</code>) are completely immune and will <strong>NOT</strong> be deleted.
+          </div>
+        </div>
+        <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger font-weight-bold px-4">
+            <i class="fa fa-trash mr-1"></i> Yes, Delete All Admins
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

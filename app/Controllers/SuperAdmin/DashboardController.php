@@ -537,9 +537,12 @@ class DashboardController extends Controller
              ORDER BY (role = 'super_admin') DESC, id ASC"
         );
 
+        $opsAdminCount = count(array_filter($admins, fn($a) => ($a['role'] ?? '') === 'admin'));
+
         return $this->render('superadmin.admins.index', [
-            'title'  => 'Admin Accounts Governance | Super Admin',
-            'admins' => $admins,
+            'title'         => 'Admin Accounts Governance | Super Admin',
+            'admins'        => $admins,
+            'opsAdminCount' => $opsAdminCount,
         ], 'superadmin');
     }
 
@@ -709,6 +712,34 @@ class DashboardController extends Controller
             View::setFlash('success', "Admin account #{$adminId} deleted successfully.");
         } catch (\Throwable $e) {
             View::setFlash('error', "Failed to delete admin: " . $e->getMessage());
+        }
+
+        return $this->redirect('/superadmin/admins');
+    }
+
+    public function deleteAllAdmins(Request $request): Response
+    {
+        // Enforce strict platform security: ONLY Super Admin can delete administrator accounts
+        if (!Auth::isSuperAdmin()) {
+            View::setFlash('error', 'Security Policy Violation: Only Super Admin can revoke administrative accounts.');
+            return $this->redirect('/admin');
+        }
+
+        try {
+            // Count operations admins (strictly role = 'admin', NEVER super_admin)
+            $count = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM users WHERE role = 'admin'")['c'] ?? 0);
+
+            if ($count > 0) {
+                // Strictly delete ONLY users where role = 'admin' (preserves all super_admin accounts)
+                Database::query("DELETE FROM users WHERE role = 'admin'");
+                Logger::warning("Super Admin (ID: " . Auth::id() . ") deleted all {$count} Operations Admin accounts.");
+                View::setFlash('success', "Success: All {$count} Operations Admin accounts deleted. Super Admin accounts remain completely safe and intact.");
+            } else {
+                View::setFlash('info', 'No Operations Admin accounts found to delete.');
+            }
+        } catch (\Throwable $e) {
+            Logger::error("Failed to delete all operations admins: " . $e->getMessage());
+            View::setFlash('error', 'Failed to delete admin accounts: ' . $e->getMessage());
         }
 
         return $this->redirect('/superadmin/admins');
