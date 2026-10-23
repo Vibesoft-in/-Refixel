@@ -1,16 +1,16 @@
 <div class="container-fluid p-0">
-  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap">
-    <div class="mb-2 mb-md-0">
+  <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between mb-4 pb-3 border-bottom">
+    <div class="mb-3 mb-lg-0 mr-lg-3">
       <h3 class="font-weight-bold text-dark mb-1">
         <i class="fa fa-user-secret text-danger mr-2"></i>Admin Accounts Governance
       </h3>
       <p class="text-muted small mb-0">Super Admin exclusive control center: Monitor account IDs, inspect & reveal admin passwords, reset credentials, and provision or revoke administrators.</p>
     </div>
-    <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-sm-0">
-      <button type="button" class="btn btn-danger font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalDeleteAllAdmins" <?= empty($opsAdminCount) ? 'disabled' : '' ?>>
+    <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+      <button type="button" class="btn btn-danger font-weight-bold shadow-sm" style="margin-right: 10px; margin-bottom: 6px;" data-toggle="modal" data-target="#modalDeleteAllAdmins" <?= empty($opsAdminCount) ? 'disabled' : '' ?>>
         <i class="fa fa-trash mr-1"></i> Delete All Admins (<?= $opsAdminCount ?? 0 ?>)
       </button>
-      <button type="button" class="btn btn-primary font-weight-bold shadow-sm" data-toggle="modal" data-target="#modalCreateAdmin">
+      <button type="button" class="btn btn-primary font-weight-bold shadow-sm" style="margin-bottom: 6px;" data-toggle="modal" data-target="#modalCreateAdmin">
         <i class="fa fa-plus-circle mr-1"></i> Provision Admin Account
       </button>
     </div>

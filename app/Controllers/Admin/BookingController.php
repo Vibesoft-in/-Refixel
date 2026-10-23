@@ -350,5 +350,17 @@ class BookingController extends Controller
             'jobs'  => $jobs,
         ], 'admin');
     }
+
+    public function deleteAllBookings(Request $request): Response
+    {
+        $superController = new \App\Controllers\SuperAdmin\DashboardController();
+        return $superController->deleteAllBookings($request);
+    }
+
+    public function deleteAllCalendar(Request $request): Response
+    {
+        $superController = new \App\Controllers\SuperAdmin\DashboardController();
+        return $superController->deleteAllCalendar($request);
+    }
 }
 

@@ -23,9 +23,9 @@ $search = $search ?? '';
           </div>
         </div>
       </form>
-      <?php if (\App\Core\Auth::isSuperAdmin()): ?>
-        <button type="button" class="btn btn-sm btn-danger font-weight-bold ml-2" data-toggle="modal" data-target="#modalBulkDeleteBookings">
-          <i class="fa fa-trash mr-1"></i>Delete All Bookings (<?= (int)($counts['all'] ?? 0) ?>)
+      <?php if (\App\Core\Auth::isAdmin()): ?>
+        <button type="button" class="btn btn-sm btn-danger font-weight-bold ml-md-2 mt-2 mt-md-0" data-toggle="modal" data-target="#modalBulkDeleteBookings">
+          <i class="fa fa-trash mr-1"></i>Delete All Bookings & Jobs (<?= (int)($counts['all'] ?? 0) ?>)
         </button>
       <?php endif; ?>
     </div>
@@ -180,7 +180,7 @@ $search = $search ?? '';
   </div>
 </div>
 
-<?php if (\App\Core\Auth::isSuperAdmin()): ?>
+<?php if (\App\Core\Auth::isAdmin()): ?>
 <!-- Modal: Delete All Bookings & Jobs -->
 <div class="modal fade" id="modalBulkDeleteBookings" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -189,7 +189,7 @@ $search = $search ?? '';
         <h5 class="modal-title font-weight-bold"><i class="fa fa-exclamation-triangle mr-2"></i>Delete All Bookings & Jobs?</h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
       </div>
-      <form action="<?= View::url('/superadmin/bookings/delete-all') ?>" method="POST">
+      <form action="<?= View::url('/admin/bookings/delete-all') ?>" method="POST">
         <?= View::csrfField() ?>
         <input type="hidden" name="redirect" value="/admin/bookings">
         <div class="modal-body p-4 text-center">

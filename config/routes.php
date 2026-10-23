@@ -221,11 +221,13 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
 
     // Bookings & Dispatch Calendar
     Router::get('/admin/bookings', 'Admin\\BookingController@index');
+    Router::post('/admin/bookings/delete-all', 'Admin\\BookingController@deleteAllBookings', ['VerifyCsrf']);
     Router::get('/admin/bookings/{id}', 'Admin\\BookingController@show');
     Router::post('/admin/bookings/{id}/assign', 'Admin\\BookingController@assignStaff', ['VerifyCsrf']);
     Router::post('/admin/bookings/{id}/reschedule', 'Admin\\BookingController@reschedule', ['VerifyCsrf']);
     Router::post('/admin/bookings/{id}/status', 'Admin\\BookingController@updateStatus', ['VerifyCsrf']);
     Router::get('/admin/calendar', 'Admin\\BookingController@calendar');
+    Router::post('/admin/calendar/delete-all', 'Admin\\BookingController@deleteAllCalendar', ['VerifyCsrf']);
 
     // Staff
     Router::get('/admin/staff', 'Admin\\StaffController@index');
