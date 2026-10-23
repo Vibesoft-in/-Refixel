@@ -157,19 +157,19 @@ class ServiceAddon extends Model
 
         if (str_contains($context, 'kitchen')) {
             // Sensible kitchen addons
-            $slugTerms = ['chimney', 'microwave', 'refrigerator', 'drain', 'cockroach', 'pest'];
+            $slugTerms = ['chimney', 'microwave', 'refrigerator', 'small-kitchen', 'gas-stove', 'kitchen-slab', 'drain', 'cockroach', 'pest'];
         } elseif (str_contains($context, 'bath') || str_contains($context, 'washroom') || str_contains($context, 'toilet')) {
             // Sensible bathroom addons
-            $slugTerms = ['bathroom-tile', 'tap-shower', 'exhaust-fan', 'tap-leak', 'drain'];
+            $slugTerms = ['bathroom-tile', 'wash-basin', 'tap-shower', 'exhaust-fan', 'tap-leak', 'drain'];
         } elseif (str_contains($context, 'sofa') || str_contains($context, 'couch') || str_contains($context, 'upholstery')) {
             // Sensible sofa / living room addons
-            $slugTerms = ['mattress', 'ceiling-fan', 'balcony', 'full-home', 'cockroach'];
+            $slugTerms = ['mattress', 'ceiling-fan', 'fan-cleaning', 'balcony', 'full-home', 'cockroach'];
         } elseif (str_contains($context, 'balcony') || str_contains($context, 'terrace') || str_contains($context, 'patio')) {
             // Sensible balcony / terrace outdoor wash addons
-            $slugTerms = ['sofa', 'cockroach', 'bathroom', 'ceiling-fan', 'full-home'];
+            $slugTerms = ['sofa', 'cockroach', 'bathroom', 'balcony-railing', 'glass-cleaning', 'ceiling-fan', 'full-home'];
         } elseif (str_contains($context, 'home') || str_contains($context, 'house') || str_contains($context, 'flat') || str_contains($context, 'room')) {
             // Sensible full home / room cleaning addons
-            $slugTerms = ['sofa', 'cockroach', 'balcony', 'bathroom', 'mattress', 'ceiling-fan'];
+            $slugTerms = ['sofa', 'cockroach', 'balcony', 'bathroom', 'mattress', 'fan-cleaning', 'glass-cleaning', 'wash-basin', 'ceiling-fan'];
         } elseif (str_contains($context, 'ac') || str_contains($context, 'air-conditioner') || str_contains($context, 'cooling')) {
             // Sensible AC addons
             $slugTerms = ['ac-anti', 'fan-switchboard', 'appliance-diagnostic'];
@@ -206,7 +206,28 @@ class ServiceAddon extends Model
                   AND (" . implode(' OR ', $whereClauses) . ")
                 ORDER BY s.starting_price ASC";
 
-        return Database::fetchAll($sql, $params);
+        $candidates = Database::fetchAll($sql, $params);
+
+        usort($candidates, function ($a, $b) use ($slugTerms) {
+            $aText = strtolower(($a['slug'] ?? '') . ' ' . ($a['name'] ?? ''));
+            $bText = strtolower(($b['slug'] ?? '') . ' ' . ($b['name'] ?? ''));
+            $aRank = 999;
+            $bRank = 999;
+            foreach ($slugTerms as $idx => $t) {
+                if ($aRank === 999 && str_contains($aText, $t)) {
+                    $aRank = $idx;
+                }
+                if ($bRank === 999 && str_contains($bText, $t)) {
+                    $bRank = $idx;
+                }
+            }
+            if ($aRank !== $bRank) {
+                return $aRank <=> $bRank;
+            }
+            return (float)($a['starting_price'] ?? 0) <=> (float)($b['starting_price'] ?? 0);
+        });
+
+        return $candidates;
     }
 
     /**

@@ -73,6 +73,15 @@ class Service extends Model
             'ceiling-fan-chandelier-detailing'           => 'addon-ceiling-fan-chandelier-detailing.jpg',
             'ac-antibacterial-foam-wash'                 => 'addon-ac-antibacterial-foam-wash.jpg',
             'drain-unclogging-blockage-removal'          => 'addon-drain-unclogging-blockage-removal.jpg',
+            'fan-cleaning-addon'                         => 'addon-ceiling-fan-chandelier-detailing.jpg',
+            'wash-basin-cleaning-addon'                  => 'addon-tap-shower-chrome-descaling.jpg',
+            'glass-cleaning-upto-30sqft'                 => 'addon-window-glass-cleaning.jpg',
+            'single-bed-mattress-cleaning'               => 'addon-mattress-steam-cleaning.jpg',
+            'double-bed-mattress-cleaning'               => 'addon-mattress-steam-cleaning.jpg',
+            'small-kitchen-appliances-cleaning'          => 'addon-small-kitchen-appliances.jpg',
+            'gas-stove-burner-degreasing'                => 'addon-chimney-degreasing.jpg',
+            'kitchen-slab-tile-degreasing'               => 'addon-chimney-degreasing.jpg',
+            'balcony-railing-grill-dusting'              => 'refixel-balcony-pressure-wash.png',
         ];
 
         $cur = trim((string)$currentImage);
@@ -129,7 +138,16 @@ class Service extends Model
                 'mattress-steam-cleaning',
                 'ceiling-fan-chandelier-detailing',
                 'ac-antibacterial-foam-wash',
-                'drain-unclogging-blockage-removal'
+                'drain-unclogging-blockage-removal',
+                'fan-cleaning-addon',
+                'wash-basin-cleaning-addon',
+                'glass-cleaning-upto-30sqft',
+                'single-bed-mattress-cleaning',
+                'double-bed-mattress-cleaning',
+                'small-kitchen-appliances-cleaning',
+                'gas-stove-burner-degreasing',
+                'kitchen-slab-tile-degreasing',
+                'balcony-railing-grill-dusting'
             ) OR id IN (52, 53, 54, 55, 56, 57, 58, 59, 60, 61)");
         } catch (\Throwable $e) {}
 
@@ -216,6 +234,19 @@ class Service extends Model
                     require_once $seederFile;
                     if (function_exists('seedComprehensiveCategoryServices')) {
                         seedComprehensiveCategoryServices();
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        try {
+            $hasDiscountAddons = Database::fetchOne("SELECT id FROM services WHERE slug = 'fan-cleaning-addon'");
+            if (!$hasDiscountAddons) {
+                $discountSeeder = dirname(__DIR__, 2) . '/database/add_image_addons_and_discount_pricing.php';
+                if (file_exists($discountSeeder)) {
+                    require_once $discountSeeder;
+                    if (function_exists('seedImageAddonsAndDiscountPricing')) {
+                        seedImageAddonsAndDiscountPricing();
                     }
                 }
             }
