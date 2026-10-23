@@ -1287,4 +1287,49 @@ class BookingController extends Controller
         return $res;
     }
 
+    /**
+     * Record an abandoned or dropped-off booking attempt
+     */
+    public function recordDropoff(Request $request): Response
+    {
+        $bookingId = (int)$request->input('booking_id', 0);
+        $step = trim((string)$request->input('step', 'payment_modal_dismissed'));
+        $reason = trim((string)$request->input('reason', 'Payment window closed before completion'));
+
+        if ($bookingId <= 0) {
+            return Response::json(['success' => false, 'message' => 'Invalid booking ID'], 400);
+        }
+
+        $booking = Database::fetchOne("SELECT * FROM bookings WHERE id = :id LIMIT 1", ['id' => $bookingId]);
+        if (!$booking) {
+            return Response::json(['success' => false, 'message' => 'Booking not found'], 404);
+        }
+
+        if (in_array($booking['status'], ['assigned', 'accepted', 'in_progress', 'completed', 'invoiced'], true)) {
+            return Response::json(['success' => true, 'message' => 'Booking already active or completed']);
+        }
+
+        $service = null;
+        if (!empty($booking['service_id'])) {
+            $service = Service::find((int)$booking['service_id']);
+        }
+
+        \App\Models\AbandonedCheckout::record([
+            'booking_id'   => (int)$booking['id'],
+            'customer_id'  => !empty($booking['customer_id']) ? (int)$booking['customer_id'] : null,
+            'service_id'   => !empty($booking['service_id']) ? (int)$booking['service_id'] : null,
+            'name'         => $booking['name'] ?? 'Customer',
+            'phone'        => $booking['phone'] ?? '',
+            'email'        => $booking['email'] ?? null,
+            'address'      => $booking['address'] ?? null,
+            'service_name' => $service['name'] ?? 'Doorstep Service',
+            'amount'       => (float)($booking['total_amount'] ?? 0),
+            'step'         => $step,
+            'notes'        => $reason,
+        ]);
+
+        return Response::json(['success' => true]);
+    }
+
 }
+

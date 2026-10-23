@@ -306,11 +306,12 @@
 
     // Fetch live sidebar counters for items requiring admin attention
     $sidebarCounts = [
-        'enquiries_new'    => 0,
-        'bookings_pending' => 0,
-        'reviews_pending'  => 0,
-        'partner_pending'  => 0,
-        'payouts_pending'  => 0,
+        'enquiries_new'        => 0,
+        'bookings_pending'     => 0,
+        'reviews_pending'      => 0,
+        'partner_pending'      => 0,
+        'payouts_pending'      => 0,
+        'dropoffs_unrecovered' => 0,
     ];
 
     try {
@@ -320,14 +321,16 @@
                 (SELECT COUNT(id) FROM bookings WHERE status = 'accepted') as bookings_pending,
                 (SELECT COUNT(id) FROM reviews WHERE is_approved = 0) as reviews_pending,
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending,
-                (SELECT COUNT(id) FROM staff_earnings WHERE is_settled = 0) as payouts_pending"
+                (SELECT COUNT(id) FROM staff_earnings WHERE is_settled = 0) as payouts_pending,
+                (SELECT COUNT(id) FROM abandoned_checkouts WHERE is_recovered = 0) as dropoffs_unrecovered"
         );
         if ($statsRow) {
-            $sidebarCounts['enquiries_new']    = (int)($statsRow['enquiries_new'] ?? 0);
-            $sidebarCounts['bookings_pending'] = (int)($statsRow['bookings_pending'] ?? 0);
-            $sidebarCounts['reviews_pending']  = (int)($statsRow['reviews_pending'] ?? 0);
-            $sidebarCounts['partner_pending']  = (int)($statsRow['partner_pending'] ?? 0);
-            $sidebarCounts['payouts_pending']  = (int)($statsRow['payouts_pending'] ?? 0);
+            $sidebarCounts['enquiries_new']        = (int)($statsRow['enquiries_new'] ?? 0);
+            $sidebarCounts['bookings_pending']     = (int)($statsRow['bookings_pending'] ?? 0);
+            $sidebarCounts['reviews_pending']      = (int)($statsRow['reviews_pending'] ?? 0);
+            $sidebarCounts['partner_pending']      = (int)($statsRow['partner_pending'] ?? 0);
+            $sidebarCounts['payouts_pending']      = (int)($statsRow['payouts_pending'] ?? 0);
+            $sidebarCounts['dropoffs_unrecovered'] = (int)($statsRow['dropoffs_unrecovered'] ?? 0);
         }
     } catch (\Throwable $e) {}
   ?>
@@ -374,6 +377,14 @@
         <li class="<?= str_contains($uri, '/admin/calendar') ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/admin/calendar') ?>">
             <span class="nav-text"><i class="fa fa-calendar"></i> Dispatch Calendar</span>
+          </a>
+        </li>
+        <li class="<?= str_contains($uri, '/admin/dropoffs') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/dropoffs') ?>">
+            <span class="nav-text"><i class="fa fa-exclamation-triangle" style="color: #f59e0b;"></i> Abandoned & Drop-offs</span>
+            <?php if (!empty($sidebarCounts['dropoffs_unrecovered']) && $sidebarCounts['dropoffs_unrecovered'] > 0): ?>
+              <span class="nav-count-badge" style="background: #f59e0b; color: #ffffff;" title="<?= $sidebarCounts['dropoffs_unrecovered'] ?> Unrecovered Drop-offs"><?= $sidebarCounts['dropoffs_unrecovered'] ?></span>
+            <?php endif; ?>
           </a>
         </li>
         <li class="<?= str_contains($uri, '/admin/staff') ? 'active' : '' ?>">

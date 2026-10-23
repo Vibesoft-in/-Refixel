@@ -316,12 +316,13 @@
 
     // Quick counts for Super Admin badges
     $saCounts = [
-        'enquiries'       => 0,
-        'partner_pending' => 0,
-        'staff'           => 0,
-        'customers'       => 0,
-        'gateways'        => 0,
-        'payouts_pending' => 0,
+        'enquiries'            => 0,
+        'partner_pending'      => 0,
+        'staff'                => 0,
+        'customers'            => 0,
+        'gateways'             => 0,
+        'payouts_pending'      => 0,
+        'dropoffs_unrecovered' => 0,
     ];
     try {
         $cRow = \App\Core\Database::fetchOne(
@@ -331,15 +332,17 @@
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status IN ('active', 'disabled')) as staff,
                 (SELECT COUNT(id) FROM users WHERE role = 'customer') as customers,
                 (SELECT COUNT(id) FROM payment_gateways WHERE is_active = 1) as gateways,
-                (SELECT COUNT(id) FROM staff_earnings WHERE is_settled = 0) as payouts_pending"
+                (SELECT COUNT(id) FROM staff_earnings WHERE is_settled = 0) as payouts_pending,
+                (SELECT COUNT(id) FROM abandoned_checkouts WHERE is_recovered = 0) as dropoffs_unrecovered"
         );
         if ($cRow) {
-            $saCounts['enquiries']       = (int)($cRow['enquiries'] ?? 0);
-            $saCounts['partner_pending'] = (int)($cRow['partner_pending'] ?? 0);
-            $saCounts['staff']           = (int)($cRow['staff'] ?? 0);
-            $saCounts['customers']       = (int)($cRow['customers'] ?? 0);
-            $saCounts['gateways']        = (int)($cRow['gateways'] ?? 0);
-            $saCounts['payouts_pending'] = (int)($cRow['payouts_pending'] ?? 0);
+            $saCounts['enquiries']            = (int)($cRow['enquiries'] ?? 0);
+            $saCounts['partner_pending']      = (int)($cRow['partner_pending'] ?? 0);
+            $saCounts['staff']                = (int)($cRow['staff'] ?? 0);
+            $saCounts['customers']            = (int)($cRow['customers'] ?? 0);
+            $saCounts['gateways']             = (int)($cRow['gateways'] ?? 0);
+            $saCounts['payouts_pending']      = (int)($cRow['payouts_pending'] ?? 0);
+            $saCounts['dropoffs_unrecovered'] = (int)($cRow['dropoffs_unrecovered'] ?? 0);
         }
     } catch (\Throwable $e) {}
   ?>
@@ -394,6 +397,14 @@
           <a href="<?= \App\Core\View::url('/superadmin/customers') ?>">
             <span class="d-flex align-items-center"><i class="fa fa-users"></i> Customers</span>
             <span class="badge badge-pill badge-secondary" style="font-size: 11px;"><?= $saCounts['customers'] ?></span>
+          </a>
+        </li>
+        <li class="<?= str_contains($uri, '/admin/dropoffs') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/dropoffs') ?>">
+            <span class="d-flex align-items-center"><i class="fa fa-exclamation-triangle" style="color: #f59e0b;"></i> Abandoned Drop-offs</span>
+            <?php if (!empty($saCounts['dropoffs_unrecovered']) && $saCounts['dropoffs_unrecovered'] > 0): ?>
+              <span class="badge badge-pill badge-warning" style="font-size: 11px; background: #f59e0b;"><?= $saCounts['dropoffs_unrecovered'] ?></span>
+            <?php endif; ?>
           </a>
         </li>
 

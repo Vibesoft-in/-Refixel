@@ -229,6 +229,13 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::get('/admin/calendar', 'Admin\\BookingController@calendar');
     Router::post('/admin/calendar/delete-all', 'Admin\\BookingController@deleteAllCalendar', ['VerifyCsrf']);
 
+    // Abandoned Checkouts & Payment Drop-offs
+    Router::get('/admin/dropoffs', 'Admin\\DropoffController@index');
+    Router::post('/admin/dropoffs/{id}/convert-cod', 'Admin\\DropoffController@convertToCod', ['VerifyCsrf']);
+    Router::post('/admin/dropoffs/{id}/mark-recovered', 'Admin\\DropoffController@markRecovered', ['VerifyCsrf']);
+    Router::post('/admin/dropoffs/{id}/delete', 'Admin\\DropoffController@delete', ['VerifyCsrf']);
+    Router::post('/admin/dropoffs/delete-all', 'Admin\\DropoffController@deleteAll', ['VerifyCsrf']);
+
     // Staff
     Router::get('/admin/staff', 'Admin\\StaffController@index');
     Router::get('/admin/staff/create', 'Admin\\StaffController@create');
@@ -366,6 +373,7 @@ Router::post('/api/set-city', 'Api\\ServiceAreaController@setCity', ['VerifyCsrf
 Router::post('/api/search', 'Api\\ServiceAreaController@search', ['VerifyCsrf']);
 Router::post('/api/job/status', 'Api\\JobStatusController@update', ['RequireLogin', 'VerifyCsrf']);
 Router::get('/api/notifications', 'Api\\NotificationController@recent', ['RequireLogin']);
+Router::post('/api/booking/record-dropoff', 'BookingController@recordDropoff');
 
 // Authenticated Secure Document Serving (Outside Webroot)
 Router::get('/documents/{folder}/{filename}', 'DocumentController@serve', ['RequireLogin']);

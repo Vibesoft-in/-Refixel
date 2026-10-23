@@ -780,6 +780,21 @@ function fallbackModalCopy(text, cb) {
                       : 'Online payment was closed. You can retry paying online or choose Pay After Service.';
                     errorAlert.style.display = 'block';
                   }
+
+                  // Immediately report drop-off to admin recovery desk
+                  try {
+                    var dropPayload = new FormData();
+                    dropPayload.append('booking_id', d.booking_id || 0);
+                    dropPayload.append('step', 'razorpay_modal_dismissed');
+                    dropPayload.append('reason', isCodMode ? 'Closed ₹49 advance payment modal' : 'Closed full online payment modal');
+                    if (window.REFIXEL_CSRF_TOKEN) dropPayload.append('_csrf', window.REFIXEL_CSRF_TOKEN);
+                    var dropUrl = window.REFIXEL_BASE_URL ? (window.REFIXEL_BASE_URL + '/api/booking/record-dropoff') : '/api/booking/record-dropoff';
+                    if (navigator.sendBeacon) {
+                      navigator.sendBeacon(dropUrl, dropPayload);
+                    } else {
+                      fetch(dropUrl, { method: 'POST', body: dropPayload, keepalive: true }).catch(function(){});
+                    }
+                  } catch(dropErr) {}
                 }
               },
               handler: function(paymentResponse) {
@@ -857,10 +872,26 @@ function fallbackModalCopy(text, cb) {
             rzp.on('payment.failed', function(resp) {
               btnConfirm.disabled = false;
               btnConfirm.innerHTML = originalBtnHtml;
+              var failDesc = (resp.error && resp.error.description) ? resp.error.description : 'Transaction declined by bank/UPI.';
               if (errorAlert) {
-                errorAlert.innerText = 'Payment failed: ' + ((resp.error && resp.error.description) ? resp.error.description : 'Transaction declined.');
+                errorAlert.innerText = 'Payment failed: ' + failDesc;
                 errorAlert.style.display = 'block';
               }
+
+              // Immediately report payment failure to admin recovery desk
+              try {
+                var failPayload = new FormData();
+                failPayload.append('booking_id', d.booking_id || 0);
+                failPayload.append('step', 'payment_failed');
+                failPayload.append('reason', 'Payment Failed: ' + failDesc + ' (Code: ' + (resp.error ? resp.error.code : 'DECLINED') + ')');
+                if (window.REFIXEL_CSRF_TOKEN) failPayload.append('_csrf', window.REFIXEL_CSRF_TOKEN);
+                var dropUrl = window.REFIXEL_BASE_URL ? (window.REFIXEL_BASE_URL + '/api/booking/record-dropoff') : '/api/booking/record-dropoff';
+                if (navigator.sendBeacon) {
+                  navigator.sendBeacon(dropUrl, failPayload);
+                } else {
+                  fetch(dropUrl, { method: 'POST', body: failPayload, keepalive: true }).catch(function(){});
+                }
+              } catch(payFailErr) {}
             });
             rzp.open();
             return;
