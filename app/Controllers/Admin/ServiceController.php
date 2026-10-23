@@ -201,8 +201,16 @@ class ServiceController extends Controller
         $newAddon = empty($service['is_addon']) ? 1 : 0;
         Service::update((int)$id, ['is_addon' => $newAddon]);
 
-        $statusText = $newAddon ? 'marked as Add-on Only (hidden from main catalog)' : 'marked as Main Public Service (visible in catalog)';
+        $statusText = $newAddon 
+            ? 'moved to Add-ons Only (hidden from main catalog)' 
+            : 'moved back to Main Public Catalog (now visible in Services catalog)';
         View::setFlash('success', "Service '{$service['name']}' {$statusText}.");
+
+        $redirectTo = $request->input('redirect_to');
+        if (!empty($redirectTo)) {
+            return $this->redirect($redirectTo);
+        }
+
         return $this->redirect('/admin/services');
     }
 

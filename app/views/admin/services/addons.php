@@ -11,6 +11,7 @@ $activeRules = $activeRules ?? 0;
 $servicesWithAddons = $servicesWithAddons ?? 0;
 $autoSensible = $autoSensible ?? true;
 $addonCategoriesMap = $addonCategoriesMap ?? [];
+$addonServices = $addonServices ?? [];
 ?>
 
 <style>
@@ -309,6 +310,14 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
                     <i class="fa fa-pencil"></i>
                   </button>
 
+                  <form method="POST" action="<?= View::url('/admin/services/' . $r['addon_service_id'] . '/toggle-addon') ?>" class="d-inline ml-1" onsubmit="return confirm('Convert \'<?= View::e(addslashes($r['addon_name'])) ?>\' back to Main Services Catalog?');">
+                    <?= View::csrfField() ?>
+                    <input type="hidden" name="redirect_to" value="<?= View::url('/admin/services/addons') ?>">
+                    <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2 font-weight-bold" title="Move this service back to Main Services Catalog (Make Main Service)">
+                      <i class="fa fa-cubes mr-1"></i> Make Main
+                    </button>
+                  </form>
+
                   <form method="POST" action="<?= View::url('/admin/services/addons/' . $r['id'] . '/delete') ?>" class="d-inline ml-1" onsubmit="return confirm('Remove add-on pairing between \'<?= View::e(addslashes($r['source_service_name'] ?? 'Target')) ?>\' and \'<?= View::e(addslashes($r['addon_name'])) ?>\'?');">
                     <?= View::csrfField() ?>
                     <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 font-weight-bold" title="Delete Rule">
@@ -321,6 +330,109 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
           <?php endif; ?>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Standalone Add-on Services Directory & One-Click Return to Main Catalog -->
+  <div class="mt-5 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" style="gap: 10px;">
+      <div>
+        <div class="d-flex align-items-center mb-1" style="gap: 8px;">
+          <h5 class="font-weight-bold text-dark mb-0">
+            <i class="fa fa-cubes text-primary mr-1"></i> Standalone Add-on Services Directory (<?= count($addonServices) ?>)
+          </h5>
+          <span class="badge badge-warning text-dark font-weight-bold px-2 py-1" style="font-size: 11px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">
+            Add-on Only (is_addon = 1)
+          </span>
+        </div>
+        <p class="text-muted small mb-0">
+          All services currently assigned as <strong>Add-on Only</strong>. If a service was accidentally moved here from the main catalog, click the green <strong>"Move to Main Catalog"</strong> button to restore it instantly!
+        </p>
+      </div>
+
+      <div class="d-flex align-items-center" style="gap: 8px;">
+        <a href="<?= View::url('/admin/services') ?>" class="btn btn-sm btn-outline-brand font-weight-bold" style="border: 1px solid #f25b29; color: #f25b29;">
+          <i class="fa fa-wrench mr-1"></i> Open Main Services Catalog
+        </a>
+      </div>
+    </div>
+
+    <div class="stat-card p-0 overflow-hidden shadow-sm border bg-white" style="border-radius: 12px;">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="bg-light">
+            <tr>
+              <th class="py-3 text-dark">Add-on Service Name</th>
+              <th class="py-3 text-dark">Category</th>
+              <th class="py-3 text-dark">Base Price</th>
+              <th class="py-3 text-dark text-center">Status</th>
+              <th class="py-3 text-dark text-center">Paired In</th>
+              <th class="py-3 text-right text-dark" style="width: 250px;">Restore to Main Catalog</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($addonServices)): ?>
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                  No add-on only services found in database.
+                </td>
+              </tr>
+            <?php else: ?>
+              <?php foreach ($addonServices as $asv): ?>
+                <tr>
+                  <td class="align-middle">
+                    <div class="d-flex align-items-center" style="gap: 12px;">
+                      <div class="border rounded overflow-hidden bg-light flex-shrink-0" style="width: 44px; height: 44px;">
+                        <?php 
+                          $asvImg = $asv['image'] ?? 'refixel-cleaning.jpg';
+                          $asvImgUrl = View::asset(str_starts_with($asvImg, 'http') || str_starts_with($asvImg, 'assets/') || str_starts_with($asvImg, 'img/') ? $asvImg : 'img/' . $asvImg);
+                        ?>
+                        <img src="<?= $asvImgUrl ?>" alt="<?= View::e($asv['name']) ?>" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= View::asset('img/refixel-cleaning.jpg') ?>';">
+                      </div>
+                      <div>
+                        <strong class="text-dark d-block" style="font-size: 14px;"><?= View::e($asv['name']) ?></strong>
+                        <span class="text-monospace text-secondary small">/<?= View::e($asv['slug']) ?></span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">
+                      📁 <?= View::e($asv['category_name'] ?? 'General') ?>
+                    </span>
+                  </td>
+                  <td class="align-middle">
+                    <strong class="text-dark font-weight-bold" style="font-size: 14px;">₹<?= number_format((float)$asv['starting_price'], 2) ?></strong>
+                    <?php if (!empty($asv['duration_minutes'])): ?>
+                      <div class="small text-muted"><?= (int)$asv['duration_minutes'] ?> mins</div>
+                    <?php endif; ?>
+                  </td>
+                  <td class="align-middle text-center">
+                    <?php if (!empty($asv['is_active'])): ?>
+                      <span class="badge badge-success px-2 py-1">Active</span>
+                    <?php else: ?>
+                      <span class="badge badge-secondary px-2 py-1">Disabled</span>
+                    <?php endif; ?>
+                  </td>
+                  <td class="align-middle text-center">
+                    <span class="badge badge-info px-2 py-1 font-weight-bold" style="border-radius: 6px;">
+                      <?= (int)($asv['pairing_count'] ?? 0) ?> pairings
+                    </span>
+                  </td>
+                  <td class="align-middle text-right">
+                    <form method="POST" action="<?= View::url('/admin/services/' . $asv['id'] . '/toggle-addon') ?>" class="d-inline" onsubmit="return confirm('Move \'<?= View::e(addslashes($asv['name'])) ?>\' back to the Main Services Catalog?');">
+                      <?= View::csrfField() ?>
+                      <input type="hidden" name="redirect_to" value="<?= View::url('/admin/services/addons') ?>">
+                      <button type="submit" class="btn btn-sm btn-success font-weight-bold px-3 py-1 text-white shadow-sm" style="background: #10b981; border: none; border-radius: 6px;" title="Convert this service back to Main Services Catalog">
+                        <i class="fa fa-arrow-left mr-1"></i> Make Main Service
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

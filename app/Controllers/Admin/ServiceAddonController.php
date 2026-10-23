@@ -45,12 +45,29 @@ class ServiceAddonController extends Controller
         $servicesWithAddons = count(Database::fetchAll("SELECT DISTINCT source_service_id FROM service_addons WHERE source_service_id IS NOT NULL"));
         $autoSensible = ServiceAddon::isAutoSensibleEnabled();
 
+        // Fetch all registered Add-on services (is_addon = 1)
+        $addonServices = Database::fetchAll(
+            "SELECT s.id, s.name, s.slug, s.starting_price, s.duration_minutes, s.category_id, s.image, s.is_active, s.is_coming_soon,
+                    c.name as category_name,
+                    COUNT(sa.id) as pairing_count
+             FROM services s
+             LEFT JOIN categories c ON s.category_id = c.id
+             LEFT JOIN service_addons sa ON sa.addon_service_id = s.id
+             WHERE s.is_addon = 1
+             GROUP BY s.id
+             ORDER BY c.sort_order ASC, s.name ASC"
+        );
+        foreach ($addonServices as &$asv) {
+            $asv['image'] = Service::resolveImage($asv['slug'] ?? '', $asv['image'] ?? null);
+        }
+
         return $this->render('admin.services.addons', [
             'title'              => 'Add-ons Control & Smart Pairing | REFIXEL Admin',
             'rules'              => $rules,
             'services'           => $services,
             'categories'         => $categories,
             'addonCategoriesMap' => $addonCategoriesMap,
+            'addonServices'      => $addonServices,
             'filterServiceId'    => $filterServiceId,
             'filterCategoryId'   => $filterCategoryId,
             'totalRules'         => $totalRules,
