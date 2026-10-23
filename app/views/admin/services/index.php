@@ -1,26 +1,150 @@
 <?php
 use App\Core\View;
-$services = $services ?? [];
-$categories = $categories ?? [];
+$services      = $services ?? [];
+$categories    = $categories ?? [];
+$selectedCatId = (int)($selectedCatId ?? 0);
+$typeFilter    = $typeFilter ?? 'main';
+$search        = $search ?? '';
+$stats         = $stats ?? ['total_main' => count($services), 'total_addons' => 0, 'active_main' => 0, 'coming_soon_main' => 0];
 ?>
 
 <div class="admin-services-page">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <!-- Top Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 pb-2 border-bottom" style="gap: 12px;">
     <div>
-      <h4 class="font-weight-bold mb-1 text-dark">Services & Pricing Catalog</h4>
-      <p class="text-muted small mb-0">Control all marketplace services, descriptions, pricing, duration, and display images.</p>
+      <h4 class="font-weight-bold mb-1 text-dark">
+        <i class="fa fa-wrench mr-2" style="color: #f25b29;"></i>Services &amp; Pricing Catalog
+      </h4>
+      <p class="text-muted small mb-0">
+        Control marketplace main doorstep services, descriptions, pricing, durations, and images. (Companion add-ons are managed separately in Add-ons Control).
+      </p>
     </div>
 
-    <div>
-      <a href="<?= View::url('/admin/services/addons') ?>" class="btn btn-sm btn-outline-brand font-weight-bold mr-2" style="border: 1px solid #f25b29; color: #f25b29;">
-        <i class="fa fa-puzzle-piece mr-1"></i>Manage Add-ons &amp; Pairing
+    <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+      <a href="<?= View::url('/admin/services/addons') ?>" class="btn btn-sm btn-outline-brand font-weight-bold" style="border: 1.5px solid #f25b29; color: #f25b29;">
+        <i class="fa fa-puzzle-piece mr-1"></i>Manage Add-ons &amp; Pairing (<?= (int)($stats['total_addons'] ?? 0) ?>)
       </a>
-      <a href="<?= View::url('/admin/services/categories') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold mr-2">
-        <i class="fa fa-th-large mr-1"></i>Homepage Services &amp; Categories
+      <a href="<?= View::url('/admin/services/categories') ?>" class="btn btn-sm btn-outline-secondary font-weight-bold">
+        <i class="fa fa-th-large mr-1"></i>Categories Order
       </a>
-      <button type="button" class="btn btn-sm btn-brand font-weight-bold px-3 py-2" data-toggle="modal" data-target="#addServiceModal">
+      <button type="button" class="btn btn-sm btn-brand font-weight-bold px-3 py-2 text-white" style="background: #f25b29;" data-toggle="modal" data-target="#addServiceModal">
         <i class="fa fa-plus mr-1"></i>Add New Service
       </button>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Cards Row -->
+  <div class="row mb-4">
+    <div class="col-6 col-lg-3 mb-3 mb-lg-0">
+      <div class="dash-stat-card p-3" style="border-left: 4px solid #f25b29; background: #fff; border-radius: 10px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted small font-weight-bold">MAIN SERVICES</span>
+          <div class="stat-icon-circle" style="background: rgba(242, 91, 41, 0.15); color: #f25b29; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fa fa-cubes"></i>
+          </div>
+        </div>
+        <h3 class="font-weight-bold text-dark mb-0"><?= (int)($stats['total_main'] ?? count($services)) ?></h3>
+        <small class="text-muted">Primary customer catalog</small>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3 mb-3 mb-lg-0">
+      <div class="dash-stat-card p-3" style="border-left: 4px solid #10b981; background: #fff; border-radius: 10px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted small font-weight-bold">ACTIVE LIVE</span>
+          <div class="stat-icon-circle" style="background: rgba(16, 185, 129, 0.15); color: #059669; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fa fa-check-circle"></i>
+          </div>
+        </div>
+        <h3 class="font-weight-bold text-success mb-0"><?= (int)($stats['active_main'] ?? 0) ?></h3>
+        <small class="text-success font-weight-bold">Bookable by customers</small>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3 mb-3 mb-lg-0">
+      <div class="dash-stat-card p-3" style="border-left: 4px solid #f59e0b; background: #fff; border-radius: 10px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted small font-weight-bold">COMING SOON</span>
+          <div class="stat-icon-circle" style="background: rgba(245, 158, 11, 0.15); color: #d97706; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fa fa-clock-o"></i>
+          </div>
+        </div>
+        <h3 class="font-weight-bold text-warning mb-0"><?= (int)($stats['coming_soon_main'] ?? 0) ?></h3>
+        <small class="text-muted">Launch preview mode</small>
+      </div>
+    </div>
+
+    <div class="col-6 col-lg-3 mb-3 mb-lg-0">
+      <div class="dash-stat-card p-3" style="border-left: 4px solid #6366f1; background: #fff; border-radius: 10px; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted small font-weight-bold">COMPANION ADD-ONS</span>
+          <div class="stat-icon-circle" style="background: rgba(99, 102, 241, 0.15); color: #4f46e5; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <i class="fa fa-puzzle-piece"></i>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="font-weight-bold text-dark mb-0"><?= (int)($stats['total_addons'] ?? 0) ?></h3>
+          <a href="<?= View::url('/admin/services/addons') ?>" class="small font-weight-bold" style="color: #6366f1;">Manage &rarr;</a>
+        </div>
+        <small class="text-muted">Filtered into Add-ons desk</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Category Toolbar -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px; background: #ffffff;">
+    <div class="card-body p-3">
+      <!-- Search & Category Filters -->
+      <form method="GET" action="<?= View::url('/admin/services') ?>" class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center" style="gap: 12px;">
+        <input type="hidden" name="type" value="<?= View::e($typeFilter) ?>">
+
+        <!-- Left: Quick Category Pills -->
+        <div class="d-flex align-items-center flex-wrap overflow-auto pb-1" style="gap: 6px;">
+          <a href="<?= View::url('/admin/services?type=' . urlencode($typeFilter) . (!empty($search) ? '&q=' . urlencode($search) : '')) ?>" 
+             class="btn btn-sm rounded-pill font-weight-bold px-3 <?= empty($selectedCatId) ? 'btn-brand text-white' : 'btn-light border text-muted' ?>" style="<?= empty($selectedCatId) ? 'background:#f25b29;' : '' ?>">
+            All Categories
+          </a>
+          <?php foreach ($categories as $cat): ?>
+            <?php $isActiveCat = ($selectedCatId === (int)$cat['id']); ?>
+            <a href="<?= View::url('/admin/services?category_id=' . $cat['id'] . '&type=' . urlencode($typeFilter) . (!empty($search) ? '&q=' . urlencode($search) : '')) ?>" 
+               class="btn btn-sm rounded-pill font-weight-bold px-3 <?= $isActiveCat ? 'btn-brand text-white' : 'btn-light border text-muted' ?>" style="<?= $isActiveCat ? 'background:#f25b29;' : '' ?>">
+              <?= View::e($cat['name']) ?>
+            </a>
+          <?php endforeach; ?>
+        </div>
+
+        <!-- Right: Search Input -->
+        <div class="d-flex align-items-center" style="gap: 8px;">
+          <div class="input-group input-group-sm" style="min-width: 220px; max-width: 280px;">
+            <input type="text" name="q" value="<?= View::e($search) ?>" class="form-control" placeholder="Search service name...">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="submit"><i class="fa fa-search"></i></button>
+            </div>
+          </div>
+          <?php if (!empty($search) || !empty($selectedCatId)): ?>
+            <a href="<?= View::url('/admin/services') ?>" class="btn btn-sm btn-light border text-muted font-weight-bold" title="Reset Filters">
+              <i class="fa fa-times mr-1"></i>Reset
+            </a>
+          <?php endif; ?>
+        </div>
+      </form>
+
+      <!-- Mode Info Strip -->
+      <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top small text-muted">
+        <div>
+          <i class="fa fa-filter text-primary mr-1"></i>
+          Showing <strong><?= count($services) ?></strong> Main Catalog Services
+          <?php if (!empty($selectedCatId)): ?>
+            in <strong><?= View::e(array_column($categories, 'name', 'id')[$selectedCatId] ?? 'Category') ?></strong>
+          <?php endif; ?>
+          <span class="badge badge-light border ml-2 text-dark font-weight-bold">Add-ons Excluded</span>
+        </div>
+        <div>
+          <a href="<?= View::url('/admin/services/addons') ?>" class="font-weight-bold" style="color: #f25b29;">
+            <i class="fa fa-puzzle-piece mr-1"></i>Switch to Add-ons Control Desk (<?= (int)($stats['total_addons'] ?? 0) ?> items) &rarr;
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 

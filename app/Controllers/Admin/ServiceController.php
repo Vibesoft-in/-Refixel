@@ -17,18 +17,55 @@ class ServiceController extends Controller
     public function index(Request $request): Response
     {
         Service::ensureServiceSchema();
-        $services = Database::fetchAll(
-            "SELECT s.*, c.name as category_name, c.slug as category_slug
-             FROM services s
-             JOIN categories c ON s.category_id = c.id
-             ORDER BY c.sort_order ASC, s.name ASC"
-        );
+        $selectedCatId = (int)$request->query('category_id', 0);
+        $typeFilter = (string)$request->query('type', 'main');
+        $search = trim((string)($request->query('q') ?? ''));
+
+        $sql = "SELECT s.*, c.name as category_name, c.slug as category_slug
+                FROM services s
+                JOIN categories c ON s.category_id = c.id
+                WHERE 1=1";
+        $params = [];
+
+        // By default, strictly exclude Add-on services from the Main Services Catalog
+        if ($typeFilter === 'main') {
+            $sql .= " AND (s.is_addon = 0 OR s.is_addon IS NULL)";
+        } elseif ($typeFilter === 'addon') {
+            $sql .= " AND s.is_addon = 1";
+        }
+
+        if ($selectedCatId > 0) {
+            $sql .= " AND s.category_id = :cid";
+            $params['cid'] = $selectedCatId;
+        }
+
+        if (!empty($search)) {
+            $sql .= " AND (s.name LIKE :q OR s.slug LIKE :q OR s.description LIKE :q)";
+            $params['q'] = "%{$search}%";
+        }
+
+        $sql .= " ORDER BY c.sort_order ASC, s.name ASC";
+
+        $services = Database::fetchAll($sql, $params);
         $categories = Category::all('sort_order ASC');
 
+        $stats = Database::fetchOne("
+            SELECT 
+                COUNT(CASE WHEN is_addon = 0 OR is_addon IS NULL THEN 1 END) as total_main,
+                COUNT(CASE WHEN is_addon = 1 THEN 1 END) as total_addons,
+                COUNT(CASE WHEN (is_addon = 0 OR is_addon IS NULL) AND is_active = 1 THEN 1 END) as active_main,
+                COUNT(CASE WHEN (is_addon = 0 OR is_addon IS NULL) AND is_coming_soon = 1 THEN 1 END) as coming_soon_main
+            FROM services
+        ");
+
         return $this->render('admin.services.index', [
-            'title'      => 'Manage Services | REFIXEL Admin',
-            'services'   => $services,
-            'categories' => $categories,
+            'title'         => 'Services & Pricing Catalog | REFIXEL Admin',
+            'services'      => $services,
+            'categories'    => $categories,
+            'selectedCatId' => $selectedCatId,
+            'typeFilter'    => $typeFilter,
+            'search'        => $search,
+            'stats'         => $stats ?? [],
         ], 'admin');
     }
 
