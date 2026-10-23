@@ -753,7 +753,7 @@ $addonCategoriesMap = $addonCategoriesMap ?? [];
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  var baseUrl = '<?= View::url("") ?>';
+  var baseUrl = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
 
   // Helper to filter services by checked categories
   function filterServicesByCheckedCategories(chkClass, serviceSelectId, preserveSelectedId) {
@@ -935,9 +935,10 @@ document.addEventListener("DOMContentLoaded", function() {
       if (activeEl) activeEl.value = active;
 
       var img = this.getAttribute("data-image") || '';
+      var cleanBase = (baseUrl || '').replace(/\/+$/, '');
       var imgPreview = document.getElementById("editAddonImagePreview");
       if (imgPreview) {
-        imgPreview.src = img || (baseUrl + '/assets/images/service-default.jpg');
+        imgPreview.src = img || (cleanBase + '/assets/images/service-default.jpg');
       }
       var imgInput = document.getElementById("editAddonImageInput");
       if (imgInput) {
@@ -945,7 +946,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
 
       if (editForm) {
-        editForm.action = baseUrl + '/admin/services/addons/' + id + '/update';
+        editForm.action = cleanBase + '/admin/services/addons/' + id + '/update';
       }
 
       if (window.$) {
@@ -1012,7 +1013,8 @@ document.addEventListener("DOMContentLoaded", function() {
       var preview = document.getElementById("modalAddonImagePreview");
       var fileInput = document.getElementById("modalAddonImageInput");
       if (preview && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
-        preview.src = optImg || (baseUrl + '/assets/images/service-default.jpg');
+        var cleanBase = (baseUrl || '').replace(/\/+$/, '');
+        preview.src = optImg || (cleanBase + '/assets/images/service-default.jpg');
       }
     });
   }

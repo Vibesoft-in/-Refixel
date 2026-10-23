@@ -68,6 +68,11 @@ class View
     {
         $appUrl = rtrim((string)Env::get('APP_URL', ''), '/');
         $basePath = parse_url($appUrl, PHP_URL_PATH) ?? '';
+
+        if ($path === '') {
+            return rtrim($basePath, '/');
+        }
+
         $cleanPath = '/' . ltrim($path, '/');
 
         if ($basePath !== '' && !str_starts_with($cleanPath, $basePath)) {
@@ -75,6 +80,13 @@ class View
         }
 
         return $cleanPath;
+    }
+
+    public static function baseUrl(): string
+    {
+        $appUrl = rtrim((string)Env::get('APP_URL', ''), '/');
+        $basePath = parse_url($appUrl, PHP_URL_PATH) ?? '';
+        return rtrim($basePath, '/');
     }
 
     public static function fullUrl(string $path = '/'): string

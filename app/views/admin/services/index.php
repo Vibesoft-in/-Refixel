@@ -335,7 +335,7 @@ $categories = $categories ?? [];
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  var baseUrl = '<?= View::url() ?>';
+  var baseUrl = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
   document.querySelectorAll('.edit-service-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var id = this.getAttribute('data-id');
@@ -349,7 +349,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var isComingSoon = this.getAttribute('data-is-coming-soon');
 
       var form = document.getElementById('editServiceForm');
-      form.action = baseUrl + '/admin/services/' + id + '/update';
+      var cleanBase = (baseUrl || '').replace(/\/+$/, '');
+      form.action = cleanBase + '/admin/services/' + id + '/update';
 
       document.getElementById('edit_svc_name').value = name;
       document.getElementById('edit_svc_category_id').value = categoryId;

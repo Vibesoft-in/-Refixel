@@ -1,6 +1,7 @@
 <meta name="csrf-token" content="<?= \App\Core\Csrf::token() ?>">
 <script>
 window.REFIXEL_CSRF_TOKEN = '<?= \App\Core\Csrf::token() ?>';
+window.REFIXEL_BASE_URL = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
 (function() {
   var csrfToken = '<?= \App\Core\Csrf::token() ?>';
   if (!csrfToken) return;

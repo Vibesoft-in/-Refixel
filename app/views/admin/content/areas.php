@@ -150,7 +150,7 @@ $areas = $areas ?? [];
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  var baseUrl = '<?= View::url() ?>';
+  var baseUrl = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
   document.querySelectorAll('.edit-area-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var id = this.getAttribute('data-id');
@@ -159,7 +159,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var name = this.getAttribute('data-name');
 
       var form = document.getElementById('editAreaForm');
-      form.action = baseUrl + '/admin/content/areas/' + id + '/update';
+      var cleanBase = (baseUrl || '').replace(/\/+$/, '');
+      form.action = cleanBase + '/admin/content/areas/' + id + '/update';
 
       document.getElementById('edit_area_city').value = city;
       document.getElementById('edit_area_pincode').value = pincode;

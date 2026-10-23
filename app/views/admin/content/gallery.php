@@ -201,7 +201,7 @@ $services = $services ?? [];
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  var baseUrl = '<?= View::url() ?>';
+  var baseUrl = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
   document.querySelectorAll('.edit-gallery-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var id = this.getAttribute('data-id');
@@ -212,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var afterImg = this.getAttribute('data-after-img');
 
       var form = document.getElementById('editGalleryForm');
-      form.action = baseUrl + '/admin/content/gallery/' + id + '/update';
+      var cleanBase = (baseUrl || '').replace(/\/+$/, '');
+      form.action = cleanBase + '/admin/content/gallery/' + id + '/update';
 
       document.getElementById('edit_gallery_title').value = title;
       document.getElementById('edit_gallery_service_id').value = serviceId;

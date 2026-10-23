@@ -330,7 +330,7 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  var baseUrl = '<?= View::url() ?>';
+  var baseUrl = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
   document.querySelectorAll('.edit-category-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var id = this.getAttribute('data-id');
@@ -344,7 +344,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var description = this.getAttribute('data-description');
 
       var form = document.getElementById('editCategoryForm');
-      form.action = baseUrl + '/admin/services/categories/' + id + '/update';
+      var cleanBase = (baseUrl || '').replace(/\/+$/, '');
+      form.action = cleanBase + '/admin/services/categories/' + id + '/update';
 
       document.getElementById('edit_cat_name').value = name || '';
       document.getElementById('edit_cat_slug').value = slug || '';
