@@ -543,7 +543,7 @@ a.solution_card:active,
                   if (savedCity && savedCity.trim()) {
                     var badge = document.getElementById('heroBadgeText');
                     if (badge) {
-                      badge.textContent = '100% Eco-friendly home cleaning and services in ' + savedCity.trim();
+                      badge.textContent = '100% Eco-friendly home cleaning and services in your city ' + savedCity.trim();
                     }
                   }
                 } catch(e) {}
