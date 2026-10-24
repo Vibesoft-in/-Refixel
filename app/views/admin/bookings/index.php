@@ -118,8 +118,13 @@ $search = $search ?? '';
                   <?php if ($bDue > 0): ?>
                     <div class="text-dark small font-weight-bold">Total: ₹<?= number_format($bTotal > 0 ? $bTotal : 899, 0) ?></div>
                     <div class="small" style="font-size: 11px;">
-                      <span class="text-success font-weight-bold">Adv: ₹<?= number_format($bAdv > 0 ? $bAdv : 49, 0) ?></span> &bull; 
+                      <?php if ($bAdv > 0): ?>
+                        <span class="text-success font-weight-bold">Adv: ₹<?= number_format($bAdv, 0) ?></span> &bull; 
+                      <?php endif; ?>
                       <span class="text-danger font-weight-bold">Due: ₹<?= number_format($bDue, 0) ?></span>
+                      <?php if ($bAdv <= 0): ?>
+                        <span class="badge badge-light border text-muted ml-1" style="font-size: 10px;">COD</span>
+                      <?php endif; ?>
                     </div>
                   <?php else: ?>
                     <div class="text-success small font-weight-bold">₹<?= number_format($bTotal > 0 ? $bTotal : (float)($b['starting_price'] ?? 0), 0) ?> (Full Online)</div>
@@ -150,9 +155,13 @@ $search = $search ?? '';
                       <span class="badge badge-pay-paid" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="100% Full Payment Paid Online">
                         <i class="fa fa-check mr-1"></i>Paid
                       </span>
+                    <?php elseif ($bAdv > 0): ?>
+                      <span class="badge badge-pay-pre" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pre-booking Advance ₹<?= round($bAdv) ?> Paid">
+                        Pre (₹<?= round($bAdv) ?>)
+                      </span>
                     <?php else: ?>
-                      <span class="badge badge-pay-pre" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pre-booking Advance ₹49 Paid (COD Remaining)">
-                        Pre
+                      <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pure Cash on Delivery (No Advance)">
+                        COD
                       </span>
                     <?php endif; ?>
                   </div>

@@ -461,10 +461,6 @@ $isCodAdvance = ($dueAmt > 0 || ($invoice['booking_priority'] ?? '') === 'normal
               </h5>
             </div>
           </div>
-          <div class="inv-total-row mt-1 small">
-            <span class="text-muted">Advance Paid Online:</span>
-            <span class="text-muted font-weight-bold">₹0.00 (Pure Cash on Delivery)</span>
-          </div>
         <?php else: ?>
           <div class="mt-2 p-2 rounded" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
             <div class="d-flex justify-content-between align-items-center">

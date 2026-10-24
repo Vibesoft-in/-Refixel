@@ -118,8 +118,8 @@ class WebhookController extends Controller
         if ($totalAmount <= 0) {
             $totalAmount = 899.00;
         }
-        $paymentType = (string)($booking['payment_type'] ?? 'cod');
-        $expectedAmount = ($paymentType === 'online') ? $totalAmount : 49.00;
+        $configuredAdv = \App\Models\PaymentGateway::getAdvanceAmount();
+        $expectedAmount = ($paymentType === 'online') ? $totalAmount : $configuredAdv;
         if ((float)($booking['advance_amount'] ?? 0) > 0) {
             $expectedAmount = (float)$booking['advance_amount'];
         }

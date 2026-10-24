@@ -26,18 +26,14 @@ $attachments = $attachments ?? [];
 
         $bIsFullPaid = false;
         $bIsPrePaid  = false;
-        if ($bPaidStatus === 'paid') {
-            if ($bPayType === 'online' || $bDueAmt <= 0) {
-                $bIsFullPaid = true;
-            } else {
-                $bIsPrePaid = true;
-            }
+        $bIsCod      = false;
+
+        if ($bPaidStatus === 'paid' && ($bPayType === 'online' || $bDueAmt <= 0)) {
+            $bIsFullPaid = true;
+        } elseif ($bAdvAmt > 0) {
+            $bIsPrePaid = true;
         } else {
-            if ($bPayType === 'online' || $bPriority === 'high') {
-                $bIsFullPaid = true;
-            } elseif ($bPayType === 'cod' || $bAdvAmt == 49.0 || $bPriority === 'normal') {
-                $bIsPrePaid = true;
-            }
+            $bIsCod = true;
         }
       ?>
       <?php if ($bIsFullPaid): ?>
@@ -45,8 +41,12 @@ $attachments = $attachments ?? [];
           <i class="fa fa-check-circle mr-1"></i>PAID (Full Online)
         </span>
       <?php elseif ($bIsPrePaid): ?>
-        <span class="badge badge-pay-pre px-3 py-2 font-weight-bold" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 13px;" title="Pre-booking Advance ₹49 Paid">
-          PRE (₹49 Advance Paid &bull; COD)
+        <span class="badge badge-pay-pre px-3 py-2 font-weight-bold" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 13px;" title="Pre-booking Advance Paid">
+          PRE (₹<?= round($bAdvAmt) ?> Advance Paid &bull; COD)
+        </span>
+      <?php else: ?>
+        <span class="badge px-3 py-2 font-weight-bold" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 13px;" title="Pure Cash on Delivery (No Advance)">
+          <i class="fa fa-money mr-1"></i>COD (Pay After Service)
         </span>
       <?php endif; ?>
     </div>
@@ -206,15 +206,21 @@ $attachments = $attachments ?? [];
             </div>
           </div>
           <div class="col-4">
-            <div class="text-muted small"><?= $bIsFullPaid ? 'Paid Online' : 'Advance Paid' ?></div>
-            <div class="font-weight-bold text-success" style="font-size: 16px;">
-              ₹<?= number_format((float)(($booking['advance_amount'] ?? 0) > 0 ? $booking['advance_amount'] : ($bIsPrePaid ? 49 : 0)), 2) ?>
+            <div class="text-muted small"><?= $bIsFullPaid ? 'Paid Online' : ($bAdvAmt > 0 ? 'Advance Paid' : 'Payment Mode') ?></div>
+            <div class="font-weight-bold <?= $bAdvAmt > 0 || $bIsFullPaid ? 'text-success' : 'text-primary' ?>" style="font-size: 15px;">
+              <?php if ($bIsFullPaid): ?>
+                ₹<?= number_format((float)(($booking['total_amount'] ?? 0) > 0 ? $booking['total_amount'] : ($booking['starting_price'] ?? 0)), 2) ?>
+              <?php elseif ($bAdvAmt > 0): ?>
+                ₹<?= number_format($bAdvAmt, 2) ?>
+              <?php else: ?>
+                Pure COD (₹0 Adv)
+              <?php endif; ?>
             </div>
           </div>
           <div class="col-4">
             <div class="text-muted small">Due After Service</div>
             <div class="font-weight-bold <?= $bDueAmt > 0 ? 'text-danger' : 'text-muted' ?>" style="font-size: 16px;">
-              ₹<?= number_format($bDueAmt, 2) ?>
+              ₹<?= number_format($bDueAmt > 0 ? $bDueAmt : ($bIsFullPaid ? 0 : (($booking['total_amount'] ?? 0) > 0 ? $booking['total_amount'] : ($booking['starting_price'] ?? 0))), 2) ?>
             </div>
           </div>
         </div>

@@ -96,20 +96,14 @@ $counts = $counts ?? ['new' => 0, 'all' => 0];
 
                       $isFullPaid = false;
                       $isPrePaid  = false;
+                      $isCod      = false;
 
-                      if ($pPaidStatus === 'paid') {
-                          if ($payType === 'online' || $dueAmt <= 0) {
-                              $isFullPaid = true;
-                          } else {
-                              $isPrePaid = true;
-                          }
+                      if ($pPaidStatus === 'paid' && ($payType === 'online' || $dueAmt <= 0)) {
+                          $isFullPaid = true;
+                      } elseif ($advAmt > 0) {
+                          $isPrePaid = true;
                       } else {
-                          // Fallback matching customer selected mode
-                          if ($payType === 'online' || $priority === 'high') {
-                              $isFullPaid = true;
-                          } elseif ($payType === 'cod' || $advAmt == 49.0 || $priority === 'normal') {
-                              $isPrePaid = true;
-                          }
+                          $isCod = true;
                       }
                     ?>
                     <?php if ($isFullPaid): ?>
@@ -117,8 +111,12 @@ $counts = $counts ?? ['new' => 0, 'all' => 0];
                         <i class="fa fa-check mr-1"></i>Paid
                       </span>
                     <?php elseif ($isPrePaid): ?>
-                      <span class="badge badge-pay-pre" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pre-booking Advance ₹49 Paid (COD Remaining)">
-                        Pre
+                      <span class="badge badge-pay-pre" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Pre-booking Advance ₹<?= round($advAmt) ?> Paid">
+                        Pre (₹<?= round($advAmt) ?>)
+                      </span>
+                    <?php else: ?>
+                      <span class="badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 700; font-size: 11px; padding: 3px 7px; border-radius: 4px;" title="Cash on Delivery (Pay After Service)">
+                        COD
                       </span>
                     <?php endif; ?>
                   </div>

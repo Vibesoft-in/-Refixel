@@ -27,7 +27,11 @@ $afterPhotos = $afterPhotos ?? [];
           <div>
             <span class="badge badge-danger font-weight-bold mb-1"><i class="fa fa-exclamation-triangle mr-1"></i>Customer Payment Pending</span>
             <h6 class="font-weight-bold text-dark mb-0">Balance to Collect: ₹<?= number_format($dueAmt, 0) ?></h6>
-            <div class="small text-muted">Total: ₹<?= round($totAmt ?? 0) ?> &bull; Advance Paid: ₹<?= round($advAmt ?? 0) ?></div>
+            <?php if (($advAmt ?? 0) > 0): ?>
+              <div class="small text-muted">Total: ₹<?= round($totAmt ?? 0) ?> &bull; Advance Paid: ₹<?= round($advAmt) ?></div>
+            <?php else: ?>
+              <div class="small text-muted">Total: ₹<?= round($totAmt ?? 0) ?> &bull; 100% Cash / UPI on Delivery</div>
+            <?php endif; ?>
           </div>
           <div>
             <button type="button" class="btn btn-sm btn-success font-weight-bold px-3 py-2 shadow-sm" data-toggle="modal" data-target="#staffPaymentModal">
@@ -52,9 +56,13 @@ $afterPhotos = $afterPhotos ?? [];
           <span class="badge font-weight-bold px-2 py-1" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11px;">
             <i class="fa fa-credit-card mr-1"></i>Prepaid (Fully Paid)
           </span>
-        <?php else: ?>
+        <?php elseif (($advAmt ?? 0) > 0): ?>
           <span class="badge font-weight-bold px-2 py-1" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px;">
-            <i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked
+            <i class="fa fa-calendar-check-o mr-1"></i>Pre-Booked (₹<?= round($advAmt) ?> Advance)
+          </span>
+        <?php else: ?>
+          <span class="badge font-weight-bold px-2 py-1" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 11px;">
+            <i class="fa fa-money mr-1"></i>Cash on Delivery (Full Due)
           </span>
         <?php endif; ?>
         <?php if (($job['priority_key'] ?? '') === 'urgent'): ?>

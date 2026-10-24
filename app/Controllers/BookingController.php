@@ -1262,7 +1262,9 @@ class BookingController extends Controller
 
         $paymentSummaryText = ($paymentType === 'online')
             ? 'Prepaid: 100% Full Payment Paid Online (₹' . number_format($totalAmount, 2) . ')'
-            : 'Pay After Service: ₹49 Pre-booking Advance Paid · Due to Technician: ₹' . number_format($dueAmount, 2);
+            : (($advanceAmount > 0)
+                ? ('Pay After Service: ₹' . round($advanceAmount) . ' Pre-booking Advance Paid · Due to Technician: ₹' . number_format($dueAmount, 2))
+                : ('Cash on Delivery: 100% Payable to Technician After Service (₹' . number_format($dueAmount, 2) . ')'));
 
         $guestToken = $booking['guest_token'] ?? null;
         $setPasswordUrl = $_SESSION['guest_set_password_url'] ?? null;

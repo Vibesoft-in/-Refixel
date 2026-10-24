@@ -259,7 +259,11 @@ $mapsQuery = urlencode(($job['address'] ?? '') . ' ' . ($job['pincode'] ?? ''));
             <span class="small font-weight-bold text-dark"><i class="fa fa-credit-card mr-1 text-danger"></i>Customer Payment Due:</span>
             <span class="font-weight-bold text-danger" style="font-size: 19px;">₹<?= number_format($dueAmt, 0) ?></span>
           </div>
-          <div class="small text-muted mb-2">Total Service Fee ₹<?= round($totAmt ?? 0) ?> &bull; Advance Paid ₹<?= round($advAmt ?? 0) ?></div>
+          <?php if (($advAmt ?? 0) > 0): ?>
+            <div class="small text-muted mb-2">Total Service Fee ₹<?= round($totAmt ?? 0) ?> &bull; Advance Paid ₹<?= round($advAmt) ?> (Collect Remaining Due)</div>
+          <?php else: ?>
+            <div class="small text-muted mb-2">Total Service Fee ₹<?= round($totAmt ?? 0) ?> &bull; <strong>Pure Cash on Delivery</strong> (Collect Full Amount)</div>
+          <?php endif; ?>
           <button type="button" class="btn btn-success btn-block py-2 font-weight-bold shadow-sm" data-toggle="modal" data-target="#staffPaymentModal">
             <i class="fa fa-qrcode mr-1"></i>Collect Payment (Online QR / Cash)
           </button>

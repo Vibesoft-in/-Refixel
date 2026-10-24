@@ -312,14 +312,19 @@
           <span>Total Service</span>
           <strong>₹<?= number_format($totAmt > 0 ? $totAmt : 899, 2) ?></strong>
         </div>
-        <?php if ($isCod && $dueAmt > 0): ?>
+        <?php if ($isCod && ($advAmt ?? 0) > 0): ?>
           <div class="rfx-sum-row">
             <span>Pre-Booking (Online)</span>
-            <strong style="color: #16a34a;">- ₹<?= number_format($advAmt > 0 ? $advAmt : 49, 2) ?> (Paid)</strong>
+            <strong style="color: #16a34a;">- ₹<?= number_format($advAmt, 2) ?> (Paid)</strong>
           </div>
           <div class="rfx-sum-row" style="background: #fff8f5; border-radius: 4px; padding: 4px 6px;">
             <span style="color: #c2410c; font-weight: 700;">Due to Staff</span>
-            <strong style="color: #c2410c; font-size: 13px;">₹<?= number_format($dueAmt > 0 ? $dueAmt : 850, 2) ?></strong>
+            <strong style="color: #c2410c; font-size: 13px;">₹<?= number_format($dueAmt, 2) ?></strong>
+          </div>
+        <?php elseif ($isCod): ?>
+          <div class="rfx-sum-row" style="background: #fff8f5; border-radius: 4px; padding: 4px 6px;">
+            <span style="color: #c2410c; font-weight: 700;">Payable to Staff</span>
+            <strong style="color: #c2410c; font-size: 13px;">₹<?= number_format($dueAmt > 0 ? $dueAmt : $totAmt, 2) ?> (Cash / UPI)</strong>
           </div>
         <?php else: ?>
           <div class="rfx-sum-row">

@@ -33,9 +33,13 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
         <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 12px; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
           <i class="fa fa-bolt mr-1"></i>HIGH PRIORITY (ONLINE FULL)
         </span>
-      <?php else: ?>
+      <?php elseif ($advAmt > 0): ?>
         <span class="badge px-3 py-2 font-weight-bold" style="font-size: 12px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">
-          <i class="fa fa-clock-o mr-1"></i>MEDIUM PRIORITY (COD ADVANCE)
+          <i class="fa fa-clock-o mr-1"></i>MEDIUM PRIORITY (COD ADVANCE ₹<?= round($advAmt) ?>)
+        </span>
+      <?php else: ?>
+        <span class="badge px-3 py-2 font-weight-bold" style="font-size: 12px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;">
+          <i class="fa fa-money mr-1"></i>CASH ON DELIVERY (NO ADVANCE)
         </span>
       <?php endif; ?>
       <span class="badge badge-status-<?= View::e($booking['status']) ?> px-3 py-2 font-weight-bold" style="font-size: 13px;">
@@ -220,9 +224,9 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
               <span class="font-weight-bold text-dark" style="font-size: 16px;">₹<?= number_format($totAmt > 0 ? $totAmt : 899, 2) ?></span>
             </div>
             <div class="col-sm-4 border-right mb-2 mb-sm-0">
-              <span class="text-muted small text-uppercase font-weight-bold d-block">Advance Paid (Online)</span>
-              <span class="font-weight-bold text-success" style="font-size: 16px;">
-                ₹<?= number_format($advAmt > 0 ? $advAmt : ($dueAmt > 0 ? 49 : $totAmt), 2) ?>
+              <span class="text-muted small text-uppercase font-weight-bold d-block"><?= $advAmt > 0 ? 'Advance Paid (Online)' : 'Payment Mode' ?></span>
+              <span class="font-weight-bold <?= $advAmt > 0 ? 'text-success' : 'text-primary' ?>" style="font-size: 15px;">
+                <?= $advAmt > 0 ? ('₹' . number_format($advAmt, 2)) : 'Pure COD (₹0 Adv)' ?>
               </span>
             </div>
             <div class="col-sm-4">

@@ -200,7 +200,7 @@ $defaultMethod = $isRazorpayActive ? 'online' : 'cod';
             <span class="text-muted">Booking Priority:</span>
             <strong id="rfxSuccessPriority" style="color: #15803d;">Medium Priority</strong>
           </div>
-          <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;">
+          <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;" id="rfxSuccessAdvanceRow">
             <span class="text-muted">Pre-Booking Advance:</span>
             <strong class="text-success" id="rfxSuccessAdvance">₹49 (Paid Online)</strong>
           </div>
@@ -754,10 +754,14 @@ function fallbackModalCopy(text, cb) {
               }
             }
 
+            var advRow = document.getElementById('rfxSuccessAdvanceRow');
             var advElem = document.getElementById('rfxSuccessAdvance');
             var advVal = (d.advance_amount !== undefined) ? parseFloat(d.advance_amount) : (isCod ? (window.RFX_PAYMENT_CONFIG.isAdvanceRequired ? window.RFX_PAYMENT_CONFIG.advanceAmount : 0) : (d.total_amount || 899));
-            if (advElem) {
-              advElem.innerText = (advVal > 0) ? ('₹' + Math.round(advVal) + ' (Paid Online)') : '₹0 (Pure Cash on Delivery)';
+            if (advRow) {
+              advRow.style.display = (advVal > 0) ? 'flex' : 'none';
+            }
+            if (advElem && advVal > 0) {
+              advElem.innerText = '₹' + Math.round(advVal) + ' (Paid Online)';
             }
 
             var dueElem = document.getElementById('rfxSuccessDue');
@@ -922,8 +926,9 @@ function fallbackModalCopy(text, cb) {
                   }
 
                   var finalData = Object.assign({}, d, vResult.data);
+                  var succAdv = finalData.advance_amount ? parseFloat(finalData.advance_amount) : 0;
                   var succText = (finalData.payment_type === 'cod') 
-                    ? 'Pre-booking Advance Paid (₹49 Online)' 
+                    ? (succAdv > 0 ? ('Pre-booking Advance Paid (₹' + Math.round(succAdv) + ' Online)') : 'Cash on Delivery (Pay After Service)') 
                     : '100% Full Payment Paid Online';
                   showSuccessCard(finalData, succText);
                 })

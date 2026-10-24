@@ -329,8 +329,13 @@ $isBusyMode = $isBusyMode ?? false;
                   <?php if ($bDue > 0): ?>
                     <div class="small font-weight-bold text-dark">Total: ₹<?= number_format($bTotal > 0 ? $bTotal : 899, 0) ?></div>
                     <div class="small" style="font-size: 11px;">
-                      <span class="text-success font-weight-bold">Adv: ₹<?= number_format($bAdv > 0 ? $bAdv : 49, 0) ?></span> &bull; 
+                      <?php if ($bAdv > 0): ?>
+                        <span class="text-success font-weight-bold">Adv: ₹<?= number_format($bAdv, 0) ?></span> &bull; 
+                      <?php endif; ?>
                       <span class="text-danger font-weight-bold">Due: ₹<?= number_format($bDue, 0) ?></span>
+                      <?php if ($bAdv <= 0): ?>
+                        <span class="badge badge-light border text-muted ml-1" style="font-size: 10px;">COD</span>
+                      <?php endif; ?>
                     </div>
                   <?php else: ?>
                     <div class="text-success small font-weight-bold">₹<?= number_format($bTotal > 0 ? $bTotal : (float)($b['starting_price'] ?? 0), 0) ?> (Online Full)</div>

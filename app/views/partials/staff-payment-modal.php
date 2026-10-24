@@ -59,17 +59,27 @@ $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . urle
               <span class="text-muted small">Total Service Amount:</span>
               <span class="font-weight-bold text-dark">₹<?= number_format($totAmt, 2) ?></span>
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="text-muted small">Advance Paid (Pre-Booking):</span>
-              <span class="text-success font-weight-bold">- ₹<?= number_format($advAmt, 2) ?></span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: #fbd5c8 !important;">
-              <div>
-                <span class="font-weight-bold text-dark d-block" style="font-size: 14px;">Remaining Balance Due:</span>
-                <span class="text-muted small" style="font-size: 11px;">(Total - ₹<?= round($advAmt) ?> advance)</span>
+            <?php if (($advAmt ?? 0) > 0): ?>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small">Advance Paid (Pre-Booking):</span>
+                <span class="text-success font-weight-bold">- ₹<?= number_format($advAmt, 2) ?></span>
               </div>
-              <span class="font-weight-bold text-danger" style="font-size: 24px;">₹<?= number_format($dueAmt, 0) ?></span>
-            </div>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: #fbd5c8 !important;">
+                <div>
+                  <span class="font-weight-bold text-dark d-block" style="font-size: 14px;">Remaining Balance Due:</span>
+                  <span class="text-muted small" style="font-size: 11px;">(Total - ₹<?= round($advAmt) ?> advance)</span>
+                </div>
+                <span class="font-weight-bold text-danger" style="font-size: 24px;">₹<?= number_format($dueAmt, 0) ?></span>
+              </div>
+            <?php else: ?>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top" style="border-color: #fbd5c8 !important;">
+                <div>
+                  <span class="font-weight-bold text-dark d-block" style="font-size: 14px;">Total Amount to Collect:</span>
+                  <span class="text-muted small" style="font-size: 11px;">(100% Cash / UPI After Service)</span>
+                </div>
+                <span class="font-weight-bold text-danger" style="font-size: 24px;">₹<?= number_format($dueAmt > 0 ? $dueAmt : $totAmt, 0) ?></span>
+              </div>
+            <?php endif; ?>
           </div>
 
           <p class="small text-muted mb-2 font-weight-bold text-uppercase" style="letter-spacing: 0.5px;">Choose Payment Collection Method:</p>

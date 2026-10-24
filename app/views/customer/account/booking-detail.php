@@ -275,14 +275,19 @@ foreach ($payments as $p) {
           <span class="font-weight-bold text-dark">₹<?= number_format($totAmount > 0 ? $totAmount : 899, 2) ?></span>
         </div>
 
-        <?php if ($isCod && $dueAmount > 0): ?>
+        <?php if ($isCod && ($advAmount ?? 0) > 0): ?>
           <div class="d-flex justify-content-between mb-2 small text-muted">
             <span class="text-success font-weight-bold"><i class="fa fa-check-circle mr-1"></i>Pre-Booking Advance:</span>
-            <span class="text-success font-weight-bold">- ₹<?= number_format($advAmount > 0 ? $advAmount : 49, 2) ?></span>
+            <span class="text-success font-weight-bold">- ₹<?= number_format($advAmount, 2) ?></span>
           </div>
           <div class="d-flex justify-content-between p-2 rounded mb-2" style="background: #ffffff; border: 1.5px solid #fed7aa;">
-            <span class="font-weight-bold" style="color: #c2410c; font-size: 12.5px;">Due to Staff:</span>
-            <span class="font-weight-bold" style="color: #c2410c; font-size: 14px;">₹<?= number_format($dueAmount > 0 ? $dueAmount : 850, 2) ?></span>
+            <span class="font-weight-bold" style="color: #c2410c; font-size: 12.5px;">Remaining Due to Staff:</span>
+            <span class="font-weight-bold" style="color: #c2410c; font-size: 14px;">₹<?= number_format($dueAmount, 2) ?></span>
+          </div>
+        <?php elseif ($isCod): ?>
+          <div class="d-flex justify-content-between p-2 rounded mb-2" style="background: #ffffff; border: 1.5px solid #fed7aa;">
+            <span class="font-weight-bold" style="color: #c2410c; font-size: 12.5px;">Full Amount Due to Staff:</span>
+            <span class="font-weight-bold" style="color: #c2410c; font-size: 14px;">₹<?= number_format($dueAmount > 0 ? $dueAmount : $totAmount, 2) ?> (Cash / UPI)</span>
           </div>
         <?php else: ?>
           <div class="d-flex justify-content-between mb-2 small text-muted">
