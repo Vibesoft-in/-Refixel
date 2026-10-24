@@ -1912,7 +1912,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'cat_name'      => $catName,
       'cat_slug'      => $catSlug,
       'starting_price'=> (float)($s['starting_price'] ?? 0),
-      'url'           => \App\Core\View::url('/services/' . $s['slug']),
+      'url'           => \App\Core\View::url('/' . $s['slug']),
     ];
   }, $services ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 

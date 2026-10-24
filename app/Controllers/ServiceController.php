@@ -89,16 +89,16 @@ class ServiceController extends Controller
         $city = ServiceArea::getSessionCity();
         $cityName = $this->formatCityName($city);
 
-        // 1. Try resolving as Category
-        $cat = $this->resolveCategory($service);
-        if ($cat) {
-            return $this->renderCategoryPage($cat, $cityName, $city);
-        }
-
-        // 2. Try resolving as Service
+        // 1. Try resolving as Service first so specific service pages (e.g. water-tank-cleaning) are displayed
         $svc = $this->resolveService($service);
         if ($svc) {
             return $this->renderServicePage($svc, $cityName, $city);
+        }
+
+        // 2. Try resolving as Category
+        $cat = $this->resolveCategory($service);
+        if ($cat) {
+            return $this->renderCategoryPage($cat, $cityName, $city);
         }
 
         return $this->render('partials.404', ['title' => 'Page Not Found'], 'customer')
@@ -422,11 +422,6 @@ class ServiceController extends Controller
             if ($cat) return $cat;
         }
 
-        if (in_array($slug, ['tank-cleaning', 'water-tank-cleaning', 'water-tank', 'tank', 'tank-cleaning-services', 'tank-services'], true)) {
-            $cat = Category::findBySlug('cleaning');
-            if ($cat) return $cat;
-        }
-
         return null;
     }
 
@@ -454,7 +449,7 @@ class ServiceController extends Controller
             $svc = Service::findBySlug('fall-ceiling-installation');
             if ($svc) return $svc;
         }
-        if (in_array($slug, ['tank-cleaning', 'water-tank', 'water-tank-clean', 'tank-cleaning-services', 'water-tank-services', 'tank-clean'], true)) {
+        if (in_array($slug, ['tank-cleaning', 'water-tank', 'water-tank-clean', 'tank-cleaning-services', 'water-tank-services', 'tank-clean', 'tank-services', 'tank', 'water-tank-cleaning-services', 'water-tank-cleaning-service'], true)) {
             $svc = Service::findBySlug('water-tank-cleaning');
             if ($svc) return $svc;
         }

@@ -50,7 +50,7 @@ Router::get('/plumbers-services-in-{city}', function(\App\Core\Request $request,
     return (new \App\Core\Response())->redirect(\App\Core\View::url("/plumber-services-in-{$city}"), 301);
 });
 
-// 301 Redirect for tank cleaning queries to cleaning services
+// 301 Redirect for tank cleaning queries directly to specific water tank service
 Router::get('/tank-cleaning', function() {
     return (new \App\Core\Response())->redirect(\App\Core\View::url('/water-tank-cleaning'), 301);
 });
@@ -58,10 +58,16 @@ Router::get('/tank-cleaning-in-{city}', function(\App\Core\Request $request, str
     return (new \App\Core\Response())->redirect(\App\Core\View::url("/water-tank-cleaning-in-{$city}"), 301);
 });
 Router::get('/tank-services', function() {
-    return (new \App\Core\Response())->redirect(\App\Core\View::url('/cleaning-services'), 301);
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/water-tank-cleaning'), 301);
 });
 Router::get('/tank-services-in-{city}', function(\App\Core\Request $request, string $city) {
-    return (new \App\Core\Response())->redirect(\App\Core\View::url("/cleaning-services-in-{$city}"), 301);
+    return (new \App\Core\Response())->redirect(\App\Core\View::url("/water-tank-cleaning-in-{$city}"), 301);
+});
+Router::get('/tank-cleaning-services', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/water-tank-cleaning'), 301);
+});
+Router::get('/tank-cleaning-services-in-{city}', function(\App\Core\Request $request, string $city) {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url("/water-tank-cleaning-in-{$city}"), 301);
 });
 
 // Clean URLs for categories (e.g. /cleaning-services, /painting-services)
@@ -411,5 +417,10 @@ Router::post('/api/booking/record-dropoff', 'BookingController@recordDropoff');
 // Authenticated Secure Document Serving (Outside Webroot)
 Router::get('/documents/{folder}/{filename}', 'DocumentController@serve', ['RequireLogin']);
 
+// Direct Service URLs under /services/ (e.g. /services/water-tank-cleaning)
+Router::get('/services/{service}', 'ServiceController@serviceClean');
+Router::get('/services/{service}-in-{city}', 'ServiceController@serviceInCity');
+
 // Fallback for single clean service/category slugs (e.g. /full-home-cleaning, /bathroom-deep-cleaning)
 Router::get('/{service}', 'ServiceController@serviceClean');
+

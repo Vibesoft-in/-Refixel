@@ -197,7 +197,7 @@ $stats             = $stats ?? ['total_main' => count($services), 'total_addons'
                 </td>
                 <td class="align-middle">
                   <div class="font-weight-bold text-dark"><?= View::e($s['name']) ?></div>
-                  <div class="text-muted small"><code>/<?= View::e($s['slug']) ?></code></div>
+                  <div class="text-muted small"><a href="<?= View::url('/' . $s['slug']) ?>" target="_blank" class="text-muted" title="View live service page"><code>/<?= View::e($s['slug']) ?></code> <i class="fa fa-external-link text-info small ml-1"></i></a></div>
                   <?php if (!empty($s['description'])): ?>
                     <div class="text-muted small text-truncate" style="max-width: 250px;" title="<?= View::e($s['description']) ?>">
                       <?= View::e($s['description']) ?>
@@ -285,6 +285,10 @@ $stats             = $stats ?? ['total_main' => count($services), 'total_addons'
                       <?= !empty($s['is_active']) ? 'Disable' : 'Enable' ?>
                     </button>
                   </form>
+
+                  <a href="<?= View::url('/' . $s['slug']) ?>" target="_blank" class="btn btn-sm btn-outline-info py-1 px-2 font-weight-bold mr-1" title="View Live Service Page">
+                    <i class="fa fa-eye mr-1"></i>View
+                  </a>
 
                   <a href="<?= View::url('/admin/services/' . $s['id'] . '/variants') ?>" class="btn btn-sm btn-outline-dark py-1 px-2 font-weight-bold mr-1" title="Manage Sizes, Seats, Capacity & Variations" style="border-color: #f25b29; color: #f25b29;">
                     <i class="fa fa-sliders mr-1"></i>Options
