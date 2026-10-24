@@ -13,13 +13,13 @@ try {
         // CATEGORY 4: Plumbers
         // -------------------------------------------------------------
         [
-            'category_id'      => 4,
+            'category_id'      => 1, // Category 1: Cleaning
             'name'             => 'Water Tank Deep Cleaning & Disinfection',
             'slug'             => 'water-tank-cleaning',
             'description'      => 'Complete mechanized draining, sludge extraction, high-pressure jet wash, and antibacterial UV/potassium permanganate tank treatment.',
-            'starting_price'   => 799.00,
+            'starting_price'   => 299.00,
             'duration_minutes' => 90,
-            'image'            => 'refixel-plumber.jpg',
+            'image'            => 'refixel-water-tank-cleaning.jpg',
             'inclusions'       => [
                 'Complete mechanized sludge vacuuming and de-watering',
                 'High-pressure rotary jet spray cleaning of interior walls',

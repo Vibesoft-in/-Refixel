@@ -50,6 +50,20 @@ Router::get('/plumbers-services-in-{city}', function(\App\Core\Request $request,
     return (new \App\Core\Response())->redirect(\App\Core\View::url("/plumber-services-in-{$city}"), 301);
 });
 
+// 301 Redirect for tank cleaning queries to cleaning services
+Router::get('/tank-cleaning', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/water-tank-cleaning'), 301);
+});
+Router::get('/tank-cleaning-in-{city}', function(\App\Core\Request $request, string $city) {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url("/water-tank-cleaning-in-{$city}"), 301);
+});
+Router::get('/tank-services', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/cleaning-services'), 301);
+});
+Router::get('/tank-services-in-{city}', function(\App\Core\Request $request, string $city) {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url("/cleaning-services-in-{$city}"), 301);
+});
+
 // Clean URLs for categories (e.g. /cleaning-services, /painting-services)
 Router::get('/{category}-services', 'ServiceController@categoryClean');
 

@@ -239,6 +239,8 @@ class Service extends Model
                     }
                 }
             }
+            // Ensure Water Tank Cleaning is strictly categorized under Cleaning (id: 1), not Plumbers (id: 4)
+            Database::execute("UPDATE services SET category_id = 1 WHERE slug = 'water-tank-cleaning' OR name LIKE '%Tank Cleaning%'");
         } catch (\Throwable $e) {}
 
         try {

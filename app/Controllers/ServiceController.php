@@ -420,6 +420,11 @@ class ServiceController extends Controller
             if ($cat) return $cat;
         }
 
+        if (in_array($slug, ['tank-cleaning', 'water-tank-cleaning', 'water-tank', 'tank', 'tank-cleaning-services', 'tank-services'], true)) {
+            $cat = Category::findBySlug('cleaning');
+            if ($cat) return $cat;
+        }
+
         return null;
     }
 
@@ -445,6 +450,10 @@ class ServiceController extends Controller
         // 4. Aliases
         if (in_array($slug, ['brick-masonry-repair', 'brickwork-wall-masonry-repair', 'fall-ceiling', 'false-ceiling', 'fall-ceiling-service'], true)) {
             $svc = Service::findBySlug('fall-ceiling-installation');
+            if ($svc) return $svc;
+        }
+        if (in_array($slug, ['tank-cleaning', 'water-tank', 'water-tank-clean', 'tank-cleaning-services', 'water-tank-services', 'tank-clean'], true)) {
+            $svc = Service::findBySlug('water-tank-cleaning');
             if ($svc) return $svc;
         }
 
