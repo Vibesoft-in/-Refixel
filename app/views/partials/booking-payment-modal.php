@@ -30,7 +30,7 @@
               <span class="font-weight-bold text-success" id="rfxModalPayAdvanceDisplay">₹899 (Prepaid Full)</span>
             </div>
             <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
-              <span class="text-muted font-weight-bold">Due to Technician After Service:</span>
+              <span class="text-muted font-weight-bold">Due to Staff After Service:</span>
               <span class="font-weight-bold text-danger" id="rfxModalPayDueDisplay">₹0 (Fully Paid)</span>
             </div>
           </div>
@@ -52,7 +52,7 @@
                   </span>
                 </div>
                 <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
-                  Pay 100% full amount online via UPI / Cards. High priority technician dispatch & zero balance during visit.
+                  Pay 100% full amount online via UPI / Cards. High priority staff dispatch & zero balance during visit.
                 </p>
                 <div class="d-flex align-items-center mt-1" style="gap: 5px;">
                   <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 9.5px;">UPI QR</span>
@@ -74,7 +74,7 @@
                   </span>
                 </div>
                 <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
-                  Pay <strong>₹49 pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹49 deducted) is payable to technician after service.
+                  Pay <strong>₹49 pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹49 deducted) is payable to staff after service.
                 </p>
                 <div class="d-flex align-items-center" style="gap: 5px;">
                   <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;">₹49 Advance Online</span>
@@ -170,7 +170,7 @@
             <strong class="text-success" id="rfxSuccessAdvance">₹49 (Paid Online)</strong>
           </div>
           <div class="d-flex justify-content-between py-1" style="border-bottom: 1px dashed #e2e8f0;">
-            <span class="text-muted">Due to Technician:</span>
+            <span class="text-muted">Due to Staff:</span>
             <strong class="text-danger" id="rfxSuccessDue">₹850 (After Service)</strong>
           </div>
           <div class="d-flex justify-content-between pt-1">
@@ -309,7 +309,7 @@ function fallbackModalCopy(text, cb) {
       if (cardCod) { cardCod.style.borderColor = '#f25b29'; cardCod.style.background = '#fffbf9'; }
       if (cardOnline) { cardOnline.style.borderColor = '#e2e8f0'; cardOnline.style.background = '#ffffff'; }
       if (advDisplay) advDisplay.innerText = '₹49 (Online)';
-      if (dueDisplay) dueDisplay.innerText = '₹' + Math.round(dueVal) + ' (To Technician)';
+      if (dueDisplay) dueDisplay.innerText = '₹' + Math.round(dueVal) + ' (To Staff)';
       if (btnText) btnText.innerHTML = 'Pay ₹49 Advance & Book (Medium Priority) &rarr;';
     } else if (radioOnline && radioOnline.checked) {
       if (cardOnline) { cardOnline.style.borderColor = '#f25b29'; cardOnline.style.background = '#fffbf9'; }
@@ -697,7 +697,7 @@ function fallbackModalCopy(text, cb) {
             var dueElem = document.getElementById('rfxSuccessDue');
             if (dueElem) {
               var dueVal = (d.due_amount !== undefined) ? d.due_amount : (isCod ? Math.max(0, (d.total_amount || 899) - 49) : 0);
-              dueElem.innerText = '₹' + dueVal + (dueVal > 0 ? ' (Due to Technician)' : ' (Zero Due)');
+              dueElem.innerText = '₹' + dueVal + (dueVal > 0 ? ' (Due to Staff)' : ' (Zero Due)');
             }
 
             document.getElementById('rfxSuccessPayment').innerText = paymentText || (isCod ? 'Pay After Service (₹49 Advance Paid)' : 'Prepaid (100% Online)');

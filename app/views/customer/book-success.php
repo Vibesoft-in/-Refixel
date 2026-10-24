@@ -318,7 +318,7 @@
             <strong style="color: #16a34a;">- ₹<?= number_format($advAmt > 0 ? $advAmt : 49, 2) ?> (Paid)</strong>
           </div>
           <div class="rfx-sum-row" style="background: #fff8f5; border-radius: 4px; padding: 4px 6px;">
-            <span style="color: #c2410c; font-weight: 700;">Due to Technician</span>
+            <span style="color: #c2410c; font-weight: 700;">Due to Staff</span>
             <strong style="color: #c2410c; font-size: 13px;">₹<?= number_format($dueAmt > 0 ? $dueAmt : 850, 2) ?></strong>
           </div>
         <?php else: ?>

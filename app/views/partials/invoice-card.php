@@ -442,7 +442,7 @@ $isCodAdvance = ($dueAmt > 0 || ($invoice['booking_priority'] ?? '') === 'normal
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <strong style="color: #c2410c; font-size: 13px;">Remaining Doorstep Due:</strong>
-                <div class="text-muted" style="font-size: 11px;">Payable to technician via Cash / UPI</div>
+                <div class="text-muted" style="font-size: 11px;">Payable to staff via Cash / UPI</div>
               </div>
               <h5 class="font-weight-bold mb-0" style="color: #c2410c; font-family: 'JetBrains Mono', monospace;">
                 ₹<?= number_format($dueAmt, 2) ?>

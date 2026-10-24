@@ -226,7 +226,7 @@ $afterPhotos = array_filter($jobPhotos, fn($p) => $p['type'] === 'after');
               </span>
             </div>
             <div class="col-sm-4">
-              <span class="text-muted small text-uppercase font-weight-bold d-block">Due to Technician</span>
+              <span class="text-muted small text-uppercase font-weight-bold d-block">Due to Staff</span>
               <span class="font-weight-bold <?= $dueAmt > 0 ? 'text-danger' : 'text-success' ?>" style="font-size: 16px;">
                 ₹<?= number_format($dueAmt, 2) ?>
               </span>

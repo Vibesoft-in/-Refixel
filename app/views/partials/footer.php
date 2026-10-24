@@ -342,8 +342,9 @@
   .footer-col-brand { flex: 0 0 21%; max-width: 21%; }
   .footer-col-quick { flex: 0 0 16%; max-width: 16%; }
   .footer-col-services { flex: 0 0 26%; max-width: 26%; }
-  .footer-col-contact { flex: 0 0 22%; max-width: 22%; }
-  .footer-col-hours { flex: 0 0 15%; max-width: 15%; }
+  .footer-col-contact-group { flex: 0 0 37%; max-width: 37%; }
+  .footer-col-contact-inner { flex: 0 0 59%; max-width: 59%; }
+  .footer-col-hours-inner { flex: 0 0 41%; max-width: 41%; }
 }
 .footer-map-box {
   margin-top: 14px;
@@ -351,7 +352,7 @@
 }
 .footer-map-frame {
   width: 100%;
-  height: 125px;
+  height: 135px;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -453,69 +454,77 @@
         </div>
       </div>
 
-      <!-- Col 4: Contact Us (Row 2 Left) -->
-      <div class="footer-col-contact col-6 col-md-6 mb-4">
-        <div class="footer_links">
-          <h4 class="footer-title" style="color: #ffffff !important;">Contact Us</h4>
-          <?php
-            $fAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand');
-            $fEmail = \App\Models\Setting::get('support_email', 'contact@refixel.com');
-            $fPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
-            $fCleanPhone = preg_replace('/[^0-9+]/', '', $fPhone);
-            $fHours = \App\Models\Setting::get('operating_hours', 'Mon - Sun: 08:00 AM - 09:00 PM');
-            $fMapEmbed = \App\Models\Setting::get('google_maps_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3479.157801016238!2d78.8243635755258!3d29.307046475303157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390a496b4e5d108d%3A0xf6d218115857576e!2sRefixel%20%7C%20Home%20cleaning%20service!5e0!3m2!1sen!2sin!4v1792744016340!5m2!1sen!2sin');
-          ?>
-          <ul class="list-unstyled p-0 m-0">
-            <li class="footer-contact-item">
-              <span class="footer-icon-box">
-                <i class="fa fa-map-marker"></i>
-              </span>
-              <span class="footer-contact-text"><?= \App\Core\View::e($fAddress) ?></span>
-            </li>
-            <li class="footer-contact-item is-single-line">
-              <span class="footer-icon-box">
-                <i class="fa fa-envelope"></i>
-              </span>
-              <a href="mailto:<?= \App\Core\View::e($fEmail) ?>" class="footer-contact-link"><?= \App\Core\View::e($fEmail) ?></a>
-            </li>
-            <li class="footer-contact-item is-single-line">
-              <span class="footer-icon-box">
-                <i class="fa fa-phone"></i>
-              </span>
-              <a href="tel:<?= \App\Core\View::e($fCleanPhone) ?>" class="footer-contact-link"><?= \App\Core\View::e($fPhone) ?></a>
-            </li>
-          </ul>
-
-          <div class="footer-map-box">
-            <div class="footer-map-frame">
-              <iframe
-                src="<?= \App\Core\View::e($fMapEmbed) ?>"
-                width="100%"
-                height="100%"
-                style="border:0;"
-                allowfullscreen=""
-                loading="lazy"
-                referrerpolicy="strict-origin-when-cross-origin"
-                title="Refixel Location on Google Maps"
-              ></iframe>
+      <!-- Col 4 & 5: Contact Us & Working Hours with Full Width Map -->
+      <div class="footer-col-contact-group col-12 col-md-12 mb-4">
+        <div class="row">
+          <!-- Contact Us -->
+          <div class="footer-col-contact footer-col-contact-inner col-6 col-md-6 mb-2">
+            <div class="footer_links">
+              <h4 class="footer-title" style="color: #ffffff !important;">Contact Us</h4>
+              <?php
+                $fAddress = \App\Models\Setting::get('office_address', 'Jaspur - Kashipur Road (In front of BSV Girls Degree College), Jaspur, Uttarakhand');
+                $fEmail = \App\Models\Setting::get('support_email', 'contact@refixel.com');
+                $fPhone = \App\Models\Setting::get('support_phone', '+91 87911 54730');
+                $fCleanPhone = preg_replace('/[^0-9+]/', '', $fPhone);
+                $fHours = \App\Models\Setting::get('operating_hours', 'Mon - Sun: 08:00 AM - 09:00 PM');
+                $fMapEmbed = \App\Models\Setting::get('google_maps_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3479.157801016238!2d78.8243635755258!3d29.307046475303157!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390a496b4e5d108d%3A0xf6d218115857576e!2sRefixel%20%7C%20Home%20cleaning%20service!5e0!3m2!1sen!2sin!4v1792744016340!5m2!1sen!2sin');
+              ?>
+              <ul class="list-unstyled p-0 m-0">
+                <li class="footer-contact-item">
+                  <span class="footer-icon-box">
+                    <i class="fa fa-map-marker"></i>
+                  </span>
+                  <span class="footer-contact-text"><?= \App\Core\View::e($fAddress) ?></span>
+                </li>
+                <li class="footer-contact-item is-single-line">
+                  <span class="footer-icon-box">
+                    <i class="fa fa-envelope"></i>
+                  </span>
+                  <a href="mailto:<?= \App\Core\View::e($fEmail) ?>" class="footer-contact-link"><?= \App\Core\View::e($fEmail) ?></a>
+                </li>
+                <li class="footer-contact-item is-single-line">
+                  <span class="footer-icon-box">
+                    <i class="fa fa-phone"></i>
+                  </span>
+                  <a href="tel:<?= \App\Core\View::e($fCleanPhone) ?>" class="footer-contact-link"><?= \App\Core\View::e($fPhone) ?></a>
+                </li>
+              </ul>
             </div>
-            <a href="https://maps.google.com/?cid=17785210960533280622" target="_blank" rel="noopener noreferrer" class="footer-map-link" title="Open Refixel in Google Maps">
-              <i class="fa fa-map-marker"></i> Open in Maps <i class="fa fa-external-link" style="font-size: 9.5px;"></i>
-            </a>
           </div>
-        </div>
-      </div>
 
-      <!-- Col 5: Working Hours (Row 2 Right) -->
-      <div class="footer-col-hours col-6 col-md-6 mb-4">
-        <div class="footer_links">
-          <h4 class="footer-title" style="color: #ffffff !important;">Working Hours</h4>
-          <div class="footer-hours-box">
-            <span class="footer-icon-box">
-              <i class="fa fa-clock-o"></i>
-            </span>
-            <div class="footer-hours-content">
-              <div class="footer-hours-days"><?= \App\Core\View::e($fHours) ?></div>
+          <!-- Working Hours -->
+          <div class="footer-col-hours footer-col-hours-inner col-6 col-md-6 mb-2">
+            <div class="footer_links">
+              <h4 class="footer-title" style="color: #ffffff !important;">Working Hours</h4>
+              <div class="footer-hours-box">
+                <span class="footer-icon-box">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                <div class="footer-hours-content">
+                  <div class="footer-hours-days"><?= \App\Core\View::e($fHours) ?></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Full Width Google Map across Contact Us & Working Hours -->
+          <div class="col-12">
+            <div class="footer-map-box">
+              <div class="footer-map-frame">
+                <iframe
+                  src="<?= \App\Core\View::e($fMapEmbed) ?>"
+                  width="100%"
+                  height="100%"
+                  style="border:0;"
+                  allowfullscreen=""
+                  loading="lazy"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  title="Refixel Location on Google Maps"
+                ></iframe>
+              </div>
+              <a href="https://maps.google.com/?cid=17785210960533280622" target="_blank" rel="noopener noreferrer" class="footer-map-link" title="Open Refixel in Google Maps">
+                <i class="fa fa-map-marker"></i> Open in Maps <i class="fa fa-external-link" style="font-size: 9.5px;"></i>
+              </a>
             </div>
           </div>
         </div>
