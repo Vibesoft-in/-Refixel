@@ -337,6 +337,42 @@
   .bottom_footer {
     padding-bottom: 80px !important;
   }
+
+  /* Local Service Directory Hubs (amne-samne 2-column mobile layout) */
+  .footer-dir-intro {
+    font-size: 11.5px !important;
+    line-height: 1.5 !important;
+    margin-bottom: 14px !important;
+  }
+  .footer-dir-col {
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    margin-bottom: 18px !important;
+  }
+  .footer-dir-col h6 {
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+    line-height: 1.35 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+  }
+  .footer-dir-col ul {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+  .footer-dir-col ul li {
+    margin-bottom: 6px !important;
+  }
+  .footer-dir-col .footer-nav-link {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+    padding: 1px 0 !important;
+    display: block !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+  }
 }
 @media (min-width: 992px) {
   .footer-col-brand { flex: 0 0 21%; max-width: 21%; }
@@ -540,13 +576,13 @@
             <i class="fa fa-bolt mr-1"></i> Verified Doorstep Pros
           </span>
         </div>
-        <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px;">
+        <p class="footer-dir-intro" style="font-size: 12.5px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px;">
           REFIXEL provides standardized, background-verified home care and maintenance services across Kashipur, Jaspur &amp; Thakurdwara. Select your location below to book certified technicians with transparent pricing and 30-Day Service Guarantee:
         </p>
 
         <div class="row footer-dir-grid">
           <!-- City: Kashipur -->
-          <div class="col-12 col-sm-6 col-lg-3 mb-3">
+          <div class="footer-dir-col col-6 col-sm-6 col-lg-3 mb-3">
             <h6 style="color: #f8fafc; font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f25b29;"></span> Kashipur Services (244713)
             </h6>
@@ -563,7 +599,7 @@
           </div>
 
           <!-- City: Jaspur -->
-          <div class="col-12 col-sm-6 col-lg-3 mb-3">
+          <div class="footer-dir-col col-6 col-sm-6 col-lg-3 mb-3">
             <h6 style="color: #f8fafc; font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f25b29;"></span> Jaspur Services (244712)
             </h6>
@@ -580,7 +616,7 @@
           </div>
 
           <!-- City: Thakurdwara -->
-          <div class="col-12 col-sm-6 col-lg-3 mb-3">
+          <div class="footer-dir-col col-6 col-sm-6 col-lg-3 mb-3">
             <h6 style="color: #f8fafc; font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f25b29;"></span> Thakurdwara Services (244601)
             </h6>
@@ -597,7 +633,7 @@
           </div>
 
           <!-- Popular High-Intent Searches -->
-          <div class="col-12 col-sm-6 col-lg-3 mb-3">
+          <div class="footer-dir-col col-6 col-sm-6 col-lg-3 mb-3">
             <h6 style="color: #f8fafc; font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f25b29;"></span> Popular Searches
             </h6>
