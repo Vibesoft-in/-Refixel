@@ -274,6 +274,13 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/categories/{id}/delete', 'Admin\\ServiceController@deleteCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/toggle-status', 'Admin\\ServiceController@toggleCategoryStatus', ['VerifyCsrf']);
 
+    // Service Variations & Options
+    Router::get('/admin/services/{id}/variants', 'Admin\\ServiceController@variants');
+    Router::post('/admin/services/{id}/variants', 'Admin\\ServiceController@storeVariant', ['VerifyCsrf']);
+    Router::post('/admin/services/variants/{id}/update', 'Admin\\ServiceController@updateVariant', ['VerifyCsrf']);
+    Router::post('/admin/services/variants/{id}/delete', 'Admin\\ServiceController@deleteVariant', ['VerifyCsrf']);
+    Router::post('/admin/services/variants/{id}/toggle-status', 'Admin\\ServiceController@toggleVariantStatus', ['VerifyCsrf']);
+
     // Service Add-ons & Smart Pairing Management
     Router::get('/admin/services/addons', 'Admin\\ServiceAddonController@index');
     Router::post('/admin/services/addons', 'Admin\\ServiceAddonController@store', ['VerifyCsrf']);

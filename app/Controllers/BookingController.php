@@ -44,11 +44,28 @@ class BookingController extends Controller
         }
         $allServices = Service::getActive();
 
+        // Check for variants passed in query
+        $rawVariants = $request->query('variants') ?? $request->query('variant_ids') ?? [];
+        if (is_string($rawVariants)) {
+            $variantIds = array_values(array_filter(array_map('intval', explode(',', $rawVariants))));
+        } elseif (is_array($rawVariants)) {
+            $variantIds = array_values(array_filter(array_map('intval', $rawVariants)));
+        } else {
+            $variantIds = [];
+        }
+
+        $variantCalc = null;
+        if ($service && !empty($variantIds)) {
+            $variantCalc = \App\Models\ServiceVariant::calculatePrice((int)$service['id'], $variantIds, (float)$service['starting_price']);
+        }
+
         return $this->render('customer.book', [
-            'title'       => 'Schedule Doorstep Service | REFIXEL',
-            'description' => 'Book verified home and office maintenance services with transparent starting prices and 24-hour guarantee.',
-            'service'     => $service,
-            'allServices' => $allServices,
+            'title'              => 'Schedule Doorstep Service | REFIXEL',
+            'description'        => 'Book verified home and office maintenance services with transparent starting prices and 24-hour guarantee.',
+            'service'            => $service,
+            'allServices'        => $allServices,
+            'selectedVariantIds' => $variantIds,
+            'variantCalc'        => $variantCalc,
         ], 'customer');
     }
 
@@ -115,11 +132,24 @@ class BookingController extends Controller
             ], 400);
         }
 
-        $setExact = (bool)($request->input('set_exact', false));
-        if ($setExact) {
-            $res = Cart::update($serviceId, max(1, $qty));
+        // Parse optional variant IDs (single option or multi-options)
+        $rawVariants = $request->input('variant_ids') ?? $request->input('variants') ?? [];
+        if (is_string($rawVariants)) {
+            $variantIds = array_values(array_filter(array_map('intval', explode(',', $rawVariants))));
+        } elseif (is_array($rawVariants)) {
+            $variantIds = array_values(array_filter(array_map('intval', $rawVariants)));
         } else {
-            $res = Cart::add($serviceId, max(1, $qty));
+            $variantIds = [];
+        }
+
+        $cartKey = $request->input('cart_key');
+        $setExact = (bool)($request->input('set_exact', false));
+
+        if ($setExact) {
+            $targetKey = !empty($cartKey) ? $cartKey : Cart::buildKey($serviceId, $variantIds);
+            $res = Cart::update($targetKey, max(1, $qty));
+        } else {
+            $res = Cart::add($serviceId, max(1, $qty), $variantIds);
         }
 
         if (empty($res['success'])) {
@@ -155,12 +185,20 @@ class BookingController extends Controller
 
         $addedServiceData = null;
         if ($addedService) {
+            $addedPrice = (float)$addedService['starting_price'];
+            $addedName = $addedService['name'];
+            if (!empty($variantIds)) {
+                $calc = \App\Models\ServiceVariant::calculatePrice($serviceId, $variantIds, $addedPrice);
+                $addedPrice = (float)$calc['total_price'];
+                $addedName .= $calc['title_suffix'];
+            }
+
             $addedServiceData = [
                 'id'             => (int)$addedService['id'],
-                'name'           => $addedService['name'],
+                'name'           => $addedName,
                 'slug'           => $addedService['slug'],
                 'image'          => Service::resolveImage($addedService['slug'] ?? '', $addedService['image'] ?? null),
-                'starting_price' => (float)$addedService['starting_price'],
+                'starting_price' => $addedPrice,
                 'category_name'  => $addedService['category_name'] ?? 'Refixel Service',
             ];
         }
@@ -178,16 +216,22 @@ class BookingController extends Controller
 
     public function updateCart(Request $request): Response
     {
-        $serviceId = (int)($request->input('service_id') ?? $request->input('vendor_price_id') ?? 0);
+        $cartKey = (string)($request->input('cart_key') ?? $request->input('service_id') ?? $request->input('vendor_price_id') ?? '');
         $action = (string)$request->input('action', '');
         $qty = (int)($request->input('quantity') ?? 0);
 
-        if ($serviceId <= 0) {
-            return Response::json(['success' => false, 'error' => 'Invalid service ID.'], 400);
+        if (empty($cartKey)) {
+            return Response::json(['success' => false, 'error' => 'Invalid cart item identifier.'], 400);
         }
 
         $raw = Cart::getRaw();
-        $currentQty = $raw[$serviceId] ?? 1;
+        $currentEntry = $raw[$cartKey] ?? null;
+        $currentQty = 1;
+        if (is_array($currentEntry)) {
+            $currentQty = (int)($currentEntry['quantity'] ?? 1);
+        } elseif (is_numeric($currentEntry)) {
+            $currentQty = (int)$currentEntry;
+        }
 
         if ($action === 'plus') {
             $newQty = $currentQty + 1;
@@ -197,7 +241,7 @@ class BookingController extends Controller
             $newQty = $qty;
         }
 
-        Cart::update($serviceId, $newQty);
+        Cart::update($cartKey, $newQty);
         $details = Cart::getDetails();
 
         return Response::json([
@@ -210,8 +254,10 @@ class BookingController extends Controller
 
     public function removeFromCart(Request $request): Response
     {
-        $serviceId = (int)$request->input('service_id', 0);
-        Cart::remove($serviceId);
+        $cartKey = (string)($request->input('cart_key') ?? $request->input('service_id') ?? '');
+        if (!empty($cartKey)) {
+            Cart::remove($cartKey);
+        }
         $details = Cart::getDetails();
 
         return Response::json([
@@ -744,6 +790,24 @@ class BookingController extends Controller
             
             $totalServiceAmount = (float)($service['starting_price'] ?? 0);
             $itemsToRecord = [];
+            $variantSuffix = '';
+
+            // Check if variant IDs passed in booking request (direct booking)
+            $subVariants = $request->input('variant_ids') ?? $request->input('variants');
+            if (!empty($subVariants) && !$request->input('from_cart')) {
+                if (is_string($subVariants)) {
+                    $subVariants = array_values(array_filter(array_map('intval', explode(',', $subVariants))));
+                } elseif (is_array($subVariants)) {
+                    $subVariants = array_values(array_filter(array_map('intval', $subVariants)));
+                } else {
+                    $subVariants = [];
+                }
+                if (!empty($subVariants)) {
+                    $vCalc = \App\Models\ServiceVariant::calculatePrice((int)$service['id'], $subVariants, $totalServiceAmount);
+                    $totalServiceAmount = (float)$vCalc['total_price'];
+                    $variantSuffix = (string)$vCalc['title_suffix'];
+                }
+            }
 
             if ($request->input('from_cart')) {
                 $cartData = Cart::getDetails();
@@ -796,11 +860,12 @@ class BookingController extends Controller
                 }
             }
 
-            // If no items were constructed, record default primary service
+            // If no items were constructed, record default primary service with variant suffix
             if (empty($itemsToRecord)) {
+                $serviceDisplayName = (string)$service['name'] . $variantSuffix;
                 $itemsToRecord[] = [
                     'service_id'  => (int)$service['id'],
-                    'name'        => (string)$service['name'],
+                    'name'        => $serviceDisplayName,
                     'item_type'   => 'service',
                     'quantity'    => 1,
                     'unit_price'  => $totalServiceAmount,

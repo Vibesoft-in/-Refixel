@@ -169,14 +169,22 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
 
           <div class="cart-items-wrapper">
             <?php foreach ($items as $item): ?>
-              <div class="d-flex align-items-center justify-content-between py-3 border-bottom cart-row" data-id="<?= $item['service_id'] ?>">
+              <?php $cKey = $item['cart_key'] ?? (string)$item['service_id']; ?>
+              <div class="d-flex align-items-center justify-content-between py-3 border-bottom cart-row" data-id="<?= $item['service_id'] ?>" data-cart-key="<?= htmlspecialchars($cKey, ENT_QUOTES) ?>">
                 <div class="d-flex align-items-center">
                   <img src="<?= \App\Core\View::asset('img/' . ($item['image'] ?? 'Full-home-clean.jpg')) ?>"
                        alt="<?= \App\Core\View::e($item['name']) ?>"
                        class="rounded mr-3" style="width: 70px; height: 70px; object-fit: cover;"
                        onerror="this.onerror=null; this.src='<?= \App\Core\View::asset('img/Full-home-clean.jpg') ?>';">
                   <div>
-                    <h6 class="font-weight-bold mb-1" style="font-size: 15px;"><?= \App\Core\View::e($item['name']) ?></h6>
+                    <h6 class="font-weight-bold mb-1" style="font-size: 15px;">
+                      <?= \App\Core\View::e($item['base_name'] ?? $item['name']) ?>
+                      <?php if (!empty($item['variant_suffix'])): ?>
+                        <span class="badge px-2 py-0.5 ml-1 font-weight-bold" style="background:#fff3ec; color:#f25b29; border:1px solid #ffdacf; font-size:11.5px;">
+                          <?= \App\Core\View::e(trim($item['variant_suffix'], ' ()')) ?>
+                        </span>
+                      <?php endif; ?>
+                    </h6>
                     <small class="text-muted d-block">Est. duration: ~<?= (int)$item['duration'] ?> mins</small>
                     <span class="font-weight-bold" style="color: #f25b29;">₹<?= number_format((float)$item['unit_price'], 0) ?> each</span>
                   </div>
@@ -184,9 +192,9 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
 
                 <div class="text-right">
                   <div class="d-flex align-items-center justify-content-end mb-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0 cart-minus-btn" data-id="<?= $item['service_id'] ?>">&minus;</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0 cart-minus-btn" data-id="<?= $item['service_id'] ?>" data-cart-key="<?= htmlspecialchars($cKey, ENT_QUOTES) ?>">&minus;</button>
                     <span class="px-3 font-weight-bold" style="font-size: 14px;"><?= $item['quantity'] ?></span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0 cart-plus-btn" data-id="<?= $item['service_id'] ?>">&plus;</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0 cart-plus-btn" data-id="<?= $item['service_id'] ?>" data-cart-key="<?= htmlspecialchars($cKey, ENT_QUOTES) ?>">&plus;</button>
                   </div>
                   <h6 class="font-weight-bold mb-0">₹<?= number_format((float)$item['line_total'], 0) ?></h6>
                 </div>
@@ -1262,7 +1270,8 @@ function initCartPage() {
       e.preventDefault();
       e.stopPropagation();
       var id = parseInt(this.getAttribute('data-id'), 10);
-      if (!id) return;
+      var cartKey = this.getAttribute('data-cart-key') || id;
+      if (!id && !cartKey) return;
       var self = this;
       self.disabled = true;
       var originalHtml = self.innerHTML;
@@ -1273,7 +1282,7 @@ function initCartPage() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({service_id: id, vendor_price_id: id, action: 'plus'})
+        body: JSON.stringify({service_id: id, cart_key: cartKey, vendor_price_id: id, action: 'plus'})
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -1293,7 +1302,8 @@ function initCartPage() {
       e.preventDefault();
       e.stopPropagation();
       var id = parseInt(this.getAttribute('data-id'), 10);
-      if (!id) return;
+      var cartKey = this.getAttribute('data-cart-key') || id;
+      if (!id && !cartKey) return;
       var self = this;
       self.disabled = true;
       var originalHtml = self.innerHTML;
@@ -1304,7 +1314,7 @@ function initCartPage() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({service_id: id, vendor_price_id: id, action: 'minus'})
+        body: JSON.stringify({service_id: id, cart_key: cartKey, vendor_price_id: id, action: 'minus'})
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {

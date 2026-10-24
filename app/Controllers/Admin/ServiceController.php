@@ -11,6 +11,7 @@ use App\Core\Upload;
 use App\Core\View;
 use App\Models\Category;
 use App\Models\Service;
+use App\Models\ServiceVariant;
 
 class ServiceController extends Controller
 {
@@ -405,6 +406,143 @@ class ServiceController extends Controller
 
         View::setFlash('success', "Category '{$cat['name']}' " . ($newActive ? 'activated' : 'deactivated') . ".");
         return $this->redirect('/admin/services/categories');
+    }
+
+    public function variants(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $service = Service::find((int)$id);
+        if (!$service) {
+            View::setFlash('error', 'Service not found.');
+            return $this->redirect('/admin/services');
+        }
+
+        $category = Category::find((int)$service['category_id']);
+        $variants = ServiceVariant::forService((int)$id, false);
+
+        // Group variants by group_name
+        $groupedVariants = [];
+        foreach ($variants as $v) {
+            $grp = !empty($v['group_name']) ? $v['group_name'] : 'Option';
+            if (!isset($groupedVariants[$grp])) {
+                $groupedVariants[$grp] = [];
+            }
+            $groupedVariants[$grp][] = $v;
+        }
+
+        return $this->render('admin.services.variants', [
+            'title'           => "{$service['name']} - Variations & Pricing | REFIXEL Admin",
+            'service'         => $service,
+            'category'        => $category,
+            'groupedVariants' => $groupedVariants,
+            'allVariants'     => $variants,
+        ], 'admin');
+    }
+
+    public function storeVariant(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $service = Service::find((int)$id);
+        if (!$service) {
+            View::setFlash('error', 'Service not found.');
+            return $this->redirect('/admin/services');
+        }
+
+        $groupName = trim((string)$request->input('group_name', 'Option'));
+        $name = trim((string)$request->input('name', ''));
+        $price = (float)$request->input('price', 0);
+        $duration = (int)$request->input('duration_minutes', 60);
+        $badge = trim((string)$request->input('badge', '')) ?: null;
+        $isDefault = (int)$request->input('is_default', 0);
+        $sortOrder = (int)$request->input('sort_order', 0);
+
+        if (empty($name)) {
+            View::setFlash('error', 'Option / Variation name is required.');
+            return $this->redirect("/admin/services/{$id}/variants");
+        }
+
+        if ($isDefault === 1) {
+            // Clear previous default in the same group
+            Database::execute("UPDATE service_variants SET is_default = 0 WHERE service_id = ? AND group_name = ?", [(int)$id, $groupName]);
+        }
+
+        Database::execute(
+            "INSERT INTO service_variants (service_id, group_name, name, price, duration_minutes, badge, is_default, sort_order, is_active, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NOW())",
+            [(int)$id, $groupName, $name, $price, $duration, $badge, $isDefault, $sortOrder]
+        );
+
+        View::setFlash('success', "Option '{$name}' added to {$service['name']} successfully.");
+        return $this->redirect("/admin/services/{$id}/variants");
+    }
+
+    public function updateVariant(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $variant = Database::fetchOne("SELECT * FROM service_variants WHERE id = ?", [(int)$id]);
+        if (!$variant) {
+            View::setFlash('error', 'Variation option not found.');
+            return $this->redirect('/admin/services');
+        }
+
+        $serviceId = (int)$variant['service_id'];
+        $groupName = trim((string)$request->input('group_name', $variant['group_name']));
+        $name = trim((string)$request->input('name', $variant['name']));
+        $price = (float)$request->input('price', $variant['price']);
+        $duration = (int)$request->input('duration_minutes', $variant['duration_minutes']);
+        $badge = trim((string)$request->input('badge', '')) ?: null;
+        $isDefault = (int)$request->input('is_default', 0);
+        $sortOrder = (int)$request->input('sort_order', $variant['sort_order']);
+
+        if (empty($name)) {
+            View::setFlash('error', 'Option name cannot be empty.');
+            return $this->redirect("/admin/services/{$serviceId}/variants");
+        }
+
+        if ($isDefault === 1) {
+            Database::execute("UPDATE service_variants SET is_default = 0 WHERE service_id = ? AND group_name = ? AND id != ?", [$serviceId, $groupName, (int)$id]);
+        }
+
+        Database::execute(
+            "UPDATE service_variants SET group_name = ?, name = ?, price = ?, duration_minutes = ?, badge = ?, is_default = ?, sort_order = ? WHERE id = ?",
+            [$groupName, $name, $price, $duration, $badge, $isDefault, $sortOrder, (int)$id]
+        );
+
+        View::setFlash('success', "Option '{$name}' updated successfully.");
+        return $this->redirect("/admin/services/{$serviceId}/variants");
+    }
+
+    public function deleteVariant(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $variant = Database::fetchOne("SELECT * FROM service_variants WHERE id = ?", [(int)$id]);
+        if (!$variant) {
+            View::setFlash('error', 'Variation option not found.');
+            return $this->redirect('/admin/services');
+        }
+
+        $serviceId = (int)$variant['service_id'];
+        Database::execute("DELETE FROM service_variants WHERE id = ?", [(int)$id]);
+
+        View::setFlash('success', "Option '{$variant['name']}' deleted successfully.");
+        return $this->redirect("/admin/services/{$serviceId}/variants");
+    }
+
+    public function toggleVariantStatus(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $variant = Database::fetchOne("SELECT * FROM service_variants WHERE id = ?", [(int)$id]);
+        if (!$variant) {
+            View::setFlash('error', 'Variation option not found.');
+            return $this->redirect('/admin/services');
+        }
+
+        $serviceId = (int)$variant['service_id'];
+        $newActive = empty($variant['is_active']) ? 1 : 0;
+        Database::execute("UPDATE service_variants SET is_active = ? WHERE id = ?", [$newActive, (int)$id]);
+
+        View::setFlash('success', "Option '{$variant['name']}' " . ($newActive ? 'activated' : 'deactivated') . ".");
+        return $this->redirect("/admin/services/{$serviceId}/variants");
     }
 }
 

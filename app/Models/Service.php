@@ -13,10 +13,12 @@ class Service extends Model
     {
         $map = [
             'balcony-deep-pressure-wash'                 => 'refixel-balcony-pressure-wash.png',
-            'full-home-cleaning'                         => 'refixel-cleaning.jpg',
+            'full-home-cleaning'                         => 'refixel-full-home-clean.jpg',
+            'professional-full-home-cleaning'            => 'refixel-full-home-clean.jpg',
             'bathroom-deep-cleaning'                     => 'refixel-bathroom-cleaning.jpg',
             'kitchen-deep-cleaning'                      => 'refixel-kitchen-cleaning.jpg',
             'sofa-cleaning'                              => 'refixel-sofa-cleaning.jpg',
+            'sofa-upholstery-deep-cleaning'              => 'refixel-sofa-cleaning.jpg',
             'office-cleaning'                            => 'refixel-office-cleaning.jpg',
             'interior-painting'                          => 'refixel-painting.jpg',
             'cockroach-pest-control'                     => 'service-pest-control.jpg',
@@ -31,7 +33,7 @@ class Service extends Model
             'fall-ceiling-installation'                  => 'refixel-fall-ceiling.jpg',
             'fall-ceiling-repair-modification'           => 'refixel-fall-ceiling.jpg',
             // Plumbers
-            'water-tank-cleaning'                        => 'refixel-plumber.jpg',
+            'water-tank-cleaning'                        => 'refixel-water-tank-cleaning.jpg',
             'toilet-sanitary-fitting'                    => 'service-plumber.jpg',
             'washbasin-sink-drainage-repair'             => 'refixel-plumber.jpg',
             'water-motor-pump-repair'                    => 'service-plumber.jpg',

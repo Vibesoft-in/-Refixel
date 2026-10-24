@@ -14,6 +14,7 @@ use App\Models\Service;
 use App\Models\ServiceArea;
 use App\Models\ServiceChecklistItem;
 use App\Models\ServiceAddon;
+use App\Models\ServiceVariant;
 
 class ServiceController extends Controller
 {
@@ -350,6 +351,7 @@ class ServiceController extends Controller
         ];
 
         $addons = ServiceAddon::forService((int)$svc['id'], [], 6);
+        $variants = ServiceVariant::getGroupedByService((int)$svc['id']);
 
         return $this->render('customer.services.show', [
             'title'           => $title,
@@ -365,6 +367,7 @@ class ServiceController extends Controller
             'relatedServices' => $relatedServices,
             'serviceAreas'    => $serviceAreas,
             'addons'          => $addons,
+            'variants'        => $variants,
         ], 'customer');
     }
 

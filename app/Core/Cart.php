@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Models\Service;
+use App\Models\ServiceVariant;
 
 class Cart
 {
@@ -21,7 +22,7 @@ class Cart
     }
 
     /**
-     * Get raw cart items (service_id => quantity)
+     * Get raw cart items
      */
     public static function getRaw(): array
     {
@@ -30,7 +31,20 @@ class Cart
     }
 
     /**
-     * Get full cart with database-verified services, quantities, prices and taxes
+     * Build standard item key for session cart
+     */
+    public static function buildKey(int $serviceId, array $variantIds = []): string
+    {
+        $cleanVariants = array_values(array_filter(array_map('intval', $variantIds)));
+        sort($cleanVariants);
+        if (empty($cleanVariants)) {
+            return (string)$serviceId;
+        }
+        return $serviceId . '_v' . implode('_', $cleanVariants);
+    }
+
+    /**
+     * Get full cart with database-verified services, quantities, variants, prices and taxes
      */
     public static function getDetails(): array
     {
@@ -40,31 +54,67 @@ class Cart
         $subtotal = 0.0;
         $itemCount = 0;
 
-        foreach ($raw as $serviceId => $qty) {
-            $qty = (int)$qty;
-            if ($qty <= 0) continue;
+        foreach ($raw as $key => $entry) {
+            $serviceId = 0;
+            $qty = 0;
+            $variantIds = [];
 
-            $service = Service::find((int)$serviceId);
-            if (!$service || empty($service['is_active']) || !empty($service['is_coming_soon'])) {
-                // Remove inactive, deleted, or coming soon service automatically
-                unset($_SESSION[self::SESSION_KEY][$serviceId]);
+            if (is_array($entry)) {
+                $serviceId = (int)($entry['service_id'] ?? 0);
+                $qty = (int)($entry['quantity'] ?? 0);
+                $variantIds = (array)($entry['variant_ids'] ?? []);
+            } else {
+                $serviceId = (int)$key;
+                $qty = (int)$entry;
+            }
+
+            if ($qty <= 0 || $serviceId <= 0) {
+                unset($_SESSION[self::SESSION_KEY][$key]);
                 continue;
             }
 
-            $unitPrice = (float)$service['starting_price'];
+            $service = Service::find($serviceId);
+            if (!$service || empty($service['is_active']) || !empty($service['is_coming_soon'])) {
+                // Remove inactive, deleted, or coming soon service automatically
+                unset($_SESSION[self::SESSION_KEY][$key]);
+                continue;
+            }
+
+            $basePrice = (float)$service['starting_price'];
+            $name = (string)$service['name'];
+            $duration = (int)($service['duration_minutes'] ?? 60);
+            $variantItems = [];
+            $variantSuffix = '';
+
+            if (!empty($variantIds)) {
+                $calc = ServiceVariant::calculatePrice($serviceId, $variantIds, $basePrice);
+                $unitPrice = (float)$calc['total_price'];
+                $variantSuffix = (string)$calc['title_suffix'];
+                $name .= $variantSuffix;
+                $duration = (int)$calc['duration'];
+                $variantItems = $calc['variant_items'] ?? [];
+            } else {
+                $unitPrice = $basePrice;
+            }
+
             $lineTotal = $unitPrice * $qty;
             $subtotal += $lineTotal;
             $itemCount += $qty;
 
             $items[] = [
-                'service_id'   => (int)$service['id'],
-                'name'         => $service['name'],
-                'slug'         => $service['slug'],
-                'image'        => $service['image'] ?? 'Full-home-clean.jpg',
-                'duration'     => (int)($service['duration_minutes'] ?? 60),
-                'unit_price'   => $unitPrice,
-                'quantity'     => $qty,
-                'line_total'   => $lineTotal,
+                'cart_key'       => (string)$key,
+                'service_id'     => (int)$service['id'],
+                'name'           => $name,
+                'base_name'      => $service['name'],
+                'variant_suffix' => $variantSuffix,
+                'slug'           => $service['slug'],
+                'image'          => Service::resolveImage($service['slug'] ?? '', $service['image'] ?? null),
+                'duration'       => $duration,
+                'unit_price'     => $unitPrice,
+                'quantity'       => $qty,
+                'line_total'     => $lineTotal,
+                'variant_ids'    => $variantIds,
+                'variant_items'  => $variantItems,
             ];
         }
 
@@ -81,7 +131,7 @@ class Cart
         ];
     }
 
-    public static function add(int $serviceId, int $quantity = 1): array
+    public static function add(int $serviceId, int $quantity = 1, array $variantIds = []): array
     {
         self::init();
         $service = Service::find($serviceId);
@@ -97,34 +147,60 @@ class Cart
             ];
         }
 
-        if (isset($_SESSION[self::SESSION_KEY][$serviceId])) {
-            $_SESSION[self::SESSION_KEY][$serviceId] += $quantity;
+        $cleanVariants = array_values(array_filter(array_map('intval', $variantIds)));
+        sort($cleanVariants);
+        $key = self::buildKey($serviceId, $cleanVariants);
+
+        if (isset($_SESSION[self::SESSION_KEY][$key])) {
+            if (is_array($_SESSION[self::SESSION_KEY][$key])) {
+                $_SESSION[self::SESSION_KEY][$key]['quantity'] += $quantity;
+            } else {
+                $_SESSION[self::SESSION_KEY][$key] += $quantity;
+            }
         } else {
-            $_SESSION[self::SESSION_KEY][$serviceId] = $quantity;
+            $_SESSION[self::SESSION_KEY][$key] = [
+                'service_id'  => $serviceId,
+                'quantity'    => $quantity,
+                'variant_ids' => $cleanVariants,
+            ];
         }
 
         return ['success' => true, 'cart' => self::getDetails()];
     }
 
-    public static function update(int $serviceId, int $quantity): array
+    public static function update($keyOrId, int $quantity): array
     {
         self::init();
+        $key = (string)$keyOrId;
+
         if ($quantity <= 0) {
-            unset($_SESSION[self::SESSION_KEY][$serviceId]);
+            unset($_SESSION[self::SESSION_KEY][$key]);
+            if (is_numeric($keyOrId)) {
+                unset($_SESSION[self::SESSION_KEY][(int)$keyOrId]);
+            }
         } else {
-            $service = Service::find($serviceId);
-            if ($service && !empty($service['is_active'])) {
-                $_SESSION[self::SESSION_KEY][$serviceId] = $quantity;
+            if (isset($_SESSION[self::SESSION_KEY][$key])) {
+                if (is_array($_SESSION[self::SESSION_KEY][$key])) {
+                    $_SESSION[self::SESSION_KEY][$key]['quantity'] = $quantity;
+                } else {
+                    $_SESSION[self::SESSION_KEY][$key] = $quantity;
+                }
+            } elseif (is_numeric($keyOrId) && isset($_SESSION[self::SESSION_KEY][(int)$keyOrId])) {
+                $_SESSION[self::SESSION_KEY][(int)$keyOrId] = $quantity;
             }
         }
 
         return ['success' => true, 'cart' => self::getDetails()];
     }
 
-    public static function remove(int $serviceId): array
+    public static function remove($keyOrId): array
     {
         self::init();
-        unset($_SESSION[self::SESSION_KEY][$serviceId]);
+        $key = (string)$keyOrId;
+        unset($_SESSION[self::SESSION_KEY][$key]);
+        if (is_numeric($keyOrId)) {
+            unset($_SESSION[self::SESSION_KEY][(int)$keyOrId]);
+        }
         return ['success' => true, 'cart' => self::getDetails()];
     }
 
@@ -134,4 +210,3 @@ class Cart
         $_SESSION[self::SESSION_KEY] = [];
     }
 }
-

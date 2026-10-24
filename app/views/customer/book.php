@@ -31,6 +31,12 @@ if (!$user && !$customerProfile && !empty($_SESSION['customer_profile'])) {
 $currentCity = \App\Models\ServiceArea::normalizeCity($_GET['city'] ?? ($_SESSION['selected_city'] ?? ($customerProfile['city'] ?? null)));
 $selectedServiceId = $service['id'] ?? 0;
 
+$selectedVariantIds = $selectedVariantIds ?? [];
+$variantCalc = $variantCalc ?? null;
+$servicePriceToDisplay = !empty($variantCalc['total_price']) ? (float)$variantCalc['total_price'] : ($service ? (float)$service['starting_price'] : 0);
+$variantSuffixToDisplay = !empty($variantCalc['title_suffix']) ? $variantCalc['title_suffix'] : '';
+$serviceDurationToDisplay = (int)($variantCalc['duration'] ?? ($service['duration_minutes'] ?? 60));
+
 $savedAddresses = [];
 if ($user) {
     try {
@@ -288,12 +294,20 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
                 <label class="font-weight-bold small">Selected Service <span class="text-danger">*</span></label>
                 <?php if ($service): ?>
                   <input type="hidden" name="service_id" value="<?= (int)$service['id'] ?>" id="serviceIdInput">
+                  <?php if (!empty($selectedVariantIds)): ?>
+                    <input type="hidden" name="variant_ids" value="<?= htmlspecialchars(implode(',', $selectedVariantIds), ENT_QUOTES) ?>">
+                  <?php endif; ?>
                   <div class="p-3 rounded bg-light border d-flex justify-content-between align-items-center">
                     <div>
-                      <h6 class="font-weight-bold mb-0"><?= \App\Core\View::e($service['name']) ?></h6>
-                      <small class="text-muted">Estimated duration: ~<?= (int)($service['duration_minutes'] ?? 60) ?> mins</small>
+                      <h6 class="font-weight-bold mb-0">
+                        <?= \App\Core\View::e($service['name']) ?>
+                        <?php if (!empty($variantSuffixToDisplay)): ?>
+                          <span style="color: #f25b29;"><?= \App\Core\View::e($variantSuffixToDisplay) ?></span>
+                        <?php endif; ?>
+                      </h6>
+                      <small class="text-muted">Estimated duration: ~<?= $serviceDurationToDisplay ?> mins</small>
                     </div>
-                    <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format((float)$service['starting_price'], 0) ?></h5>
+                    <h5 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= number_format($servicePriceToDisplay, 0) ?></h5>
                   </div>
                 <?php else: ?>
                   <select name="service_id" id="serviceIdSelect" class="form-control" required>
@@ -725,7 +739,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
 
           <div class="d-flex justify-content-between mb-2 small text-muted">
             <span>Service Base Fee:</span>
-            <span class="font-weight-bold text-dark" id="summaryBasePrice">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></span>
+            <span class="font-weight-bold text-dark" id="summaryBasePrice">₹<?= number_format($servicePriceToDisplay, 0) ?></span>
           </div>
           <div class="d-flex justify-content-between mb-2 small text-muted">
             <span>Safety & Hygiene Gear:</span>
@@ -738,7 +752,7 @@ $initialSummaryLine = implode(', ', $initialSummaryParts) . (!empty($initialPinc
           <hr>
           <div class="d-flex justify-content-between align-items-baseline mb-4">
             <span class="font-weight-bold">Estimated Total:</span>
-            <h3 class="font-weight-bold mb-0" style="color: #f25b29;" id="summaryTotal">₹<?= $service ? number_format((float)$service['starting_price'], 0) : '0' ?></h3>
+            <h3 class="font-weight-bold mb-0" style="color: #f25b29;" id="summaryTotal">₹<?= number_format($servicePriceToDisplay, 0) ?></h3>
           </div>
 
           <div class="p-3 rounded bg-white border mb-3 small" style="line-height: 1.8;">

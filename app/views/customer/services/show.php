@@ -82,17 +82,78 @@ foreach ($checklist ?? [] as $item) {
           <div class="row py-3 mb-4 rounded bg-light border">
             <div class="col-4 text-center border-right">
               <span class="text-muted small d-block">Starting Price</span>
-              <h4 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= $price ?></h4>
+              <h4 class="font-weight-bold mb-0" id="mainHeroPriceDisplay" style="color: #f25b29;">₹<?= $price ?></h4>
             </div>
             <div class="col-4 text-center border-right">
               <span class="text-muted small d-block">Duration</span>
-              <h4 class="font-weight-bold mb-0">~<?= $duration ?> mins</h4>
+              <h4 class="font-weight-bold mb-0" id="mainHeroDurationDisplay">~<?= $duration ?> mins</h4>
             </div>
             <div class="col-4 text-center">
               <span class="text-muted small d-block">Customer Rating</span>
               <h4 class="font-weight-bold mb-0" style="color: #f59e0b;">4.85 ★</h4>
             </div>
           </div>
+
+          <?php if (!empty($variants)): ?>
+            <!-- Hero Option / Size Selector (E-Commerce variation pills) -->
+            <div class="card border mb-4 shadow-sm" style="border-radius: 14px; background: #ffffff; border-color: #e2e8f0 !important;">
+              <div class="card-body p-3 p-md-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                  <div>
+                    <h5 class="font-weight-bold text-dark mb-0" style="font-size: 16px;">
+                      <i class="fa fa-sliders mr-1" style="color: #f25b29;"></i> Select Service Options
+                    </h5>
+                    <small class="text-muted">Choose your size, seats, or capacity before booking</small>
+                  </div>
+                  <span class="badge badge-light border text-dark font-weight-bold px-2.5 py-1.5" id="heroVariantBadge" style="font-size: 12px; background: #f8fafc;">
+                    Default Selected
+                  </span>
+                </div>
+
+                <?php foreach ($variants as $groupName => $vList): ?>
+                  <div class="variant-group-section mb-3" data-group="<?= htmlspecialchars($groupName, ENT_QUOTES) ?>">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span class="small font-weight-bold text-secondary text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">
+                        <?= htmlspecialchars($groupName) ?>:
+                      </span>
+                      <span class="small font-weight-bold group-current-label" style="font-size: 12.5px; color: #f25b29;"></span>
+                    </div>
+                    <div class="variant-pill-grid d-flex flex-wrap" style="gap: 8px;">
+                      <?php 
+                      $hasDef = false;
+                      foreach ($vList as $opt) {
+                          if (!empty($opt['is_default'])) { $hasDef = true; break; }
+                      }
+                      ?>
+                      <?php foreach ($vList as $idx => $v): ?>
+                        <?php 
+                          $isSel = (!empty($v['is_default']) || (!$hasDef && $idx === 0));
+                          $vPrice = (float)$v['price'];
+                        ?>
+                        <button type="button" 
+                                class="variant-pill-btn btn btn-sm <?= $isSel ? 'active' : '' ?>"
+                                data-variant-id="<?= (int)$v['id'] ?>"
+                                data-group="<?= htmlspecialchars($groupName, ENT_QUOTES) ?>"
+                                data-name="<?= htmlspecialchars($v['name'], ENT_QUOTES) ?>"
+                                data-price="<?= $vPrice ?>"
+                                data-duration="<?= (int)($v['duration_minutes'] ?? 0) ?>">
+                          <span class="pill-name font-weight-bold"><?= htmlspecialchars($v['name']) ?></span>
+                          <?php if ($vPrice > 0): ?>
+                            <span class="pill-price font-weight-bold ml-1"><?= ($groupName === 'Cleaning Type' ? '+' : '') ?>₹<?= number_format($vPrice, 0) ?></span>
+                          <?php elseif ($groupName === 'Cleaning Type'): ?>
+                            <span class="pill-price text-muted ml-1 small">(Standard)</span>
+                          <?php endif; ?>
+                          <?php if (!empty($v['badge'])): ?>
+                            <span class="pill-badge"><?= htmlspecialchars($v['badge']) ?></span>
+                          <?php endif; ?>
+                        </button>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          <?php endif; ?>
 
           <!-- What's Included & What's Excluded Checklist -->
           <div class="mb-5">
@@ -660,9 +721,59 @@ foreach ($checklist ?? [] as $item) {
         <p class="text-muted small mb-3">Location: <strong><?= $cityName ?></strong></p>
 
         <div class="d-flex align-items-baseline mb-3 pb-3 border-bottom">
-          <h2 class="font-weight-bold mb-0" style="color: #f25b29;">₹<?= $price ?></h2>
-          <span class="text-muted ml-2 small">Starting price • Inclusive of GST</span>
+          <h2 class="font-weight-bold mb-0" id="sidebarPriceDisplay" style="color: #f25b29;">₹<?= $price ?></h2>
+          <span class="text-muted ml-2 small" id="sidebarPriceNote">Starting price • Inclusive of GST</span>
         </div>
+
+        <?php if (!empty($variants)): ?>
+          <!-- Sidebar Compact Option Selector -->
+          <div class="sidebar-variants-card mb-3 p-2.5 rounded" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small font-weight-bold text-dark" style="font-size: 12px;">
+                <i class="fa fa-sliders mr-1" style="color: #f25b29;"></i> Selected Option
+              </span>
+              <span class="badge badge-light border text-muted small" id="sidebarVariantBadge" style="font-size: 10px;">Select</span>
+            </div>
+
+            <?php foreach ($variants as $groupName => $vList): ?>
+              <div class="variant-group-section mb-2" data-group="<?= htmlspecialchars($groupName, ENT_QUOTES) ?>">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="text-muted small font-weight-bold text-uppercase" style="font-size: 11px;">
+                    <?= htmlspecialchars($groupName) ?>:
+                  </span>
+                  <span class="small font-weight-bold group-current-label" style="font-size: 11.5px; color: #f25b29;"></span>
+                </div>
+                <div class="variant-pill-grid d-flex flex-wrap" style="gap: 6px;">
+                  <?php 
+                  $hasDef = false;
+                  foreach ($vList as $opt) {
+                      if (!empty($opt['is_default'])) { $hasDef = true; break; }
+                  }
+                  ?>
+                  <?php foreach ($vList as $idx => $v): ?>
+                    <?php 
+                      $isSel = (!empty($v['is_default']) || (!$hasDef && $idx === 0));
+                      $vPrice = (float)$v['price'];
+                    ?>
+                    <button type="button" 
+                            class="variant-pill-btn btn btn-sm <?= $isSel ? 'active' : '' ?>"
+                            data-variant-id="<?= (int)$v['id'] ?>"
+                            data-group="<?= htmlspecialchars($groupName, ENT_QUOTES) ?>"
+                            data-name="<?= htmlspecialchars($v['name'], ENT_QUOTES) ?>"
+                            data-price="<?= $vPrice ?>"
+                            data-duration="<?= (int)($v['duration_minutes'] ?? 0) ?>"
+                            style="font-size: 12px; padding: 4px 9px;">
+                      <span class="pill-name font-weight-bold"><?= htmlspecialchars($v['name']) ?></span>
+                      <?php if ($vPrice > 0): ?>
+                        <span class="pill-price font-weight-bold ml-1"><?= ($groupName === 'Cleaning Type' ? '+' : '') ?>₹<?= number_format($vPrice, 0) ?></span>
+                      <?php endif; ?>
+                    </button>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
 
         <ul class="list-unstyled mb-4 small" style="line-height: 1.9;">
           <li><i class="fa fa-check mr-2" style="color:#f25b29;"></i> 100% Background-verified technician</li>
@@ -1786,9 +1897,102 @@ document.addEventListener('DOMContentLoaded', function () {
       if (val > 0) checkedAddons.push(val);
     });
 
+    // Collect selected variant IDs
+    var checkedVariants = [];
+    document.querySelectorAll('.variant-group-section .variant-pill-btn.active').forEach(function(pill) {
+      var vId = parseInt(pill.getAttribute('data-variant-id'), 10);
+      if (vId > 0 && checkedVariants.indexOf(vId) === -1) {
+        checkedVariants.push(vId);
+      }
+    });
+
+    var postData = 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1';
+    if (checkedAddons.length > 0) {
+      postData += '&addon_ids=' + encodeURIComponent(checkedAddons.join(','));
+    }
+    if (checkedVariants.length > 0) {
+      postData += '&variant_ids=' + encodeURIComponent(checkedVariants.join(','));
+    }
+
+    fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: postData
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var successText = checkedAddons.length > 0 
+        ? '<i class="fa fa-check"></i> Added +' + checkedAddons.length + ' Add-ons' 
+        : '<i class="fa fa-check"></i> Added';
+      cartBtn.innerHTML = successText;
+      cartBtn.style.background = '#10b981';
+      cartBtn.style.borderColor = '#10b981';
+      cartBtn.style.color = '#ffffff';
+
+      if (window.syncCartUI) {
+        window.syncCartUI();
+      }
+
+      // If user did not pick inline addons and modal is available, open modal; else skip modal to prevent duplicate prompt
+      if (checkedAddons.length === 0 && window.openRefixelAddonModal && data && data.addons && data.addons.length > 0) {
+        window.openRefixelAddonModal(data);
+      }
+
+      setTimeout(function() {
+        cartBtn.innerHTML = origHtml;
+        cartBtn.style.background = '';
+        cartBtn.style.borderColor = '';
+        cartBtn.style.color = '';
+        cartBtn.disabled = false;
+      }, 1800);
+    })
+    .catch(function(err) {
+      console.error(err);
+      cartBtn.innerHTML = origHtml;
+      cartBtn.disabled = false;
+    });
+  });
+
+  /* Book Doorstep Visit / Mobile Book Now button handler (Bundles checked add-ons & variants) */
+  document.addEventListener('click', function(e) {
+    var bookBtn = e.target.closest('.service-book-visit-btn, .smb-book-btn');
+    if (!bookBtn) return;
+
+    var serviceId = bookBtn.getAttribute('data-service-id');
+    if (!serviceId || serviceId === '0') return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    var origHtml = bookBtn.innerHTML;
+    bookBtn.disabled = true;
+    bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+    // Collect checked add-on IDs
+    var checkedAddons = [];
+    document.querySelectorAll('#serviceAddonsWidget .service-addon-chk:checked').forEach(function(chk) {
+      var val = parseInt(chk.value, 10);
+      if (val > 0) checkedAddons.push(val);
+    });
+
+    // Collect selected variant IDs
+    var checkedVariants = [];
+    document.querySelectorAll('.variant-group-section .variant-pill-btn.active').forEach(function(pill) {
+      var vId = parseInt(pill.getAttribute('data-variant-id'), 10);
+      if (vId > 0 && checkedVariants.indexOf(vId) === -1) {
+        checkedVariants.push(vId);
+      }
+    });
+
     var postData = 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1';
     if (checkedAddons.length > 0) {
       postData += '&addon_ids=' + encodeURIComponent(checkedAddons.join(','));
+    }
+    if (checkedVariants.length > 0) {
+      postData += '&variant_ids=' + encodeURIComponent(checkedVariants.join(','));
     }
 
     fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
@@ -1882,5 +2086,187 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  /* Interactive Service Variations: Dynamic Price Recalculation & Synchronizer */
+  function updateVariantCalculation() {
+    var groups = document.querySelectorAll('.variant-group-section');
+    if (!groups || groups.length === 0) return;
+
+    // Track unique group names
+    var groupNames = {};
+    var selectedIds = [];
+    var selectedNames = [];
+    var totalPrice = 0;
+    var totalDuration = 0;
+
+    groups.forEach(function(grp) {
+      var gName = grp.getAttribute('data-group');
+      if (groupNames[gName]) return; // Only process once per unique group name
+      groupNames[gName] = true;
+
+      var activePill = grp.querySelector('.variant-pill-btn.active');
+      if (!activePill) {
+        activePill = grp.querySelector('.variant-pill-btn');
+        if (activePill) activePill.classList.add('active');
+      }
+
+      if (activePill) {
+        var vId = parseInt(activePill.getAttribute('data-variant-id'), 10);
+        var vName = activePill.getAttribute('data-name');
+        var vPrice = parseFloat(activePill.getAttribute('data-price')) || 0;
+        var vDur = parseInt(activePill.getAttribute('data-duration'), 10) || 0;
+
+        selectedIds.push(vId);
+        selectedNames.push(vName);
+        totalPrice += vPrice;
+        totalDuration += vDur;
+
+        // Sync all labels for this group
+        document.querySelectorAll('.variant-group-section[data-group="' + CSS.escape(gName) + '"] .group-current-label').forEach(function(lbl) {
+          lbl.textContent = vName;
+        });
+      }
+    });
+
+    if (totalPrice <= 0) {
+      totalPrice = parseFloat('<?= (float)$service['starting_price'] ?>') || 0;
+    }
+
+    // Update Price on Hero and Sidebar Displays
+    var heroPriceEl = document.getElementById('mainHeroPriceDisplay');
+    var sidebarPriceEl = document.getElementById('sidebarPriceDisplay');
+
+    var formattedPrice = '₹' + Math.round(totalPrice).toLocaleString('en-IN');
+    if (heroPriceEl) {
+      heroPriceEl.textContent = formattedPrice;
+      heroPriceEl.classList.remove('price-pulse');
+      void heroPriceEl.offsetWidth;
+      heroPriceEl.classList.add('price-pulse');
+    }
+    if (sidebarPriceEl) {
+      sidebarPriceEl.textContent = formattedPrice;
+      sidebarPriceEl.classList.remove('price-pulse');
+      void sidebarPriceEl.offsetWidth;
+      sidebarPriceEl.classList.add('price-pulse');
+    }
+
+    // Update Duration if applicable
+    if (totalDuration > 0) {
+      var heroDurEl = document.getElementById('mainHeroDurationDisplay');
+      if (heroDurEl) heroDurEl.textContent = '~' + totalDuration + ' mins';
+    }
+
+    // Update Option Badges
+    var summaryText = selectedNames.join(' · ');
+    var heroBadge = document.getElementById('heroVariantBadge');
+    var sidebarBadge = document.getElementById('sidebarVariantBadge');
+    if (heroBadge) heroBadge.textContent = summaryText;
+    if (sidebarBadge) sidebarBadge.textContent = summaryText;
+
+    // Update Addon Widget base price
+    var addWidget = document.getElementById('serviceAddonsWidget');
+    if (addWidget) {
+      addWidget.setAttribute('data-base-price', totalPrice);
+      updateAddonSummary();
+    }
+
+    // Update Booking Links with selected variants
+    document.querySelectorAll('.service-book-visit-btn, .smb-book-btn').forEach(function(btn) {
+      var baseBookUrl = '<?= \App\Core\View::url('/book?service_id=' . (int)$service['id'] . '&city=' . urlencode($city)) ?>';
+      btn.setAttribute('href', baseBookUrl + '&variants=' + encodeURIComponent(selectedIds.join(',')));
+    });
+
+    // Update WhatsApp link text
+    var waBtn = document.getElementById('serviceWhatsAppBtn');
+    if (waBtn) {
+      var swNum = '<?= preg_replace('/[^0-9]/', '', (string)\App\Models\Setting::get('whatsapp_number', '918791154730')) ?>';
+      var svcTitle = '<?= addslashes($service['name']) ?>';
+      var cityVal = '<?= addslashes($city) ?>';
+      var optText = selectedNames.length > 0 ? (' (' + selectedNames.join(' · ') + ')') : '';
+      var waMsg = 'Hi Refixel, I would like to book ' + svcTitle + optText + ' for ₹' + Math.round(totalPrice) + ' in ' + cityVal;
+      var newBaseWa = 'https://api.whatsapp.com/send?phone=' + swNum + '&text=' + encodeURIComponent(waMsg);
+      waBtn.setAttribute('data-base-url', newBaseWa);
+      waBtn.href = newBaseWa;
+      updateAddonSummary();
+    }
+  }
+
+  // Pill click handler with two-way synchronization between Hero and Sidebar cards
+  document.addEventListener('click', function(e) {
+    var pill = e.target.closest('.variant-pill-btn');
+    if (!pill) return;
+    e.preventDefault();
+
+    var vId = pill.getAttribute('data-variant-id');
+    var gName = pill.getAttribute('data-group');
+
+    // Synchronize all pills of the same group across hero & sidebar cards
+    document.querySelectorAll('.variant-group-section[data-group="' + CSS.escape(gName) + '"]').forEach(function(grp) {
+      grp.querySelectorAll('.variant-pill-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-variant-id') === vId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    });
+
+    updateVariantCalculation();
+  });
+
+  // Run initial variant calculation on page load
+  updateVariantCalculation();
 });
 </script>
+
+<style>
+.variant-pill-btn {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  user-select: none;
+}
+.variant-pill-btn:hover {
+  border-color: #f25b29 !important;
+  color: #f25b29 !important;
+  background: #fffaf7 !important;
+  transform: translateY(-1px);
+}
+.variant-pill-btn.active {
+  background: linear-gradient(135deg, #fff3ec 0%, #ffede5 100%) !important;
+  color: #ea580c !important;
+  border-color: #f25b29 !important;
+  box-shadow: 0 3px 8px rgba(242, 91, 41, 0.2) !important;
+  font-weight: 700;
+}
+.variant-pill-btn .pill-badge {
+  background: #ffedd5;
+  color: #c2410c;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.3px;
+}
+.variant-pill-btn.active .pill-badge {
+  background: #f25b29;
+  color: #ffffff;
+}
+.price-pulse {
+  animation: pricePulseAnim 0.35s ease-out;
+}
+@keyframes pricePulseAnim {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); color: #ea580c; }
+  100% { transform: scale(1); }
+}
+</style>

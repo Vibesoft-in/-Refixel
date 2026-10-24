@@ -273,6 +273,10 @@ $stats         = $stats ?? ['total_main' => count($services), 'total_addons' => 
                     </button>
                   </form>
 
+                  <a href="<?= View::url('/admin/services/' . $s['id'] . '/variants') ?>" class="btn btn-sm btn-outline-dark py-1 px-2 font-weight-bold mr-1" title="Manage Sizes, Seats, Capacity & Variations" style="border-color: #f25b29; color: #f25b29;">
+                    <i class="fa fa-sliders mr-1"></i>Options
+                  </a>
+
                   <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 font-weight-bold edit-service-btn"
                     data-id="<?= (int)$s['id'] ?>"
                     data-name="<?= View::e($s['name']) ?>"
