@@ -42,6 +42,14 @@ Router::get('/sitemap.xml', 'PageController@sitemap');
 Router::get('/robots.txt', 'PageController@robots');
 
 
+// 301 Redirect for plumber URL consistency (/plumbers-services -> /plumber-services)
+Router::get('/plumbers-services', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/plumber-services'), 301);
+});
+Router::get('/plumbers-services-in-{city}', function(\App\Core\Request $request, string $city) {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url("/plumber-services-in-{$city}"), 301);
+});
+
 // Clean URLs for categories (e.g. /cleaning-services, /painting-services)
 Router::get('/{category}-services', 'ServiceController@categoryClean');
 

@@ -2,7 +2,7 @@
 <div class="loacation_popup" id="popupmodal_gate" style="display:none;">
   <div class="select_located loc-gate-card">
     <div class="locat_header">
-      <h4>Select Your Location</h4>
+      <div class="h4 font-weight-bold mb-0" style="font-size: 1.5rem; line-height: 1.2;">Select Your Location</div>
       <span class="btn_close_loc" id="locGateCloseBtn" style="cursor:pointer; font-size:24px; line-height:1;">&times;</span>
     </div>
 
@@ -34,7 +34,7 @@
             <i class="fa fa-search loc-search-icon"></i>
             <input type="text" id="locManualInput" placeholder="Enter your city or 6-digit pincode" autocomplete="off">
           </div>
-          <h6 class="text-muted small font-weight-bold mb-2">Popular Cities</h6>
+          <div class="text-muted small font-weight-bold mb-2">Popular Cities</div>
           <div class="row no-gutters city-chip-grid" style="display:flex; flex-wrap:wrap; gap:8px;">
             <?php
             $popularCities = \App\Models\ServiceArea::ALLOWED_CITIES;

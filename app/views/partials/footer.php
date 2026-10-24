@@ -394,7 +394,7 @@
             </a>
           </div>
           <p style="font-size: 14.5px; line-height: 1.7; color: #cbd5e1;">
-            Your trusted partner for professional, reliable, and hassle-free home services across India.
+            Verified home services in Kashipur, Jaspur &amp; Thakurdwara, Uttarakhand.
           </p>
         </div>
 
@@ -432,19 +432,19 @@
             <div class="footer-services-wrap">
               <div class="footer-services-col">
                 <ul class="list-unstyled p-0 mb-0" style="font-size: 13.5px; line-height: 2.2;">
-                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">AC Repair</a></li>
+                  <li><a href="<?= \App\Core\View::url('/ac-services') ?>" class="footer-nav-link">AC Repair</a></li>
                   <li><a href="<?= \App\Core\View::url('/electrician-services') ?>" class="footer-nav-link">Electrician</a></li>
                   <li><a href="<?= \App\Core\View::url('/plumber-services') ?>" class="footer-nav-link">Plumbing</a></li>
                   <li><a href="<?= \App\Core\View::url('/cleaning-services') ?>" class="footer-nav-link">Cleaning</a></li>
-                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Laundry</a></li>
+                  <li><a href="<?= \App\Core\View::url('/fall-ceiling-services') ?>" class="footer-nav-link">Fall Ceiling</a></li>
                 </ul>
               </div>
               <div class="footer-services-col">
                 <ul class="list-unstyled p-0 mb-0" style="font-size: 13.5px; line-height: 2.2;">
-                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Pest Control</a></li>
-                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Carpenter</a></li>
-                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Painting</a></li>
-                  <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">Appliance Repair</a></li>
+                  <li><a href="<?= \App\Core\View::url('/pest-control-services') ?>" class="footer-nav-link">Pest Control</a></li>
+                  <li><a href="<?= \App\Core\View::url('/carpenter-services') ?>" class="footer-nav-link">Carpenter</a></li>
+                  <li><a href="<?= \App\Core\View::url('/painting-services') ?>" class="footer-nav-link">Painting</a></li>
+                  <li><a href="<?= \App\Core\View::url('/appliance-repair-services') ?>" class="footer-nav-link">Appliance Repair</a></li>
                   <li><a href="<?= \App\Core\View::url('/services') ?>" class="footer-nav-link">More Services</a></li>
                 </ul>
               </div>
@@ -532,7 +532,7 @@
           </span>
         </div>
         <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.6; margin-bottom: 20px;">
-          REFIXEL provides standardized, background-verified home care and maintenance services across Kumaon &amp; Western UP. Select your location below to book certified technicians with transparent pricing and 24-hour service guarantee:
+          REFIXEL provides standardized, background-verified home care and maintenance services across Kashipur, Jaspur &amp; Thakurdwara. Select your location below to book certified technicians with transparent pricing and 30-Day Service Guarantee:
         </p>
 
         <div class="row footer-dir-grid">

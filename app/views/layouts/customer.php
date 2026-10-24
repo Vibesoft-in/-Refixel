@@ -4,45 +4,69 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
-  <title><?= \App\Core\View::e($title ?? 'Professional Home and Commercial Services | REFIXEL') ?></title>
-  <meta name="keywords" content="home cleaning services, commercial cleaning services, office cleaning services, professional cleaning company, REFIXEL" />
-  <meta name="description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services, including deep cleaning, painting, plumbing, pest control and trusted maintenance solutions. Book Now!') ?>">
+  <?php
+    $pageTitle = $title ?? 'Home Cleaning, AC Repair, Plumber & Electrician in Kashipur, Jaspur | REFIXEL';
+    $pageDesc = $description ?? 'Book verified home service professionals in Kashipur, Jaspur & Thakurdwara. Deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Upfront pricing. Book Now!';
+    $ogPageTitle = $ogTitle ?? $pageTitle;
+    $ogPageDesc = $ogDescription ?? $pageDesc;
+
+    // Single source base URL config for absolute URLs
+    $reqPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    $cleanCanonical = $canonicalUrl ?? \App\Core\View::fullUrl($reqPath);
+    $cleanOgUrl = $ogUrl ?? $cleanCanonical;
+    $cleanOgImage = $ogImage ?? \App\Core\View::fullUrl('assets/img/refixel-logo-horizontal.png');
+
+    // Robots meta controlled by config flag (defaults to noindex on non-production)
+    $robotsDirective = $robots ?? \App\Core\Env::get('APP_ROBOTS', (\App\Core\Env::get('APP_ENV') === 'production' ? 'index, follow' : 'noindex, nofollow'));
+  ?>
+  <title><?= \App\Core\View::e($pageTitle) ?></title>
+  <meta name="description" content="<?= \App\Core\View::e($pageDesc) ?>">
   <meta name="author" content="REFIXEL">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="<?= \App\Core\View::e($canonicalUrl ?? \App\Core\View::url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
+  <meta name="robots" content="<?= \App\Core\View::e($robotsDirective) ?>">
+  <link rel="canonical" href="<?= \App\Core\View::e($cleanCanonical) ?>">
   <?= \App\Core\View::partial('partials.csrf-init') ?>
 
-  <meta property="og:title" content="<?= \App\Core\View::e($title ?? 'Professional Home & Commercial Services | REFIXEL') ?>">
-  <meta property="og:description" content="<?= \App\Core\View::e($description ?? 'REFIXEL provides professional home and commercial cleaning services. Book Now!') ?>">
-  <meta property="og:image" content="<?= \App\Core\View::e($ogImage ?? \App\Core\View::asset('img/refixel-logo-horizontal.png')) ?>">
-  <meta property="og:url" content="<?= \App\Core\View::e($canonicalUrl ?? \App\Core\View::url($_SERVER['REQUEST_URI'] ?? '/')) ?>">
+  <meta property="og:title" content="<?= \App\Core\View::e($ogPageTitle) ?>">
+  <meta property="og:description" content="<?= \App\Core\View::e($ogPageDesc) ?>">
+  <meta property="og:image" content="<?= \App\Core\View::e($cleanOgImage) ?>">
+  <meta property="og:url" content="<?= \App\Core\View::e($cleanOgUrl) ?>">
   <meta property="og:type" content="website">
 
   <?php
-    $appUrl = \App\Core\Env::get('APP_URL', 'https://www.REFIXEL.com');
     $defaultSchema = [
       '@context' => 'https://schema.org',
       '@type'    => 'HomeAndConstructionBusiness',
-      'name'     => \App\Models\Setting::get('company_name', 'REFIXEL Home Services'),
-      'url'      => $appUrl,
-      'logo'     => $appUrl . '/assets/img/refixel-logo-horizontal.png',
-      'image'    => $appUrl . '/assets/img/hero-banner.webp',
-      'telephone'=> \App\Models\Setting::get('company_phone', '+91 87911 54730'),
-      'email'    => \App\Models\Setting::get('company_email', 'contact@refixel.com'),
+      'name'     => 'REFIXEL',
+      'url'      => \App\Core\View::fullUrl('/'),
+      'logo'     => \App\Core\View::fullUrl('assets/img/refixel-logo-horizontal.png'),
+      'image'    => \App\Core\View::fullUrl('assets/img/refixel-storefront.jpg'),
+      'telephone'=> '+91-8791154730',
+      'email'    => 'contact@refixel.com',
       'priceRange'=> '₹₹',
       'address'  => [
         '@type'          => 'PostalAddress',
-        'streetAddress'  => \App\Models\Setting::get('company_address', 'Station Road'),
-        'addressLocality'=> 'Kashipur',
+        'streetAddress'  => 'Jaspur - Kashipur Road, in front of BSV Girls Degree College',
+        'addressLocality'=> 'Jaspur',
         'addressRegion'  => 'Uttarakhand',
-        'postalCode'     => '244713',
+        'postalCode'     => '244712',
         'addressCountry' => 'IN',
       ],
+      'openingHours' => 'Mon-Sun 08:00-21:00',
       'openingHoursSpecification' => [
-        '@type'     => 'OpeningHoursSpecification',
-        'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-        'opens'     => '08:00',
-        'closes'    => '20:00',
+        [
+          '@type'     => 'OpeningHoursSpecification',
+          'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+          'opens'     => '08:00',
+          'closes'    => '21:00',
+        ],
+      ],
+      'areaServed'   => ['Kashipur', 'Jaspur', 'Thakurdwara'],
+      'sameAs'       => [
+        'https://www.facebook.com/share/1GU16Dtfcr/',
+        'https://www.instagram.com/letsrefixel?stkn=ajJtc20zcHRyM2Q3',
+        'https://www.linkedin.com/in/lets-refixel-3aab5a43b?utm_source=share_via&utm_content=profile&utm_medium=member_android',
+        'https://x.com/letsrefixel',
+        'https://youtube.com/@letsrefixel?si=Xq0LZUFrv_yzlM5C'
       ],
     ];
     $activeSchema = !empty($schemaData) ? $schemaData : $defaultSchema;
@@ -156,7 +180,7 @@
   <div class="top_offer_bar py-1 py-md-2 text-white">
     <div class="container d-flex align-items-center justify-content-center flex-nowrap" style="gap: 8px;">
       <span class="top_offer_text text-truncate">
-        <?= \App\Core\View::e(\App\Models\Setting::get('promo_strip_text', 'Exclusive Special : Flat 20% Off on all deep-cleaning services.')) ?>
+        <?= \App\Core\View::e(\App\Models\Setting::get('promo_strip_text', 'Festival Special • Flat 20% off on Home Deep Cleaning in Kashipur & Jaspur')) ?>
       </span>
       <a href="<?= \App\Core\View::url('/services') ?>" class="top_offer_btn text-white font-weight-bold text-decoration-none flex-shrink-0">
         Book Now <i class="fa fa-arrow-right ml-1"></i>

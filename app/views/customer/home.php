@@ -535,10 +535,10 @@ a.solution_card:active,
       <div class="col-lg-12">
         <div class="search_service">
           <div class="looking_ser">
-            <h3><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', 'Starting at ₹999 • Save up to 25% on your first booking')) ?></h3>
-            <h1><?= \App\Core\View::e(\App\Models\Setting::get('hero_title', 'Get Your Home Spotless & Germ-Free with Expert Deep Cleaning')) ?></h1>
+            <h3><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', 'Verified Home Services in Kashipur & Jaspur')) ?></h3>
+            <h1><?= \App\Core\View::e(\App\Models\Setting::get('hero_title', 'Home Cleaning, AC Repair & Repair Services in Kashipur, Jaspur & Thakurdwara')) ?></h1>
             <a href="<?= \App\Core\View::url('/services') ?>" class="btn_cleaned_today d-inline-block text-decoration-none">
-              Get Your Home Cleaned Today
+              Book a Home Service Today
             </a>
           </div>
 
@@ -589,15 +589,15 @@ a.solution_card:active,
   <div class="container px-0 px-md-3">
     <div class="complate_serv" id="trustStatsSlider">
       <ul>
-        <li>4.8★ <h6>Rated by 1000+ Happy Customers</h6></li>
-        <li>5000+ <h6>Homes Professionally <br>Cleaned</h6></li>
-        <li>60+ <h6>Trusted Service <br>Partners</h6></li>
-        <li>400+ <h6>Verified <br>Professionals</h6></li>
+        <li>4.8★ <h6>Rated by 1000+ Happy Customers in Uttarakhand</h6></li>
+        <li>5000+ <h6>Homes Professionally Cleaned</h6></li>
+        <li>60+ <h6>Trusted Service Partners</h6></li>
+        <li>400+ <h6>Background-Verified Professionals</h6></li>
         <!-- Seamless continuous marquee clone on mobile -->
-        <li class="stats-clone">4.8★ <h6>Rated by 1000+ Happy Customers</h6></li>
-        <li class="stats-clone">5000+ <h6>Homes Professionally <br>Cleaned</h6></li>
-        <li class="stats-clone">60+ <h6>Trusted Service <br>Partners</h6></li>
-        <li class="stats-clone">400+ <h6>Verified <br>Professionals</h6></li>
+        <li class="stats-clone">4.8★ <h6>Rated by 1000+ Happy Customers in Uttarakhand</h6></li>
+        <li class="stats-clone">5000+ <h6>Homes Professionally Cleaned</h6></li>
+        <li class="stats-clone">60+ <h6>Trusted Service Partners</h6></li>
+        <li class="stats-clone">400+ <h6>Background-Verified Professionals</h6></li>
       </ul>
     </div>
   </div>
@@ -636,7 +636,18 @@ $resolveCardIcon = function(?string $icon): array {
     // FontAwesome class (e.g. fa-wrench, fa-paint-brush)
     return ['type' => 'fa', 'class' => $icon];
 };
-$isCustomerLoggedIn = \App\Core\Auth::check();
+// Exact Local SEO Category Descriptions
+$serviceCardDescriptions = [
+    'cleaning'              => 'Home & Office Deep Cleaning, Sofa, Carpet, Kitchen & Bathroom Cleaning',
+    'ac-services'           => 'AC Jet Service, Installation, Uninstallation & Gas Refilling',
+    'plumbers'              => 'Leak Repair, Tap & Flush Fitting, Pipe Fitting & Drain Cleaning',
+    'electrician'           => 'Wiring, Switch, Fan, Light, Inverter & LED Repair',
+    'painting-services'     => 'Interior & Exterior House Painting, Waterproofing & Texture Finishes',
+    'fall-ceiling-services' => 'POP & Gypsum False Ceiling with Cove Lighting',
+    'carpenter'             => 'Furniture Repair, Door Lock Fitting, Modular Kitchen & Woodwork',
+    'appliance-repair'      => 'TV, Fridge, Washing Machine & Microwave Repair at Home',
+    'pest-control'          => 'Cockroach, Termite, Bed Bug & Rodent Control (Odourless Spray)',
+];
 ?>
 <section class="complete_solutions_main" id="completeHomeSolutions">
   <div class="container">
@@ -648,7 +659,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
             <span>OUR SERVICES</span>
             <span class="eyebrow_dash"></span>
           </div>
-          <h2>Complete Home Solutions</h2>
+          <h2>Complete Home Services Near You</h2>
         </div>
       </div>
     </div>
@@ -664,6 +675,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
 
         $bannerSrc = $resolveCardImage($cat['image'] ?? $cat['icon'] ?? null);
         $iconData = $resolveCardIcon($cat['icon'] ?? null);
+        $catDesc = $serviceCardDescriptions[$catSlug] ?? ($cat['description'] ?? '');
       ?>
         <a href="<?= $cardHref ?>" class="solution_card" data-category="<?= \App\Core\View::e($catSlug) ?>" data-target-url="<?= $targetUrl ?>" title="<?= \App\Core\View::e($cat['name']) ?>">
           <div class="solution_media_wrapper">
@@ -685,7 +697,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
           </div>
           <div class="solution_body">
             <h3 class="solution_title"><?= \App\Core\View::e($cat['name']) ?></h3>
-            <p class="solution_desc"><?= \App\Core\View::e($cat['description'] ?? '') ?></p>
+            <p class="solution_desc"><?= \App\Core\View::e($catDesc) ?></p>
             <div class="solution_footer">
               <span class="solution_arrow" aria-hidden="true">
                 <i class="fa fa-angle-right"></i>
@@ -1018,11 +1030,11 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
             <span>ABOUT REFIXEL</span>
           </div>
           <h2 class="home_about_title">
-            More Than a Service.<br>
-            <span class="text_highlight">A Trusted Home Partner.</span>
+            Trusted Home Services in<br>
+            <span class="text_highlight">Kashipur, Jaspur &amp; Thakurdwara</span>
           </h2>
           <p class="home_about_desc">
-            REFIXEL was founded with a singular mission — to make home care, maintenance, and repair services completely transparent, reliable, and hassle-free. We bridge homeowners directly with verified professionals who take genuine pride in every job.
+            REFIXEL is a local home services company based in Jaspur, Uttarakhand. We connect homeowners with background-verified professionals for cleaning, AC service, plumbing, electrical work, painting, pest control and repairs, with upfront pricing and doorstep service.
           </p>
 
           <!-- 3 Key Value Feature Cards -->
@@ -1032,8 +1044,8 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
                 <i class="fa fa-shield"></i>
               </div>
               <div class="feature_text">
-                <h5>Verified & Background-Checked Pros</h5>
-                <p>Every specialist is trade-tested, background-vetted, and held to strict quality benchmarks.</p>
+                <h5>Verified &amp; Background-Checked Professionals</h5>
+                <p>Every technician is ID-verified, police-checked and trade-tested before visiting your home.</p>
               </div>
             </div>
 
@@ -1042,8 +1054,8 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
                 <i class="fa fa-tag"></i>
               </div>
               <div class="feature_text">
-                <h5>Transparent, Upfront Pricing</h5>
-                <p>Clear, fixed rates with zero hidden charges or surprises before any work begins.</p>
+                <h5>Transparent Pricing, No Hidden Charges</h5>
+                <p>See clear, fixed rates before you book. Pay only after the work is done.</p>
               </div>
             </div>
 
@@ -1052,8 +1064,8 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
                 <i class="fa fa-handshake-o"></i>
               </div>
               <div class="feature_text">
-                <h5>Dedicated Support & Warranty</h5>
-                <p>Enjoy end-to-end assistance and our satisfaction guarantee on every completed booking.</p>
+                <h5>30-Day Service Guarantee</h5>
+                <p>If the issue comes back within 30 days, we fix it again free of charge.</p>
               </div>
             </div>
           </div>
@@ -1327,9 +1339,9 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         <span>WHY CHOOSE REFIXEL</span>
         <span class="eyebrow_dash"></span>
       </div>
-      <h2 class="home_why_title">Why Our Customers Choose Us</h2>
+      <h2 class="home_why_title">Why Choose REFIXEL for Home Services</h2>
       <p class="home_why_desc">
-        We make home maintenance stress-free with verified professionals, upfront transparent pricing, and our 100% satisfaction guarantee.
+        Book verified professionals with upfront pricing and a 30-day service guarantee in Kashipur, Jaspur &amp; Thakurdwara.
       </p>
     </div>
 
@@ -1341,7 +1353,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         </div>
         <h4 class="home_why_card_title">Verified Professionals</h4>
         <p class="home_why_card_text">
-          Every service partner is verified with comprehensive background checks and professional skill certifications.
+          Every service partner has ID verification, police clearance and skill certification.
         </p>
       </div>
 
@@ -1350,9 +1362,9 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         <div class="home_why_icon_wrap">
           <i class="fa fa-tag"></i>
         </div>
-        <h4 class="home_why_card_title">Transparent & Upfront Pricing</h4>
+        <h4 class="home_why_card_title">Transparent &amp; Upfront Pricing</h4>
         <p class="home_why_card_text">
-          Clear, fixed rates with zero hidden charges. You know the exact cost upfront before any work begins.
+          Know the exact cost before work begins. No surprise charges.
         </p>
       </div>
 
@@ -1361,9 +1373,9 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         <div class="home_why_icon_wrap">
           <i class="fa fa-cogs"></i>
         </div>
-        <h4 class="home_why_card_title">Advanced Equipment & Safety</h4>
+        <h4 class="home_why_card_title">Advanced Equipment &amp; Safety</h4>
         <p class="home_why_card_text">
-          We use industry-grade equipment and safe, eco-friendly products for flawless, hygienic, and long-lasting results.
+          Industry-grade machines and safe, eco-friendly products for hygienic, long-lasting results.
         </p>
       </div>
 
@@ -1374,7 +1386,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         </div>
         <h4 class="home_why_card_title">Satisfaction Guaranteed</h4>
         <p class="home_why_card_text">
-          Dedicated customer support at every step. Complete peace of mind with our hassle-free service guarantee.
+          Dedicated support at every step, backed by our 30-day guarantee.
         </p>
       </div>
     </div>
@@ -1573,7 +1585,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
     <div class="how_it_works_header">
       <div class="how_it_works_header_left">
         <span class="how_it_works_eyebrow"> HOW IT WORKS</span>
-        <h2 class="how_it_works_title">A simple roadmap.</h2>
+        <h2 class="how_it_works_title">How to Book a Home Service in 5 Easy Steps</h2>
       </div>
       <div class="how_it_works_header_right">
         <p class="how_it_works_desc">Choose your service, share the details, secure your slot and let REFIXEL handle the rest.</p>
@@ -2162,7 +2174,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         <span> PREPARATION GUIDE</span>
         <span class="eyebrow_dash"></span>
       </div>
-      <h2 class="required_title">What's Required From Your Side</h2>
+      <h2 class="required_title">How to Prepare for Your Home Service Visit</h2>
       <p class="required_desc">A quick checklist to ensure our service professionals have everything they need for a seamless, on-time service.</p>
     </div>
 
@@ -2225,7 +2237,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         <span>PROVEN TRANSFORMATIONS</span>
         <span class="eyebrow_dash"></span>
       </div>
-      <h2 class="ba_title">Hold & Slide: Real Results</h2>
+      <h2 class="ba_title">Real Before &amp; After Cleaning Results</h2>
       <p class="ba_desc">Drag the interactive slider horizontally to compare before and after.</p>
     </div>
 
@@ -2234,12 +2246,12 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
       <div class="ba_compare_card">
         <div class="ba_compare_viewer" style="--pos: 50%;">
           <!-- Base Image: After -->
-          <img src="<?= \App\Core\View::asset('img/transformations/sofa-after.jpg') ?>" alt="Living Room Sofa After Cleaning" class="ba_img_base" loading="lazy">
+          <img src="<?= \App\Core\View::asset('img/transformations/sofa-after.jpg') ?>" alt="Sofa after shampoo cleaning" class="ba_img_base" loading="lazy">
           <span class="ba_badge_pill ba_badge_after">AFTER</span>
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/sofa-before.jpg') ?>" alt="Living Room Sofa Before Cleaning" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/sofa-before.jpg') ?>" alt="Sofa before cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2260,7 +2272,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         </div>
 
         <div class="ba_card_details">
-          <h4 class="ba_card_title">Sofa Shampoo & Stain Lift</h4>
+          <h4 class="ba_card_title">Sofa Shampooing &amp; Stain Removal</h4>
           <p class="ba_card_desc">Coffee spills & deep grime extracted with active bio-foam wash.</p>
           
           <div class="ba_quick_controls">
@@ -2280,12 +2292,12 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
       <div class="ba_compare_card">
         <div class="ba_compare_viewer" style="--pos: 50%;">
           <!-- Base Image: After -->
-          <img src="<?= \App\Core\View::asset('img/transformations/kitchen-after.jpg') ?>" alt="Kitchen Stove Countertop After Degreasing" class="ba_img_base" loading="lazy">
+          <img src="<?= \App\Core\View::asset('img/transformations/kitchen-after.jpg') ?>" alt="Kitchen stove and tiles after degreasing" class="ba_img_base" loading="lazy">
           <span class="ba_badge_pill ba_badge_after">AFTER</span>
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/kitchen-before.jpg') ?>" alt="Kitchen Stove Countertop Before Degreasing" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/kitchen-before.jpg') ?>" alt="Kitchen stove and tiles before cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2306,7 +2318,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         </div>
 
         <div class="ba_card_details">
-          <h4 class="ba_card_title">Stove & Tiles Degreasing</h4>
+          <h4 class="ba_card_title">Kitchen Stove &amp; Tiles Degreasing</h4>
           <p class="ba_card_desc">Burnt grease and oil crust stripped with eco-degreaser & steam flush.</p>
           
           <div class="ba_quick_controls">
@@ -2326,12 +2338,12 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
       <div class="ba_compare_card">
         <div class="ba_compare_viewer" style="--pos: 50%;">
           <!-- Base Image: After -->
-          <img src="<?= \App\Core\View::asset('img/transformations/bathroom-after.jpg') ?>" alt="Bathroom Shower Glass After Descaling" class="ba_img_base" loading="lazy">
+          <img src="<?= \App\Core\View::asset('img/transformations/bathroom-after.jpg') ?>" alt="Bathroom glass after hard water stain removal" class="ba_img_base" loading="lazy">
           <span class="ba_badge_pill ba_badge_after">AFTER</span>
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/bathroom-before.jpg') ?>" alt="Bathroom Shower Glass Before Descaling" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/bathroom-before.jpg') ?>" alt="Bathroom shower glass before cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2352,7 +2364,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         </div>
 
         <div class="ba_card_details">
-          <h4 class="ba_card_title">Shower Glass Descaling</h4>
+          <h4 class="ba_card_title">Bathroom Glass Hard Water Stain Removal</h4>
           <p class="ba_card_desc">Hard-water calcium & soap scum dissolved to crystal transparency.</p>
           
           <div class="ba_quick_controls">
@@ -2372,12 +2384,12 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
       <div class="ba_compare_card">
         <div class="ba_compare_viewer" style="--pos: 50%;">
           <!-- Base Image: After -->
-          <img src="<?= \App\Core\View::asset('img/transformations/ac-after.jpg') ?>" alt="Split AC Cooling Coil After Jet Clean" class="ba_img_base" loading="lazy">
+          <img src="<?= \App\Core\View::asset('img/transformations/ac-after.jpg') ?>" alt="Split AC cooling coil after jet wash service" class="ba_img_base" loading="lazy">
           <span class="ba_badge_pill ba_badge_after">AFTER</span>
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/ac-before.jpg') ?>" alt="Split AC Cooling Coil Before Jet Clean" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/ac-before.jpg') ?>" alt="Split AC before jet wash cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2398,7 +2410,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         </div>
 
         <div class="ba_card_details">
-          <h4 class="ba_card_title">AC Cooling Coil Jet Flush</h4>
+          <h4 class="ba_card_title">Split AC Jet Wash Service</h4>
           <p class="ba_card_desc">Choked fins and mold flushed with 120-bar pressurized jet wash.</p>
           
           <div class="ba_quick_controls">
@@ -4052,7 +4064,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <span class="eyebrow_dash"></span>
         <span>REVIEWS</span>
       </div>
-      <h2 class="reviews_title">Real customers. Real results.</h2>
+      <h2 class="reviews_title">What Customers Say About REFIXEL</h2>
     </div>
 
     <div class="row g-4 align-items-stretch">
@@ -4198,7 +4210,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
           <!-- Bottom Action & Dots -->
           <div class="reviews_card_bottom_bar">
-            <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" class="btn_google_reviews">
+            <a href="https://maps.google.com/?cid=17785210960533280622" target="_blank" rel="noopener noreferrer" class="btn_google_reviews">
               See Google Reviews <i class="fa fa-external-link"></i>
             </a>
             <div class="slider_dots_wrapper" id="reviewDotsWrap">
@@ -4224,10 +4236,10 @@ document.addEventListener('DOMContentLoaded', function () {
           <span class="eyebrow_dash"></span>
           <span>CONTACT</span>
         </div>
-        <h2 class="contact_title">Let's make it easy.</h2>
+        <h2 class="contact_title">Book Home Services in Kashipur, Jaspur &amp; Thakurdwara</h2>
       </div>
       <div class="contact_header_right">
-        <p class="contact_sub_desc">Tell us what you need and where you need it.</p>
+        <p class="contact_sub_desc">Tell us what you need and where. Our local team will confirm your booking quickly.</p>
       </div>
     </div>
 
@@ -5335,7 +5347,7 @@ document.addEventListener('DOMContentLoaded', function () {
   <div class="container">
     <div class="faq_header_center">
       <span class="faq_badge_pill">HELP & COMMON QUESTIONS</span>
-      <h2 class="faq_main_title">Frequently Asked <span class="faq_orange_word">Questions</span></h2>
+      <h2 class="faq_main_title">Frequently Asked Questions About <span class="faq_orange_word">REFIXEL Home Services</span></h2>
       <p class="faq_sub_title">Everything you need to know about booking, payments, service warranty, and technician verification.</p>
     </div>
 
@@ -5386,6 +5398,17 @@ document.addEventListener('DOMContentLoaded', function () {
             <p class="faq_pill_answer">We accept all major payment methods including UPI (Google Pay, PhonePe, Paytm), Credit & Debit cards, Net Banking, and direct cash to the service technician after the job is completed.</p>
           </div>
         </div>
+
+        <!-- 05 -->
+        <div class="faq_pill_card">
+          <div class="faq_pill_header">
+            <h4 class="faq_pill_question">Which areas does REFIXEL serve?</h4>
+            <span class="faq_circle_plus"><i class="fa fa-plus"></i></span>
+          </div>
+          <div class="faq_pill_body">
+            <p class="faq_pill_answer">We currently serve Kashipur, Jaspur and Thakurdwara, with more areas coming soon.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Right Column -->
@@ -5401,14 +5424,14 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <!-- 06 -->
+        <!-- 07 -->
         <div class="faq_pill_card">
           <div class="faq_pill_header">
             <h4 class="faq_pill_question">Is there a service warranty or satisfaction guarantee?</h4>
             <span class="faq_circle_plus"><i class="fa fa-plus"></i></span>
           </div>
           <div class="faq_pill_body">
-            <p class="faq_pill_answer">Yes! All our repair and maintenance services are covered by an unconditional 30-day Refixel Service Guarantee. If any issue reoccurs, we will re-work it completely free of charge within 48 hours.</p>
+            <p class="faq_pill_answer">Yes! All our repair and maintenance services are covered by an unconditional 30-Day Service Guarantee. If any issue reoccurs, we will re-work it completely free of charge within 48 hours.</p>
           </div>
         </div>
 
@@ -5423,7 +5446,7 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
         </div>
 
-        <!-- 08 -->
+        <!-- 09 -->
         <div class="faq_pill_card">
           <div class="faq_pill_header">
             <h4 class="faq_pill_question">How can I register as a Refixel Service Partner?</h4>
@@ -5433,10 +5456,111 @@ document.addEventListener('DOMContentLoaded', function () {
             <p class="faq_pill_answer">Experienced technicians and professionals can register by clicking "Become a Service Partner" on our website or calling our partner helpline. We provide continuous bookings, verified clients, and prompt payouts.</p>
           </div>
         </div>
+
+        <!-- 10 -->
+        <div class="faq_pill_card">
+          <div class="faq_pill_header">
+            <h4 class="faq_pill_question">Do I need to arrange any cleaning material?</h4>
+            <span class="faq_circle_plus"><i class="fa fa-plus"></i></span>
+          </div>
+          <div class="faq_pill_body">
+            <p class="faq_pill_answer">No. All tools, equipment and safe chemicals are brought by our professionals.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- FAQPage Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I book a home service with Refixel?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Booking takes under 60 seconds. Simply select your service, choose a convenient date and time slot, confirm your location, and pre-book with ₹50. A verified technician will arrive promptly at your doorstep."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are Refixel service technicians verified and background-checked?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, 100%. Every Refixel technician undergoes an extensive 3-tier verification: government ID validation, police background clearance, and trade skill certifications before visiting your home."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does pricing work? Are there any hidden fees?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We maintain absolute pricing transparency. All rates and service scope are shown upfront with zero hidden charges. You pre-book for ₹50, and the remaining amount is paid only after complete job satisfaction."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What payment methods do you accept?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We accept all major payment methods including UPI (Google Pay, PhonePe, Paytm), Credit & Debit cards, Net Banking, and direct cash to the service technician after the job is completed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which areas does REFIXEL serve?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We currently serve Kashipur, Jaspur and Thakurdwara, with more areas coming soon."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I reschedule or cancel my booking?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! You can reschedule your date/time slot or cancel your booking anytime up to 2 hours prior to your scheduled appointment with zero penalty directly from your account or phone support."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a service warranty or satisfaction guarantee?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! All our repair and maintenance services are covered by an unconditional 30-Day Service Guarantee. If any issue reoccurs, we will re-work it completely free of charge within 48 hours."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How quickly can a technician arrive at my home?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We provide same-day express service across our verified pincodes. For urgent electrical, plumbing, or AC emergencies, technicians can arrive within 60 to 90 minutes of booking confirmation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I register as a Refixel Service Partner?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Experienced technicians and professionals can register by clicking \"Become a Service Partner\" on our website or calling our partner helpline. We provide continuous bookings, verified clients, and prompt payouts."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to arrange any cleaning material?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. All tools, equipment and safe chemicals are brought by our professionals."
+      }
+    }
+  ]
+}
+</script>
 
 
 

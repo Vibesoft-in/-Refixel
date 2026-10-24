@@ -71,9 +71,8 @@ $isContact = str_starts_with($cleanPathLower, '/contact');
 
     <div class="menu_header">
       <div class="right_menu2">
-        <img src="<?= \App\Core\View::asset('img/account.png') ?>" alt="Account">
-        <h4><?= \App\Core\View::e($user['name'] ?? 'Welcome Guest') ?></h4>
-        <h6 class="drawer_user_phone" style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 400; position: static !important; display: block !important; text-align: center !important;"><?= !empty($user['phone']) ? '+91-' . \App\Core\View::e($user['phone']) : 'Sign in to manage bookings' ?></h6>
+        <div class="h4 font-weight-bold" style="font-size: 18px; color: #fff; margin: 0; line-height: 1.3; text-align: center;"><?= \App\Core\View::e($user['name'] ?? 'Welcome Guest') ?></div>
+        <div class="drawer_user_phone" style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 400; position: static !important; display: block !important; text-align: center !important;"><?= !empty($user['phone']) ? '+91-' . \App\Core\View::e($user['phone']) : 'Sign in to manage bookings' ?></div>
       </div>
     </div>
 
