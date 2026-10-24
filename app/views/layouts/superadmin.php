@@ -327,7 +327,7 @@
     try {
         $cRow = \App\Core\Database::fetchOne(
             "SELECT 
-                (SELECT COUNT(id) FROM bookings WHERE status = 'new') as enquiries,
+                (SELECT COUNT(id) FROM bookings WHERE status = 'new' AND id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)) as enquiries,
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending,
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status IN ('active', 'disabled')) as staff,
                 (SELECT COUNT(id) FROM users WHERE role = 'customer') as customers,

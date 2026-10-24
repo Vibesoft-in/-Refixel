@@ -1155,6 +1155,14 @@ class BookingController extends Controller
         $prio = ($paymentType === 'online') ? 'high' : 'normal';
         $this->updateBookingFinancials($bookingId, $totalAmount, $advanceAmount, $dueAmount, $paymentType, $prio, 'new');
 
+        // If this booking previously dropped off, mark it recovered now that payment succeeded
+        try {
+            Database::query(
+                "UPDATE abandoned_checkouts SET is_recovered = 1, recovered_at = NOW(), notes = CONCAT(COALESCE(notes, ''), ' [Payment Verified & Booking Confirmed Online]') WHERE booking_id = :bid AND is_recovered = 0",
+                ['bid' => $bookingId]
+            );
+        } catch (\Throwable $e) {}
+
         // Only generate invoice and dispatch confirmation notifications if transitioning to paid for the first time
         if (!$isAlreadyPaid) {
             $invoiceRecord = null;

@@ -317,7 +317,7 @@
     try {
         $statsRow = \App\Core\Database::fetchOne(
             "SELECT 
-                (SELECT COUNT(id) FROM bookings WHERE status = 'new') as enquiries_new,
+                (SELECT COUNT(id) FROM bookings WHERE status = 'new' AND id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)) as enquiries_new,
                 (SELECT COUNT(id) FROM bookings WHERE status = 'accepted') as bookings_pending,
                 (SELECT COUNT(id) FROM reviews WHERE is_approved = 0) as reviews_pending,
                 (SELECT COUNT(id) FROM users WHERE role = 'staff' AND status = 'pending') as partner_pending,

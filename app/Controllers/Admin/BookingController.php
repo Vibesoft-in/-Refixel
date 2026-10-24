@@ -28,7 +28,7 @@ class BookingController extends Controller
                 LEFT JOIN users u ON b.customer_id = u.id
                 LEFT JOIN jobs j ON b.id = j.booking_id
                 LEFT JOIN users st ON j.staff_id = st.id
-                WHERE 1=1";
+                WHERE b.id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)";
 
         $params = [];
 
@@ -47,8 +47,8 @@ class BookingController extends Controller
         $bookings = Database::fetchAll($sql, $params);
 
         $counts = [
-            'all'         => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings")['c'] ?? 0),
-            'new'         => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new'")['c'] ?? 0),
+            'all'         => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)")['c'] ?? 0),
+            'new'         => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new' AND id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)")['c'] ?? 0),
             'assigned'    => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'assigned'")['c'] ?? 0),
             'in_progress' => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status IN ('accepted', 'in_progress')")['c'] ?? 0),
             'completed'   => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'completed'")['c'] ?? 0),

@@ -16,7 +16,7 @@ class Report
             $dateCondition = " AND created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')";
         }
 
-        $enquiriesCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new'{$dateCondition}")['c'] ?? 0);
+        $enquiriesCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new' AND id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL){$dateCondition}")['c'] ?? 0);
         $assignedJobs = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM jobs WHERE status = 'assigned'{$dateCondition}")['c'] ?? 0);
         $activeJobs = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM jobs WHERE status IN ('assigned', 'accepted', 'in_progress'){$dateCondition}")['c'] ?? 0);
         $completedJobs = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM jobs WHERE status = 'completed'{$dateCondition}")['c'] ?? 0);

@@ -21,7 +21,7 @@ class DashboardController extends Controller
     public function index(Request $request): Response
     {
         // 1. Gather Platform Overview Metrics
-        $enquiriesCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new'")['c'] ?? 0);
+        $enquiriesCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new' AND id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)")['c'] ?? 0);
         $totalBookings  = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings")['c'] ?? 0);
         $calendarCount  = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE preferred_date IS NOT NULL AND preferred_date != ''")['c'] ?? 0);
         $techCount       = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM users WHERE role = 'staff'")['c'] ?? 0);
@@ -41,6 +41,7 @@ class DashboardController extends Controller
              JOIN services s ON b.service_id = s.id
              LEFT JOIN users u ON b.customer_id = u.id
              WHERE b.status = 'new'
+               AND b.id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)
              ORDER BY b.created_at DESC LIMIT 5"
         );
 
@@ -69,19 +70,20 @@ class DashboardController extends Controller
         $sql = "SELECT b.*, s.name as service_name, s.starting_price, u.name as customer_name, u.phone as customer_phone, u.email as customer_email
                 FROM bookings b
                 JOIN services s ON b.service_id = s.id
-                LEFT JOIN users u ON b.customer_id = u.id";
+                LEFT JOIN users u ON b.customer_id = u.id
+                WHERE b.id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)";
 
         $params = [];
         if ($status !== 'all') {
-            $sql .= " WHERE b.status = :status";
+            $sql .= " AND b.status = :status";
             $params['status'] = $status;
         }
         $sql .= " ORDER BY b.created_at DESC";
 
         $enquiries = Database::fetchAll($sql, $params);
         $counts = [
-            'new' => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new'")['c'] ?? 0),
-            'all' => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings")['c'] ?? 0),
+            'new' => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE status = 'new' AND id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)")['c'] ?? 0),
+            'all' => (int)(Database::fetchOne("SELECT COUNT(*) as c FROM bookings WHERE id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)")['c'] ?? 0),
         ];
 
         return $this->render('superadmin.enquiries.index', [

@@ -161,6 +161,7 @@ class AutoDispatchService
              JOIN services s ON b.service_id = s.id
              LEFT JOIN categories c ON s.category_id = c.id
              WHERE b.status = 'new'
+               AND b.id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)
              ORDER BY b.id ASC"
         );
 

@@ -46,9 +46,9 @@ class DropoffController extends Controller
         if ($bookingId > 0) {
             $booking = Booking::find($bookingId);
             if ($booking) {
-                // Switch booking to COD / Pay After Service
+                // Switch booking to COD / Pay After Service & clear gateway order
                 Database::query(
-                    "UPDATE bookings SET payment_type = 'cod', priority = 'normal', status = 'new', updated_at = NOW() WHERE id = :id",
+                    "UPDATE bookings SET payment_type = 'cod', gateway_order_id = NULL, priority = 'normal', status = 'new', updated_at = NOW() WHERE id = :id",
                     ['id' => $bookingId]
                 );
 
@@ -93,6 +93,10 @@ class DropoffController extends Controller
     public function delete(Request $request, string $id): Response
     {
         $dropoffId = (int)$id;
+        $dropoff = Database::fetchOne("SELECT booking_id FROM abandoned_checkouts WHERE id = :id", ['id' => $dropoffId]);
+        if ($dropoff && !empty($dropoff['booking_id'])) {
+            Database::query("UPDATE bookings SET status = 'cancelled', updated_at = NOW() WHERE id = :bid AND status = 'new'", ['bid' => $dropoff['booking_id']]);
+        }
         Database::query("DELETE FROM abandoned_checkouts WHERE id = :id", ['id' => $dropoffId]);
 
         View::setFlash('success', 'Drop-off record deleted.');
@@ -101,6 +105,10 @@ class DropoffController extends Controller
 
     public function deleteAll(Request $request): Response
     {
+        $dropoffs = Database::fetchAll("SELECT booking_id FROM abandoned_checkouts WHERE booking_id IS NOT NULL");
+        foreach ($dropoffs as $d) {
+            Database::query("UPDATE bookings SET status = 'cancelled', updated_at = NOW() WHERE id = :bid AND status = 'new'", ['bid' => $d['booking_id']]);
+        }
         Database::query("DELETE FROM abandoned_checkouts");
         View::setFlash('success', 'All abandoned checkouts and drop-off records have been cleared.');
         return $this->redirect('/admin/dropoffs');

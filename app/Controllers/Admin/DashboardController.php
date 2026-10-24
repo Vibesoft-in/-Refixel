@@ -30,6 +30,7 @@ class DashboardController extends Controller
              LEFT JOIN users u ON b.customer_id = u.id
              LEFT JOIN jobs j ON b.id = j.booking_id
              LEFT JOIN users st ON j.staff_id = st.id
+             WHERE b.id NOT IN (SELECT booking_id FROM abandoned_checkouts WHERE is_recovered = 0 AND booking_id IS NOT NULL)
              ORDER BY b.id DESC
              LIMIT 8"
         );
