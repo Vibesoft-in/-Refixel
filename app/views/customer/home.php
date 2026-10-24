@@ -535,7 +535,7 @@ a.solution_card:active,
       <div class="col-lg-12">
         <div class="search_service">
           <div class="looking_ser">
-            <h3><span id="heroBadgeText"><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', 'Verified Home Services in Your City')) ?></span></h3>
+            <h3><span id="heroBadgeText"><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', '100% Eco-friendly home cleaning and services in your city')) ?></span></h3>
             <script>
               (function() {
                 try {
@@ -543,7 +543,7 @@ a.solution_card:active,
                   if (savedCity && savedCity.trim()) {
                     var badge = document.getElementById('heroBadgeText');
                     if (badge) {
-                      badge.textContent = 'Verified Home Services in ' + savedCity.trim();
+                      badge.textContent = '100% Eco-friendly home cleaning and services in ' + savedCity.trim();
                     }
                   }
                 } catch(e) {}
