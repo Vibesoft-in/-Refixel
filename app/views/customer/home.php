@@ -2250,7 +2250,7 @@ $serviceCardDescriptions = [
         <span>PROVEN TRANSFORMATIONS</span>
         <span class="eyebrow_dash"></span>
       </div>
-      <h2 class="ba_title">REFIXEL Before &amp; After: Real Home Cleaning Results in Kashipur</h2>
+      <h2 class="ba_title">REFIXEL Before &amp; After: Real Home Cleaning Results in Kashipur , Jaspur , Thakurdwara</h2>
       <p class="ba_desc">Drag the interactive slider horizontally to compare before and after.</p>
     </div>
 
@@ -2264,7 +2264,7 @@ $serviceCardDescriptions = [
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/sofa-before.jpg') ?>" alt="Sofa before cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/sofa-before.jpg') ?>" alt="Sofa before cleaning in Kashipur ,Jaspur ,Thakurdwara home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2310,7 +2310,7 @@ $serviceCardDescriptions = [
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/kitchen-before.jpg') ?>" alt="Kitchen stove and tiles before cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/kitchen-before.jpg') ?>" alt="Kitchen stove and tiles before cleaning in Kashipur , Jaspur , Thakurdwara home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2356,7 +2356,7 @@ $serviceCardDescriptions = [
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/bathroom-before.jpg') ?>" alt="Bathroom shower glass before cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/bathroom-before.jpg') ?>" alt="Bathroom shower glass before cleaning in Kashipur ,Jaspur ,Thakurdwara  home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
@@ -2402,7 +2402,7 @@ $serviceCardDescriptions = [
 
           <!-- Clipped Overlay: Before -->
           <div class="ba_layer_before">
-            <img src="<?= \App\Core\View::asset('img/transformations/ac-before.jpg') ?>" alt="Split AC before jet wash cleaning in Kashipur home" class="ba_img_clip" loading="lazy">
+            <img src="<?= \App\Core\View::asset('img/transformations/ac-before.jpg') ?>" alt="Split AC before jet wash cleaning in Kashipur ,Jaspur ,Thakurdwara  home" class="ba_img_clip" loading="lazy">
             <span class="ba_badge_pill ba_badge_before">BEFORE</span>
           </div>
 
