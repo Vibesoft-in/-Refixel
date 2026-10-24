@@ -55,10 +55,13 @@ echo "[TEST 2] Verifying IDOR protection on /book-success and /enquiry-success..
 // Create a booking owned by user #1
 $ownerToken = Booking::generateGuestToken();
 $bookingNo = 'BK-SEC-TEST-' . strtoupper(bin2hex(random_bytes(3)));
+$ownerUser = User::findByEmailOrPhone('customer@refixel.com');
+$attackerUser = User::findByEmailOrPhone('admin@refixel.com');
+
 $testBookingId = Booking::create([
     'booking_no'     => $bookingNo,
     'guest_token'    => $ownerToken,
-    'customer_id'    => 57, // customer@refixel.com
+    'customer_id'    => (int)$ownerUser['id'],
     'service_id'     => 1,
     'name'           => 'Owner Customer',
     'phone'          => '9876500001',
@@ -77,15 +80,13 @@ assert($unauthResp->getStatusCode() === 404, "FAIL: Unauthenticated access witho
 
 assert(!method_exists($bookingController, 'enquirySuccess'), "FAIL: enquirySuccess must be removed with WhatsApp flow migration");
 
-// Case B: Another logged-in user (User #30 superadmin or User #56 tech) attempts to view customer #57's booking -> MUST RETURN 404
-$attackerUser = User::find(56);
+// Case B: Another logged-in user attempts to view customer's booking -> MUST RETURN 404
 Auth::login($attackerUser);
 $attackerReq = new Request(['booking_no' => $bookingNo], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/book-success']);
 $attackerResp = $bookingController->success($attackerReq);
 assert($attackerResp->getStatusCode() === 404, "FAIL: Logged-in user accessing another user's booking must return 404, got " . $attackerResp->getStatusCode());
 
 // Case C: Legitimate owner logged in -> MUST SUCCEED (200)
-$ownerUser = User::find(57);
 Auth::login($ownerUser);
 $ownerReq = new Request(['booking_no' => $bookingNo], [], ['REQUEST_METHOD' => 'GET', 'REQUEST_URI' => '/book-success']);
 $ownerResp = $bookingController->success($ownerReq);

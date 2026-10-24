@@ -1367,7 +1367,7 @@ if (empty($activeCategory)) {
                 </div>
                 <p class="text-muted small flex-grow-1 mb-2" style="font-size: 12.5px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;"><?= \App\Core\View::e($cat['description'] ?? 'Verified technicians with standardized multi-point hygiene checklists.') ?></p>
                 <div class="mt-auto pt-2 border-top card-btn-footer" style="border-top-color: #f1f5f9 !important;">
-                  <a href="<?= $targetUrl ?>" class="btn btn-sm text-white w-100 font-weight-bold btn-view-category-services text-center" data-category="<?= $catSlug ?>" style="background:#f25b29; border-radius: 7px; padding: 7px 12px; font-size: 12.5px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2);">
+                  <a href="<?= $isCustomerLoggedIn ? $targetUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetUrl)) ?>" class="btn btn-sm text-white w-100 font-weight-bold btn-view-category-services text-center" data-category="<?= $catSlug ?>" style="background:#f25b29; border-radius: 7px; padding: 7px 12px; font-size: 12.5px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2);">
                     View Services &rarr;
                   </a>
                 </div>
@@ -1411,8 +1411,8 @@ if (empty($activeCategory)) {
                       : \App\Core\View::asset('img/' . $svcImg);
                   $targetSvcUrl = \App\Core\View::url("/{$svcSlug}");
                   $targetBookUrl = \App\Core\View::url('/book?service_id=' . $svcId . '&city=' . urlencode($currentCity));
-                  $svcUrl = $targetSvcUrl;
-                  $bookUrl = $targetBookUrl;
+                  $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
+                  $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
                   $isComingSoon = !empty($svc['is_coming_soon']);
                 ?>
                   <div class="package-card-item">
@@ -1531,6 +1531,7 @@ if (empty($activeCategory)) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  var isCustomerLoggedIn = <?= $isCustomerLoggedIn ? 'true' : 'false' ?>;
   var sidebarCol          = document.getElementById('servicesSidebarCol');
   var backdrop            = document.getElementById('sidebarBackdrop');
   var openBtn             = document.getElementById('mobileFilterBtn');
@@ -1688,6 +1689,15 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('click', function (e) {
     var cartBtn = e.target.closest('.btn-add-to-cart');
     if (!cartBtn) return;
+
+    if (!isCustomerLoggedIn) {
+      e.preventDefault();
+      e.stopPropagation();
+      var redirectTarget = window.location.pathname + window.location.search;
+      window.location.href = '<?= \App\Core\View::url('/login?redirect=') ?>' + encodeURIComponent(redirectTarget);
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation(); // Stop card click navigation
 
@@ -1756,6 +1766,12 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('click', function (e) {
     var bookBtn = e.target.closest('.btn-package-book');
     if (!bookBtn) return;
+
+    var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1';
+    if (!isLoggedIn) {
+      // Guest user: proceed with default href navigation to login form
+      return;
+    }
 
     e.preventDefault();
     e.stopPropagation();
@@ -1853,7 +1869,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var item = catCard.closest('.service-card-item');
     if (item) {
       var cat = item.getAttribute('data-category');
-      if (cat) switchCategory(cat, true);
+      if (cat) {
+        if (!isCustomerLoggedIn) {
+          var cleanCat = cat.endsWith('-services') ? cat : (cat + '-services');
+          window.location.href = '<?= \App\Core\View::url('/login?redirect=') ?>' + encodeURIComponent('<?= \App\Core\View::url('/') ?>' + cleanCat);
+        } else {
+          switchCategory(cat, true);
+        }
+      }
     }
   });
 
@@ -1900,7 +1923,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'cat_name'      => $catName,
       'cat_slug'      => $catSlug,
       'starting_price'=> (float)($s['starting_price'] ?? 0),
-      'url'           => \App\Core\View::url('/services/' . $s['slug']),
+      'url'           => $isCustomerLoggedIn ? \App\Core\View::url('/services/' . $s['slug']) : \App\Core\View::url('/login?redirect=' . urlencode(\App\Core\View::url('/services/' . $s['slug']))),
     ];
   }, $services ?? []), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 

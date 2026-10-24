@@ -163,9 +163,9 @@ $refixelTrustData = [
           $svcSlug = \App\Core\View::e($svc['slug']);
           $svcName = \App\Core\View::e($svc['name']);
           $targetSvcUrl = \App\Core\View::url("/{$svcSlug}-in-{$currentCitySlug}");
-          $svcUrl = $targetSvcUrl;
+          $svcUrl = $isCustomerLoggedIn ? $targetSvcUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetSvcUrl));
           $targetBookUrl = \App\Core\View::url('/book?service_id=' . (int)$svc['id'] . '&city=' . urlencode($city));
-          $bookUrl = $targetBookUrl;
+          $bookUrl = $isCustomerLoggedIn ? $targetBookUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetBookUrl));
           $imgFile = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
           $isComingSoon = !empty($svc['is_coming_soon']);
         ?>
@@ -394,6 +394,15 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('click', function(e) {
     var cartBtn = e.target.closest('.btn-add-to-cart');
     if (!cartBtn) return;
+
+    if (!isCustomerLoggedIn) {
+      e.preventDefault();
+      e.stopPropagation();
+      var redirectTarget = window.location.pathname + window.location.search;
+      window.location.href = '<?= \App\Core\View::url('/login?redirect=') ?>' + encodeURIComponent(redirectTarget);
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -445,6 +454,12 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('click', function(e) {
     var bookBtn = e.target.closest('.btn-package-book');
     if (!bookBtn) return;
+
+    var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1';
+    if (!isLoggedIn) {
+      // Guest user: proceed with default href navigation to login form
+      return;
+    }
 
     e.preventDefault();
     e.stopPropagation();

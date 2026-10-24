@@ -30,41 +30,41 @@ assert($service !== null, "At least one active service must exist");
 $serviceId = (int)$service['id'];
 
 // ----------------------------------------------------
-// TEST 1: Category page has direct Book Now links for guests (no /login redirect)
+// TEST 1: Category page enforces login redirect for guest clicks
 // ----------------------------------------------------
-echo "[TEST 1] Verifying Category Page direct links without login redirect...\n";
+echo "[TEST 1] Verifying Category Page login redirects for unauthenticated guests...\n";
 $categoryHtml = file_get_contents(ROOT_PATH . '/app/views/customer/services/category.php');
-assert(!str_contains($categoryHtml, '$bookUrl = $isCustomerLoggedIn ?'), "category.php must not redirect guests to login for booking");
-assert(!str_contains($categoryHtml, '$svcUrl = $isCustomerLoggedIn ?'), "category.php must not redirect guests to login for checklists");
-assert(!str_contains($categoryHtml, 'var isLoggedIn = bookBtn.getAttribute'), "category.php JS must not block guest Book Now clicks");
-echo "  ✓ PASS: category.php provides direct booking links for guest users\n\n";
+assert(str_contains($categoryHtml, '$bookUrl = $isCustomerLoggedIn ?'), "category.php must redirect guests to login for booking");
+assert(str_contains($categoryHtml, '$svcUrl = $isCustomerLoggedIn ?'), "category.php must redirect guests to login for checklists");
+assert(str_contains($categoryHtml, 'var isLoggedIn = bookBtn.getAttribute'), "category.php JS must check guest Book Now login state");
+echo "  ✓ PASS: category.php enforces login redirection for unauthenticated guest users\n\n";
 
 // ----------------------------------------------------
-// TEST 2: Service Detail Page has no forced login redirect script
+// TEST 2: Service Detail Page has browser login redirect script for unauthenticated users
 // ----------------------------------------------------
-echo "[TEST 2] Verifying Service Detail Page has no forced login redirect...\n";
+echo "[TEST 2] Verifying Service Detail Page contains login redirect script for guests...\n";
 $showHtml = file_get_contents(ROOT_PATH . '/app/views/customer/services/show.php');
-assert(!str_contains($showHtml, "window.location.replace('<?= \App\Core\View::url('/login?redirect=') ?>'"), "show.php must not contain forced login redirect");
-echo "  ✓ PASS: show.php permits direct browsing and booking for guests\n\n";
+assert(str_contains($showHtml, "window.location.replace('<?= \App\Core\View::url('/login?redirect=') ?>'"), "show.php must contain login redirect for unauthenticated browser visitors");
+echo "  ✓ PASS: show.php redirects unauthenticated visitors to login\n\n";
 
 // ----------------------------------------------------
-// TEST 3: Services Catalogue has direct links for guests
+// TEST 3: Services Catalogue enforces login redirect for guest clicks
 // ----------------------------------------------------
-echo "[TEST 3] Verifying Catalogue page direct links without login redirect...\n";
+echo "[TEST 3] Verifying Catalogue page login redirects for unauthenticated guests...\n";
 $indexHtml = file_get_contents(ROOT_PATH . '/app/views/customer/services/index.php');
-assert(!str_contains($indexHtml, '$bookUrl = $isCustomerLoggedIn ?'), "index.php must not redirect guests to login for booking");
-assert(!str_contains($indexHtml, "var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1'"), "index.php JS must not intercept guest clicks to login");
-echo "  ✓ PASS: services/index.php allows direct guest bookings\n\n";
+assert(str_contains($indexHtml, '$bookUrl = $isCustomerLoggedIn ?'), "index.php must redirect guests to login for booking");
+assert(str_contains($indexHtml, "var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1'"), "index.php JS must check guest login state on book");
+echo "  ✓ PASS: services/index.php enforces login redirects for unauthenticated guests\n\n";
 
 // ----------------------------------------------------
-// TEST 4: Homepage category cards link directly to service pages without /login redirect
+// TEST 4: Homepage category cards and marquee links enforce login redirect for guests
 // ----------------------------------------------------
-echo "[TEST 4] Verifying Homepage category cards have direct links for guests...\n";
+echo "[TEST 4] Verifying Homepage category cards and marquee links redirect unauthenticated guests...\n";
 $homeHtml = file_get_contents(ROOT_PATH . '/app/views/customer/home.php');
-assert(!str_contains($homeHtml, '$cardHref = $isCustomerLoggedIn ?'), "home.php must not redirect category cards to /login?redirect=");
-assert(!str_contains($homeHtml, '$mHref = $isCustomerLoggedIn ?'), "home.php must not redirect marquee links to /login?redirect=");
-assert(!str_contains($homeHtml, 'window.location.href = baseUrl + \'/login?redirect=\''), "home.php JS must not intercept cards to login");
-echo "  ✓ PASS: home.php category cards directly navigate for guest users\n\n";
+assert(str_contains($homeHtml, '$cardHref = $isCustomerLoggedIn ?'), "home.php must redirect category cards to /login?redirect=");
+assert(str_contains($homeHtml, '$mHref = $isCustomerLoggedIn ?'), "home.php must redirect marquee links to /login?redirect=");
+assert(str_contains($homeHtml, 'window.location.href = baseUrl + \'/login?redirect=\''), "home.php JS must intercept guest clicks to login");
+echo "  ✓ PASS: home.php category cards and marquee links enforce login redirect for guest users\n\n";
 
 // ----------------------------------------------------
 // TEST 5: Direct /book form submission by guest creates booking, does NOT auto-login, redirects to /book-success?token=

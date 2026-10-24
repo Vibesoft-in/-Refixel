@@ -542,14 +542,14 @@
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f25b29;"></span> Kashipur Services (244713)
             </h6>
             <ul class="list-unstyled p-0 m-0" style="font-size: 12px; line-height: 2;">
-              <li><a href="<?= \App\Core\View::url('/ac-services-in-kashipur') ?>" class="footer-nav-link">AC Service &amp; Repair Kashipur</a></li>
-              <li><a href="<?= \App\Core\View::url('/cleaning-services-in-kashipur') ?>" class="footer-nav-link">Deep Home Cleaning Kashipur</a></li>
+              <li><a href="<?= \App\Core\View::url('/ac-services-in-kashipur') ?>" class="footer-nav-link">AC Service &amp; Repair in Kashipur</a></li>
+              <li><a href="<?= \App\Core\View::url('/cleaning-services-in-kashipur') ?>" class="footer-nav-link">Deep Home Cleaning  in Kashipur</a></li>
               <li><a href="<?= \App\Core\View::url('/electrician-services-in-kashipur') ?>" class="footer-nav-link">Electrician in Kashipur</a></li>
-              <li><a href="<?= \App\Core\View::url('/plumber-services-in-kashipur') ?>" class="footer-nav-link">Plumber Services Kashipur</a></li>
+              <li><a href="<?= \App\Core\View::url('/plumber-services-in-kashipur') ?>" class="footer-nav-link">Plumber Services in Kashipur</a></li>
               <li><a href="<?= \App\Core\View::url('/painting-services-in-kashipur') ?>" class="footer-nav-link">House Painting in Kashipur</a></li>
               <li><a href="<?= \App\Core\View::url('/pest-control-services-in-kashipur') ?>" class="footer-nav-link">Pest Control in Kashipur</a></li>
               <li><a href="<?= \App\Core\View::url('/fall-ceiling-services-in-kashipur') ?>" class="footer-nav-link">Fall Ceiling in Kashipur</a></li>
-              <li><a href="<?= \App\Core\View::url('/appliance-repair-services-in-kashipur') ?>" class="footer-nav-link">Appliance Repair Kashipur</a></li>
+              <li><a href="<?= \App\Core\View::url('/appliance-repair-services-in-kashipur') ?>" class="footer-nav-link">Appliance Repair in Kashipur</a></li>
             </ul>
           </div>
 
@@ -559,13 +559,13 @@
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f25b29;"></span> Jaspur Services (244712)
             </h6>
             <ul class="list-unstyled p-0 m-0" style="font-size: 12px; line-height: 2;">
-              <li><a href="<?= \App\Core\View::url('/ac-services-in-jaspur') ?>" class="footer-nav-link">AC Service &amp; Repair Jaspur</a></li>
-              <li><a href="<?= \App\Core\View::url('/cleaning-services-in-jaspur') ?>" class="footer-nav-link">Home Cleaning Services Jaspur</a></li>
-              <li><a href="<?= \App\Core\View::url('/electrician-services-in-jaspur') ?>" class="footer-nav-link">Doorstep Electrician Jaspur</a></li>
+              <li><a href="<?= \App\Core\View::url('/ac-services-in-jaspur') ?>" class="footer-nav-link">AC Service &amp; Repair in Jaspur</a></li>
+              <li><a href="<?= \App\Core\View::url('/cleaning-services-in-jaspur') ?>" class="footer-nav-link">Home Cleaning Services in Jaspur</a></li>
+              <li><a href="<?= \App\Core\View::url('/electrician-services-in-jaspur') ?>" class="footer-nav-link">Doorstep Electrician in Jaspur</a></li>
               <li><a href="<?= \App\Core\View::url('/plumber-services-in-jaspur') ?>" class="footer-nav-link">Plumber in Jaspur</a></li>
               <li><a href="<?= \App\Core\View::url('/painting-services-in-jaspur') ?>" class="footer-nav-link">Interior Painting in Jaspur</a></li>
-              <li><a href="<?= \App\Core\View::url('/pest-control-services-in-jaspur') ?>" class="footer-nav-link">Pest &amp; Termite Control Jaspur</a></li>
-              <li><a href="<?= \App\Core\View::url('/fall-ceiling-services-in-jaspur') ?>" class="footer-nav-link">Designer Fall Ceiling Jaspur</a></li>
+              <li><a href="<?= \App\Core\View::url('/pest-control-services-in-jaspur') ?>" class="footer-nav-link">Pest &amp; Termite Control in Jaspur</a></li>
+              <li><a href="<?= \App\Core\View::url('/fall-ceiling-services-in-jaspur') ?>" class="footer-nav-link">Designer Fall Ceiling in Jaspur</a></li>
               <li><a href="<?= \App\Core\View::url('/carpenter-services-in-jaspur') ?>" class="footer-nav-link">Carpenter Services Jaspur</a></li>
             </ul>
           </div>
@@ -577,13 +577,13 @@
             </h6>
             <ul class="list-unstyled p-0 m-0" style="font-size: 12px; line-height: 2;">
               <li><a href="<?= \App\Core\View::url('/ac-services-in-thakurdwara') ?>" class="footer-nav-link">AC Repair in Thakurdwara</a></li>
-              <li><a href="<?= \App\Core\View::url('/cleaning-services-in-thakurdwara') ?>" class="footer-nav-link">Sanitization &amp; Cleaning Thakurdwara</a></li>
+              <li><a href="<?= \App\Core\View::url('/cleaning-services-in-thakurdwara') ?>" class="footer-nav-link">Sanitization &amp; Cleaning in Thakurdwara</a></li>
               <li><a href="<?= \App\Core\View::url('/electrician-services-in-thakurdwara') ?>" class="footer-nav-link">Electrician in Thakurdwara</a></li>
-              <li><a href="<?= \App\Core\View::url('/plumber-services-in-thakurdwara') ?>" class="footer-nav-link">Plumbing Services Thakurdwara</a></li>
-              <li><a href="<?= \App\Core\View::url('/painting-services-in-thakurdwara') ?>" class="footer-nav-link">Wall Painting Thakurdwara</a></li>
-              <li><a href="<?= \App\Core\View::url('/pest-control-services-in-thakurdwara') ?>" class="footer-nav-link">Pest Control Thakurdwara</a></li>
-              <li><a href="<?= \App\Core\View::url('/appliance-repair-services-in-thakurdwara') ?>" class="footer-nav-link">Appliance Repair Thakurdwara</a></li>
-              <li><a href="<?= \App\Core\View::url('/fall-ceiling-services-in-thakurdwara') ?>" class="footer-nav-link">POP Ceiling Work Thakurdwara</a></li>
+              <li><a href="<?= \App\Core\View::url('/plumber-services-in-thakurdwara') ?>" class="footer-nav-link">Plumbing Services in Thakurdwara</a></li>
+              <li><a href="<?= \App\Core\View::url('/painting-services-in-thakurdwara') ?>" class="footer-nav-link">Wall Painting in Thakurdwara</a></li>
+              <li><a href="<?= \App\Core\View::url('/pest-control-services-in-thakurdwara') ?>" class="footer-nav-link">Pest Control in Thakurdwara</a></li>
+              <li><a href="<?= \App\Core\View::url('/appliance-repair-services-in-thakurdwara') ?>" class="footer-nav-link">Appliance Repair in Thakurdwara</a></li>
+              <li><a href="<?= \App\Core\View::url('/fall-ceiling-services-in-thakurdwara') ?>" class="footer-nav-link">POP Ceiling Work in Thakurdwara</a></li>
             </ul>
           </div>
 

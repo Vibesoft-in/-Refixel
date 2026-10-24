@@ -654,11 +654,13 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
     </div>
 
     <div class="solutions_grid" id="solutionsGrid">
-      <?php foreach ($activeCategories as $cat): 
+      <?php 
+        $isCustomerLoggedIn = \App\Core\Auth::check();
+        foreach ($activeCategories as $cat): 
         $catSlug = $cat['slug'];
         $cleanUrlSlug = str_ends_with($catSlug, '-services') ? $catSlug : ($catSlug === 'cleaning' ? 'cleaning-services' : "{$catSlug}-services");
         $targetUrl = \App\Core\View::url("/{$cleanUrlSlug}");
-        $cardHref = $targetUrl;
+        $cardHref = $isCustomerLoggedIn ? $targetUrl : \App\Core\View::url('/login?redirect=' . urlencode($targetUrl));
 
         $bannerSrc = $resolveCardImage($cat['image'] ?? $cat['icon'] ?? null);
         $iconData = $resolveCardIcon($cat['icon'] ?? null);
@@ -704,7 +706,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         $mSlug = $m['slug'];
         $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
         $mTarget = \App\Core\View::url("/{$mUrlSlug}");
-        $mHref = $mTarget;
+        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
       ?>
         <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
@@ -714,7 +716,7 @@ $isCustomerLoggedIn = \App\Core\Auth::check();
         $mSlug = $m['slug'];
         $mUrlSlug = str_ends_with($mSlug, '-services') ? $mSlug : ($mSlug === 'cleaning' ? 'cleaning-services' : "{$mSlug}-services");
         $mTarget = \App\Core\View::url("/{$mUrlSlug}");
-        $mHref = $mTarget;
+        $mHref = $isCustomerLoggedIn ? $mTarget : \App\Core\View::url('/login?redirect=' . urlencode($mTarget));
       ?>
         <a href="<?= $mHref ?>" class="sm-link" data-target-url="<?= $mTarget ?>"><?= \App\Core\View::e($m['name']) ?></a>
         <span class="sm-dot">✦</span>
@@ -5497,7 +5499,26 @@ document.addEventListener('DOMContentLoaded', function() {
   var isCustomerLoggedIn = <?= \App\Core\Auth::check() ? 'true' : 'false' ?>;
 
   function navigateToService(targetUrl) {
-    window.location.href = targetUrl;
+    if (!isCustomerLoggedIn) {
+      window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(targetUrl);
+    } else {
+      window.location.href = targetUrl;
+    }
+  }
+
+  // Intercept clicks on homepage service cards and marquee links for guests
+  if (!isCustomerLoggedIn) {
+    document.querySelectorAll('.solution_card, .services_marquee_strip a').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = this.getAttribute('data-target-url') || this.getAttribute('href');
+        if (target && target.indexOf('/login') !== -1) {
+          window.location.href = target;
+        } else if (target) {
+          window.location.href = baseUrl + '/login?redirect=' + encodeURIComponent(target);
+        }
+      });
+    });
   }
 
   function performSearchNavigation() {

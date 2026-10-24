@@ -27,7 +27,7 @@ echo "   REFIXEL SEED & DEMO ACCOUNTS PASSWORD RESET UTILITY  \n";
 echo "========================================================\n\n";
 
 $targetIds = [30, 57, 58, 208, 277];
-$targetEmails = ['superadmin@refixel.com', 'admin@refixel.com', 'customer@refixel.com'];
+$targetEmails = ['superadmin@refixel.com', 'admin@refixel.com', 'customer@refixel.com', 'tech@refixel.com'];
 
 // Find all matching target accounts
 $placeholders = implode(',', array_fill(0, count($targetIds), '?'));

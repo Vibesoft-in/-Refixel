@@ -25,8 +25,10 @@ echo "=== RUNNING SECURITY PHASE 1.5 (TASK 4) VERIFICATION TESTS ===\n\n";
 echo "[TEST 1] Verifying seed and demo accounts security state...\n";
 
 $targetIds = [30, 57, 58, 208, 277];
+$targetEmails = ['superadmin@refixel.com', 'admin@refixel.com', 'tech@refixel.com', 'customer@refixel.com'];
 $placeholders = implode(',', array_fill(0, count($targetIds), '?'));
-$users = Database::fetchAll("SELECT * FROM users WHERE id IN ($placeholders)", $targetIds);
+$emailPlaceholders = implode(',', array_fill(0, count($targetEmails), '?'));
+$users = Database::fetchAll("SELECT * FROM users WHERE id IN ($placeholders) OR email IN ($emailPlaceholders)", array_merge($targetIds, $targetEmails));
 
 assert(count($users) >= 4, "Expected seed/demo accounts to exist in database");
 
