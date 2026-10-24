@@ -394,7 +394,7 @@
             </a>
           </div>
           <p style="font-size: 14.5px; line-height: 1.7; color: #cbd5e1;">
-            Verified home services in Kashipur, Jaspur &amp; Thakurdwara, Uttarakhand.
+            REFIXEL – Best verified home services in Kashipur, Jaspur &amp; Thakurdwara, Uttarakhand.
           </p>
         </div>
 

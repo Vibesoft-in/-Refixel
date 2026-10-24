@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
   <?php
-    $pageTitle = $title ?? 'Home Cleaning, AC Repair, Plumber & Electrician in Kashipur, Jaspur | REFIXEL';
-    $pageDesc = $description ?? 'Book verified home service professionals in Kashipur, Jaspur & Thakurdwara. Deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Upfront pricing. Book Now!';
+    $pageTitle = $title ?? 'REFIXEL: Best Home Services in Kashipur, Jaspur | Cleaning, AC Repair';
+    $pageDesc = $description ?? 'REFIXEL offers the best home services in Kashipur, Jaspur & Thakurdwara. Verified pros for deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Book Now!';
     $ogPageTitle = $ogTitle ?? $pageTitle;
     $ogPageDesc = $ogDescription ?? $pageDesc;
 
@@ -180,7 +180,7 @@
   <div class="top_offer_bar py-1 py-md-2 text-white">
     <div class="container d-flex align-items-center justify-content-center flex-nowrap" style="gap: 8px;">
       <span class="top_offer_text text-truncate">
-        <?= \App\Core\View::e(\App\Models\Setting::get('promo_strip_text', 'Festival Special • Flat 20% off on Home Deep Cleaning in Kashipur & Jaspur')) ?>
+        <?= \App\Core\View::e(\App\Models\Setting::get('promo_strip_text', 'Festival Special • Flat 20% off on REFIXEL Deep Cleaning in Kashipur & Jaspur')) ?>
       </span>
       <a href="<?= \App\Core\View::url('/services') ?>" class="top_offer_btn text-white font-weight-bold text-decoration-none flex-shrink-0">
         Book Now <i class="fa fa-arrow-right ml-1"></i>
@@ -289,6 +289,7 @@
       btn.addEventListener("click", function() {
         var city = this.getAttribute("data-city");
         if (city) {
+          try { localStorage.setItem('refixel_selected_city', city); } catch(e) {}
           fetch(baseUrl + '/api/service-areas', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},

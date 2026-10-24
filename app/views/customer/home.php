@@ -535,10 +535,23 @@ a.solution_card:active,
       <div class="col-lg-12">
         <div class="search_service">
           <div class="looking_ser">
-            <h3><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', 'Verified Home Services in Kashipur & Jaspur')) ?></h3>
-            <h1><?= \App\Core\View::e(\App\Models\Setting::get('hero_title', 'Home Cleaning, AC Repair & Repair Services in Kashipur, Jaspur & Thakurdwara')) ?></h1>
+            <h3><span id="heroBadgeText"><?= \App\Core\View::e(\App\Models\Setting::get('hero_tagline', 'Verified Home Services in Your City')) ?></span></h3>
+            <script>
+              (function() {
+                try {
+                  var savedCity = localStorage.getItem('refixel_selected_city');
+                  if (savedCity && savedCity.trim()) {
+                    var badge = document.getElementById('heroBadgeText');
+                    if (badge) {
+                      badge.textContent = 'Verified Home Services in ' + savedCity.trim();
+                    }
+                  }
+                } catch(e) {}
+              })();
+            </script>
+            <h1><?= \App\Core\View::e(\App\Models\Setting::get('hero_title', 'REFIXEL – Best Home Cleaning, AC Repair & Plumber in Kashipur, Jaspur & Thakurdwara')) ?></h1>
             <a href="<?= \App\Core\View::url('/services') ?>" class="btn_cleaned_today d-inline-block text-decoration-none">
-              Book a Home Service Today
+              Book Best Home Service Today
             </a>
           </div>
 
@@ -589,13 +602,13 @@ a.solution_card:active,
   <div class="container px-0 px-md-3">
     <div class="complate_serv" id="trustStatsSlider">
       <ul>
-        <li>4.8★ <h6>Rated by 1000+ Happy Customers in Uttarakhand</h6></li>
-        <li>5000+ <h6>Homes Professionally Cleaned</h6></li>
+        <li>4.8★ <h6>Top-Rated by 1000+ Customers in Uttarakhand</h6></li>
+        <li>5000+ <h6>Homes Cleaned by REFIXEL</h6></li>
         <li>60+ <h6>Trusted Service Partners</h6></li>
         <li>400+ <h6>Background-Verified Professionals</h6></li>
         <!-- Seamless continuous marquee clone on mobile -->
-        <li class="stats-clone">4.8★ <h6>Rated by 1000+ Happy Customers in Uttarakhand</h6></li>
-        <li class="stats-clone">5000+ <h6>Homes Professionally Cleaned</h6></li>
+        <li class="stats-clone">4.8★ <h6>Top-Rated by 1000+ Customers in Uttarakhand</h6></li>
+        <li class="stats-clone">5000+ <h6>Homes Cleaned by REFIXEL</h6></li>
         <li class="stats-clone">60+ <h6>Trusted Service Partners</h6></li>
         <li class="stats-clone">400+ <h6>Background-Verified Professionals</h6></li>
       </ul>
@@ -659,7 +672,7 @@ $serviceCardDescriptions = [
             <span>OUR SERVICES</span>
             <span class="eyebrow_dash"></span>
           </div>
-          <h2>Complete Home Services Near You</h2>
+          <h2>Best Home Services in Kashipur, Jaspur &amp; Thakurdwara</h2>
         </div>
       </div>
     </div>
@@ -1030,11 +1043,11 @@ $serviceCardDescriptions = [
             <span>ABOUT REFIXEL</span>
           </div>
           <h2 class="home_about_title">
-            Trusted Home Services in<br>
+            REFIXEL: Top-Rated Home Services in<br>
             <span class="text_highlight">Kashipur, Jaspur &amp; Thakurdwara</span>
           </h2>
           <p class="home_about_desc">
-            REFIXEL is a local home services company based in Jaspur, Uttarakhand. We connect homeowners with background-verified professionals for cleaning, AC service, plumbing, electrical work, painting, pest control and repairs, with upfront pricing and doorstep service.
+            REFIXEL is a trusted local home services company based in Jaspur, Uttarakhand. We connect homeowners in Kashipur, Jaspur and Thakurdwara with background-verified professionals for cleaning, AC service, plumbing, electrical work, painting, pest control and repairs, with upfront pricing and doorstep service.
           </p>
 
           <!-- 3 Key Value Feature Cards -->
@@ -1339,9 +1352,9 @@ $serviceCardDescriptions = [
         <span>WHY CHOOSE REFIXEL</span>
         <span class="eyebrow_dash"></span>
       </div>
-      <h2 class="home_why_title">Why Choose REFIXEL for Home Services</h2>
+      <h2 class="home_why_title">Why REFIXEL Is the Best Choice for Home Services in Kashipur &amp; Jaspur</h2>
       <p class="home_why_desc">
-        Book verified professionals with upfront pricing and a 30-day service guarantee in Kashipur, Jaspur &amp; Thakurdwara.
+        Book verified professionals with upfront pricing and a 30-day service guarantee, trusted by 1000+ customers across Kashipur, Jaspur &amp; Thakurdwara.
       </p>
     </div>
 
@@ -1585,7 +1598,7 @@ $serviceCardDescriptions = [
     <div class="how_it_works_header">
       <div class="how_it_works_header_left">
         <span class="how_it_works_eyebrow"> HOW IT WORKS</span>
-        <h2 class="how_it_works_title">How to Book a Home Service in 5 Easy Steps</h2>
+        <h2 class="how_it_works_title">How to Book REFIXEL Home Services in 5 Easy Steps</h2>
       </div>
       <div class="how_it_works_header_right">
         <p class="how_it_works_desc">Choose your service, share the details, secure your slot and let REFIXEL handle the rest.</p>
@@ -2237,7 +2250,7 @@ $serviceCardDescriptions = [
         <span>PROVEN TRANSFORMATIONS</span>
         <span class="eyebrow_dash"></span>
       </div>
-      <h2 class="ba_title">Real Before &amp; After Cleaning Results</h2>
+      <h2 class="ba_title">REFIXEL Before &amp; After: Real Home Cleaning Results in Kashipur</h2>
       <p class="ba_desc">Drag the interactive slider horizontally to compare before and after.</p>
     </div>
 
@@ -4064,7 +4077,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <span class="eyebrow_dash"></span>
         <span>REVIEWS</span>
       </div>
-      <h2 class="reviews_title">What Customers Say About REFIXEL</h2>
+      <h2 class="reviews_title">Why Customers Rate REFIXEL the Best Home Service in Kashipur &amp; Jaspur</h2>
     </div>
 
     <div class="row g-4 align-items-stretch">
@@ -4236,7 +4249,7 @@ document.addEventListener('DOMContentLoaded', function () {
           <span class="eyebrow_dash"></span>
           <span>CONTACT</span>
         </div>
-        <h2 class="contact_title">Book Home Services in Kashipur, Jaspur &amp; Thakurdwara</h2>
+        <h2 class="contact_title">Book the Best Home Services in Kashipur, Jaspur &amp; Thakurdwara | REFIXEL</h2>
       </div>
       <div class="contact_header_right">
         <p class="contact_sub_desc">Tell us what you need and where. Our local team will confirm your booking quickly.</p>
@@ -5347,7 +5360,7 @@ document.addEventListener('DOMContentLoaded', function () {
   <div class="container">
     <div class="faq_header_center">
       <span class="faq_badge_pill">HELP & COMMON QUESTIONS</span>
-      <h2 class="faq_main_title">Frequently Asked Questions About <span class="faq_orange_word">REFIXEL Home Services</span></h2>
+      <h2 class="faq_main_title">Frequently Asked Questions About <span class="faq_orange_word">REFIXEL Home Services in Kashipur &amp; Jaspur</span></h2>
       <p class="faq_sub_title">Everything you need to know about booking, payments, service warranty, and technician verification.</p>
     </div>
 
@@ -5409,6 +5422,17 @@ document.addEventListener('DOMContentLoaded', function () {
             <p class="faq_pill_answer">We currently serve Kashipur, Jaspur and Thakurdwara, with more areas coming soon.</p>
           </div>
         </div>
+
+        <!-- 06 -->
+        <div class="faq_pill_card">
+          <div class="faq_pill_header">
+            <h4 class="faq_pill_question">Which is the best home service company in Kashipur?</h4>
+            <span class="faq_circle_plus"><i class="fa fa-plus"></i></span>
+          </div>
+          <div class="faq_pill_body">
+            <p class="faq_pill_answer">REFIXEL is a top-rated home service company in Kashipur, Jaspur and Thakurdwara, rated 4.8★ by 1000+ customers, with background-verified professionals and a 30-day service guarantee.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Right Column -->
@@ -5465,6 +5489,17 @@ document.addEventListener('DOMContentLoaded', function () {
           </div>
           <div class="faq_pill_body">
             <p class="faq_pill_answer">No. All tools, equipment and safe chemicals are brought by our professionals.</p>
+          </div>
+        </div>
+
+        <!-- 11 -->
+        <div class="faq_pill_card">
+          <div class="faq_pill_header">
+            <h4 class="faq_pill_question">Does REFIXEL provide AC repair, plumber and electrician services in Jaspur?</h4>
+            <span class="faq_circle_plus"><i class="fa fa-plus"></i></span>
+          </div>
+          <div class="faq_pill_body">
+            <p class="faq_pill_answer">Yes. REFIXEL provides AC jet service, plumbing, electrician, cleaning, painting, pest control and more in Jaspur with upfront pricing.</p>
           </div>
         </div>
       </div>
@@ -5556,6 +5591,22 @@ document.addEventListener('DOMContentLoaded', function () {
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "No. All tools, equipment and safe chemicals are brought by our professionals."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which is the best home service company in Kashipur?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "REFIXEL is a top-rated home service company in Kashipur, Jaspur and Thakurdwara, rated 4.8★ by 1000+ customers, with background-verified professionals and a 30-day service guarantee."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does REFIXEL provide AC repair, plumber and electrician services in Jaspur?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. REFIXEL provides AC jet service, plumbing, electrician, cleaning, painting, pest control and more in Jaspur with upfront pricing."
       }
     }
   ]
