@@ -8,6 +8,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
 use App\Models\PaymentGateway;
+use App\Models\Setting;
 
 class GatewayController extends Controller
 {
@@ -21,10 +22,41 @@ class GatewayController extends Controller
         }
         unset($gw);
 
+        $advanceEnabled = (string)Setting::get('prebooking_advance_enabled', '0') === '1';
+        $advanceAmount = (float)Setting::get('prebooking_advance_amount', 49.00);
+
         return $this->render('superadmin.gateways.index', [
-            'title'    => 'Payment Gateways & API Credentials | Super Admin',
-            'gateways' => $gateways,
+            'title'          => 'Payment Gateways & API Credentials | Super Admin',
+            'gateways'       => $gateways,
+            'advanceEnabled' => $advanceEnabled,
+            'advanceAmount'  => $advanceAmount,
         ], 'superadmin');
+    }
+
+    public function updateAdvancePolicy(Request $request): Response
+    {
+        $enabled = (int)$request->input('prebooking_advance_enabled', 0);
+        $amount = max(0.0, (float)$request->input('prebooking_advance_amount', 49.00));
+
+        Setting::set('prebooking_advance_enabled', $enabled ? '1' : '0');
+        Setting::set('prebooking_advance_amount', number_format($amount, 2, '.', ''));
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            return Response::json([
+                'success' => true,
+                'enabled' => (bool)$enabled,
+                'amount'  => $amount,
+                'message' => $enabled 
+                    ? "Pre-booking online advance of ₹" . round($amount) . " enabled successfully." 
+                    : "Pre-booking advance disabled. 100% Cash on Delivery (Pay After Service) is now active."
+            ]);
+        }
+
+        View::setFlash('success', $enabled 
+            ? "Pre-booking advance of ₹" . round($amount) . " enabled successfully." 
+            : "Pre-booking advance disabled. Doorstep service bookings will now be pure Cash on Delivery without requiring any online advance."
+        );
+        return $this->redirect('/superadmin/gateways');
     }
 
     public function update(Request $request, string $id): Response
@@ -92,6 +124,17 @@ class GatewayController extends Controller
         }
 
         $statusLabel = $newStatus ? 'activated' : 'deactivated';
+
+        if ($request->isAjax() || $request->input('is_ajax')) {
+            return Response::json([
+                'success'   => true,
+                'gateway_id'=> $gatewayId,
+                'name'      => $gateway['name'],
+                'is_active' => $newStatus,
+                'message'   => "Gateway '{$gateway['name']}' {$statusLabel} successfully."
+            ]);
+        }
+
         View::setFlash('success', "Gateway '{$gateway['name']}' {$statusLabel} successfully.");
         return $this->redirect('/superadmin/gateways');
     }

@@ -54,6 +54,129 @@
     </div>
   </div>
 
+  <style>
+    .rfx-ios-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      margin: 0;
+      vertical-align: middle;
+    }
+    .rfx-ios-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+    .rfx-ios-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1;
+      transition: .22s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 24px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .rfx-ios-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #ffffff;
+      transition: .22s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }
+    input:checked + .rfx-ios-slider {
+      background-color: #10b981;
+    }
+    input:checked + .rfx-ios-slider:before {
+      transform: translateX(20px);
+    }
+    .rfx-policy-card {
+      background: linear-gradient(135deg, #ffffff 0%, #fffbf8 100%);
+      border: 1.5px solid #fed7aa;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(242, 91, 41, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .rfx-policy-card:before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 5px;
+      background: #f25b29;
+    }
+  </style>
+
+  <!-- Pre-Booking Advance Payment Policy Card (₹49 Advance Toggle) -->
+  <div class="rfx-policy-card p-3 p-md-4 mb-4">
+    <div class="row align-items-center">
+      <div class="col-lg-7 mb-3 mb-lg-0">
+        <div class="d-flex align-items-center mb-2 flex-wrap" style="gap: 8px;">
+          <h4 class="font-weight-bold text-dark mb-0" style="font-size: 18px;">
+            <i class="fa fa-sliders text-warning mr-1"></i> Pre-Booking Advance Payment Policy
+          </h4>
+          <span id="advancePolicyStatusBadge">
+            <?php if (!empty($advanceEnabled)): ?>
+              <span class="badge badge-success px-2 py-1" style="font-size: 11px;">
+                <i class="fa fa-check-circle mr-1"></i>Advance Requirement Active (₹<?= round($advanceAmount ?? 49) ?>)
+              </span>
+            <?php else: ?>
+              <span class="badge px-2 py-1" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 11px;">
+                <i class="fa fa-info-circle mr-1"></i>Pure COD Active (₹0 Advance)
+              </span>
+            <?php endif; ?>
+          </span>
+        </div>
+        <p class="text-muted small mb-0" style="font-size: 12.5px; line-height: 1.45;">
+          Control whether customers choosing <strong>Cash on Delivery (Pay After Service)</strong> must pay an online confirmation advance (e.g. ₹49) via Razorpay. 
+          When <strong>OFF</strong>, customers book pure COD with <strong>₹0 advance</strong>, and customer invoices show the <strong>full service amount without deducting ₹49</strong>.
+        </p>
+      </div>
+
+      <div class="col-lg-5">
+        <form action="<?= \App\Core\View::url('/superadmin/gateways/advance-policy') ?>" method="POST" id="advancePolicyForm" class="bg-white p-3 rounded border">
+          <?= \App\Core\View::csrfField() ?>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <label class="font-weight-bold text-dark small mb-0" for="prebookingAdvanceToggle">
+              Require Pre-booking Advance:
+            </label>
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <span class="small font-weight-bold" id="advanceToggleLabel" style="color: <?= !empty($advanceEnabled) ? '#10b981' : '#64748b' ?>;">
+                <?= !empty($advanceEnabled) ? 'ENABLED' : 'DISABLED' ?>
+              </span>
+              <label class="rfx-ios-switch mb-0">
+                <input type="checkbox" name="prebooking_advance_enabled" value="1" id="prebookingAdvanceToggle" <?= !empty($advanceEnabled) ? 'checked' : '' ?> onchange="onAdvanceToggleChange(this)">
+                <span class="rfx-ios-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+            <label class="font-weight-bold text-dark small mb-0" for="advanceAmountInput">
+              Advance Amount (₹):
+            </label>
+            <div class="input-group input-group-sm" style="max-width: 140px;">
+              <div class="input-group-prepend">
+                <span class="input-group-text font-weight-bold">₹</span>
+              </div>
+              <input type="number" step="1" min="0" max="5000" name="prebooking_advance_amount" id="advanceAmountInput" class="form-control text-right font-weight-bold" value="<?= round($advanceAmount ?? 49) ?>" style="font-family: monospace;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-sm btn-primary btn-block font-weight-bold mt-2 py-1" style="font-size: 12px; border-radius: 6px;">
+            <i class="fa fa-save mr-1"></i> Save Advance Policy
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Gateway Cards -->
   <div class="row">
     <?php foreach ($gateways as $gw): ?>
@@ -63,7 +186,7 @@
         $cardBorder = $gw['is_active'] ? ($isRazorpay ? '#f25b29' : '#6366f1') : '#cbd5e1';
       ?>
       <div class="col-lg-6 mb-4">
-        <div class="sa-card h-100" style="border-top: 3.5px solid <?= $cardBorder ?> !important;">
+        <div class="sa-card h-100" id="card-gw-<?= $gw['id'] ?>" style="border-top: 3.5px solid <?= $cardBorder ?> !important; transition: border-color 0.25s ease;">
           <div class="p-3 p-sm-4 d-flex flex-column h-100">
             <!-- Header -->
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
@@ -85,18 +208,26 @@
                 </div>
               </div>
 
-              <div class="d-flex align-items-center flex-wrap gap-1">
+              <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
                 <?php if ($gw['environment'] === 'live'): ?>
                   <span class="badge badge-success px-2 py-1 mr-1" style="font-size: 11px;">LIVE</span>
                 <?php else: ?>
                   <span class="badge badge-warning px-2 py-1 mr-1" style="font-size: 11px;">SANDBOX</span>
                 <?php endif; ?>
 
-                <?php if ($gw['is_active']): ?>
-                  <span class="badge badge-primary px-2 py-1" style="background-color: #6366f1; border: none; font-size: 11px;">ACTIVE</span>
-                <?php else: ?>
-                  <span class="badge badge-secondary px-2 py-1" style="font-size: 11px;">INACTIVE</span>
-                <?php endif; ?>
+                <span id="gw-badge-<?= $gw['id'] ?>">
+                  <?php if ($gw['is_active']): ?>
+                    <span class="badge badge-primary px-2 py-1" style="background-color: #6366f1; border: none; font-size: 11px;">ACTIVE</span>
+                  <?php else: ?>
+                    <span class="badge badge-secondary px-2 py-1" style="font-size: 11px;">INACTIVE</span>
+                  <?php endif; ?>
+                </span>
+
+                <!-- Instant iOS Toggle Switch -->
+                <label class="rfx-ios-switch mb-0 ml-1" title="Click to instantly toggle active status">
+                  <input type="checkbox" id="gw-switch-<?= $gw['id'] ?>" <?= $gw['is_active'] ? 'checked' : '' ?> onchange="toggleGateway(<?= $gw['id'] ?>, this, '<?= \App\Core\View::e($gw['name']) ?>', '<?= $gw['code'] ?>')">
+                  <span class="rfx-ios-slider"></span>
+                </label>
               </div>
             </div>
 
@@ -281,3 +412,117 @@
     <?php endforeach; ?>
   </div>
 </div>
+
+<!-- Floating Toast Container -->
+<div id="rfxGatewayToast" class="alert alert-dark shadow-lg font-weight-bold" style="display: none; position: fixed; bottom: 25px; right: 25px; z-index: 9999; border-radius: 8px; font-size: 13px; max-width: 360px; background: #0a1c33; color: #ffffff; border: 1px solid #1e293b;">
+  <span id="rfxGatewayToastMsg"></span>
+</div>
+
+<script>
+function showGatewayToast(msg, isSuccess = true) {
+  var toast = document.getElementById('rfxGatewayToast');
+  var toastMsg = document.getElementById('rfxGatewayToastMsg');
+  if (!toast || !toastMsg) return;
+  toastMsg.innerHTML = (isSuccess ? '<i class="fa fa-check-circle text-success mr-2"></i>' : '<i class="fa fa-exclamation-triangle text-danger mr-2"></i>') + msg;
+  toast.style.display = 'block';
+  toast.style.opacity = '1';
+  clearTimeout(window._gwToastTimer);
+  window._gwToastTimer = setTimeout(function() {
+    toast.style.display = 'none';
+  }, 3500);
+}
+
+function toggleGateway(id, inputEl, name, code) {
+  var origChecked = !inputEl.checked;
+  inputEl.disabled = true;
+
+  var fd = new FormData();
+  fd.append('_csrf', '<?= \App\Core\View::csrfToken() ?>');
+  fd.append('is_ajax', '1');
+
+  fetch('<?= \App\Core\View::url("/superadmin/gateways/") ?>' + id + '/toggle', {
+    method: 'POST',
+    body: fd,
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    inputEl.disabled = false;
+    if (data && data.success) {
+      var badge = document.getElementById('gw-badge-' + id);
+      var card = document.getElementById('card-gw-' + id) || inputEl.closest('.sa-card');
+      if (data.is_active) {
+        if (badge) badge.innerHTML = '<span class="badge badge-primary px-2 py-1" style="background-color: #6366f1; border: none; font-size: 11px;">ACTIVE</span>';
+        if (card) card.style.borderTopColor = (code === 'razorpay' ? '#f25b29' : '#6366f1');
+        showGatewayToast("Gateway '" + name + "' activated successfully.");
+      } else {
+        if (badge) badge.innerHTML = '<span class="badge badge-secondary px-2 py-1" style="font-size: 11px;">INACTIVE</span>';
+        if (card) card.style.borderTopColor = '#cbd5e1';
+        showGatewayToast("Gateway '" + name + "' deactivated successfully.");
+      }
+    } else {
+      inputEl.checked = origChecked;
+      alert((data && data.message) ? data.message : 'Failed to update gateway status.');
+    }
+  })
+  .catch(function(err) {
+    inputEl.disabled = false;
+    inputEl.checked = origChecked;
+    showGatewayToast('Network error while toggling gateway.', false);
+  });
+}
+
+function onAdvanceToggleChange(inputEl) {
+  var lbl = document.getElementById('advanceToggleLabel');
+  if (lbl) {
+    lbl.innerText = inputEl.checked ? 'ENABLED' : 'DISABLED';
+    lbl.style.color = inputEl.checked ? '#10b981' : '#64748b';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var advForm = document.getElementById('advancePolicyForm');
+  if (advForm) {
+    advForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var submitBtn = advForm.querySelector('button[type="submit"]');
+      var origHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Saving...';
+
+      var fd = new FormData(advForm);
+      fd.append('is_ajax', '1');
+
+      fetch(advForm.getAttribute('action'), {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+
+        if (data && data.success) {
+          var badge = document.getElementById('advancePolicyStatusBadge');
+          if (badge) {
+            if (data.enabled) {
+              badge.innerHTML = '<span class="badge badge-success px-2 py-1" style="font-size: 11px;"><i class="fa fa-check-circle mr-1"></i>Advance Requirement Active (₹' + Math.round(data.amount) + ')</span>';
+            } else {
+              badge.innerHTML = '<span class="badge px-2 py-1" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-size: 11px;"><i class="fa fa-info-circle mr-1"></i>Pure COD Active (₹0 Advance)</span>';
+            }
+          }
+          showGatewayToast(data.message);
+        } else {
+          alert('Failed to save policy.');
+        }
+      })
+      .catch(function(err) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origHtml;
+        showGatewayToast('Network error while saving advance policy.', false);
+      });
+    });
+  }
+});
+</script>

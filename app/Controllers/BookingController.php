@@ -815,51 +815,82 @@ class BookingController extends Controller
                 $totalServiceAmount = 899.00;
             }
 
-            // COD requires ₹49 pre-booking confirmation online, remaining is due after service
-            $advanceAmount = ($paymentMethod === 'online') ? $totalServiceAmount : 49.00;
-            $dueAmount = max(0.00, round($totalServiceAmount - $advanceAmount, 2));
+            // Dynamic payment policy & gateway state
+            $isRazorpayActive = \App\Models\PaymentGateway::isRazorpayActive();
+            $isAdvanceRequired = \App\Models\PaymentGateway::isAdvanceRequired();
+            $configuredAdvance = \App\Models\PaymentGateway::getAdvanceAmount();
+
+            $requiresOnlinePayment = false;
+
+            if ($paymentMethod === 'online') {
+                if (!$isRazorpayActive) {
+                    // Fallback to COD if online payment is disabled
+                    $paymentMethod = 'cod';
+                } else {
+                    $advanceAmount = $totalServiceAmount;
+                    $dueAmount = 0.00;
+                    $priority = 'high';
+                    $requiresOnlinePayment = true;
+                }
+            }
+
+            if ($paymentMethod === 'cod') {
+                if ($isAdvanceRequired && $isRazorpayActive && $configuredAdvance > 0) {
+                    $advanceAmount = min($totalServiceAmount, $configuredAdvance);
+                    $dueAmount = max(0.00, round($totalServiceAmount - $advanceAmount, 2));
+                    $priority = 'normal';
+                    $requiresOnlinePayment = true;
+                } else {
+                    // Pure Cash on Delivery (COD) - 0 advance online, full amount payable after service
+                    $advanceAmount = 0.00;
+                    $dueAmount = $totalServiceAmount;
+                    $priority = 'normal';
+                    $requiresOnlinePayment = false;
+                }
+            }
+
             if ($request->input('priority') !== null && $request->input('priority') !== '') {
                 $priority = (string)$request->input('priority');
-            } else {
-                $priority = ($paymentMethod === 'online') ? 'high' : 'normal';
             }
 
             // Update booking financial tracking columns (self-healing & backward-compatible)
             $this->updateBookingFinancials($bookingId, $totalServiceAmount, $advanceAmount, $dueAmount, $paymentMethod, $priority);
 
             $rzpOrder = null;
-            try {
-                $rzpGateway = new RazorpayGateway();
-                $rzpOrder = $rzpGateway->createOrder($bookingId, $advanceAmount, 'INR', [
-                    'booking_no'     => $bookingNo,
-                    'service_name'   => $service['name'] ?? 'Doorstep Service',
-                    'customer_id'    => (string)($validCustomerId ?? ''),
-                    'payment_type'   => $paymentMethod,
-                    'total_amount'   => (string)$totalServiceAmount,
-                    'advance_amount' => (string)$advanceAmount,
-                    'due_amount'     => (string)$dueAmount,
-                ]);
-
-                $orderId = $rzpOrder['order_id'] ?? null;
-                if (!empty($orderId)) {
-                    \App\Core\Database::getInstance()->query(
-                        "UPDATE bookings SET gateway_order_id = ? WHERE id = ?",
-                        [$orderId, $bookingId]
-                    );
-
-                    \App\Models\Payment::create([
-                        'booking_id'       => $bookingId,
-                        'amount'           => $advanceAmount,
-                        'method'           => 'upi',
-                        'status'           => 'pending',
-                        'gateway_order_id' => $orderId,
-                        'transaction_ref'  => $orderId,
-                        'paid_at'          => null,
-                        'recorded_by'      => $validCustomerId ?: null,
+            if ($requiresOnlinePayment && $advanceAmount > 0) {
+                try {
+                    $rzpGateway = new RazorpayGateway();
+                    $rzpOrder = $rzpGateway->createOrder($bookingId, $advanceAmount, 'INR', [
+                        'booking_no'     => $bookingNo,
+                        'service_name'   => $service['name'] ?? 'Doorstep Service',
+                        'customer_id'    => (string)($validCustomerId ?? ''),
+                        'payment_type'   => $paymentMethod,
+                        'total_amount'   => (string)$totalServiceAmount,
+                        'advance_amount' => (string)$advanceAmount,
+                        'due_amount'     => (string)$dueAmount,
                     ]);
+
+                    $orderId = $rzpOrder['order_id'] ?? null;
+                    if (!empty($orderId)) {
+                        \App\Core\Database::getInstance()->query(
+                            "UPDATE bookings SET gateway_order_id = ? WHERE id = ?",
+                            [$orderId, $bookingId]
+                        );
+
+                        \App\Models\Payment::create([
+                            'booking_id'       => $bookingId,
+                            'amount'           => $advanceAmount,
+                            'method'           => 'upi',
+                            'status'           => 'pending',
+                            'gateway_order_id' => $orderId,
+                            'transaction_ref'  => $orderId,
+                            'paid_at'          => null,
+                            'recorded_by'      => $validCustomerId ?: null,
+                        ]);
+                    }
+                } catch (\Throwable $e) {
+                    Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                Logger::error("Razorpay order creation error for booking #{$bookingId}: " . $e->getMessage());
             }
 
             if ($request->isAjax() || $request->input('is_ajax')) {
@@ -943,7 +974,13 @@ class BookingController extends Controller
                     'city'               => $cityInput,
                     'preferred_date'     => $prefDate,
                     'preferred_time'     => $prefTime,
-                    'payment_method'     => 'Pay After Service',
+                    'payment_method'     => 'Pay After Service (Cash on Delivery)',
+                    'payment_type'       => 'cod',
+                    'total_amount'       => $totalServiceAmount,
+                    'advance_amount'     => 0.00,
+                    'due_amount'         => $totalServiceAmount,
+                    'priority'           => $priority,
+                    'priority_label'     => 'Medium Priority (COD)',
                     'is_new_customer'    => $isNewAcc,
                     'set_password_url'   => $setPasswordUrl ?? null,
                     'identifier'         => $ident,

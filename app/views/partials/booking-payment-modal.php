@@ -1,3 +1,10 @@
+<?php
+$isRazorpayActive = \App\Models\PaymentGateway::isRazorpayActive();
+$isCodActive = \App\Models\PaymentGateway::isCodActive();
+$isAdvanceRequired = \App\Models\PaymentGateway::isAdvanceRequired();
+$advanceAmount = \App\Models\PaymentGateway::getAdvanceAmount();
+$defaultMethod = $isRazorpayActive ? 'online' : 'cod';
+?>
 <!-- Booking Payment Gateway & Success Modal -->
 <div class="modal fade" id="bookingPaymentModal" tabindex="-1" role="dialog" aria-labelledby="bookingPaymentModalTitle" aria-hidden="true" style="z-index: 1075;">
   <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 420px; width: 92%; margin: 1.5rem auto;">
@@ -11,7 +18,9 @@
             <h5 class="modal-title font-weight-bold mb-0" id="bookingPaymentModalTitle" style="font-size: 16px; color: #ffffff;">
               <i class="fa fa-shield mr-1" style="color: #f25b29;"></i> Select Payment Option
             </h5>
-            <small style="color: #94a3b8; font-size: 11px;">Pre-booking Online Confirmation · Doorstep Service</small>
+            <small style="color: #94a3b8; font-size: 11px;">
+              <?= $isAdvanceRequired ? 'Pre-booking Online Confirmation · Doorstep Service' : 'Instant Booking Confirmation · Doorstep Service' ?>
+            </small>
           </div>
           <button type="button" class="close text-white rfx-modal-close" data-dismiss="modal" aria-label="Close" style="opacity: 0.9; outline: none; font-size: 24px; padding: 0; margin: 0; line-height: 1; border: none; background: transparent;">
             <span aria-hidden="true">&times;</span>
@@ -27,11 +36,15 @@
             </div>
             <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
               <span class="text-muted font-weight-bold">Pay Now Online (Advance):</span>
-              <span class="font-weight-bold text-success" id="rfxModalPayAdvanceDisplay">₹899 (Prepaid Full)</span>
+              <span class="font-weight-bold text-success" id="rfxModalPayAdvanceDisplay">
+                <?= ($defaultMethod === 'online') ? '₹899 (Prepaid Full)' : ($isAdvanceRequired ? '₹' . round($advanceAmount) . ' (Online Advance)' : '₹0 (No Advance Required)') ?>
+              </span>
             </div>
             <div class="d-flex justify-content-between align-items-center small py-1 border-top" style="border-color: #ffdacf !important;">
               <span class="text-muted font-weight-bold">Due to Staff After Service:</span>
-              <span class="font-weight-bold text-danger" id="rfxModalPayDueDisplay">₹0 (Fully Paid)</span>
+              <span class="font-weight-bold text-danger" id="rfxModalPayDueDisplay">
+                <?= ($defaultMethod === 'online') ? '₹0 (Fully Paid)' : ($isAdvanceRequired ? '₹850 (To Staff)' : '₹899 (Pay After Service)') ?>
+              </span>
             </div>
           </div>
 
@@ -41,9 +54,10 @@
           <!-- Payment Options -->
           <div class="rfx-payment-options d-flex flex-column" style="gap: 10px;">
 
-            <!-- Option 1: Prepaid (Auto-selected by default) -->
-            <label class="rfx-pay-card active d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardOnline" style="cursor: pointer; border: 2px solid #f25b29; background: #fffbf9; transition: all 0.2s ease;">
-              <input type="radio" name="modal_payment_method" value="online" checked style="margin-top: 3px; accent-color: #f25b29;">
+            <?php if ($isRazorpayActive): ?>
+            <!-- Option 1: Prepaid (Active when online payment gateway is enabled) -->
+            <label class="rfx-pay-card <?= $defaultMethod === 'online' ? 'active' : '' ?> d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardOnline" style="cursor: pointer; border: <?= $defaultMethod === 'online' ? '2px solid #f25b29' : '1.5px solid #e2e8f0' ?>; background: <?= $defaultMethod === 'online' ? '#fffbf9' : '#ffffff' ?>; transition: all 0.2s ease;">
+              <input type="radio" name="modal_payment_method" value="online" <?= $defaultMethod === 'online' ? 'checked' : '' ?> style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
                   <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Prepaid</span>
@@ -62,10 +76,12 @@
                 </div>
               </div>
             </label>
+            <?php endif; ?>
 
-            <!-- Option 2: Pay After Service -->
-            <label class="rfx-pay-card d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardCod" style="cursor: pointer; border: 1.5px solid #e2e8f0; background: #ffffff; transition: all 0.2s ease;">
-              <input type="radio" name="modal_payment_method" value="cod" style="margin-top: 3px; accent-color: #f25b29;">
+            <?php if ($isCodActive || !$isRazorpayActive): ?>
+            <!-- Option 2: Pay After Service / Cash on Delivery -->
+            <label class="rfx-pay-card <?= $defaultMethod === 'cod' ? 'active' : '' ?> d-flex align-items-start p-3 mb-0 rounded" id="rfxPayCardCod" style="cursor: pointer; border: <?= $defaultMethod === 'cod' ? '2px solid #f25b29' : '1.5px solid #e2e8f0' ?>; background: <?= $defaultMethod === 'cod' ? '#fffbf9' : '#ffffff' ?>; transition: all 0.2s ease;">
+              <input type="radio" name="modal_payment_method" value="cod" <?= $defaultMethod === 'cod' ? 'checked' : '' ?> style="margin-top: 3px; accent-color: #f25b29;">
               <div class="ml-3 flex-grow-1">
                 <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 4px;">
                   <span class="font-weight-bold text-dark" style="font-size: 13.5px;">Pay After Service</span>
@@ -73,15 +89,26 @@
                     <i class="fa fa-clock-o mr-1"></i>Medium Priority
                   </span>
                 </div>
-                <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
-                  Pay <strong>₹49 pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹49 deducted) is payable to staff after service.
-                </p>
-                <div class="d-flex align-items-center" style="gap: 5px;">
-                  <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;">₹49 Advance Online</span>
-                  <span class="badge badge-light border text-muted font-weight-bold" style="font-size: 9.5px;">Rest Cash/UPI Later</span>
-                </div>
+                <?php if ($isAdvanceRequired): ?>
+                  <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
+                    Pay <strong>₹<?= round($advanceAmount) ?> pre-booking advance online</strong> to confirm slot. Remaining <strong id="rfxCodDueNote" class="text-danger">₹850</strong> (- ₹<?= round($advanceAmount) ?> deducted) is payable to staff after service.
+                  </p>
+                  <div class="d-flex align-items-center" style="gap: 5px;">
+                    <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;">₹<?= round($advanceAmount) ?> Advance Online</span>
+                    <span class="badge badge-light border text-muted font-weight-bold" style="font-size: 9.5px;">Rest Cash/UPI Later</span>
+                  </div>
+                <?php else: ?>
+                  <p class="small text-muted mb-1 mt-1" style="font-size: 11.5px; line-height: 1.35;">
+                    Pay <strong>100% full amount to staff via Cash / UPI</strong> after service is completed. <strong>Zero advance payment required!</strong>
+                  </p>
+                  <div class="d-flex align-items-center" style="gap: 5px;">
+                    <span class="badge badge-light border text-success font-weight-bold" style="font-size: 9.5px;"><i class="fa fa-check text-success mr-1"></i>100% Cash/UPI on Visit</span>
+                    <span class="badge badge-light border text-muted font-weight-bold" style="font-size: 9.5px;">Zero Advance Online</span>
+                  </div>
+                <?php endif; ?>
               </div>
             </label>
+            <?php endif; ?>
 
           </div>
 
@@ -94,7 +121,15 @@
         <!-- Modal Footer CTA -->
         <div class="modal-footer p-3" style="background: #f8fafc; border-top: 1px solid #e2e8f0;">
           <button type="button" id="rfxBtnConfirmPayment" class="btn text-white font-weight-bold w-100 py-2" style="background: #f25b29; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(242, 91, 41, 0.25); border: none;">
-            <span id="rfxBtnConfirmPaymentText">Pay Prepaid ₹899 (High Priority) &rarr;</span>
+            <span id="rfxBtnConfirmPaymentText">
+              <?php if ($defaultMethod === 'online'): ?>
+                Pay Prepaid ₹899 (High Priority) &rarr;
+              <?php elseif ($isAdvanceRequired): ?>
+                Pay ₹<?= round($advanceAmount) ?> Advance &amp; Book &rarr;
+              <?php else: ?>
+                Confirm Booking (Pay After Service) &rarr;
+              <?php endif; ?>
+            </span>
           </button>
         </div>
       </div>
@@ -202,6 +237,14 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+window.RFX_PAYMENT_CONFIG = {
+  isRazorpayActive: <?= $isRazorpayActive ? 'true' : 'false' ?>,
+  isCodActive: <?= $isCodActive ? 'true' : 'false' ?>,
+  isAdvanceRequired: <?= $isAdvanceRequired ? 'true' : 'false' ?>,
+  advanceAmount: <?= json_encode((float)$advanceAmount) ?>,
+  defaultMethod: <?= json_encode($defaultMethod) ?>
+};
+
 function rfxModalCopyText(text, btn) {
   if (!text) return;
   var orig = btn.innerHTML;
@@ -289,6 +332,7 @@ function fallbackModalCopy(text, cb) {
   }
 
   function updatePayCards() {
+    var cfg = window.RFX_PAYMENT_CONFIG || { isRazorpayActive: true, isCodActive: true, isAdvanceRequired: false, advanceAmount: 49 };
     var cardCod = document.getElementById('rfxPayCardCod');
     var cardOnline = document.getElementById('rfxPayCardOnline');
     var radioCod = cardCod ? cardCod.querySelector('input[type="radio"]') : null;
@@ -301,16 +345,30 @@ function fallbackModalCopy(text, cb) {
 
     var totText = payTotalDisplay ? payTotalDisplay.innerText : '₹899';
     var totalVal = parseFloat(totText.replace(/[^\d.]/g, '')) || 899;
-    var dueVal = Math.max(0, totalVal - 49);
 
-    if (dueNote) dueNote.innerText = '₹' + Math.round(dueVal);
+    var isAdvanceRequired = cfg.isAdvanceRequired && cfg.isRazorpayActive;
+    var advanceAmount = isAdvanceRequired ? cfg.advanceAmount : 0;
+    var dueVal = isAdvanceRequired ? Math.max(0, totalVal - advanceAmount) : totalVal;
+
+    if (dueNote) {
+      dueNote.innerText = '₹' + Math.round(dueVal);
+    }
 
     if (radioCod && radioCod.checked) {
       if (cardCod) { cardCod.style.borderColor = '#f25b29'; cardCod.style.background = '#fffbf9'; }
       if (cardOnline) { cardOnline.style.borderColor = '#e2e8f0'; cardOnline.style.background = '#ffffff'; }
-      if (advDisplay) advDisplay.innerText = '₹49 (Online)';
-      if (dueDisplay) dueDisplay.innerText = '₹' + Math.round(dueVal) + ' (To Staff)';
-      if (btnText) btnText.innerHTML = 'Pay ₹49 Advance & Book (Medium Priority) &rarr;';
+      
+      if (advDisplay) {
+        advDisplay.innerText = isAdvanceRequired ? ('₹' + Math.round(advanceAmount) + ' (Online Advance)') : '₹0 (No Advance Required)';
+      }
+      if (dueDisplay) {
+        dueDisplay.innerText = '₹' + Math.round(dueVal) + (isAdvanceRequired ? ' (To Staff After Service)' : ' (Pay After Service)');
+      }
+      if (btnText) {
+        btnText.innerHTML = isAdvanceRequired 
+          ? ('Pay ₹' + Math.round(advanceAmount) + ' Advance & Book &rarr;') 
+          : 'Confirm Booking (Pay After Service) &rarr;';
+      }
     } else if (radioOnline && radioOnline.checked) {
       if (cardOnline) { cardOnline.style.borderColor = '#f25b29'; cardOnline.style.background = '#fffbf9'; }
       if (cardCod) { cardCod.style.borderColor = '#e2e8f0'; cardCod.style.background = '#ffffff'; }
@@ -479,7 +537,15 @@ function fallbackModalCopy(text, cb) {
 
     var cardOnline = document.getElementById('rfxPayCardOnline');
     var radioOnline = cardOnline ? cardOnline.querySelector('input[type="radio"]') : null;
-    if (radioOnline) radioOnline.checked = true;
+    var cardCod = document.getElementById('rfxPayCardCod');
+    var radioCod = cardCod ? cardCod.querySelector('input[type="radio"]') : null;
+
+    var cfg = window.RFX_PAYMENT_CONFIG || { isRazorpayActive: true };
+    if (radioOnline && cfg.isRazorpayActive) {
+      radioOnline.checked = true;
+    } else if (radioCod) {
+      radioCod.checked = true;
+    }
     updatePayCards();
 
     // Show modal popup
@@ -689,18 +755,21 @@ function fallbackModalCopy(text, cb) {
             }
 
             var advElem = document.getElementById('rfxSuccessAdvance');
+            var advVal = (d.advance_amount !== undefined) ? parseFloat(d.advance_amount) : (isCod ? (window.RFX_PAYMENT_CONFIG.isAdvanceRequired ? window.RFX_PAYMENT_CONFIG.advanceAmount : 0) : (d.total_amount || 899));
             if (advElem) {
-              var advVal = (d.advance_amount !== undefined) ? d.advance_amount : (isCod ? 49 : (d.total_amount || 899));
-              advElem.innerText = '₹' + advVal + ' (Paid Online)';
+              advElem.innerText = (advVal > 0) ? ('₹' + Math.round(advVal) + ' (Paid Online)') : '₹0 (Pure Cash on Delivery)';
             }
 
             var dueElem = document.getElementById('rfxSuccessDue');
             if (dueElem) {
-              var dueVal = (d.due_amount !== undefined) ? d.due_amount : (isCod ? Math.max(0, (d.total_amount || 899) - 49) : 0);
-              dueElem.innerText = '₹' + dueVal + (dueVal > 0 ? ' (Due to Staff)' : ' (Zero Due)');
+              var dueVal = (d.due_amount !== undefined) ? parseFloat(d.due_amount) : (isCod ? Math.max(0, (d.total_amount || 899) - advVal) : 0);
+              dueElem.innerText = '₹' + Math.round(dueVal) + (dueVal > 0 ? ' (Due to Staff on Visit)' : ' (Zero Due)');
             }
 
-            document.getElementById('rfxSuccessPayment').innerText = paymentText || (isCod ? 'Pay After Service (₹49 Advance Paid)' : 'Prepaid (100% Online)');
+            var defaultPayText = isCod 
+              ? (advVal > 0 ? ('Pay After Service (₹' + Math.round(advVal) + ' Advance Paid)') : 'Cash on Delivery (Pay After Service)') 
+              : 'Prepaid (100% Online)';
+            document.getElementById('rfxSuccessPayment').innerText = paymentText || defaultPayText;
 
             var targetUrl = d.redirect_url || (window.REFIXEL_BASE_URL ? window.REFIXEL_BASE_URL + '/account/bookings' : '/account/bookings');
             var dashBtn = document.getElementById('rfxSuccessDashboardBtn');
@@ -739,8 +808,9 @@ function fallbackModalCopy(text, cb) {
             }
 
             var isCodMode = (d.payment_type === 'cod');
+            var advAmtText = d.advance_amount ? Math.round(d.advance_amount) : 49;
             var rzpDesc = isCodMode 
-              ? ('Pre-booking Advance (₹49) · ' + (d.service_name || 'Doorstep Service') + ' (' + d.booking_no + ')')
+              ? ('Pre-booking Advance (₹' + advAmtText + ') · ' + (d.service_name || 'Doorstep Service') + ' (' + d.booking_no + ')')
               : ('100% Full Payment · ' + (d.service_name || 'Doorstep Service') + ' (' + d.booking_no + ')');
 
             var rzpOptions = {
@@ -776,7 +846,7 @@ function fallbackModalCopy(text, cb) {
                   btnConfirm.innerHTML = originalBtnHtml;
                   if (errorAlert) {
                     errorAlert.innerText = isCodMode
-                      ? 'Pre-booking advance payment was closed. Please complete the ₹49 online payment to confirm your booking.'
+                      ? ('Pre-booking advance payment was closed. Please complete the ₹' + advAmtText + ' online payment to confirm your booking.')
                       : 'Online payment was closed. You can retry paying online or choose Pay After Service.';
                     errorAlert.style.display = 'block';
                   }
@@ -786,7 +856,7 @@ function fallbackModalCopy(text, cb) {
                     var dropPayload = new FormData();
                     dropPayload.append('booking_id', d.booking_id || 0);
                     dropPayload.append('step', 'razorpay_modal_dismissed');
-                    dropPayload.append('reason', isCodMode ? 'Closed ₹49 advance payment modal' : 'Closed full online payment modal');
+                    dropPayload.append('reason', isCodMode ? ('Closed ₹' + advAmtText + ' advance payment modal') : 'Closed full online payment modal');
                     if (window.REFIXEL_CSRF_TOKEN) dropPayload.append('_csrf', window.REFIXEL_CSRF_TOKEN);
                     var dropUrl = window.REFIXEL_BASE_URL ? (window.REFIXEL_BASE_URL + '/api/booking/record-dropoff') : '/api/booking/record-dropoff';
                     if (navigator.sendBeacon) {

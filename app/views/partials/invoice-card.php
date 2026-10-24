@@ -432,7 +432,7 @@ $isCodAdvance = ($dueAmt > 0 || ($invoice['booking_priority'] ?? '') === 'normal
           <span style="color: #0a1c33;">₹<?= number_format($total, 2) ?></span>
         </div>
 
-        <?php if ($dueAmt > 0): ?>
+        <?php if ($advPaid > 0): ?>
           <div class="inv-total-row mt-2 pt-2 border-top" style="color: #166534;">
             <span><i class="fa fa-check-circle mr-1"></i>Pre-Booking Advance Paid:</span>
             <span class="font-weight-bold">- ₹<?= number_format($advPaid, 2) ?></span>
@@ -442,19 +442,35 @@ $isCodAdvance = ($dueAmt > 0 || ($invoice['booking_priority'] ?? '') === 'normal
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <strong style="color: #c2410c; font-size: 13px;">Remaining Doorstep Due:</strong>
-                <div class="text-muted" style="font-size: 11px;">Payable to staff via Cash / UPI</div>
+                <div class="text-muted" style="font-size: 11px;">Payable to staff via Cash / UPI (₹<?= number_format($advPaid, 2) ?> advance deducted)</div>
               </div>
               <h5 class="font-weight-bold mb-0" style="color: #c2410c; font-family: 'JetBrains Mono', monospace;">
                 ₹<?= number_format($dueAmt, 2) ?>
               </h5>
             </div>
           </div>
+        <?php elseif ($dueAmt > 0 || ($invoice['booking_payment_type'] ?? '') === 'cod'): ?>
+          <div class="mt-2 p-2 rounded" style="background: #fff7ed; border: 1px solid #fed7aa;">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong style="color: #c2410c; font-size: 13px;">Full Amount Due to Staff:</strong>
+                <div class="text-muted" style="font-size: 11px;">100% Payable after service via Cash / UPI (No Advance Deducted)</div>
+              </div>
+              <h5 class="font-weight-bold mb-0" style="color: #c2410c; font-family: 'JetBrains Mono', monospace;">
+                ₹<?= number_format($total, 2) ?>
+              </h5>
+            </div>
+          </div>
+          <div class="inv-total-row mt-1 small">
+            <span class="text-muted">Advance Paid Online:</span>
+            <span class="text-muted font-weight-bold">₹0.00 (Pure Cash on Delivery)</span>
+          </div>
         <?php else: ?>
           <div class="mt-2 p-2 rounded" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <strong style="color: #166534; font-size: 13px;"><i class="fa fa-check-circle mr-1"></i>Paid in Full Online:</strong>
-                <div class="text-muted" style="font-size: 11px;">100% Fully Settled</div>
+                <div class="text-muted" style="font-size: 11px;">100% Fully Settled Online</div>
               </div>
               <h5 class="font-weight-bold mb-0" style="color: #166534; font-family: 'JetBrains Mono', monospace;">
                 ₹<?= number_format($total, 2) ?>

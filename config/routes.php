@@ -183,6 +183,7 @@ Router::group(['middleware' => ['RequireRole:super_admin']], function () {
 
     // Payment Gateways & API Credentials (Exclusively Super Admin)
     Router::get('/superadmin/gateways', 'SuperAdmin\\GatewayController@index');
+    Router::post('/superadmin/gateways/advance-policy', 'SuperAdmin\\GatewayController@updateAdvancePolicy', ['VerifyCsrf']);
     Router::post('/superadmin/gateways/{id}/update', 'SuperAdmin\\GatewayController@update', ['VerifyCsrf']);
     Router::post('/superadmin/gateways/{id}/toggle', 'SuperAdmin\\GatewayController@toggle', ['VerifyCsrf']);
     Router::post('/superadmin/gateways/{id}/test', 'SuperAdmin\\GatewayController@test', ['VerifyCsrf']);
