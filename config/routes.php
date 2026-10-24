@@ -290,8 +290,11 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
 
     // Service Variations & Options
     Router::get('/admin/services/{id}/variants', 'Admin\\ServiceController@variants');
+    Router::get('/admin/services/{id}/variants-json', 'Admin\\ServiceController@variantsJson');
     Router::post('/admin/services/{id}/variants', 'Admin\\ServiceController@storeVariant', ['VerifyCsrf']);
     Router::post('/admin/services/variants/{id}/update', 'Admin\\ServiceController@updateVariant', ['VerifyCsrf']);
+    Router::post('/admin/services/variants/{id}/quick-price', 'Admin\\ServiceController@quickPriceVariant', ['VerifyCsrf']);
+    Router::post('/admin/services/{id}/add-quick-variant', 'Admin\\ServiceController@addQuickVariant', ['VerifyCsrf']);
     Router::post('/admin/services/variants/{id}/delete', 'Admin\\ServiceController@deleteVariant', ['VerifyCsrf']);
     Router::post('/admin/services/variants/{id}/toggle-status', 'Admin\\ServiceController@toggleVariantStatus', ['VerifyCsrf']);
 

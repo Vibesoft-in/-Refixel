@@ -203,13 +203,31 @@ $refixelTrustData = [
                 </h4>
                 <p class="text-muted small flex-grow-1 mb-2" style="font-size: 12px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 34px;"><?= \App\Core\View::e($svc['description'] ?? '') ?></p>
 
+                <?php if (!empty($variantsByService[$svc['id']])): ?>
+                  <div class="card-size-selector mb-2">
+                    <span class="text-muted d-block mb-1" style="font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;">Choose Size / Capacity:</span>
+                    <div class="d-flex flex-wrap" style="gap: 5px;">
+                      <?php foreach ($variantsByService[$svc['id']] as $vIdx => $vItem): ?>
+                        <button type="button" 
+                                class="btn btn-xs card-variant-pill font-weight-bold <?= $vIdx === 0 ? 'active' : '' ?>"
+                                data-variant-id="<?= (int)$vItem['id'] ?>"
+                                data-price="<?= (float)$vItem['price'] ?>"
+                                data-duration="<?= (int)($vItem['duration_minutes'] ?? 0) ?>"
+                                style="font-size: 11px; padding: 2px 7px; border-radius: 6px; border: 1.5px solid <?= $vIdx === 0 ? '#f25b29' : '#cbd5e1' ?>; background: <?= $vIdx === 0 ? '#fff3eb' : '#ffffff' ?>; color: <?= $vIdx === 0 ? '#f25b29' : '#475569' ?>;">
+                          <?= \App\Core\View::e($vItem['name']) ?>
+                        </button>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                <?php endif; ?>
+
                 <div class="d-flex justify-content-between align-items-center mb-2 pt-1">
                   <div>
-                    <span class="text-muted small d-block" style="font-size: 11px; line-height: 1.2;">Starting at</span>
-                    <h5 class="font-weight-bold mb-0" style="color: #f25b29; font-size: 16px;">₹<?= number_format((float)$svc['starting_price'], 0) ?></h5>
+                    <span class="text-muted small d-block card-price-label" style="font-size: 11px; line-height: 1.2;"><?= !empty($variantsByService[$svc['id']]) ? 'Selected Price' : 'Starting at' ?></span>
+                    <h5 class="font-weight-bold mb-0 card-price-display" style="color: #f25b29; font-size: 16px;">₹<?= number_format((float)$svc['starting_price'], 0) ?></h5>
                   </div>
                   <?php if (!empty($svc['duration_minutes'])): ?>
-                    <span class="badge badge-light px-2 py-1" style="font-size: 11px; font-weight: 600; color: #475569; background: #f1f5f9;">
+                    <span class="badge badge-light px-2 py-1 card-duration-badge" style="font-size: 11px; font-weight: 600; color: #475569; background: #f1f5f9;">
                       <i class="fa fa-clock-o mr-1"></i> <?= (int)$svc['duration_minutes'] ?> mins
                     </span>
                   <?php endif; ?>
@@ -226,7 +244,7 @@ $refixelTrustData = [
                       <i class="fa fa-clock-o mr-1 text-warning"></i>Coming Soon
                     </button>
                   <?php else: ?>
-                    <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold btn-package-book text-center" data-service-id="<?= (int)$svc['id'] ?>" data-is-logged-in="<?= $isCustomerLoggedIn ? '1' : '0' ?>" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                    <a href="<?= $bookUrl ?>" class="btn text-white btn-sm px-2 font-weight-bold btn-package-book text-center" data-base-url="<?= $bookUrl ?>" data-service-id="<?= (int)$svc['id'] ?>" data-is-logged-in="<?= $isCustomerLoggedIn ? '1' : '0' ?>" style="background:#f25b29; border-radius: 7px; box-shadow: 0 2px 8px rgba(242, 91, 41, 0.2); font-size: 12px; padding: 6px 12px; white-space: nowrap;">
                       Book Now
                     </a>
                   <?php endif; ?>
@@ -444,14 +462,61 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  /* Book Now button handler (triggers Smart Addons upsell modal) */
+  // Card variant pill click handler: updates card price, duration, and booking URL with selected variant
+  document.addEventListener('click', function(e) {
+    var pill = e.target.closest('.card-variant-pill');
+    if (!pill) return;
+    e.preventDefault();
+
+    var card = pill.closest('.card');
+    if (!card) return;
+
+    var vId = pill.getAttribute('data-variant-id');
+    var price = parseFloat(pill.getAttribute('data-price')) || 0;
+    var dur = parseInt(pill.getAttribute('data-duration'), 10) || 0;
+
+    // Toggle active styles on pills in this card
+    card.querySelectorAll('.card-variant-pill').forEach(function(p) {
+      p.classList.remove('active');
+      p.style.background = '#ffffff';
+      p.style.color = '#475569';
+      p.style.borderColor = '#cbd5e1';
+    });
+    pill.classList.add('active');
+    pill.style.background = '#fff3eb';
+    pill.style.color = '#f25b29';
+    pill.style.borderColor = '#f25b29';
+
+    // Update price display
+    var priceEl = card.querySelector('.card-price-display');
+    if (priceEl && price > 0) {
+      priceEl.textContent = '₹' + Math.round(price).toLocaleString('en-IN');
+    }
+
+    // Update duration badge
+    var durEl = card.querySelector('.card-duration-badge');
+    if (durEl && dur > 0) {
+      durEl.innerHTML = '<i class="fa fa-clock-o mr-1"></i> ' + dur + ' mins';
+    }
+
+    // Update Book Now button link
+    var bookBtn = card.querySelector('.btn-package-book');
+    if (bookBtn) {
+      var baseBookUrl = bookBtn.getAttribute('data-base-url') || bookBtn.getAttribute('href');
+      var cleanUrl = baseBookUrl.replace(/&variants=[^&]*/g, '');
+      bookBtn.setAttribute('href', cleanUrl + '&variants=' + encodeURIComponent(vId));
+      bookBtn.setAttribute('data-selected-variant-id', vId);
+    }
+  });
+
+  // Package Card Book Now Click
   document.addEventListener('click', function(e) {
     var bookBtn = e.target.closest('.btn-package-book');
     if (!bookBtn) return;
 
     var isLoggedIn = bookBtn.getAttribute('data-is-logged-in') === '1';
     if (!isLoggedIn) {
-      // Guest user: proceed with default href navigation to login form
+      // Guest user: proceed with default href navigation to booking form
       return;
     }
 
@@ -464,9 +529,15 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
+    var selectedVarId = bookBtn.getAttribute('data-selected-variant-id') || '';
     var origHtml = bookBtn.innerHTML;
     bookBtn.disabled = true;
     bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+    var postBody = 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1';
+    if (selectedVarId) {
+      postBody += '&variant_ids=' + encodeURIComponent(selectedVarId);
+    }
 
     fetch('<?= \App\Core\View::url('/api/cart/add') ?>', {
       method: 'POST',
@@ -474,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      body: 'service_id=' + encodeURIComponent(serviceId) + '&quantity=1&set_exact=1'
+      body: postBody
     })
     .then(function(res) { return res.json(); })
     .then(function(data) {

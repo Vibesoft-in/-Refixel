@@ -31,6 +31,24 @@ try {
             ],
         ],
         [
+            'category_id'      => 1, // Category 1: Cleaning
+            'name'             => 'Sofa & Upholstery Deep Cleaning',
+            'slug'             => 'sofa-upholstery-deep-cleaning',
+            'description'      => 'Mechanized fabric shampooing, stain extraction, and high-suction vacuuming.',
+            'starting_price'   => 399.00,
+            'duration_minutes' => 90,
+            'image'            => 'refixel-sofa-cleaning.jpg',
+            'inclusions'       => [
+                'Deep dry vacuuming to remove embedded dust mites and allergens',
+                'Organic foaming chemical shampoo wash across cushions and backrest',
+                'Heavy-duty hot water injection extraction to pull deep stains and oils',
+                'Antibacterial deodorizer spray for long-lasting freshness',
+            ],
+            'exclusions'       => [
+                'Torn fabric re-stitching or internal wooden frame repairs',
+            ],
+        ],
+        [
             'category_id'      => 4,
             'name'             => 'Toilet & Sanitary Fitting Installation',
             'slug'             => 'toilet-sanitary-fitting',

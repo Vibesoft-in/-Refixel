@@ -1,11 +1,12 @@
 <?php
 use App\Core\View;
-$services      = $services ?? [];
-$categories    = $categories ?? [];
-$selectedCatId = (int)($selectedCatId ?? 0);
-$typeFilter    = $typeFilter ?? 'main';
-$search        = $search ?? '';
-$stats         = $stats ?? ['total_main' => count($services), 'total_addons' => 0, 'active_main' => 0, 'coming_soon_main' => 0];
+$services          = $services ?? [];
+$categories        = $categories ?? [];
+$variantsByService = $variantsByService ?? [];
+$selectedCatId     = (int)($selectedCatId ?? 0);
+$typeFilter        = $typeFilter ?? 'main';
+$search            = $search ?? '';
+$stats             = $stats ?? ['total_main' => count($services), 'total_addons' => 0, 'active_main' => 0, 'coming_soon_main' => 0];
 ?>
 
 <div class="admin-services-page">
@@ -220,7 +221,19 @@ $stats         = $stats ?? ['total_main' => count($services), 'total_addons' => 
                   <?php endif; ?>
                 </td>
                 <td class="align-middle">
-                  <strong class="text-success font-weight-bold" style="font-size: 15px;">₹<?= number_format((float)$s['starting_price'], 2) ?></strong>
+                  <div class="d-flex align-items-center">
+                    <span class="text-muted small mr-1">Starting:</span>
+                    <strong class="text-success font-weight-bold" style="font-size: 15px;">₹<?= number_format((float)$s['starting_price'], 2) ?></strong>
+                  </div>
+                  <?php if (!empty($variantsByService[$s['id']])): ?>
+                    <div class="d-flex flex-wrap mt-1" style="gap: 4px; max-width: 240px;">
+                      <?php foreach ($variantsByService[$s['id']] as $v): ?>
+                        <span class="badge badge-light border text-dark font-weight-normal" style="font-size: 10.5px; padding: 2px 5px;" title="<?= View::e($v['group_name'] . ': ' . $v['name']) ?>">
+                          <?= View::e($v['name']) ?>: <strong class="text-success">₹<?= number_format((float)$v['price'], 0) ?></strong>
+                        </span>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
                 </td>
                 <td class="align-middle text-muted small">
                   <?= !empty($s['duration_minutes']) ? ((int)$s['duration_minutes'] . ' mins') : '60 mins' ?>
@@ -420,6 +433,88 @@ $stats         = $stats ?? ['total_main' => count($services), 'total_addons' => 
             </div>
           </div>
 
+          <!-- Sizes / Capacity / Variant Pricing Editor -->
+          <div class="form-group mb-3 p-3 rounded" id="edit_variants_section" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="font-weight-bold small text-dark mb-0">
+                <i class="fa fa-sliders mr-1" style="color: #f25b29;"></i> Edit Prices According to Size / Option
+              </label>
+              <a href="#" id="edit_options_desk_link" class="small font-weight-bold" target="_blank" style="color: #f25b29;">
+                Full Options Desk &rarr;
+              </a>
+            </div>
+            <p class="text-muted small mb-2" style="font-size: 11.5px;">
+              Select a size/capacity below to edit its price, or modify prices directly in the list.
+            </p>
+
+            <!-- Loading Spinner -->
+            <div id="edit_variants_loading" class="text-center py-2 text-muted small" style="display: none;">
+              <i class="fa fa-spinner fa-spin mr-1"></i> Loading size variations...
+            </div>
+
+            <!-- Quick Size Selector & Price Box -->
+            <div id="edit_variants_picker_box" class="mb-3">
+              <label class="small text-secondary font-weight-bold mb-1">Select Size / Capacity:</label>
+              <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                <select id="edit_variant_dropdown" class="form-control form-control-sm font-weight-bold flex-grow-1" style="min-width: 160px; font-size: 12.5px;">
+                  <option value="">-- Choose Size to Edit Price --</option>
+                </select>
+                <div class="input-group input-group-sm" style="width: 140px;">
+                  <div class="input-group-prepend"><span class="input-group-text font-weight-bold">₹</span></div>
+                  <input type="number" step="0.01" id="edit_variant_selected_price" class="form-control font-weight-bold text-success" placeholder="Price">
+                </div>
+                <button type="button" class="btn btn-sm btn-success font-weight-bold" id="btn_save_single_variant_price" style="white-space: nowrap;">
+                  <i class="fa fa-check mr-1"></i>Save Price
+                </button>
+              </div>
+              <div id="variant_quick_price_msg" class="small mt-1 font-weight-bold" style="display: none;"></div>
+            </div>
+
+            <!-- Table of All Sizes with Inputs -->
+            <div id="edit_variants_table_wrapper" class="table-responsive border rounded bg-white" style="max-height: 200px; overflow-y: auto;">
+              <table class="table table-sm table-hover mb-0" style="font-size: 12px;">
+                <thead class="bg-light">
+                  <tr>
+                    <th class="py-1">Size / Option</th>
+                    <th class="py-1">Group</th>
+                    <th class="py-1" style="width: 120px;">Price (₹)</th>
+                    <th class="py-1 text-center" style="width: 60px;">Save</th>
+                  </tr>
+                </thead>
+                <tbody id="edit_variants_tbody">
+                  <!-- Dynamically populated via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Notice when no variants exist -->
+            <div id="edit_no_variants_notice" class="text-center py-2 text-muted small" style="display: none;">
+              <span>No custom size variations configured for this service yet.</span>
+            </div>
+
+            <!-- Quick Add Size / Option Form Toggle -->
+            <div class="mt-2 pt-2 border-top">
+              <button type="button" class="btn btn-sm btn-link p-0 font-weight-bold" id="btn_show_add_size_form" style="font-size: 11.5px; color: #f25b29; text-decoration: none;">
+                <i class="fa fa-plus-circle mr-1"></i>+ Add New Size / Option to this Service
+              </button>
+              <div id="add_new_size_box" class="mt-2 p-2 bg-light border rounded" style="display: none;">
+                <div class="form-row align-items-center">
+                  <div class="col-5">
+                    <input type="text" id="add_size_name" class="form-control form-control-sm" placeholder="Size Name (e.g. 3000 Litres)">
+                  </div>
+                  <div class="col-4">
+                    <input type="number" step="0.01" id="add_size_price" class="form-control form-control-sm" placeholder="Price (₹)">
+                  </div>
+                  <div class="col-3">
+                    <button type="button" class="btn btn-sm btn-primary btn-block font-weight-bold" id="btn_submit_add_size">
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="form-group mb-3 border p-2 rounded bg-light">
             <label class="font-weight-bold small d-block mb-1">Replace Service Image</label>
             <input type="file" name="image" accept="image/*" class="form-control-file mb-2">
@@ -464,9 +559,14 @@ $stats         = $stats ?? ['total_main' => count($services), 'total_addons' => 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   var baseUrl = '<?= rtrim(\App\Core\View::url("/"), "/") ?>';
+  var cleanBase = (baseUrl || '').replace(/\/+$/, '');
+  var currentEditingServiceId = 0;
+  var currentVariants = [];
+
   document.querySelectorAll('.edit-service-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var id = this.getAttribute('data-id');
+      currentEditingServiceId = parseInt(id, 10);
       var name = this.getAttribute('data-name');
       var categoryId = this.getAttribute('data-category-id');
       var price = this.getAttribute('data-price');
@@ -477,7 +577,6 @@ document.addEventListener('DOMContentLoaded', function() {
       var isComingSoon = this.getAttribute('data-is-coming-soon');
 
       var form = document.getElementById('editServiceForm');
-      var cleanBase = (baseUrl || '').replace(/\/+$/, '');
       form.action = cleanBase + '/admin/services/' + id + '/update';
 
       document.getElementById('edit_svc_name').value = name;
@@ -489,8 +588,288 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('edit_svc_is_addon').checked = (isAddon === '1');
       document.getElementById('edit_svc_is_coming_soon').checked = (isComingSoon === '1');
 
+      // Update Options Desk link
+      var optionsDeskLink = document.getElementById('edit_options_desk_link');
+      if (optionsDeskLink) {
+        optionsDeskLink.href = cleanBase + '/admin/services/' + id + '/variants';
+      }
+
+      // Reset variant quick price message and add size box
+      var msgEl = document.getElementById('variant_quick_price_msg');
+      if (msgEl) { msgEl.style.display = 'none'; msgEl.textContent = ''; }
+      var addBox = document.getElementById('add_new_size_box');
+      if (addBox) { addBox.style.display = 'none'; }
+
+      // Fetch and render variants for this service
+      loadServiceVariants(id);
+
       $('#editServiceModal').modal('show');
     });
   });
+
+  function loadServiceVariants(serviceId) {
+    var loadingEl = document.getElementById('edit_variants_loading');
+    var pickerBox = document.getElementById('edit_variants_picker_box');
+    var tableWrap = document.getElementById('edit_variants_table_wrapper');
+    var noVarNotice = document.getElementById('edit_no_variants_notice');
+    var dropdown = document.getElementById('edit_variant_dropdown');
+    var tbody = document.getElementById('edit_variants_tbody');
+    var priceInput = document.getElementById('edit_variant_selected_price');
+
+    if (loadingEl) loadingEl.style.display = 'block';
+    if (pickerBox) pickerBox.style.display = 'none';
+    if (tableWrap) tableWrap.style.display = 'none';
+    if (noVarNotice) noVarNotice.style.display = 'none';
+    if (dropdown) dropdown.innerHTML = '<option value="">-- Choose Size to Edit Price --</option>';
+    if (tbody) tbody.innerHTML = '';
+    if (priceInput) priceInput.value = '';
+
+    fetch(cleanBase + '/admin/services/' + serviceId + '/variants-json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (loadingEl) loadingEl.style.display = 'none';
+        currentVariants = data.variants || [];
+
+        if (currentVariants.length === 0) {
+          if (noVarNotice) noVarNotice.style.display = 'block';
+          return;
+        }
+
+        if (pickerBox) pickerBox.style.display = 'block';
+        if (tableWrap) tableWrap.style.display = 'block';
+
+        currentVariants.forEach(function(v, idx) {
+          // Add to dropdown
+          var opt = document.createElement('option');
+          opt.value = v.id;
+          opt.dataset.price = v.price;
+          opt.dataset.name = v.name;
+          opt.dataset.group = v.group_name;
+          opt.textContent = (v.group_name ? v.group_name + ': ' : '') + v.name + ' (₹' + Number(v.price).toFixed(2) + ')';
+          dropdown.appendChild(opt);
+
+          // Add to table
+          var tr = document.createElement('tr');
+          tr.setAttribute('data-variant-row-id', v.id);
+          tr.innerHTML = 
+            '<td class="align-middle font-weight-bold">' + 
+              escapeHtml(v.name) + 
+              (v.badge ? ' <span class="badge badge-light border ml-1">' + escapeHtml(v.badge) + '</span>' : '') + 
+            '</td>' +
+            '<td class="align-middle text-muted">' + escapeHtml(v.group_name || 'Option') + '</td>' +
+            '<td class="align-middle">' +
+              '<div class="input-group input-group-sm">' +
+                '<div class="input-group-prepend"><span class="input-group-text p-1 font-weight-bold" style="font-size:11px;">₹</span></div>' +
+                '<input type="number" step="0.01" name="variant_prices[' + v.id + ']" value="' + Number(v.price).toFixed(2) + '" class="form-control form-control-sm font-weight-bold text-success variant-row-price-input" data-variant-id="' + v.id + '">' +
+              '</div>' +
+            '</td>' +
+            '<td class="align-middle text-center">' +
+              '<button type="button" class="btn btn-sm btn-outline-success row-save-btn py-0 px-2" data-variant-id="' + v.id + '" title="Save this size price">' +
+                '<i class="fa fa-check"></i>' +
+              '</button>' +
+            '</td>';
+          tbody.appendChild(tr);
+        });
+
+        // Select first variant by default
+        if (currentVariants.length > 0) {
+          dropdown.selectedIndex = 1;
+          if (priceInput) priceInput.value = Number(currentVariants[0].price).toFixed(2);
+        }
+      })
+      .catch(function(err) {
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (noVarNotice) {
+          noVarNotice.textContent = 'Could not load variants: ' + err.message;
+          noVarNotice.style.display = 'block';
+        }
+      });
+  }
+
+  // When size dropdown selection changes, sync price input
+  var dropdownEl = document.getElementById('edit_variant_dropdown');
+  var quickPriceInput = document.getElementById('edit_variant_selected_price');
+  if (dropdownEl && quickPriceInput) {
+    dropdownEl.addEventListener('change', function() {
+      var opt = this.options[this.selectedIndex];
+      if (opt && opt.dataset.price) {
+        quickPriceInput.value = Number(opt.dataset.price).toFixed(2);
+      } else {
+        quickPriceInput.value = '';
+      }
+    });
+  }
+
+  // Quick Save Single Variant Price from Dropdown
+  var saveSingleBtn = document.getElementById('btn_save_single_variant_price');
+  if (saveSingleBtn && dropdownEl && quickPriceInput) {
+    saveSingleBtn.addEventListener('click', function() {
+      var variantId = dropdownEl.value;
+      var price = parseFloat(quickPriceInput.value);
+      if (!variantId) {
+        alert('Please choose a size/capacity option first.');
+        return;
+      }
+      if (isNaN(price) || price < 0) {
+        alert('Please enter a valid price.');
+        return;
+      }
+      saveVariantPriceAjax(variantId, price);
+    });
+  }
+
+  // Row Save Button Click Handler (delegated)
+  document.addEventListener('click', function(e) {
+    var rowBtn = e.target.closest('.row-save-btn');
+    if (!rowBtn) return;
+    var variantId = rowBtn.getAttribute('data-variant-id');
+    var row = rowBtn.closest('tr');
+    var input = row ? row.querySelector('.variant-row-price-input') : null;
+    if (variantId && input) {
+      var price = parseFloat(input.value);
+      if (isNaN(price) || price < 0) {
+        alert('Please enter a valid price.');
+        return;
+      }
+      saveVariantPriceAjax(variantId, price);
+    }
+  });
+
+  function saveVariantPriceAjax(variantId, price) {
+    var form = document.getElementById('editServiceForm');
+    var csrfInput = form ? form.querySelector('input[name="csrf_token"]') : null;
+    var csrf = csrfInput ? csrfInput.value : '';
+    var msgEl = document.getElementById('variant_quick_price_msg');
+
+    var fd = new FormData();
+    fd.append('price', price);
+    if (csrf) fd.append('csrf_token', csrf);
+
+    fetch(cleanBase + '/admin/services/variants/' + variantId + '/quick-price', {
+      method: 'POST',
+      body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success) {
+        if (msgEl) {
+          msgEl.className = 'small mt-1 text-success font-weight-bold';
+          msgEl.textContent = '✓ ' + res.message;
+          msgEl.style.display = 'block';
+          setTimeout(function() { msgEl.style.display = 'none'; }, 4000);
+        }
+
+        // Sync dropdown option text & data-price
+        var opt = dropdownEl.querySelector('option[value="' + variantId + '"]');
+        if (opt) {
+          opt.dataset.price = price;
+          opt.textContent = (opt.dataset.group ? opt.dataset.group + ': ' : '') + opt.dataset.name + ' (₹' + Number(price).toFixed(2) + ')';
+        }
+
+        // Sync table row input
+        var rowInput = document.querySelector('.variant-row-price-input[data-variant-id="' + variantId + '"]');
+        if (rowInput) {
+          rowInput.value = Number(price).toFixed(2);
+        }
+
+        // Update main service starting price input if minimum price changed
+        if (res.min_price && res.min_price > 0) {
+          var mainPriceInput = document.getElementById('edit_svc_price');
+          if (mainPriceInput) {
+            mainPriceInput.value = Number(res.min_price).toFixed(2);
+          }
+        }
+      } else {
+        if (msgEl) {
+          msgEl.className = 'small mt-1 text-danger font-weight-bold';
+          msgEl.textContent = '✕ Error: ' + (res.error || 'Could not save price.');
+          msgEl.style.display = 'block';
+        }
+      }
+    })
+    .catch(function(err) {
+      if (msgEl) {
+        msgEl.className = 'small mt-1 text-danger font-weight-bold';
+        msgEl.textContent = '✕ Network error: ' + err.message;
+        msgEl.style.display = 'block';
+      }
+    });
+  }
+
+  // Toggle Add Size Box
+  var toggleAddSizeBtn = document.getElementById('btn_show_add_size_form');
+  var addSizeBox = document.getElementById('add_new_size_box');
+  if (toggleAddSizeBtn && addSizeBox) {
+    toggleAddSizeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      addSizeBox.style.display = (addSizeBox.style.display === 'none' || !addSizeBox.style.display) ? 'block' : 'none';
+    });
+  }
+
+  // Submit New Size
+  var submitAddSizeBtn = document.getElementById('btn_submit_add_size');
+  if (submitAddSizeBtn) {
+    submitAddSizeBtn.addEventListener('click', function() {
+      var nameInput = document.getElementById('add_size_name');
+      var priceInput = document.getElementById('add_size_price');
+      var sizeName = nameInput ? nameInput.value.trim() : '';
+      var sizePrice = priceInput ? parseFloat(priceInput.value) : 0;
+
+      if (!sizeName) {
+        alert('Please enter a size/option name (e.g. 3000 Litres).');
+        return;
+      }
+      if (isNaN(sizePrice) || sizePrice < 0) {
+        alert('Please enter a valid starting price.');
+        return;
+      }
+
+      var form = document.getElementById('editServiceForm');
+      var csrfInput = form ? form.querySelector('input[name="csrf_token"]') : null;
+      var csrf = csrfInput ? csrfInput.value : '';
+
+      var fd = new FormData();
+      fd.append('name', sizeName);
+      fd.append('price', sizePrice);
+      fd.append('group_name', 'Capacity');
+      if (csrf) fd.append('csrf_token', csrf);
+
+      submitAddSizeBtn.disabled = true;
+      submitAddSizeBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+
+      fetch(cleanBase + '/admin/services/' + currentEditingServiceId + '/add-quick-variant', {
+        method: 'POST',
+        body: fd
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        submitAddSizeBtn.disabled = false;
+        submitAddSizeBtn.textContent = 'Add';
+        if (res.success) {
+          if (nameInput) nameInput.value = '';
+          if (priceInput) priceInput.value = '';
+          if (addSizeBox) addSizeBox.style.display = 'none';
+          loadServiceVariants(currentEditingServiceId);
+        } else {
+          alert(res.error || 'Could not add size.');
+        }
+      })
+      .catch(function(err) {
+        submitAddSizeBtn.disabled = false;
+        submitAddSizeBtn.textContent = 'Add';
+        alert('Error: ' + err.message);
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 });
 </script>

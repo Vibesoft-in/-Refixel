@@ -48,8 +48,9 @@ class ServiceController extends Controller
             'categories'     => $categories,
             'services'       => $allServices,
             'cities'         => $cities,
-            'activeCategory' => $activeCat,
-            'searchQuery'    => $searchQuery,
+            'activeCategory'    => $activeCat,
+            'searchQuery'       => $searchQuery,
+            'variantsByService' => ServiceVariant::getAllGroupedByServiceId(),
         ], 'customer');
     }
 
@@ -248,6 +249,7 @@ class ServiceController extends Controller
             'citySlug'          => $cleanCitySlug,
             'cities'            => $cities,
             'relatedCategories' => $relatedCategories,
+            'variantsByService' => ServiceVariant::getAllGroupedByServiceId(),
             'serviceAreas'      => $serviceAreas,
             'faqs'              => $faqs,
         ], 'customer');

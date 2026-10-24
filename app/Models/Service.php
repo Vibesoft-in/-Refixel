@@ -240,7 +240,18 @@ class Service extends Model
                 }
             }
             // Ensure Water Tank Cleaning is strictly categorized under Cleaning (id: 1), not Plumbers (id: 4)
-            Database::execute("UPDATE services SET category_id = 1 WHERE slug = 'water-tank-cleaning' OR name LIKE '%Tank Cleaning%'");
+            Database::execute("UPDATE services SET category_id = 1, is_addon = 0, is_active = 1, starting_price = 299.00, image = 'refixel-water-tank-cleaning.jpg' WHERE slug = 'water-tank-cleaning' OR name LIKE '%Tank Cleaning%'");
+
+            // Ensure Sofa Deep Cleaning exists and is strictly a Main Service under Cleaning (id: 1)
+            $sofaExists = Database::fetchOne("SELECT id FROM services WHERE slug IN ('sofa-upholstery-deep-cleaning', 'sofa-cleaning') OR name LIKE '%Sofa%' LIMIT 1");
+            if (!$sofaExists) {
+                Database::execute(
+                    "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, is_addon, is_coming_soon, created_at)
+                     VALUES (1, 'Sofa & Upholstery Deep Cleaning', 'sofa-upholstery-deep-cleaning', 'Mechanized fabric shampooing, stain extraction, and high-suction vacuuming.', 399.00, 90, 'refixel-sofa-cleaning.jpg', 1, 0, 0, NOW())"
+                );
+            } else {
+                Database::execute("UPDATE services SET category_id = 1, is_addon = 0, is_active = 1, image = 'refixel-sofa-cleaning.jpg' WHERE id = ?", [(int)$sofaExists['id']]);
+            }
         } catch (\Throwable $e) {}
 
         try {
@@ -254,6 +265,10 @@ class Service extends Model
                     }
                 }
             }
+        } catch (\Throwable $e) {}
+
+        try {
+            ServiceVariant::ensureSchema();
         } catch (\Throwable $e) {}
     }
 

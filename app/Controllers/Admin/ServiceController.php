@@ -59,14 +59,17 @@ class ServiceController extends Controller
             FROM services
         ");
 
+        $variantsByService = ServiceVariant::getAllGroupedByServiceId();
+
         return $this->render('admin.services.index', [
-            'title'         => 'Services & Pricing Catalog | REFIXEL Admin',
-            'services'      => $services,
-            'categories'    => $categories,
-            'selectedCatId' => $selectedCatId,
-            'typeFilter'    => $typeFilter,
-            'search'        => $search,
-            'stats'         => $stats ?? [],
+            'title'             => 'Services & Pricing Catalog | REFIXEL Admin',
+            'services'          => $services,
+            'categories'        => $categories,
+            'selectedCatId'     => $selectedCatId,
+            'typeFilter'        => $typeFilter,
+            'search'            => $search,
+            'stats'             => $stats ?? [],
+            'variantsByService' => $variantsByService,
         ], 'admin');
     }
 
@@ -164,6 +167,21 @@ class ServiceController extends Controller
         }
 
         Service::update((int)$id, $data);
+
+        // Update variant prices if submitted with service edit form
+        $variantPrices = $request->input('variant_prices');
+        if (is_array($variantPrices)) {
+            foreach ($variantPrices as $varId => $vPrice) {
+                $numPrice = (float)$vPrice;
+                if ($numPrice >= 0) {
+                    Database::execute(
+                        "UPDATE service_variants SET price = ? WHERE id = ? AND service_id = ?",
+                        [$numPrice, (int)$varId, (int)$id]
+                    );
+                }
+            }
+        }
+
         View::setFlash('success', "Service '{$name}' updated successfully.");
         return $this->redirect('/admin/services');
     }
@@ -543,6 +561,79 @@ class ServiceController extends Controller
 
         View::setFlash('success', "Option '{$variant['name']}' " . ($newActive ? 'activated' : 'deactivated') . ".");
         return $this->redirect("/admin/services/{$serviceId}/variants");
+    }
+
+    public function variantsJson(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $serviceId = (int)$id;
+        $variants = ServiceVariant::getByService($serviceId);
+        return Response::json([
+            'success'    => true,
+            'service_id' => $serviceId,
+            'variants'   => $variants,
+        ]);
+    }
+
+    public function quickPriceVariant(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $variantId = (int)$id;
+        $price = (float)$request->input('price', 0);
+
+        $variant = Database::fetchOne("SELECT * FROM service_variants WHERE id = ?", [$variantId]);
+        if (!$variant) {
+            return Response::json(['success' => false, 'error' => 'Variation option not found.'], 404);
+        }
+
+        Database::execute("UPDATE service_variants SET price = ? WHERE id = ?", [$price, $variantId]);
+
+        // If this variant is default or has minimum price, we can also sync starting_price
+        $minPriceRow = Database::fetchOne("SELECT MIN(price) as min_p FROM service_variants WHERE service_id = ? AND is_active = 1", [(int)$variant['service_id']]);
+        if (!empty($minPriceRow['min_p'])) {
+            Database::execute("UPDATE services SET starting_price = ? WHERE id = ?", [(float)$minPriceRow['min_p'], (int)$variant['service_id']]);
+        }
+
+        return Response::json([
+            'success'       => true,
+            'variant_id'    => $variantId,
+            'price'         => $price,
+            'formatted'     => '₹' . number_format($price, 2),
+            'min_price'     => (float)($minPriceRow['min_p'] ?? $price),
+            'message'       => "Price for '{$variant['name']}' updated to ₹" . number_format($price, 2),
+        ]);
+    }
+
+    public function addQuickVariant(Request $request, string $id): Response
+    {
+        ServiceVariant::ensureSchema();
+        $serviceId = (int)$id;
+        $name = trim((string)$request->input('name', ''));
+        $groupName = trim((string)$request->input('group_name', 'Capacity')) ?: 'Capacity';
+        $price = (float)$request->input('price', 0);
+
+        if (empty($name)) {
+            return Response::json(['success' => false, 'error' => 'Size / Option name is required.'], 400);
+        }
+
+        Database::execute(
+            "INSERT INTO service_variants (service_id, group_name, name, price, duration_minutes, sort_order, is_active, created_at)
+             VALUES (?, ?, ?, ?, 60, 99, 1, NOW())",
+            [$serviceId, $groupName, $name, $price]
+        );
+        $newId = (int)Database::lastInsertId();
+
+        return Response::json([
+            'success' => true,
+            'variant' => [
+                'id'         => $newId,
+                'service_id' => $serviceId,
+                'group_name' => $groupName,
+                'name'       => $name,
+                'price'      => $price,
+            ],
+            'message' => "Size '{$name}' added successfully.",
+        ]);
     }
 }
 

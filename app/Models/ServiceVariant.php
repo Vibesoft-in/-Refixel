@@ -40,13 +40,9 @@ class ServiceVariant extends Model
             ");
         } catch (\Throwable $e) {}
 
-        // Seed default initial variants if table is empty
+        // Always ensure default initial variants for core services (idempotent via insertVariantIfNotExists)
         try {
-            $row = Database::fetchOne("SELECT COUNT(*) as cnt FROM service_variants");
-            $count = (int)($row['cnt'] ?? 0);
-            if ($count === 0) {
-                self::seedInitialVariants();
-            }
+            self::seedInitialVariants();
         } catch (\Throwable $e) {}
     }
 
@@ -152,6 +148,47 @@ class ServiceVariant extends Model
                 ]
             );
         }
+    }
+
+    /**
+     * Get all active variants grouped by service_id
+     * Returns: [service_id => [variant1, variant2, ...]]
+     */
+    public static function getAllGroupedByServiceId(): array
+    {
+        self::ensureSchema();
+        $rows = Database::fetchAll(
+            "SELECT * FROM service_variants 
+             WHERE is_active = 1 
+             ORDER BY service_id ASC, sort_order ASC, id ASC"
+        );
+        $byService = [];
+        foreach ($rows as $r) {
+            $sid = (int)$r['service_id'];
+            if (!isset($byService[$sid])) {
+                $byService[$sid] = [];
+            }
+            $byService[$sid][] = $r;
+        }
+        return $byService;
+    }
+
+    /**
+     * Get all variants for a service (including inactive if admin)
+     */
+    public static function getByService(int $serviceId, bool $activeOnly = false): array
+    {
+        self::ensureSchema();
+        $where = "service_id = ?";
+        if ($activeOnly) {
+            $where .= " AND is_active = 1";
+        }
+        return Database::fetchAll(
+            "SELECT * FROM service_variants 
+             WHERE {$where} 
+             ORDER BY sort_order ASC, id ASC",
+            [$serviceId]
+        );
     }
 
     /**
