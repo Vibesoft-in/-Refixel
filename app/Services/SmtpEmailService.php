@@ -503,8 +503,22 @@ class SmtpEmailService implements EmailProviderInterface
                 $body .= "<div><strong style='color: #0a1c33;'>Service Location:</strong> " . htmlspecialchars($data['address'] ?? 'Service Address') . "</div>";
                 $body .= "</div>";
 
-                // Account Set Password Box
-                if (!empty($data['set_password_url'])) {
+                // Account Credentials Box
+                if (!empty($data['generated_password'])) {
+                    $genPass = $data['generated_password'];
+                    $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 12px; padding: 22px; margin-bottom: 24px; border-left: 5px solid #f25b29;'>";
+                    $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 17px;'><span style='color: #f25b29;'>🔐</span> Your REFIXEL Customer Account Credentials</h3>";
+                    $body .= "<p style='margin: 0 0 14px; color: #cbd5e1; font-size: 13.5px;'>An account has been created for you to track your service in real time, view invoices, and manage bookings:</p>";
+                    $body .= "<div style='background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 14px; font-size: 14px;'>";
+                    $body .= "<div style='margin-bottom: 8px;'><strong>Login Email / Mobile:</strong> <span style='color: #38bdf8; font-weight: 700; font-family: monospace; font-size: 15px; margin-left: 6px;'>" . htmlspecialchars($data['identifier'] ?? ($data['email'] ?? $data['phone'] ?? '')) . "</span></div>";
+                    $body .= "<div><strong>Login Password:</strong> <span style='background: #f25b29; color: #ffffff; padding: 4px 10px; border-radius: 5px; font-weight: 800; font-family: monospace; font-size: 15px; margin-left: 6px; letter-spacing: 0.5px;'>" . htmlspecialchars($genPass) . "</span></div>";
+                    $body .= "</div>";
+                    $body .= "<div style='text-align: center; margin: 20px 0 8px;'>";
+                    $body .= "<a href='" . htmlspecialchars($loginUrl) . "' style='background: #f25b29; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14.5px; padding: 12px 28px; border-radius: 6px; display: inline-block;'>Login to Customer Portal &rarr;</a>";
+                    $body .= "</div>";
+                    $body .= "<p style='margin: 8px 0 0; color: #94a3b8; font-size: 12px; text-align: center;'>You can change this password anytime in your Account Profile after logging in.</p>";
+                    $body .= "</div>";
+                } elseif (!empty($data['set_password_url'])) {
                     $setPasswordUrl = $data['set_password_url'];
                     $body .= "<div style='background: #0a1c33; color: #ffffff; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 5px solid #f25b29;'>";
                     $body .= "<h3 style='margin: 0 0 10px; color: #ffffff; font-size: 16px;'><span style='color: #f25b29;'>🔐</span> Set Up Your Customer Account</h3>";

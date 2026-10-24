@@ -581,10 +581,11 @@ class BookingController extends Controller
             $streetInput = trim((string)$request->input('street'));
             $addressTypeInput = trim((string)$request->input('address_type', 'Home'));
 
-            // Cryptographically secure unpredictable random initial password - NEVER printed, logged, or shared
-            $randomSecret = bin2hex(random_bytes(16));
-            $hashedPassword = password_hash($randomSecret, PASSWORD_BCRYPT);
+            // Generated password for new account (e.g. Refixel@4829)
+            $generatedPlainPassword = 'Refixel@' . random_int(1000, 9999);
+            $hashedPassword = password_hash($generatedPlainPassword, PASSWORD_DEFAULT);
             $setPasswordUrl = null;
+            $isBrandNewCustomer = false;
 
             // Checkout authentication & account preparation
             if (!$customerId) {
@@ -600,7 +601,10 @@ class BookingController extends Controller
                     $customerId = (int)$existingUser['id'];
                     $_SESSION['guest_account_created'] = false;
                     $_SESSION['guest_account_identifier'] = !empty($existingUser['phone']) ? $existingUser['phone'] : ($existingUser['email'] ?? '');
+                    // Auto-login existing user to session
+                    Auth::login($existingUser);
                 } else {
+                    $isBrandNewCustomer = true;
                     try {
                         $customerId = (int)\App\Core\Database::execute(
                             "INSERT INTO users (name, phone, email, password_hash, role, status) VALUES (?, ?, ?, ?, 'customer', 'active')",
@@ -618,15 +622,34 @@ class BookingController extends Controller
                         }
                         if ($existingUser) {
                             $customerId = (int)$existingUser['id'];
+                            $isBrandNewCustomer = false;
                         } else {
                             throw $e;
                         }
                     }
 
-                    $_SESSION['guest_account_created'] = true;
-                    $_SESSION['guest_account_identifier'] = !empty($phoneInput) ? $phoneInput : ($emailInput ?: '');
+                    $_SESSION['guest_account_created'] = $isBrandNewCustomer;
+                    $_SESSION['guest_account_identifier'] = !empty($emailInput) ? $emailInput : ($phoneInput ?: '');
 
-                    // Generate secure 64-char single-use token for setting password (valid 24h)
+                    // Auto-login newly registered customer
+                    $newUser = \App\Models\User::find($customerId);
+                    if ($newUser) {
+                        Auth::login($newUser);
+                    }
+
+                    if ($isBrandNewCustomer) {
+                        $_SESSION['new_customer_welcome_modal'] = [
+                            'is_new'             => true,
+                            'name'               => $nameInput,
+                            'email'              => $emailInput,
+                            'phone'              => $phoneInput,
+                            'identifier'         => !empty($emailInput) ? $emailInput : $phoneInput,
+                            'generated_password' => $generatedPlainPassword,
+                            'booking_no'         => $bookingNo,
+                        ];
+                    }
+
+                    // Backup password reset token link
                     $rawSetPassToken = bin2hex(random_bytes(32));
                     $tokenHash = hash('sha256', $rawSetPassToken);
                     $tokenExpiresAt = date('Y-m-d H:i:s', time() + (24 * 3600));
@@ -637,26 +660,11 @@ class BookingController extends Controller
                         ['ident' => $userIdentifier, 'hash' => $tokenHash, 'expires' => $tokenExpiresAt]
                     );
                     $setPasswordUrl = \App\Core\View::fullUrl('/reset-password?token=' . $rawSetPassToken);
-
                     $_SESSION['guest_set_password_url'] = $setPasswordUrl;
-                    unset($_SESSION['guest_account_password']);
-
-                    // If user does not have email, dispatch set-password link via SMS
-                    if (empty($emailInput) && !empty($phoneInput)) {
-                        try {
-                            Notifier::send('sms', $phoneInput, 'set_password_sms', [
-                                'set_password_url' => $setPasswordUrl,
-                                'name'             => $nameInput,
-                            ]);
-                        } catch (\Throwable $smsErr) {
-                            Logger::warning("Set-password SMS notification skipped: " . $smsErr->getMessage());
-                        }
-                    }
                 }
-                // Note: Guest users are NOT auto-logged in. Access is strictly controlled via guest_token.
             } else {
                 $_SESSION['guest_account_created'] = false;
-                unset($_SESSION['guest_set_password_url'], $_SESSION['guest_account_password']);
+                unset($_SESSION['guest_set_password_url']);
             }
 
             if ($customerId) {
@@ -996,30 +1004,33 @@ class BookingController extends Controller
                 }
 
                 // If direct booking without online payment requirement, dispatch notifications:
+                $dashboardUrl = View::url('/account/bookings?booking_created=1');
                 try {
                     $directRecord = [
-                        'id'               => $bookingId,
-                        'booking_id'       => $bookingId,
-                        'customer_id'      => $validCustomerId ?? ($customerId ?? null),
-                        'booking_no'       => $bookingNo,
-                        'service_name'     => $service['name'] ?? 'Doorstep Service',
-                        'name'             => $nameInput,
-                        'phone'            => $phoneInput,
-                        'email'            => $emailInput ?? null,
-                        'address'          => $addressInput,
-                        'city'             => $cityInput,
-                        'preferred_date'   => $prefDate,
-                        'preferred_time'   => $prefTime,
-                        'total_amount'     => $totalServiceAmount,
-                        'advance_amount'   => 0.00,
-                        'due_amount'       => $totalServiceAmount,
-                        'payment_type'     => 'cod',
-                        'priority'         => $priority,
-                        'is_new_customer'  => $isNewAcc,
-                        'login_url'        => View::fullUrl('/login'),
-                        'admin_url'        => View::fullUrl('/admin/bookings/' . $bookingId),
-                        'set_password_url' => $setPasswordUrl ?? null,
-                        'guest_token'      => $guestToken,
+                        'id'                 => $bookingId,
+                        'booking_id'         => $bookingId,
+                        'customer_id'        => $validCustomerId ?? ($customerId ?? null),
+                        'booking_no'         => $bookingNo,
+                        'service_name'       => $service['name'] ?? 'Doorstep Service',
+                        'name'               => $nameInput,
+                        'phone'              => $phoneInput,
+                        'email'              => $emailInput ?? null,
+                        'address'            => $addressInput,
+                        'city'               => $cityInput,
+                        'preferred_date'     => $prefDate,
+                        'preferred_time'     => $prefTime,
+                        'total_amount'       => $totalServiceAmount,
+                        'advance_amount'     => 0.00,
+                        'due_amount'         => $totalServiceAmount,
+                        'payment_type'       => 'cod',
+                        'priority'           => $priority,
+                        'is_new_customer'    => $isBrandNewCustomer,
+                        'generated_password' => $isBrandNewCustomer ? $generatedPlainPassword : null,
+                        'login_url'          => View::fullUrl('/login'),
+                        'admin_url'          => View::fullUrl('/admin/bookings/' . $bookingId),
+                        'booking_url'        => View::fullUrl('/account/bookings/' . $bookingId),
+                        'set_password_url'   => $setPasswordUrl ?? null,
+                        'guest_token'        => $guestToken,
                     ];
                     Notifier::notifyNewBookingAdmin($directRecord);
                     Notifier::notifyBookingConfirmationCustomer($directRecord);
@@ -1046,10 +1057,11 @@ class BookingController extends Controller
                     'due_amount'         => $totalServiceAmount,
                     'priority'           => $priority,
                     'priority_label'     => 'Medium Priority (COD)',
-                    'is_new_customer'    => $isNewAcc,
+                    'is_new_customer'    => $isBrandNewCustomer,
+                    'generated_password' => $isBrandNewCustomer ? $generatedPlainPassword : null,
                     'set_password_url'   => $setPasswordUrl ?? null,
-                    'identifier'         => $ident,
-                    'redirect_url'       => View::url('/book-success?token=' . urlencode($guestToken)),
+                    'identifier'         => !empty($emailInput) ? $emailInput : $phoneInput,
+                    'redirect_url'       => $dashboardUrl,
                     'guest_token'        => $guestToken,
                 ]);
             }
@@ -1057,34 +1069,36 @@ class BookingController extends Controller
             // Direct non-AJAX booking fallback notification:
             try {
                 $directRecord = [
-                    'id'               => $bookingId,
-                    'booking_id'       => $bookingId,
-                    'customer_id'      => $validCustomerId ?? ($customerId ?? null),
-                    'booking_no'       => $bookingNo,
-                    'service_name'     => $service['name'] ?? 'Doorstep Service',
-                    'name'             => $nameInput,
-                    'phone'            => $phoneInput,
-                    'email'            => $emailInput ?? null,
-                    'address'          => $addressInput,
-                    'city'             => $cityInput,
-                    'preferred_date'   => $prefDate,
-                    'preferred_time'   => $prefTime,
-                    'total_amount'     => $totalServiceAmount,
-                    'advance_amount'   => 0.00,
-                    'due_amount'       => $totalServiceAmount,
-                    'payment_type'     => 'cod',
-                    'priority'         => $priority,
-                    'is_new_customer'  => !empty($_SESSION['guest_account_created']),
-                    'login_url'        => View::fullUrl('/login'),
-                    'admin_url'        => View::fullUrl('/admin/bookings/' . $bookingId),
-                    'set_password_url' => $setPasswordUrl ?? null,
-                    'guest_token'      => $guestToken,
+                    'id'                 => $bookingId,
+                    'booking_id'         => $bookingId,
+                    'customer_id'        => $validCustomerId ?? ($customerId ?? null),
+                    'booking_no'         => $bookingNo,
+                    'service_name'       => $service['name'] ?? 'Doorstep Service',
+                    'name'               => $nameInput,
+                    'phone'              => $phoneInput,
+                    'email'              => $emailInput ?? null,
+                    'address'            => $addressInput,
+                    'city'               => $cityInput,
+                    'preferred_date'     => $prefDate,
+                    'preferred_time'     => $prefTime,
+                    'total_amount'       => $totalServiceAmount,
+                    'advance_amount'     => 0.00,
+                    'due_amount'         => $totalServiceAmount,
+                    'payment_type'       => 'cod',
+                    'priority'           => $priority,
+                    'is_new_customer'    => $isBrandNewCustomer,
+                    'generated_password' => $isBrandNewCustomer ? $generatedPlainPassword : null,
+                    'login_url'          => View::fullUrl('/login'),
+                    'admin_url'          => View::fullUrl('/admin/bookings/' . $bookingId),
+                    'booking_url'        => View::fullUrl('/account/bookings/' . $bookingId),
+                    'set_password_url'   => $setPasswordUrl ?? null,
+                    'guest_token'        => $guestToken,
                 ];
                 Notifier::notifyNewBookingAdmin($directRecord);
                 Notifier::notifyBookingConfirmationCustomer($directRecord);
             } catch (\Throwable $ne) {}
 
-            return $this->redirect('/book-success?token=' . urlencode($guestToken));
+            return $this->redirect('/account/bookings?booking_created=1');
         } catch (\Throwable $e) {
             Logger::error("Booking submission exception: " . $e->getMessage(), [
                 'file'  => $e->getFile(),
