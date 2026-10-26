@@ -91,7 +91,7 @@ class View
 
     public static function fullUrl(string $path = '/'): string
     {
-        $appUrl = rtrim((string)Env::get('APP_URL', 'https://v1.refixel.com'), '/');
+        $appUrl = rtrim((string)Env::get('APP_URL', 'https://refixel.com'), '/');
         $cleanPath = '/' . ltrim($path, '/');
         $basePath = parse_url($appUrl, PHP_URL_PATH) ?? '';
 

@@ -167,8 +167,12 @@ class ServiceController extends Controller
 
         $title = "Available {$cat['name']} Packages in {$cityName} | REFIXEL";
         $description = "Looking for verified {$cat['name']} in {$cityName}? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
-        $cleanCatSlug = str_ends_with($cat['slug'], '-services') ? $cat['slug'] : "{$cat['slug']}-services";
-        $canonicalUrl = !empty($cleanCitySlug) ? View::url("/{$cleanCatSlug}-in-{$cleanCitySlug}") : View::url("/{$cleanCatSlug}");
+        $catSlug = $cat['slug'] ?? '';
+        if ($catSlug === 'plumbers') {
+            $catSlug = 'plumber';
+        }
+        $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
+        $canonicalUrl = !empty($cleanCitySlug) ? View::fullUrl("/{$cleanCatSlug}-in-{$cleanCitySlug}") : View::fullUrl("/{$cleanCatSlug}");
 
         // Build Schema.org Structured Data
         $schemaGraph = [
@@ -271,7 +275,7 @@ class ServiceController extends Controller
         $price = number_format((float)$svc['starting_price'], 0);
         $title = "{$svc['name']} in {$cityName} - Starting ₹{$price} | REFIXEL";
         $description = "Book {$svc['name']} in {$cityName} starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee. Doorstep service in {$cityName}.";
-        $canonicalUrl = !empty($cleanCitySlug) ? View::url("/{$svc['slug']}-in-{$cleanCitySlug}") : View::url("/{$svc['slug']}");
+        $canonicalUrl = !empty($cleanCitySlug) ? View::fullUrl("/{$svc['slug']}-in-{$cleanCitySlug}") : View::fullUrl("/{$svc['slug']}");
 
         // Build Schema.org Structured Data
         $schemaGraph = [
@@ -438,10 +442,15 @@ class ServiceController extends Controller
         if ($stripped !== $slug) {
             $svc = Service::findBySlug($stripped);
             if ($svc) return $svc;
+            $svc = Service::findBySlug('professional-' . $stripped);
+            if ($svc) return $svc;
         }
 
-        // 3. Try adding -service
+        // 3. Try adding -service or professional- prefix
         $svc = Service::findBySlug($slug . '-service');
+        if ($svc) return $svc;
+
+        $svc = Service::findBySlug('professional-' . $slug);
         if ($svc) return $svc;
 
         // 4. Aliases

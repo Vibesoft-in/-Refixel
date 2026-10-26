@@ -12,12 +12,24 @@
 
     // Single source base URL config for absolute URLs
     $reqPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
-    $cleanCanonical = $canonicalUrl ?? \App\Core\View::fullUrl($reqPath);
+    $rawCanonical = $canonicalUrl ?? \App\Core\View::fullUrl($reqPath);
+    $cleanCanonical = (str_starts_with((string)$rawCanonical, 'http://') || str_starts_with((string)$rawCanonical, 'https://'))
+        ? $rawCanonical
+        : \App\Core\View::fullUrl((string)$rawCanonical);
     $cleanOgUrl = $ogUrl ?? $cleanCanonical;
     $cleanOgImage = $ogImage ?? \App\Core\View::fullUrl('assets/img/refixel-logo-horizontal.png');
 
-    // Robots meta controlled by config flag (defaults to noindex on non-production)
-    $robotsDirective = $robots ?? \App\Core\Env::get('APP_ROBOTS', (\App\Core\Env::get('APP_ENV') === 'production' ? 'index, follow' : 'noindex, nofollow'));
+    // Robots meta controlled by config flag (private internal paths & non-production default to noindex)
+    $isPrivateCustomerRoute = str_starts_with($reqPath, '/account')
+        || str_starts_with($reqPath, '/cart')
+        || str_starts_with($reqPath, '/book')
+        || str_starts_with($reqPath, '/my-booking');
+
+    $defaultRobots = (\App\Core\Env::get('APP_ENV') === 'production' && !$isPrivateCustomerRoute)
+        ? 'index, follow'
+        : 'noindex, nofollow';
+
+    $robotsDirective = $robots ?? \App\Core\Env::get('APP_ROBOTS', $defaultRobots);
   ?>
   <title><?= \App\Core\View::e($pageTitle) ?></title>
   <meta name="description" content="<?= \App\Core\View::e($pageDesc) ?>">

@@ -10,28 +10,42 @@ Router::get('/', 'HomeController@index');
 Router::get('/index.php', 'HomeController@index'); // Legacy alias
 
 Router::get('/about', 'PageController@about');
-Router::get('/about-us.php', 'PageController@about');
+Router::get('/about-us.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/about'), 301);
+});
 
 Router::get('/faq', 'PageController@faq');
-Router::get('/faqs.php', 'PageController@faq');
+Router::get('/faqs.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/faq'), 301);
+});
 
 Router::get('/gallery', 'PageController@gallery');
 
 Router::get('/contact', 'PageController@contact');
-Router::get('/contact-us.php', 'PageController@contact');
+Router::get('/contact-us.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/contact'), 301);
+});
 Router::post('/contact', 'PageController@submitContact', ['RateLimit:5,60', 'VerifyCsrf']);
 
 Router::get('/terms', 'PageController@terms');
-Router::get('/terms-and-conditions.php', 'PageController@terms');
+Router::get('/terms-and-conditions.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/terms'), 301);
+});
 
 Router::get('/privacy', 'PageController@privacy');
-Router::get('/privacy-policy.php', 'PageController@privacy');
+Router::get('/privacy-policy.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/privacy'), 301);
+});
 
 Router::get('/refund', 'PageController@refund');
-Router::get('/refund-policy.php', 'PageController@refund');
+Router::get('/refund-policy.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/refund'), 301);
+});
 
 Router::get('/blog', 'PageController@blog');
-Router::get('/blog.php', 'PageController@blog');
+Router::get('/blog.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/blog'), 301);
+});
 
 Router::get('/partner', 'PageController@partner');
 Router::post('/partner', 'PageController@submitPartner', ['RateLimit:5,60', 'VerifyCsrf']);
@@ -85,7 +99,9 @@ Router::get('/book-success', 'BookingController@success');
 Router::post('/webhook/razorpay', 'WebhookController@razorpay'); // Webhook exempt from CSRF and RateLimit, secured by HMAC
 
 Router::get('/cart', 'BookingController@cart');
-Router::get('/cart.php', 'BookingController@cart');
+Router::get('/cart.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/cart'), 301);
+});
 Router::get('/api/cart', 'BookingController@apiCart');
 Router::get('/api/cart/addons', 'BookingController@apiCartAddons');
 Router::post('/api/cart/add', 'BookingController@addToCart', ['RateLimit:60,60', 'VerifyCsrf']);
@@ -134,15 +150,21 @@ Router::get('/2fa/setup', 'AuthController@show2faSetup', ['RequireLogin']);
 Router::post('/2fa/setup', 'AuthController@confirm2faSetup', ['RequireLogin', 'VerifyCsrf']);
 
 Router::get('/logout', 'AuthController@logout');
-Router::get('/logout.php', 'AuthController@logout');
+Router::get('/logout.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/logout'), 301);
+});
 
 // ==========================================
 // CUSTOMER PORTAL (/account)
 // ==========================================
+// Legacy alias redirect to customer bookings
+Router::get('/my-booking.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/account/bookings'), 301);
+});
+
 Router::group(['middleware' => ['RequireRole:customer']], function () {
     Router::get('/account', 'AccountController@index');
     Router::get('/account/bookings', 'AccountController@bookings');
-    Router::get('/my-booking.php', 'AccountController@bookings'); // Legacy alias
     Router::get('/account/bookings/{id}', 'AccountController@bookingDetail');
     Router::post('/account/bookings/{id}/cancel', 'AccountController@cancelBooking', ['VerifyCsrf']);
     Router::post('/account/bookings/{id}/reschedule', 'AccountController@rescheduleBooking', ['VerifyCsrf']);

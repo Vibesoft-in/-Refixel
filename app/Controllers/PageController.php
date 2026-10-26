@@ -411,7 +411,7 @@ class PageController extends Controller
 
     public function sitemap(Request $request): Response
     {
-        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.REFIXEL.com'), '/');
+        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://refixel.com'), '/');
         $today = date('Y-m-d');
 
         $urls = [
@@ -421,6 +421,8 @@ class PageController extends Controller
             ['loc' => $baseUrl . '/gallery', 'priority' => '0.8', 'changefreq' => 'weekly'],
             ['loc' => $baseUrl . '/contact', 'priority' => '0.8', 'changefreq' => 'weekly'],
             ['loc' => $baseUrl . '/services', 'priority' => '0.9', 'changefreq' => 'weekly'],
+            ['loc' => $baseUrl . '/blog', 'priority' => '0.7', 'changefreq' => 'weekly'],
+            ['loc' => $baseUrl . '/partner', 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => $baseUrl . '/terms', 'priority' => '0.5', 'changefreq' => 'monthly'],
             ['loc' => $baseUrl . '/privacy', 'priority' => '0.5', 'changefreq' => 'monthly'],
             ['loc' => $baseUrl . '/refund', 'priority' => '0.5', 'changefreq' => 'monthly'],
@@ -431,10 +433,13 @@ class PageController extends Controller
         $categories = \App\Models\Category::all('sort_order ASC');
         $services = \App\Models\Service::all('name ASC');
 
-        // Active Categories (General Clean URLs)
+        // Active Categories (General Clean Canonical URLs)
         foreach ($categories as $cat) {
             if (empty($cat['is_active'])) continue;
             $catSlug = $cat['slug'] ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $cat['name']), '-'));
+            if ($catSlug === 'plumbers') {
+                $catSlug = 'plumber';
+            }
             $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
             $urls[] = [
                 'loc'        => "{$baseUrl}/{$cleanCatSlug}",
@@ -463,6 +468,9 @@ class PageController extends Controller
             foreach ($categories as $cat) {
                 if (empty($cat['is_active'])) continue;
                 $catSlug = $cat['slug'] ?? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $cat['name']), '-'));
+                if ($catSlug === 'plumbers') {
+                    $catSlug = 'plumber';
+                }
                 $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
                 $urls[] = [
                     'loc'        => "{$baseUrl}/{$cleanCatSlug}-in-{$citySlug}",
@@ -483,9 +491,20 @@ class PageController extends Controller
             }
         }
 
+        // Deduplicate URLs before rendering XML
+        $seen = [];
+        $uniqueUrls = [];
+        foreach ($urls as $u) {
+            $loc = trim((string)$u['loc']);
+            if (!isset($seen[$loc])) {
+                $seen[$loc] = true;
+                $uniqueUrls[] = $u;
+            }
+        }
+
         $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
         $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
-        foreach ($urls as $u) {
+        foreach ($uniqueUrls as $u) {
             $xml .= "  <url>\n";
             $xml .= "    <loc>" . htmlspecialchars($u['loc'], ENT_XML1) . "</loc>\n";
             $xml .= "    <lastmod>{$today}</lastmod>\n";
@@ -500,15 +519,38 @@ class PageController extends Controller
 
     public function robots(Request $request): Response
     {
-        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://www.REFIXEL.com'), '/');
+        $baseUrl = rtrim((string)\App\Core\Env::get('APP_URL', 'https://refixel.com'), '/');
+
+        $env = (string)\App\Core\Env::get('APP_ENV', 'production');
+        $isStaging = ($env === 'staging' || \App\Core\Env::get('APP_ROBOTS') === 'noindex, nofollow');
+
+        // Protect staging environments from search engine crawling
+        if ($isStaging) {
+            $stagingContent = "User-agent: *\n";
+            $stagingContent .= "Disallow: /\n";
+            return Response::plain($stagingContent);
+        }
 
         $content = "User-agent: *\n";
         $content .= "Disallow: /admin\n";
         $content .= "Disallow: /admin/\n";
+        $content .= "Disallow: /superadmin\n";
+        $content .= "Disallow: /superadmin/\n";
         $content .= "Disallow: /staff\n";
         $content .= "Disallow: /staff/\n";
         $content .= "Disallow: /account\n";
         $content .= "Disallow: /account/\n";
+        $content .= "Disallow: /login\n";
+        $content .= "Disallow: /signup\n";
+        $content .= "Disallow: /forgot-password\n";
+        $content .= "Disallow: /reset-password\n";
+        $content .= "Disallow: /change-password\n";
+        $content .= "Disallow: /cart\n";
+        $content .= "Disallow: /cart.php\n";
+        $content .= "Disallow: /book\n";
+        $content .= "Disallow: /book-success\n";
+        $content .= "Disallow: /documents/\n";
+        $content .= "Disallow: /webhook/\n";
         $content .= "Disallow: /api/\n";
         $content .= "Allow: /\n\n";
         $content .= "Sitemap: {$baseUrl}/sitemap.xml\n";

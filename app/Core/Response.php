@@ -90,6 +90,11 @@ class Response
             $headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
         }
 
+        // Protect staging and non-production environments from public indexing
+        if (Env::get('APP_ENV') !== 'production') {
+            $headers['X-Robots-Tag'] = 'noindex, nofollow, noarchive';
+        }
+
         return $headers;
     }
 

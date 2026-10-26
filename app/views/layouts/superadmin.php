@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="format-detection" content="telephone=no">
+  <meta name="robots" content="noindex, nofollow">
   <title><?= \App\Core\View::e($title ?? 'Super Admin Panel | REFIXEL') ?></title>
   <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=3" rel="shortcut icon" type="image/png" />
   <link href="<?= \App\Core\View::asset(\App\Core\Theme::getFavicon()) ?>?v=3" rel="icon" type="image/png" />
