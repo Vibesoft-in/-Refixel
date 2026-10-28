@@ -92,6 +92,17 @@ class View
     public static function fullUrl(string $path = '/'): string
     {
         $appUrl = rtrim((string)Env::get('APP_URL', 'https://refixel.com'), '/');
+
+        // Prevent legacy/staging subdomain (e.g. v1.refixel.com) from polluting canonical URLs
+        if (str_contains($appUrl, 'v1.refixel.com')) {
+            $appUrl = str_replace('v1.refixel.com', 'refixel.com', $appUrl);
+        }
+
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if ($host === 'refixel.com' || $host === 'www.refixel.com') {
+            $appUrl = 'https://refixel.com';
+        }
+
         $cleanPath = '/' . ltrim($path, '/');
         $basePath = parse_url($appUrl, PHP_URL_PATH) ?? '';
 

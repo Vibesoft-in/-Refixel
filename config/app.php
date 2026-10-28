@@ -8,7 +8,7 @@ return [
     'env'      => Env::get('APP_ENV', 'production'),
     'debug'    => (bool)Env::get('APP_DEBUG', false),
     'url'      => Env::get('APP_URL', 'http://localhost/website/public'),
-    'robots'   => Env::get('APP_ROBOTS', (Env::get('APP_ENV') === 'production' ? 'index, follow' : 'noindex, nofollow')),
+    'robots'   => Env::get('APP_ROBOTS', (Env::get('APP_ENV') === 'staging' ? 'noindex, nofollow' : 'index, follow')),
     'timezone' => Env::get('APP_TIMEZONE', 'Asia/Kolkata'),
     'company'  => [
         'name'    => Env::get('COMPANY_NAME', 'REFIXEL Home Services'),

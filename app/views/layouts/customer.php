@@ -19,15 +19,18 @@
     $cleanOgUrl = $ogUrl ?? $cleanCanonical;
     $cleanOgImage = $ogImage ?? \App\Core\View::fullUrl('assets/img/refixel-logo-horizontal.png');
 
-    // Robots meta controlled by config flag (private internal paths & non-production default to noindex)
+    // Robots meta: private customer routes & explicit staging default to noindex
     $isPrivateCustomerRoute = str_starts_with($reqPath, '/account')
         || str_starts_with($reqPath, '/cart')
         || str_starts_with($reqPath, '/book')
         || str_starts_with($reqPath, '/my-booking');
 
-    $defaultRobots = (\App\Core\Env::get('APP_ENV') === 'production' && !$isPrivateCustomerRoute)
-        ? 'index, follow'
-        : 'noindex, nofollow';
+    $isStagingEnv = (\App\Core\Env::get('APP_ENV') === 'staging');
+
+    // Public pages (home, services, about, contact, blog, faq, etc.) default to index, follow
+    $defaultRobots = ($isPrivateCustomerRoute || $isStagingEnv)
+        ? 'noindex, nofollow'
+        : 'index, follow';
 
     $robotsDirective = $robots ?? \App\Core\Env::get('APP_ROBOTS', $defaultRobots);
     $pageKeywords = $keywords ?? 'home services Kashipur, home repair Jaspur, cleaning services Thakurdwara, electrician, plumber, AC repair, painting, pest control, false ceiling, refixel';
