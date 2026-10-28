@@ -478,7 +478,8 @@ class PageController extends Controller
             ['loc' => $baseUrl . '/gallery', 'priority' => '0.8', 'changefreq' => 'weekly'],
             ['loc' => $baseUrl . '/contact', 'priority' => '0.8', 'changefreq' => 'weekly'],
             ['loc' => $baseUrl . '/services', 'priority' => '0.9', 'changefreq' => 'weekly'],
-            ['loc' => $baseUrl . '/blog', 'priority' => '0.7', 'changefreq' => 'weekly'],
+            ['loc' => $baseUrl . '/blogs', 'priority' => '0.8', 'changefreq' => 'weekly'],
+            ['loc' => $baseUrl . '/blog', 'priority' => '0.8', 'changefreq' => 'weekly'],
             ['loc' => $baseUrl . '/partner', 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => $baseUrl . '/terms', 'priority' => '0.5', 'changefreq' => 'monthly'],
             ['loc' => $baseUrl . '/privacy', 'priority' => '0.5', 'changefreq' => 'monthly'],
@@ -553,6 +554,15 @@ class PageController extends Controller
                     'changefreq' => 'weekly',
                 ];
             }
+        }
+
+        // Blog Posts URLs
+        foreach (\App\Models\Blog::all() as $bp) {
+            $urls[] = [
+                'loc'        => "{$baseUrl}/blogs/{$bp['slug']}",
+                'priority'   => '0.8',
+                'changefreq' => 'weekly',
+            ];
         }
 
         // Deduplicate URLs before rendering XML

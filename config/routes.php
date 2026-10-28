@@ -42,9 +42,15 @@ Router::get('/refund-policy.php', function() {
     return (new \App\Core\Response())->redirect(\App\Core\View::url('/refund'), 301);
 });
 
-Router::get('/blog', 'PageController@blog');
+Router::get('/blogs', 'BlogController@index');
+Router::get('/blog', 'BlogController@index');
+Router::get('/blogs/{slug}', 'BlogController@show');
+Router::get('/blog/{slug}', 'BlogController@show');
 Router::get('/blog.php', function() {
     return (new \App\Core\Response())->redirect(\App\Core\View::url('/blog'), 301);
+});
+Router::get('/blogs.php', function() {
+    return (new \App\Core\Response())->redirect(\App\Core\View::url('/blogs'), 301);
 });
 
 Router::get('/partner', 'PageController@partner');
