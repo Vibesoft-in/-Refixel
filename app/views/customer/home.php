@@ -550,8 +550,19 @@ a.solution_card:active,
               })();
             </script>
             <h1><?= \App\Core\View::e(\App\Models\Setting::get('hero_title', 'REFIXEL – Best Home Cleaning, AC Repair & Plumber in Kashipur, Jaspur & Thakurdwara')) ?></h1>
-            <a href="<?= \App\Core\View::url('/services') ?>" class="btn_cleaned_today d-inline-block text-decoration-none">
-              Book Best Home Service Today
+            <?php
+              $heroBtnText = \App\Models\Setting::get('hero_btn_text', 'Book Best Home Service Today');
+              $rawHeroLink = trim((string)\App\Models\Setting::get('hero_btn_link', '/services'));
+              if (empty($rawHeroLink)) {
+                  $heroBtnUrl = \App\Core\View::url('/services');
+              } elseif (str_starts_with($rawHeroLink, 'http://') || str_starts_with($rawHeroLink, 'https://') || str_starts_with($rawHeroLink, '#') || str_starts_with($rawHeroLink, 'tel:') || str_starts_with($rawHeroLink, 'mailto:')) {
+                  $heroBtnUrl = $rawHeroLink;
+              } else {
+                  $heroBtnUrl = \App\Core\View::url($rawHeroLink);
+              }
+            ?>
+            <a href="<?= \App\Core\View::e($heroBtnUrl) ?>" class="btn_cleaned_today d-inline-block text-decoration-none">
+              <?= \App\Core\View::e($heroBtnText) ?>
             </a>
           </div>
 

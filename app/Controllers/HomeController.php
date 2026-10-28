@@ -20,11 +20,12 @@ class HomeController extends Controller
         $cities = ServiceArea::getActiveCities();
 
         return $this->render('customer.home', [
-            'title'         => 'REFIXEL: Best Home Services in Kashipur, Jaspur | Cleaning, AC Repair',
-            'description'   => 'REFIXEL offers the best home services in Kashipur, Jaspur & Thakurdwara. Verified pros for deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Book Now!',
+            'title'         => 'REFIXEL: Best Home Services in Kashipur, Jaspur & Thakurdwara | Cleaning, AC Repair',
+            'description'   => 'REFIXEL offers the best doorstep home services in Kashipur, Jaspur & Thakurdwara. Verified pros for deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Book Now!',
+            'keywords'      => 'home services Kashipur, home repair Jaspur, cleaning services Thakurdwara, electrician Kashipur, plumber Jaspur, AC service Thakurdwara, pest control Kashipur, painting Jaspur, false ceiling, refixel',
             'canonicalUrl'  => \App\Core\View::fullUrl('/'),
-            'ogTitle'       => 'REFIXEL: Best Home Services in Kashipur, Jaspur | Cleaning, AC Repair',
-            'ogDescription' => 'REFIXEL offers the best home services in Kashipur, Jaspur & Thakurdwara. Verified pros for deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Book Now!',
+            'ogTitle'       => 'REFIXEL: Best Home Services in Kashipur, Jaspur & Thakurdwara | Cleaning, AC Repair',
+            'ogDescription' => 'REFIXEL offers the best doorstep home services in Kashipur, Jaspur & Thakurdwara. Verified pros for deep cleaning, AC jet service, plumbing, electrician, painting & pest control. Book Now!',
             'ogImage'       => \App\Core\View::fullUrl('assets/img/refixel-logo-horizontal.png'),
             'ogUrl'         => \App\Core\View::fullUrl('/'),
             'categories'    => $categories,

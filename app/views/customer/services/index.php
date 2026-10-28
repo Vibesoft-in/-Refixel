@@ -1312,10 +1312,29 @@ if (empty($activeCategory)) {
 
       <!-- Page Header -->
       <div class="page_heading text-center mb-4 pt-1" id="serviceCatalogueHeader" style="<?= ($activeCategory !== 'all') ? 'display: none;' : '' ?>">
-
-        <h6 style="color: #f25b29; font-weight: 700; letter-spacing: 1.2px;">SERVICE CATALOGUE</h6>
-        <h1 class="font-weight-bold" style="font-size: 34px; color: #1a1a1a; letter-spacing: -0.5px;">Explore Professional Home &amp; Commercial Services</h1>
-        <p class="text-muted" style="max-width: 680px; margin: 0 auto; font-size: 15px; line-height: 1.6;">Select a category below to explore verified technicians, checklists, transparent pricing, and instant doorstep booking.</p>
+        <div class="d-inline-flex align-items-center mb-2 px-3 py-1 rounded-pill" style="background: #fff3ec; border: 1px solid #ffdacf;">
+          <i class="fa fa-map-marker text-danger mr-2"></i>
+          <span style="color: #f25b29; font-weight: 700; font-size: 13px; letter-spacing: 0.5px;">BEST HOME SERVICES IN KASHIPUR, JASPUR &amp; THAKURDWARA</span>
+        </div>
+        <h1 class="font-weight-bold" style="font-size: clamp(26px, 3.2vw, 36px); color: #0a1c33; letter-spacing: -0.5px;">
+          Best Home &amp; Commercial Services in <span style="color: #f25b29;">Kashipur, Jaspur &amp; Thakurdwara</span>
+        </h1>
+        <p class="text-muted" style="max-width: 760px; margin: 0 auto 14px auto; font-size: 15px; line-height: 1.65;">
+          Refixel connects you with 400+ background-verified technicians for AC repair, deep cleaning, electrical, plumbing, carpentry, painting, and false ceiling installations. On-time doorstep arrival across all 3 locations with 30-day warranty.
+        </p>
+        
+        <!-- Location Quick Filter Pills -->
+        <div class="d-flex flex-wrap justify-content-center align-items-center" style="gap: 8px;">
+          <a href="<?= \App\Core\View::url('/services-in-kashipur') ?>" class="badge badge-light border text-dark px-3 py-2 font-weight-bold" style="border-radius: 20px; font-size: 12px; text-decoration: none;">
+            <i class="fa fa-map-marker text-danger mr-1"></i> Best in Kashipur (244713)
+          </a>
+          <a href="<?= \App\Core\View::url('/services-in-jaspur') ?>" class="badge badge-light border text-dark px-3 py-2 font-weight-bold" style="border-radius: 20px; font-size: 12px; text-decoration: none;">
+            <i class="fa fa-map-marker text-danger mr-1"></i> Best in Jaspur (244712)
+          </a>
+          <a href="<?= \App\Core\View::url('/services-in-thakurdwara') ?>" class="badge badge-light border text-dark px-3 py-2 font-weight-bold" style="border-radius: 20px; font-size: 12px; text-decoration: none;">
+            <i class="fa fa-map-marker text-danger mr-1"></i> Best in Thakurdwara (244601)
+          </a>
+        </div>
       </div>
 
       <!-- Cards Grid -->
@@ -1388,11 +1407,16 @@ if (empty($activeCategory)) {
           <div class="category-packages-view" id="packages-<?= $catSlug ?>" data-category="<?= $catSlug ?>" style="<?= $isThisCatActive ? '' : 'display: none;' ?>">
             <!-- Package Heading & Subtext (exact same text as standalone packages page) -->
             <div class="mb-4">
-              <h2 class="font-weight-bold mb-1" style="font-size: 26px; color: #1a1a1a;">
-                Available <?= $catName ?> Packages in <?= \App\Core\View::e((!empty($city) && strcasecmp($city, 'Kashipur') !== 0) ? $city : 'Your City') ?>
-              </h2>
+              <div class="d-flex align-items-center flex-wrap mb-1" style="gap: 8px;">
+                <h2 class="font-weight-bold mb-0" style="font-size: 26px; color: #1a1a1a;">
+                  Best <?= $catName ?> Packages in <?= \App\Core\View::e(!empty($city) ? $city : 'Kashipur, Jaspur & Thakurdwara') ?>
+                </h2>
+                <span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 6px;">
+                  <i class="fa fa-shield mr-1"></i> 100% Verified Doorstep
+                </span>
+              </div>
               <p class="text-muted small mb-0">
-                Select your package to view full checklist and instant booking options.
+                Doorstep <?= $catName ?> available across <strong>Kashipur</strong>, <strong>Jaspur</strong> &amp; <strong>Thakurdwara</strong>. Select your package to view full checklist and instant booking options.
               </p>
             </div>
 

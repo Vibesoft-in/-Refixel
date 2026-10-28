@@ -10,11 +10,15 @@
       <div class="row align-items-center">
         <!-- Left: Heading & Subtext -->
         <div class="col-lg-7 col-md-12">
+          <span class="badge px-3 py-1 mb-2 font-weight-bold" style="background: rgba(242, 91, 41, 0.12); color: #f25b29; border: 1px solid rgba(242, 91, 41, 0.3); border-radius: 20px; font-size: 13px;">
+            <i class="fa fa-map-marker text-danger mr-1"></i> Doorstep Service in Kashipur, Jaspur &amp; Thakurdwara
+          </span>
           <h1 class="contact-hero-title">
-            Contact <span class="text-orange">Us</span>
+            Contact <span class="text-orange">REFIXEL</span>
+            <span class="d-block" style="font-size: clamp(20px, 2.4vw, 28px); font-weight: 600; color: #0a1c33; margin-top: 6px;">Best Home Services in <span style="color: #f25b29;">Kashipur, Jaspur &amp; Thakurdwara</span></span>
           </h1>
           <p class="contact-hero-subtext">
-            Let's build something great together. Get in touch with our team for any home service, enquiry or support.
+            Looking for top-rated home repairs or doorstep technicians in <strong>Kashipur</strong>, <strong>Jaspur</strong>, or <strong>Thakurdwara</strong>? Get in touch with our team for instant 60-minute service bookings, free estimates, or general enquiries.
           </p>
         </div>
 
@@ -94,6 +98,72 @@
           <div class="contact-item-content">
             <div class="contact-item-value"><?= \App\Core\View::e($contactLandmark) ?></div>
             <div class="contact-item-subtext"><?= \App\Core\View::e($contactSubtext) ?></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Location Doorstep Hubs Strip -->
+      <div class="row my-4">
+        <div class="col-12 mb-3">
+          <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <h4 class="font-weight-bold mb-0" style="color: #0a1c33; font-size: 20px;">
+              <i class="fa fa-map-marker text-danger mr-2"></i> Our 3 Core Service Territories
+            </h4>
+            <span class="text-muted small">Same-day technician visit across all 3 hubs</span>
+          </div>
+        </div>
+
+        <!-- Kashipur Hub -->
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 border p-3 shadow-sm" style="border-radius: 14px; background: #ffffff;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 11px;">Kashipur Hub</span>
+              <span class="badge badge-success font-weight-bold" style="font-size: 10px;">PIN: 244713</span>
+            </div>
+            <h6 class="font-weight-bold text-dark mb-1" style="font-size: 15px;">Kashipur Doorstep Desk</h6>
+            <p class="text-muted small mb-2" style="font-size: 12px; line-height: 1.5;">Serving Awas Vikas, Ramnagar Rd, Station Rd, Bazpur Rd, Kundeshwari &amp; nearby.</p>
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+              <span class="small font-weight-bold" style="color: #059669; font-size: 11.5px;"><i class="fa fa-clock-o mr-1"></i> ~60 min arrival</span>
+              <a href="<?= \App\Core\View::url('/services-in-kashipur') ?>" class="btn btn-sm text-white font-weight-bold px-2.5 py-1" style="background: #f25b29; border-radius: 6px; font-size: 11.5px;">
+                Book Now &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Jaspur Hub -->
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 border p-3 shadow-sm" style="border-radius: 14px; background: #ffffff; border-color: #ffdacf !important;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge text-white font-weight-bold" style="font-size: 11px; background: #f25b29;">Jaspur Head Office</span>
+              <span class="badge badge-success font-weight-bold" style="font-size: 10px;">PIN: 244712</span>
+            </div>
+            <h6 class="font-weight-bold text-dark mb-1" style="font-size: 15px;">Jaspur Regional HQ</h6>
+            <p class="text-muted small mb-2" style="font-size: 12px; line-height: 1.5;">Kashipur Road, Opp. BSV Girls Degree College, Mandi Samiti &amp; all Jaspur wards.</p>
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+              <span class="small font-weight-bold" style="color: #0a1c33; font-size: 11.5px;"><i class="fa fa-building mr-1"></i> Walk-in &amp; Doorstep</span>
+              <a href="<?= \App\Core\View::url('/services-in-jaspur') ?>" class="btn btn-sm text-white font-weight-bold px-2.5 py-1" style="background: #0a1c33; border-radius: 6px; font-size: 11.5px;">
+                Book Now &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thakurdwara Hub -->
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 border p-3 shadow-sm" style="border-radius: 14px; background: #ffffff;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge badge-light border text-primary font-weight-bold" style="font-size: 11px;">Thakurdwara Hub</span>
+              <span class="badge badge-success font-weight-bold" style="font-size: 10px;">PIN: 244601</span>
+            </div>
+            <h6 class="font-weight-bold text-dark mb-1" style="font-size: 15px;">Thakurdwara Doorstep Desk</h6>
+            <p class="text-muted small mb-2" style="font-size: 12px; line-height: 1.5;">Moradabad Rd, Bus Stand area, Kashipur Tiraha, Main Bazaar &amp; all sectors.</p>
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-auto">
+              <span class="small font-weight-bold" style="color: #059669; font-size: 11.5px;"><i class="fa fa-shield mr-1"></i> Verified Partners</span>
+              <a href="<?= \App\Core\View::url('/services-in-thakurdwara') ?>" class="btn btn-sm text-white font-weight-bold px-2.5 py-1" style="background: #f25b29; border-radius: 6px; font-size: 11.5px;">
+                Book Now &rarr;
+              </a>
+            </div>
           </div>
         </div>
       </div>

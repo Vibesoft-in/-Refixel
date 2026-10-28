@@ -30,19 +30,32 @@
         : 'noindex, nofollow';
 
     $robotsDirective = $robots ?? \App\Core\Env::get('APP_ROBOTS', $defaultRobots);
+    $pageKeywords = $keywords ?? 'home services Kashipur, home repair Jaspur, cleaning services Thakurdwara, electrician, plumber, AC repair, painting, pest control, false ceiling, refixel';
+    $twitterCardType = $twitterCard ?? 'summary_large_image';
   ?>
   <title><?= \App\Core\View::e($pageTitle) ?></title>
   <meta name="description" content="<?= \App\Core\View::e($pageDesc) ?>">
+  <meta name="keywords" content="<?= \App\Core\View::e($pageKeywords) ?>">
   <meta name="author" content="REFIXEL">
   <meta name="robots" content="<?= \App\Core\View::e($robotsDirective) ?>">
   <link rel="canonical" href="<?= \App\Core\View::e($cleanCanonical) ?>">
   <?= \App\Core\View::partial('partials.csrf-init') ?>
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:site_name" content="REFIXEL">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:type" content="website">
   <meta property="og:title" content="<?= \App\Core\View::e($ogPageTitle) ?>">
   <meta property="og:description" content="<?= \App\Core\View::e($ogPageDesc) ?>">
   <meta property="og:image" content="<?= \App\Core\View::e($cleanOgImage) ?>">
   <meta property="og:url" content="<?= \App\Core\View::e($cleanOgUrl) ?>">
-  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="<?= \App\Core\View::e($twitterCardType) ?>">
+  <meta name="twitter:site" content="@letsrefixel">
+  <meta name="twitter:title" content="<?= \App\Core\View::e($ogPageTitle) ?>">
+  <meta name="twitter:description" content="<?= \App\Core\View::e($ogPageDesc) ?>">
+  <meta name="twitter:image" content="<?= \App\Core\View::e($cleanOgImage) ?>">
 
   <?php
     $defaultSchema = [

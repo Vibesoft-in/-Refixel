@@ -22,42 +22,46 @@
         <div class="row align-items-center">
           <!-- Left: Text Content -->
           <div class="col-lg-6 col-md-12 hero-text-col">
-            <span class="section-eyebrow">— OUR STORY</span>
+            <span class="section-eyebrow">— BEST HOME SERVICES IN KASHIPUR, JASPUR &amp; THAKURDWARA</span>
             <h1 class="hero-heading">
               <span class="hero-about-prefix">About</span> <span class="brand-highlight">REFIXEL</span>
-              <span class="sub-line-navy">Professional Home Services.</span>
-              <span class="sub-line-orange">Simplified for Every Home.</span>
+              <span class="sub-line-navy">Best Home Services in</span>
+              <span class="sub-line-orange">Kashipur, Jaspur &amp; Thakurdwara</span>
             </h1>
             <p class="hero-description">
-              REFIXEL is a modern home services platform connecting customers with verified professionals for all home maintenance and repair needs. Our mission is to make home services reliable, affordable, and hassle-free at your doorstep.
+              REFIXEL is the premier doorstep home services platform rated #1 across <strong>Kashipur</strong>, <strong>Jaspur</strong> &amp; <strong>Thakurdwara</strong>. We connect households and businesses with 400+ background-verified professionals for AC repair, deep cleaning, electrical, plumbing, carpentry, painting, and false ceiling installations — delivering guaranteed on-time doorstep service with upfront pricing and 30-day warranty.
             </p>
 
             <div class="d-flex flex-wrap align-items-center" style="gap: 14px;">
               <a href="<?= \App\Core\View::url('/services') ?>" class="btn-refixel-primary">
                 Book a Service <i class="fa fa-arrow-right ml-2" style="font-size: 13px;"></i>
               </a>
-              <a href="#ourJourney" class="btn-refixel-outline">
-                <i class="fa fa-th-large mr-2" style="font-size: 13px;"></i> Explore More
+              <a href="#coverageHubs" class="btn-refixel-outline">
+                <i class="fa fa-map-marker mr-2" style="font-size: 13px; color: #f25b29;"></i> 3 Service Hubs
               </a>
             </div>
 
             <!-- Trust Badges Under Hero Buttons -->
             <div class="hero-trust-pills">
               <div class="trust-pill-item">
+                <span class="pill-icon"><i class="fa fa-map-marker text-danger"></i></span>
+                <span>Best in Kashipur (244713)</span>
+              </div>
+              <div class="trust-pill-item">
+                <span class="pill-icon"><i class="fa fa-map-marker text-danger"></i></span>
+                <span>Best in Jaspur (244712)</span>
+              </div>
+              <div class="trust-pill-item">
+                <span class="pill-icon"><i class="fa fa-map-marker text-danger"></i></span>
+                <span>Best in Thakurdwara (244601)</span>
+              </div>
+              <div class="trust-pill-item">
                 <span class="pill-icon"><i class="fa fa-shield"></i></span>
-                <span>Trusted Professionals</span>
+                <span>400+ Verified Pros</span>
               </div>
               <div class="trust-pill-item">
                 <span class="pill-icon"><i class="fa fa-check-circle-o"></i></span>
-                <span>Quality Service</span>
-              </div>
-              <div class="trust-pill-item">
-                <span class="pill-icon"><i class="fa fa-tag"></i></span>
-                <span>Affordable Pricing</span>
-              </div>
-              <div class="trust-pill-item">
-                <span class="pill-icon"><i class="fa fa-headphones"></i></span>
-                <span>On-Time Support</span>
+                <span>30-Day Warranty</span>
               </div>
             </div>
           </div>
@@ -119,6 +123,117 @@
                   <div class="stat-label"><?= \App\Core\View::e(\App\Models\Setting::get('stat_pros_note', 'Verified Professionals')) ?></div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3.5 Regional Service Coverage Hubs (Kashipur, Jaspur, Thakurdwara) -->
+  <section class="py-5" id="coverageHubs" style="background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+    <div class="container py-3">
+      <div class="text-center max-w-700 mx-auto mb-5" style="max-width: 780px;">
+        <span class="badge px-3 py-1 mb-2 font-weight-bold" style="background: #fff3ec; color: #f25b29; border: 1px solid #ffdacf; border-radius: 20px; font-size: 13px; letter-spacing: 0.5px;">
+          ✦ OUR 3 CORE SERVICE HUBS
+        </span>
+        <h2 class="font-weight-bold" style="font-size: clamp(26px, 3.2vw, 36px); color: #0a1c33; letter-spacing: -0.5px;">
+          Best Home Services in <span style="color: #f25b29;">Kashipur, Jaspur &amp; Thakurdwara</span>
+        </h2>
+        <p class="text-muted" style="font-size: 16px; line-height: 1.7;">
+          Refixel provides rapid-dispatch doorstep home services with 400+ background-verified technicians, fixed upfront rate cards, and a 30-day post-service warranty across our three primary service territories.
+        </p>
+      </div>
+
+      <div class="row">
+        <!-- Hub 1: Kashipur -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 border-0 shadow-sm p-4 text-left" style="border-radius: 18px; background: #ffffff; border: 1px solid #e2e8f0; transition: transform 0.25s ease, box-shadow 0.25s ease;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1" style="font-size: 11.5px; border-radius: 6px;">
+                <i class="fa fa-map-marker text-danger mr-1"></i> Kashipur Hub
+              </span>
+              <span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 6px;">
+                PIN: 244713
+              </span>
+            </div>
+            <h4 class="font-weight-bold mb-2" style="font-size: 20px; color: #0a1c33;">Best Services in Kashipur</h4>
+            <p class="text-muted small mb-3" style="line-height: 1.6;">
+              Doorstep coverage across Awas Vikas, Ramnagar Road, Station Road, Bazpur Road, Aliganj Road, Kundeshwari, and all residential neighborhoods.
+            </p>
+            <ul class="list-unstyled small mb-4 text-secondary" style="line-height: 2;">
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> AC Jet Wash &amp; Gas Refilling</li>
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Mechanized Deep Home Cleaning</li>
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Licensed Electrician &amp; Plumbers</li>
+              <li><i class="fa fa-bolt mr-2" style="color: #f25b29;"></i> <strong>Express Arrival in ~60 Minutes</strong></li>
+            </ul>
+            <div class="mt-auto pt-2 border-top">
+              <a href="<?= \App\Core\View::url('/services-in-kashipur') ?>" class="btn btn-sm btn-block text-white font-weight-bold py-2" style="background: #f25b29; border-radius: 8px;">
+                Book in Kashipur &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hub 2: Jaspur (HQ) -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 border-0 shadow-sm p-4 text-left position-relative" style="border-radius: 18px; background: #ffffff; border: 2px solid #f25b29; box-shadow: 0 10px 30px rgba(242, 91, 41, 0.08) !important;">
+            <div class="position-absolute" style="top: -12px; right: 20px;">
+              <span class="badge text-white px-3 py-1 font-weight-bold" style="background: #f25b29; border-radius: 12px; font-size: 11px; letter-spacing: 0.5px;">
+                MAIN HQ &amp; STOREFRONT
+              </span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between mb-3 mt-1">
+              <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1" style="font-size: 11.5px; border-radius: 6px;">
+                <i class="fa fa-building text-primary mr-1"></i> Jaspur Head Office
+              </span>
+              <span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 6px;">
+                PIN: 244712
+              </span>
+            </div>
+            <h4 class="font-weight-bold mb-2" style="font-size: 20px; color: #0a1c33;">Best Services in Jaspur</h4>
+            <p class="text-muted small mb-3" style="line-height: 1.6;">
+              Walk-in Experience Center &amp; Doorstep dispatch covering Kashipur Road, BSV Girls Degree College, Mandi Samiti, Subhash Nagar, and all Jaspur localities.
+            </p>
+            <ul class="list-unstyled small mb-4 text-secondary" style="line-height: 2;">
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Full Home Sanitization &amp; Painting</li>
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Fall Ceiling &amp; Master Carpentry</li>
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Multi-Brand Appliance Repair</li>
+              <li><i class="fa fa-bolt mr-2" style="color: #f25b29;"></i> <strong>Zero Travel Surcharge</strong></li>
+            </ul>
+            <div class="mt-auto pt-2 border-top">
+              <a href="<?= \App\Core\View::url('/services-in-jaspur') ?>" class="btn btn-sm btn-block text-white font-weight-bold py-2" style="background: #0a1c33; border-radius: 8px;">
+                Book in Jaspur &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hub 3: Thakurdwara -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 border-0 shadow-sm p-4 text-left" style="border-radius: 18px; background: #ffffff; border: 1px solid #e2e8f0; transition: transform 0.25s ease, box-shadow 0.25s ease;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1" style="font-size: 11.5px; border-radius: 6px;">
+                <i class="fa fa-map-marker text-danger mr-1"></i> Thakurdwara Hub
+              </span>
+              <span class="badge badge-success font-weight-bold px-2 py-1" style="font-size: 11px; border-radius: 6px;">
+                PIN: 244601
+              </span>
+            </div>
+            <h4 class="font-weight-bold mb-2" style="font-size: 20px; color: #0a1c33;">Best Services in Thakurdwara</h4>
+            <p class="text-muted small mb-3" style="line-height: 1.6;">
+              Doorstep home services across Moradabad Road, Bus Stand area, Kashipur Tiraha, Main Bazaar, and all surrounding residential colonies.
+            </p>
+            <ul class="list-unstyled small mb-4 text-secondary" style="line-height: 2;">
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> AC Installation &amp; Seasonal Service</li>
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Sofa &amp; Upholstery Shampooing</li>
+              <li><i class="fa fa-check-circle mr-2 text-success"></i> Wall Seepage &amp; Waterproofing</li>
+              <li><i class="fa fa-bolt mr-2" style="color: #f25b29;"></i> <strong>Certified Local Specialists</strong></li>
+            </ul>
+            <div class="mt-auto pt-2 border-top">
+              <a href="<?= \App\Core\View::url('/services-in-thakurdwara') ?>" class="btn btn-sm btn-block text-white font-weight-bold py-2" style="background: #f25b29; border-radius: 8px;">
+                Book in Thakurdwara &rarr;
+              </a>
             </div>
           </div>
         </div>

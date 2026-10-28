@@ -135,9 +135,21 @@ $settings = $settings ?? [];
               <label class="font-weight-bold small text-dark">Hero Tagline / Promo Ribbon Text</label>
               <input type="text" name="hero_tagline" class="form-control" value="<?= View::e($settings['hero_tagline'] ?? 'Starting at ₹999 • Save up to 25% on your first booking') ?>">
             </div>
-            <div class="form-group mb-0">
+            <div class="form-group mb-3">
               <label class="font-weight-bold small text-dark">Hero Main Headline</label>
               <input type="text" name="hero_title" class="form-control" value="<?= View::e($settings['hero_title'] ?? 'Get Your Home Spotless & Germ-Free with Expert Deep Cleaning') ?>">
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group mb-0">
+                <label class="font-weight-bold small text-dark">Hero CTA Button Text</label>
+                <input type="text" name="hero_btn_text" class="form-control" value="<?= View::e($settings['hero_btn_text'] ?? 'Book Best Home Service Today') ?>" placeholder="e.g. Book Best Home Service Today">
+                <small class="form-text text-muted">Text shown on the hero call-to-action button.</small>
+              </div>
+              <div class="col-md-6 form-group mb-0">
+                <label class="font-weight-bold small text-dark">Hero CTA Button Link / URL</label>
+                <input type="text" name="hero_btn_link" class="form-control" value="<?= View::e($settings['hero_btn_link'] ?? '/services') ?>" placeholder="e.g. /services or #services">
+                <small class="form-text text-muted">Destination link when customer clicks the button (e.g. /services or /book).</small>
+              </div>
             </div>
           </div>
 

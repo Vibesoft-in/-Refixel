@@ -17,13 +17,30 @@ class PageController extends Controller
 {
     public function about(Request $request): Response
     {
-        return $this->render('customer.about', ['title' => 'About Us | REFIXEL'], 'customer');
+        return $this->render('customer.about', [
+            'title'         => 'About Us | REFIXEL - Trusted Home Services in Uttarakhand & UP',
+            'description'   => 'Learn about REFIXEL - delivering standardized, background-verified home maintenance, deep cleaning, AC repair & plumbing across Kashipur, Jaspur & Thakurdwara.',
+            'keywords'      => 'about refixel, refixel home services, verified technicians uttarakhand, doorstep home maintenance kashipur',
+            'canonicalUrl'  => View::fullUrl('/about'),
+            'ogTitle'       => 'About Us | REFIXEL - Trusted Home Care in Uttarakhand & UP',
+            'ogDescription' => 'Learn about REFIXEL - delivering standardized, background-verified home maintenance, deep cleaning, AC repair & plumbing across Kashipur, Jaspur & Thakurdwara.',
+            'ogUrl'         => View::fullUrl('/about'),
+        ], 'customer');
     }
 
     public function faq(Request $request): Response
     {
         $faqs = Faq::getGlobal();
-        return $this->render('customer.faq', ['title' => 'FAQs | REFIXEL', 'faqs' => $faqs], 'customer');
+        return $this->render('customer.faq', [
+            'title'         => 'Frequently Asked Questions (FAQ) | REFIXEL Home Services',
+            'description'   => 'Got questions about REFIXEL services? Find answers regarding pricing, technician verification, booking cancellation, warranty, and service coverage.',
+            'keywords'      => 'refixel faq, home service questions, booking cancellation, warranty home repairs, kashipur home services',
+            'canonicalUrl'  => View::fullUrl('/faq'),
+            'ogTitle'       => 'Frequently Asked Questions (FAQ) | REFIXEL Home Services',
+            'ogDescription' => 'Got questions about REFIXEL services? Find answers regarding pricing, technician verification, booking cancellation, warranty, and service coverage.',
+            'ogUrl'         => View::fullUrl('/faq'),
+            'faqs'          => $faqs,
+        ], 'customer');
     }
 
     public function gallery(Request $request): Response
@@ -93,6 +110,12 @@ class PageController extends Controller
 
         return $this->render('customer.gallery', [
             'title'          => 'Work Showcase & Transformations | REFIXEL',
+            'description'    => 'Browse real before-and-after work photos from REFIXEL deep cleaning, painting, AC jet service, and false ceiling projects across Kashipur, Jaspur & Thakurdwara.',
+            'keywords'       => 'refixel gallery, home cleaning before after, false ceiling photos, painting transformation kashipur, ac service photos',
+            'canonicalUrl'   => View::fullUrl('/gallery'),
+            'ogTitle'        => 'Work Showcase & Transformations | REFIXEL',
+            'ogDescription'  => 'Browse real before-and-after work photos from REFIXEL deep cleaning, painting, AC jet service, and false ceiling projects across Kashipur, Jaspur & Thakurdwara.',
+            'ogUrl'          => View::fullUrl('/gallery'),
             'items'          => $items,
             'categories'     => $categories,
             'services'       => $services,
@@ -223,9 +246,14 @@ class PageController extends Controller
     {
         $cities = ServiceArea::getActiveCities();
         return $this->render('customer.contact', [
-            'title'       => 'Contact Us | REFIXEL HOME SERVICES',
-            'description' => 'Get in touch with REFIXEL Home Services for trusted home maintenance, repair, and cleaning. Call +91 87911 54730 or visit our office.',
-            'cities'      => $cities
+            'title'         => 'Contact Us | REFIXEL Home Services - Customer Support & Office',
+            'description'   => 'Get in touch with REFIXEL Home Services for trusted home maintenance, repair, and deep cleaning in Kashipur, Jaspur & Thakurdwara. Call +91 87911 54730 or visit our office.',
+            'keywords'      => 'contact refixel, customer care refixel, refixel phone number, home repair helpdesk kashipur, jaspur, thakurdwara',
+            'canonicalUrl'  => View::fullUrl('/contact'),
+            'ogTitle'       => 'Contact Us | REFIXEL Home Services - Customer Support & Office',
+            'ogDescription' => 'Get in touch with REFIXEL Home Services for trusted home maintenance, repair, and deep cleaning in Kashipur, Jaspur & Thakurdwara. Call +91 87911 54730 or visit our office.',
+            'ogUrl'         => View::fullUrl('/contact'),
+            'cities'        => $cities
         ], 'customer');
     }
 
@@ -252,22 +280,45 @@ class PageController extends Controller
 
     public function terms(Request $request): Response
     {
-        return $this->render('customer.terms', ['title' => 'Terms & Conditions | REFIXEL'], 'customer');
+        return $this->render('customer.terms', [
+            'title'        => 'Terms & Conditions | REFIXEL',
+            'description'  => 'Review terms of service, customer rights, technician booking policies, and warranty guidelines for using REFIXEL home services.',
+            'canonicalUrl' => View::fullUrl('/terms'),
+            'ogUrl'        => View::fullUrl('/terms'),
+        ], 'customer');
     }
 
     public function privacy(Request $request): Response
     {
-        return $this->render('customer.privacy', ['title' => 'Privacy Policy | REFIXEL'], 'customer');
+        return $this->render('customer.privacy', [
+            'title'        => 'Privacy Policy | REFIXEL',
+            'description'  => 'Learn how REFIXEL protects your personal information, address, booking records, and payment security.',
+            'canonicalUrl' => View::fullUrl('/privacy'),
+            'ogUrl'        => View::fullUrl('/privacy'),
+        ], 'customer');
     }
 
     public function refund(Request $request): Response
     {
-        return $this->render('customer.refund', ['title' => 'Refund Policy | REFIXEL'], 'customer');
+        return $this->render('customer.refund', [
+            'title'        => 'Refund & Cancellation Policy | REFIXEL',
+            'description'  => 'Read REFIXEL 100% satisfaction guarantee, cancellation terms, and refund policy for home repair and maintenance services.',
+            'canonicalUrl' => View::fullUrl('/refund'),
+            'ogUrl'        => View::fullUrl('/refund'),
+        ], 'customer');
     }
 
     public function blog(Request $request): Response
     {
-        return $this->render('customer.blog', ['title' => 'Blog & Home Guides | REFIXEL'], 'customer');
+        return $this->render('customer.blog', [
+            'title'         => 'Home Maintenance Blog & DIY Guides | REFIXEL',
+            'description'   => 'Read expert tips on home deep cleaning, AC maintenance, electrical safety, plumbing fixes, and false ceiling ideas from REFIXEL pros.',
+            'keywords'      => 'home maintenance blog, cleaning tips, AC servicing guide, DIY home repair, refixel blog',
+            'canonicalUrl'  => View::fullUrl('/blog'),
+            'ogTitle'       => 'Home Maintenance Blog & DIY Guides | REFIXEL',
+            'ogDescription' => 'Read expert tips on home deep cleaning, AC maintenance, electrical safety, plumbing fixes, and false ceiling ideas from REFIXEL pros.',
+            'ogUrl'         => View::fullUrl('/blog'),
+        ], 'customer');
     }
 
     public function partner(Request $request): Response
@@ -276,9 +327,15 @@ class PageController extends Controller
         $categories = \App\Models\Category::getActive();
         
         return $this->render('customer.partner', [
-            'title' => 'Become a Service Partner | REFIXEL',
-            'cities' => $cities,
-            'categories' => $categories
+            'title'         => 'Become a Service Partner | Join & Earn with REFIXEL',
+            'description'   => 'Join REFIXEL as an expert technician, electrician, plumber, AC mechanic, or painter in Kashipur, Jaspur & Thakurdwara. Steady orders & prompt weekly payouts.',
+            'keywords'      => 'join refixel, technician job kashipur, plumber partner jaspur, electrician vacancy thakurdwara, home service contractor',
+            'canonicalUrl'  => View::fullUrl('/partner'),
+            'ogTitle'       => 'Become a Service Partner | Join & Earn with REFIXEL',
+            'ogDescription' => 'Join REFIXEL as an expert technician, electrician, plumber, AC mechanic, or painter in Kashipur, Jaspur & Thakurdwara. Steady orders & prompt weekly payouts.',
+            'ogUrl'         => View::fullUrl('/partner'),
+            'cities'        => $cities,
+            'categories'    => $categories
         ], 'customer');
     }
 

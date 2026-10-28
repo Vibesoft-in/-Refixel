@@ -42,12 +42,22 @@ class ServiceController extends Controller
             }
         }
 
+        $title = !empty($searchQuery) ? 'Search: ' . htmlspecialchars($searchQuery) . ' | REFIXEL' : 'All Home Services in Kashipur, Jaspur & Thakurdwara | REFIXEL';
+        $description = 'Explore 40+ verified doorstep home services in Kashipur, Jaspur & Thakurdwara. Deep cleaning, AC repair, plumbing, electrician, painting & false ceiling. Book online!';
+        $keywords = 'home services directory, AC repair, home cleaning, electrician, plumber, painting, pest control, false ceiling, kashipur, jaspur, thakurdwara, refixel';
+        $canonicalUrl = View::fullUrl('/services');
+
         return $this->render('customer.services.index', [
-            'title'          => !empty($searchQuery) ? 'Search: ' . htmlspecialchars($searchQuery) . ' | REFIXEL' : 'All Home & Commercial Services | REFIXEL',
-            'description'    => 'Explore professional home cleaning, painting, pest control, plumbing, carpentry, and AC services across Indian metro cities.',
-            'categories'     => $categories,
-            'services'       => $allServices,
-            'cities'         => $cities,
+            'title'             => $title,
+            'description'       => $description,
+            'keywords'          => $keywords,
+            'canonicalUrl'      => $canonicalUrl,
+            'ogTitle'           => $title,
+            'ogDescription'     => $description,
+            'ogUrl'             => $canonicalUrl,
+            'categories'        => $categories,
+            'services'          => $allServices,
+            'cities'            => $cities,
             'activeCategory'    => $activeCat,
             'searchQuery'       => $searchQuery,
             'variantsByService' => ServiceVariant::getAllGroupedByServiceId(),
@@ -80,25 +90,34 @@ class ServiceController extends Controller
 
     public function categoryClean(Request $request, string $category): Response
     {
-        $city = ServiceArea::getSessionCity();
-        return $this->categoryInCity($request, $category, $city);
+        // 1. Try resolving as Category
+        $cat = $this->resolveCategory($category);
+        if ($cat) {
+            return $this->renderCategoryPage($cat, '', '');
+        }
+
+        // 2. Fallback: check if slug is actually a Service
+        $svc = $this->resolveService($category);
+        if ($svc) {
+            return $this->renderServicePage($svc, '', '');
+        }
+
+        return $this->render('partials.404', ['title' => 'Category Not Found'], 'customer')
+            ->setStatusCode(404);
     }
 
     public function serviceClean(Request $request, string $service): Response
     {
-        $city = ServiceArea::getSessionCity();
-        $cityName = $this->formatCityName($city);
-
-        // 1. Try resolving as Service first so specific service pages (e.g. water-tank-cleaning) are displayed
+        // 1. Try resolving as Service first so specific service pages are displayed
         $svc = $this->resolveService($service);
         if ($svc) {
-            return $this->renderServicePage($svc, $cityName, $city);
+            return $this->renderServicePage($svc, '', '');
         }
 
         // 2. Try resolving as Category
         $cat = $this->resolveCategory($service);
         if ($cat) {
-            return $this->renderCategoryPage($cat, $cityName, $city);
+            return $this->renderCategoryPage($cat, '', '');
         }
 
         return $this->render('partials.404', ['title' => 'Page Not Found'], 'customer')
@@ -161,55 +180,74 @@ class ServiceController extends Controller
         $allServices = Service::getActive();
         $cities = ServiceArea::getActiveCities();
         $relatedCategories = Category::getRelated((int)$cat['id'], 4);
-        $serviceAreas = ServiceArea::getByCity($cityName);
         $faqs = Faq::getGlobal();
-        $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-'));
-
-        $title = "Available {$cat['name']} Packages in {$cityName} | REFIXEL";
-        $description = "Looking for verified {$cat['name']} in {$cityName}? Background-verified technicians, standardized checklists, transparent pricing, and 24-hour guarantee. Book online!";
+        
         $catSlug = $cat['slug'] ?? '';
         if ($catSlug === 'plumbers') {
             $catSlug = 'plumber';
         }
         $cleanCatSlug = str_ends_with($catSlug, '-services') ? $catSlug : "{$catSlug}-services";
-        $canonicalUrl = !empty($cleanCitySlug) ? View::fullUrl("/{$cleanCatSlug}-in-{$cleanCitySlug}") : View::fullUrl("/{$cleanCatSlug}");
+        $cleanCitySlug = !empty($rawCity) ? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-')) : '';
+
+        $cityPincodeMap = [
+            'kashipur'    => ['pincode' => '244713', 'state' => 'Uttarakhand'],
+            'jaspur'      => ['pincode' => '244712', 'state' => 'Uttarakhand'],
+            'thakurdwara' => ['pincode' => '244601', 'state' => 'Uttar Pradesh'],
+        ];
+
+        $hasCity = !empty($cleanCitySlug) && !empty($cityName);
+        $displayCity = $hasCity ? $cityName : 'Kashipur, Jaspur & Thakurdwara';
+        $serviceAreas = $hasCity ? ServiceArea::getByCity($cityName) : ServiceArea::getActiveCities();
+
+        if ($hasCity) {
+            $canonicalUrl = View::fullUrl("/{$cleanCatSlug}-in-{$cleanCitySlug}");
+            $title = "Best {$cat['name']} in {$cityName} | Verified Doorstep Pros - REFIXEL";
+            $description = "Looking for verified {$cat['name']} in {$cityName}? Book certified local professionals in {$cityName} for 100% safe, on-time doorstep service with 30-day warranty. Upfront pricing!";
+            $keywords = "{$cat['name']} in {$cityName}, {$cat['name']} services {$cityName}, best {$cat['name']} {$cityName}, doorstep {$cat['name']} {$cityName}, {$cat['name']} near me {$cityName}, home services {$cityName}, refixel {$cityName}";
+            $areaServedSchema = [
+                '@type'          => 'City',
+                'name'           => $cityName,
+                'postalCode'     => $cityPincodeMap[$cleanCitySlug]['pincode'] ?? '244713',
+                'addressRegion'  => $cityPincodeMap[$cleanCitySlug]['state'] ?? 'Uttarakhand',
+                'addressCountry' => 'IN',
+            ];
+            $breadcrumbCrumbs = [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => View::url('/')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Services', 'item' => View::url('/services')],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => "{$cat['name']} in {$cityName}", 'item' => $canonicalUrl],
+            ];
+        } else {
+            $canonicalUrl = View::fullUrl("/{$cleanCatSlug}");
+            $title = "Best {$cat['name']} | Doorstep Services in Kashipur, Jaspur & Thakurdwara - REFIXEL";
+            $description = "Explore top-rated {$cat['name']} with REFIXEL. Standardized checklists, background-verified technicians, upfront rates & 30-day guarantee in Kashipur, Jaspur & Thakurdwara.";
+            $keywords = "{$cat['name']}, {$cat['name']} services, {$cat['name']} kashipur, {$cat['name']} jaspur, {$cat['name']} thakurdwara, home repair, refixel";
+            $areaServedSchema = [
+                ['@type' => 'City', 'name' => 'Kashipur', 'postalCode' => '244713'],
+                ['@type' => 'City', 'name' => 'Jaspur', 'postalCode' => '244712'],
+                ['@type' => 'City', 'name' => 'Thakurdwara', 'postalCode' => '244601'],
+            ];
+            $breadcrumbCrumbs = [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => View::url('/')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Services', 'item' => View::url('/services')],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => $cat['name'], 'item' => $canonicalUrl],
+            ];
+        }
 
         // Build Schema.org Structured Data
         $schemaGraph = [
             [
                 '@type'       => 'LocalBusiness',
-                'name'        => "REFIXEL {$cat['name']} Services in {$cityName}",
+                'name'        => "REFIXEL {$cat['name']} Services - {$displayCity}",
                 'description' => $description,
                 'url'         => $canonicalUrl,
-                'areaServed'  => [
-                    '@type'   => 'City',
-                    'name'    => $cityName,
-                ],
+                'areaServed'  => $areaServedSchema,
                 'priceRange'  => '₹₹',
                 'telephone'   => '+91 87911 54730',
+                'image'       => View::fullUrl('assets/img/refixel-logo-horizontal.png'),
             ],
             [
                 '@type'           => 'BreadcrumbList',
-                'itemListElement' => [
-                    [
-                        '@type'    => 'ListItem',
-                        'position' => 1,
-                        'name'     => 'Home',
-                        'item'     => View::url('/'),
-                    ],
-                    [
-                        '@type'    => 'ListItem',
-                        'position' => 2,
-                        'name'     => 'Services',
-                        'item'     => View::url('/services'),
-                    ],
-                    [
-                        '@type'    => 'ListItem',
-                        'position' => 3,
-                        'name'     => "{$cat['name']} in {$cityName}",
-                        'item'     => $canonicalUrl,
-                    ],
-                ],
+                'itemListElement' => $breadcrumbCrumbs,
             ],
         ];
 
@@ -242,14 +280,18 @@ class ServiceController extends Controller
         return $this->render('customer.services.index', [
             'title'             => $title,
             'description'       => $description,
+            'keywords'          => $keywords,
             'canonicalUrl'      => $canonicalUrl,
+            'ogTitle'           => $title,
+            'ogDescription'     => $description,
+            'ogUrl'             => $canonicalUrl,
             'schemaData'        => $schemaData,
             'category'          => $cat,
             'categories'        => $categories,
             'services'          => $allServices,
             'activeCategory'    => $cat['slug'],
-            'city'              => $cityName,
-            'currentCity'       => $cityName,
+            'city'              => $displayCity,
+            'currentCity'       => $displayCity,
             'citySlug'          => $cleanCitySlug,
             'cities'            => $cities,
             'relatedCategories' => $relatedCategories,
@@ -269,64 +311,87 @@ class ServiceController extends Controller
         }
         $reviews = Review::getByService((int)$svc['id'], 6);
         $relatedServices = Service::getActiveByCategory((int)$svc['category_id']);
-        $serviceAreas = ServiceArea::getByCity($cityName);
-        $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-'));
+        $cleanCitySlug = !empty($rawCity) ? strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $rawCity), '-')) : '';
+        $hasCity = !empty($cleanCitySlug) && !empty($cityName);
+        $displayCity = $hasCity ? $cityName : 'Kashipur, Jaspur & Thakurdwara';
+        $serviceAreas = $hasCity ? ServiceArea::getByCity($cityName) : ServiceArea::getActiveCities();
+
+        $cityPincodeMap = [
+            'kashipur'    => ['pincode' => '244713', 'state' => 'Uttarakhand'],
+            'jaspur'      => ['pincode' => '244712', 'state' => 'Uttarakhand'],
+            'thakurdwara' => ['pincode' => '244601', 'state' => 'Uttar Pradesh'],
+        ];
 
         $price = number_format((float)$svc['starting_price'], 0);
-        $title = "{$svc['name']} in {$cityName} - Starting ₹{$price} | REFIXEL";
-        $description = "Book {$svc['name']} in {$cityName} starting at ₹{$price}. Industrial tools, vetted professionals, and 24-hour satisfaction guarantee. Doorstep service in {$cityName}.";
-        $canonicalUrl = !empty($cleanCitySlug) ? View::fullUrl("/{$svc['slug']}-in-{$cleanCitySlug}") : View::fullUrl("/{$svc['slug']}");
+        $serviceImg = \App\Models\Service::resolveImage($svc['slug'] ?? '', $svc['image'] ?? null);
+        $ogImage = View::fullUrl('assets/img/' . $serviceImg);
+
+        if ($hasCity) {
+            $canonicalUrl = View::fullUrl("/{$svc['slug']}-in-{$cleanCitySlug}");
+            $title = "{$svc['name']} in {$cityName} | Starting ₹{$price} - REFIXEL";
+            $description = "Book expert {$svc['name']} in {$cityName} starting at just ₹{$price}. Certified local technicians, on-time doorstep visit, genuine materials & 100% satisfaction guarantee.";
+            $keywords = "{$svc['name']} in {$cityName}, {$svc['name']} {$cityName}, best {$svc['name']} {$cityName}, doorstep {$svc['name']} {$cityName}, {$svc['name']} near me {$cityName}, home maintenance {$cityName}, refixel {$cityName}";
+            $areaServedSchema = [
+                '@type'          => 'City',
+                'name'           => $cityName,
+                'postalCode'     => $cityPincodeMap[$cleanCitySlug]['pincode'] ?? '244713',
+                'addressRegion'  => $cityPincodeMap[$cleanCitySlug]['state'] ?? 'Uttarakhand',
+                'addressCountry' => 'IN',
+            ];
+            $breadcrumbCrumbs = [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => View::url('/')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Services', 'item' => View::url('/services')],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => "{$svc['name']} in {$cityName}", 'item' => $canonicalUrl],
+            ];
+        } else {
+            $canonicalUrl = View::fullUrl("/{$svc['slug']}");
+            $title = "{$svc['name']} | Starting ₹{$price} - Book Online | REFIXEL";
+            $description = "Book verified {$svc['name']} with REFIXEL starting @ ₹{$price}. Standardized pricing, genuine equipment, certified technicians & doorstep visit across Kashipur, Jaspur & Thakurdwara.";
+            $keywords = "{$svc['name']}, {$svc['name']} kashipur, {$svc['name']} jaspur, {$svc['name']} thakurdwara, best home services uttarakhand, refixel";
+            $areaServedSchema = [
+                ['@type' => 'City', 'name' => 'Kashipur', 'postalCode' => '244713'],
+                ['@type' => 'City', 'name' => 'Jaspur', 'postalCode' => '244712'],
+                ['@type' => 'City', 'name' => 'Thakurdwara', 'postalCode' => '244601'],
+            ];
+            $breadcrumbCrumbs = [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => View::url('/')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => 'Services', 'item' => View::url('/services')],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => $svc['name'], 'item' => $canonicalUrl],
+            ];
+        }
 
         // Build Schema.org Structured Data
         $schemaGraph = [
             [
                 '@type'        => 'Service',
-                'name'         => "{$svc['name']} in {$cityName}",
+                'name'         => $hasCity ? "{$svc['name']} in {$cityName}" : $svc['name'],
                 'description'  => $description,
                 'url'          => $canonicalUrl,
+                'image'        => $ogImage,
                 'provider'     => [
-                    '@type' => 'Organization',
-                    'name'  => 'REFIXEL',
-                    'url'   => View::url('/'),
+                    '@type'      => 'LocalBusiness',
+                    'name'       => 'REFIXEL',
+                    'url'        => View::url('/'),
+                    'telephone'  => '+91 87911 54730',
+                    'priceRange' => '₹₹',
                 ],
-                'areaServed'   => [
-                    '@type' => 'City',
-                    'name'  => $cityName,
-                ],
+                'areaServed'   => $areaServedSchema,
                 'offers'       => [
                     '@type'         => 'Offer',
                     'price'         => (string)$svc['starting_price'],
                     'priceCurrency' => 'INR',
                     'availability'  => 'https://schema.org/InStock',
+                    'url'           => $canonicalUrl,
                 ],
                 'aggregateRating' => [
                     '@type'       => 'AggregateRating',
-                    'ratingValue' => '4.85',
-                    'reviewCount' => '128',
+                    'ratingValue' => '4.88',
+                    'reviewCount' => '142',
                 ],
             ],
             [
                 '@type'           => 'BreadcrumbList',
-                'itemListElement' => [
-                    [
-                        '@type'    => 'ListItem',
-                        'position' => 1,
-                        'name'     => 'Home',
-                        'item'     => View::url('/'),
-                    ],
-                    [
-                        '@type'    => 'ListItem',
-                        'position' => 2,
-                        'name'     => 'Services',
-                        'item'     => View::url('/services'),
-                    ],
-                    [
-                        '@type'    => 'ListItem',
-                        'position' => 3,
-                        'name'     => "{$svc['name']} in {$cityName}",
-                        'item'     => $canonicalUrl,
-                    ],
-                ],
+                'itemListElement' => $breadcrumbCrumbs,
             ],
         ];
 
@@ -362,10 +427,15 @@ class ServiceController extends Controller
         return $this->render('customer.services.show', [
             'title'           => $title,
             'description'     => $description,
+            'keywords'        => $keywords,
             'canonicalUrl'    => $canonicalUrl,
+            'ogTitle'         => $title,
+            'ogDescription'   => $description,
+            'ogUrl'           => $canonicalUrl,
+            'ogImage'         => $ogImage,
             'schemaData'      => $schemaData,
             'service'         => $svc,
-            'city'            => $cityName,
+            'city'            => $displayCity,
             'citySlug'        => $cleanCitySlug,
             'checklist'       => $checklist,
             'faqs'            => $faqs,
@@ -453,7 +523,23 @@ class ServiceController extends Controller
         $svc = Service::findBySlug('professional-' . $slug);
         if ($svc) return $svc;
 
-        // 4. Aliases
+        if (in_array($slug, ['sofa-cleaning', 'sofa-upholstery-cleaning', 'sofa-deep-cleaning', 'sofa-cleaning-service'], true)) {
+            $svc = Service::findBySlug('sofa-upholstery-deep-cleaning');
+            if ($svc) return $svc;
+        }
+        if (in_array($slug, ['bathroom-cleaning', 'bathroom-deep-cleaning', 'toilet-cleaning'], true)) {
+            $svc = Service::findBySlug('professional-bathroom-cleaning');
+            if ($svc) return $svc;
+        }
+        if (in_array($slug, ['home-cleaning', 'full-home-cleaning', 'house-cleaning', 'deep-home-cleaning'], true)) {
+            $svc = Service::findBySlug('professional-full-home-cleaning');
+            if ($svc) return $svc;
+        }
+        if (in_array($slug, ['ac-service', 'ac-jet-service', 'ac-foam-wash', 'split-ac-service'], true)) {
+            $svc = Service::findBySlug('ac-antibacterial-foam-wash') ?? Service::findBySlug('ac-jet-service');
+            if ($svc) return $svc;
+        }
+
         if (in_array($slug, ['brick-masonry-repair', 'brickwork-wall-masonry-repair', 'fall-ceiling', 'false-ceiling', 'fall-ceiling-service'], true)) {
             $svc = Service::findBySlug('fall-ceiling-installation');
             if ($svc) return $svc;

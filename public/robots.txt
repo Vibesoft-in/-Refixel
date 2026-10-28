@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /superadmin
+Disallow: /superadmin/
+Disallow: /staff
+Disallow: /staff/
+Disallow: /account
+Disallow: /account/
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /change-password
+Disallow: /cart
+Disallow: /cart.php
+Disallow: /book
+Disallow: /book-success
+Disallow: /documents/
+Disallow: /webhook/
+Disallow: /api/
+
+Sitemap: https://refixel.com/sitemap.xml

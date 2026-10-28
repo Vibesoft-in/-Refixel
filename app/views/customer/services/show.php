@@ -45,9 +45,16 @@ foreach ($checklist ?? [] as $item) {
         </div>
 
         <div class="card-body p-4 p-md-5">
-          <div class="d-flex align-items-center mb-2">
-            <span class="badge mr-2 font-weight-bold px-2.5 py-1.5" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf;">Verified Service</span>
-            <span class="text-muted small"><i class="fa fa-map-marker text-danger mr-1"></i> Available in <?= $cityName ?></span>
+          <?php
+            $hasSpecificCity = (!empty($city) && !str_contains($city, '&') && !str_contains($city, ','));
+            $serviceHeadingCity = $hasSpecificCity ? "in {$cityName}" : "in Kashipur, Jaspur &amp; Thakurdwara";
+          ?>
+          <div class="d-flex flex-wrap align-items-center mb-3" style="gap: 8px;">
+            <span class="badge font-weight-bold px-2.5 py-1.5" style="background:#fff3ec; color:#f25b29; border: 1px solid #ffdacf;">✦ Verified Doorstep Service</span>
+            <span class="badge badge-light border text-dark font-weight-bold px-2.5 py-1.5" style="font-size: 11.5px;">
+              <i class="fa fa-star text-warning mr-1"></i> Rated #1 in Kashipur, Jaspur &amp; Thakurdwara
+            </span>
+            <span class="text-muted small ml-md-auto"><i class="fa fa-map-marker text-danger mr-1"></i> Doorstep in: <strong>Kashipur</strong> • <strong>Jaspur</strong> • <strong>Thakurdwara</strong></span>
           </div>
 
           <?php if ($isComingSoon): ?>
@@ -63,12 +70,28 @@ foreach ($checklist ?? [] as $item) {
           <?php endif; ?>
 
           <h1 class="font-weight-bold mb-2 service-detail-title">
-            <?= $svcName ?>
+            <?= $svcName ?> <?= $serviceHeadingCity ?>
           </h1>
 
-          <p class="text-muted lead mb-4" style="font-size: 16px; line-height: 1.7;">
+          <p class="text-muted lead mb-3" style="font-size: 16px; line-height: 1.7;">
             <?= \App\Core\View::e($service['description'] ?? 'Top-rated professional service with industrial grade equipment and verified specialists.') ?>
           </p>
+
+          <!-- 3 Locations Doorstep Dispatch Guarantee Banner -->
+          <div class="p-3 mb-4 rounded border" style="background: #f8fafc; border-color: #e2e8f0 !important; border-radius: 12px;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 10px;">
+              <div class="d-flex align-items-center">
+                <span class="badge p-2 mr-2" style="background:#f25b29; color:#fff; border-radius:8px;"><i class="fa fa-truck"></i></span>
+                <div>
+                  <div class="font-weight-bold" style="font-size: 13.5px; color: #0a1c33;">Express Doorstep Technician Dispatch</div>
+                  <div class="text-muted small" style="font-size: 12px;">Serving all areas in <strong>Kashipur (244713)</strong>, <strong>Jaspur (244712)</strong> &amp; <strong>Thakurdwara (244601)</strong> with verified pros.</div>
+                </div>
+              </div>
+              <span class="badge badge-success font-weight-bold px-2.5 py-1.5" style="font-size: 11px;">
+                <i class="fa fa-shield mr-1"></i> 30-Day Guarantee
+              </span>
+            </div>
+          </div>
 
           <!-- Highlights strip -->
           <div class="row py-3 mb-4 rounded bg-light border">
@@ -701,6 +724,47 @@ foreach ($checklist ?? [] as $item) {
               </div>
             </div>
           <?php endif; ?>
+
+          <!-- Service Coverage in 3 Hubs Box -->
+          <div class="mt-4 p-4 rounded border" style="background: #ffffff; border-radius: 16px; border-color: #e2e8f0 !important;">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap">
+              <div>
+                <span class="badge px-2.5 py-1 mb-1 font-weight-bold" style="background: #fff3ec; color: #f25b29; border: 1px solid #ffdacf; border-radius: 6px; font-size: 11px;">
+                  ✦ 100% DOORSTEP SERVICE AREA
+                </span>
+                <h4 class="font-weight-bold mb-0" style="font-size: 18px; color: #0a1c33;">
+                  Best <?= $svcName ?> in Kashipur, Jaspur &amp; Thakurdwara
+                </h4>
+              </div>
+              <span class="badge badge-light border text-muted small"><i class="fa fa-truck text-primary mr-1"></i> Express 60-min visit</span>
+            </div>
+            <p class="text-muted small mb-3" style="line-height: 1.6;">
+              Refixel deploys verified local technicians across all 3 territories with standard rate cards, genuine spare parts, and a 30-day post-service warranty.
+            </p>
+            <div class="row">
+              <div class="col-md-4 mb-2">
+                <div class="p-2.5 rounded bg-light border text-center h-100">
+                  <span class="font-weight-bold d-block text-dark" style="font-size: 13px;"><i class="fa fa-map-marker text-danger mr-1"></i> Kashipur</span>
+                  <span class="text-muted small d-block" style="font-size: 11px;">PIN: 244713 • ~60 mins</span>
+                  <a href="<?= \App\Core\View::url('/' . ($service['slug'] ?? 'service') . '-in-kashipur') ?>" class="small font-weight-bold" style="color: #f25b29; font-size: 11.5px;">View Kashipur &rarr;</a>
+                </div>
+              </div>
+              <div class="col-md-4 mb-2">
+                <div class="p-2.5 rounded bg-light border text-center h-100">
+                  <span class="font-weight-bold d-block text-dark" style="font-size: 13px;"><i class="fa fa-map-marker text-danger mr-1"></i> Jaspur</span>
+                  <span class="text-muted small d-block" style="font-size: 11px;">PIN: 244712 • Main HQ</span>
+                  <a href="<?= \App\Core\View::url('/' . ($service['slug'] ?? 'service') . '-in-jaspur') ?>" class="small font-weight-bold" style="color: #f25b29; font-size: 11.5px;">View Jaspur &rarr;</a>
+                </div>
+              </div>
+              <div class="col-md-4 mb-2">
+                <div class="p-2.5 rounded bg-light border text-center h-100">
+                  <span class="font-weight-bold d-block text-dark" style="font-size: 13px;"><i class="fa fa-map-marker text-danger mr-1"></i> Thakurdwara</span>
+                  <span class="text-muted small d-block" style="font-size: 11px;">PIN: 244601 • Doorstep</span>
+                  <a href="<?= \App\Core\View::url('/' . ($service['slug'] ?? 'service') . '-in-thakurdwara') ?>" class="small font-weight-bold" style="color: #f25b29; font-size: 11.5px;">View Thakurdwara &rarr;</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -708,9 +772,12 @@ foreach ($checklist ?? [] as $item) {
     <!-- Booking Sticky Action Card -->
     <div class="col-lg-4">
       <div class="card p-4 shadow-sm border-0 sticky-top" style="top: 90px; border-radius: 16px;">
-        <span class="badge mb-2 font-weight-bold" style="letter-spacing: 0.5px; color:#f25b29; background: #fff3ec; border: 1px solid #ffdacf; width: fit-content;">Instant Doorstep Slot</span>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="badge font-weight-bold" style="letter-spacing: 0.5px; color:#f25b29; background: #fff3ec; border: 1px solid #ffdacf;">Instant Doorstep Slot</span>
+          <span class="badge badge-light border text-muted small font-weight-bold">3 Hubs Covered</span>
+        </div>
         <h4 class="font-weight-bold mb-1" style="font-size: 22px;"><?= $svcName ?></h4>
-        <p class="text-muted small mb-3">Location: <strong><?= $cityName ?></strong></p>
+        <p class="text-muted small mb-3">Serving: <strong><?= $cityName ?></strong> &amp; Nearby (Kashipur, Jaspur, Thakurdwara)</p>
 
         <div class="d-flex align-items-baseline mb-3 pb-3 border-bottom">
           <h2 class="font-weight-bold mb-0" id="sidebarPriceDisplay" style="color: #f25b29;">₹<?= $price ?></h2>
