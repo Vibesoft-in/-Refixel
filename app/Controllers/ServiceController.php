@@ -64,6 +64,115 @@ class ServiceController extends Controller
         ], 'customer');
     }
 
+    public function servicesInCity(Request $request, string $city): Response
+    {
+        if (!ServiceArea::isValidCity($city)) {
+            $defaultCitySlug = strtolower(ServiceArea::DEFAULT_CITY);
+            return $this->redirect(View::url("/services-in-{$defaultCitySlug}"), 301);
+        }
+
+        $cityName = $this->formatCityName($city);
+        $cleanCitySlug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $city), '-'));
+
+        $categories = Category::getActive();
+        $allServices = Service::getActive();
+        $cities = ServiceArea::getActiveCities();
+        $serviceAreas = ServiceArea::getByCity($cityName);
+        $faqs = Faq::getGlobal();
+
+        $cityPincodeMap = [
+            'kashipur'    => ['pincode' => '244713', 'state' => 'Uttarakhand'],
+            'jaspur'      => ['pincode' => '244712', 'state' => 'Uttarakhand'],
+            'thakurdwara' => ['pincode' => '244601', 'state' => 'Uttar Pradesh'],
+        ];
+
+        $title = "Best Home Services in {$cityName} | Verified Doorstep Pros - REFIXEL";
+        $description = "Book verified doorstep home services in {$cityName}. Deep cleaning, AC repair & service, electrician, plumber, painting & pest control. Standard pricing & same-day visit in {$cityName}.";
+        $keywords = "home services in {$cityName}, doorstep services {$cityName}, home repair {$cityName}, cleaning services {$cityName}, electrician in {$cityName}, plumber in {$cityName}, AC repair {$cityName}, refixel {$cityName}";
+        $canonicalUrl = View::fullUrl("/services-in-{$cleanCitySlug}");
+
+        $breadcrumbCrumbs = [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => View::url('/')],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Services', 'item' => View::url('/services')],
+            ['@type' => 'ListItem', 'position' => 3, 'name' => "Services in {$cityName}", 'item' => $canonicalUrl],
+        ];
+
+        $schemaGraph = [
+            [
+                '@type'       => 'LocalBusiness',
+                'name'        => "REFIXEL Home Services - {$cityName}",
+                'url'         => $canonicalUrl,
+                'logo'        => View::fullUrl('assets/img/refixel-logo-horizontal.png'),
+                'image'       => View::fullUrl('assets/img/Full-home-clean.jpg'),
+                'telephone'   => '+918791154730',
+                'priceRange'  => '₹₹',
+                'address'     => [
+                    '@type'           => 'PostalAddress',
+                    'addressLocality' => $cityName,
+                    'postalCode'      => $cityPincodeMap[$cleanCitySlug]['pincode'] ?? '244713',
+                    'addressRegion'   => $cityPincodeMap[$cleanCitySlug]['state'] ?? 'Uttarakhand',
+                    'addressCountry'  => 'IN',
+                ],
+                'areaServed'  => [
+                    '@type'      => 'City',
+                    'name'       => $cityName,
+                    'postalCode' => $cityPincodeMap[$cleanCitySlug]['pincode'] ?? '244713',
+                ],
+            ],
+            [
+                '@type'           => 'BreadcrumbList',
+                'itemListElement' => $breadcrumbCrumbs,
+            ],
+        ];
+
+        if (!empty($faqs)) {
+            $faqEntities = [];
+            foreach (array_slice($faqs, 0, 5) as $f) {
+                if (empty($f['question']) || empty($f['answer'])) continue;
+                $faqEntities[] = [
+                    '@type'          => 'Question',
+                    'name'           => $f['question'],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text'  => strip_tags((string)$f['answer']),
+                    ],
+                ];
+            }
+            if (!empty($faqEntities)) {
+                $schemaGraph[] = [
+                    '@type'      => 'FAQPage',
+                    'mainEntity' => $faqEntities,
+                ];
+            }
+        }
+
+        $schemaData = [
+            '@context' => 'https://schema.org',
+            '@graph'   => $schemaGraph,
+        ];
+
+        return $this->render('customer.services.index', [
+            'title'             => $title,
+            'description'       => $description,
+            'keywords'          => $keywords,
+            'canonicalUrl'      => $canonicalUrl,
+            'ogTitle'           => $title,
+            'ogDescription'     => $description,
+            'ogUrl'             => $canonicalUrl,
+            'schemaData'        => $schemaData,
+            'categories'        => $categories,
+            'services'          => $allServices,
+            'activeCategory'    => 'all',
+            'city'              => $cityName,
+            'currentCity'       => $cityName,
+            'citySlug'          => $cleanCitySlug,
+            'cities'            => $cities,
+            'variantsByService' => ServiceVariant::getAllGroupedByServiceId(),
+            'serviceAreas'      => $serviceAreas,
+            'faqs'              => $faqs,
+        ], 'customer');
+    }
+
     public function apiSearch(Request $request): Response
     {
         $q = trim((string)$request->query('q', ''));

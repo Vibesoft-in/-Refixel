@@ -521,6 +521,13 @@ class PageController extends Controller
             $citySlug = strtolower(trim((string)$c['city']));
             if (empty($citySlug)) continue;
 
+            // City-wide all services hub (e.g. /services-in-kashipur)
+            $urls[] = [
+                'loc'        => "{$baseUrl}/services-in-{$citySlug}",
+                'priority'   => '0.9',
+                'changefreq' => 'weekly',
+            ];
+
             // Categories in City
             foreach ($categories as $cat) {
                 if (empty($cat['is_active'])) continue;

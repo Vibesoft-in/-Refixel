@@ -51,6 +51,7 @@ Router::get('/partner', 'PageController@partner');
 Router::post('/partner', 'PageController@submitPartner', ['RateLimit:5,60', 'VerifyCsrf']);
 
 Router::get('/services', 'ServiceController@index');
+Router::get('/services-in-{city}', 'ServiceController@servicesInCity');
 
 Router::get('/sitemap.xml', 'PageController@sitemap');
 Router::get('/robots.txt', 'PageController@robots');
