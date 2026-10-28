@@ -29,7 +29,7 @@
               <span class="sub-line-orange">Kashipur, Jaspur &amp; Thakurdwara</span>
             </h1>
             <p class="hero-description">
-              REFIXEL is the premier doorstep home services platform rated #1 across <strong>Kashipur</strong>, <strong>Jaspur</strong> &amp; <strong>Thakurdwara</strong>. We connect households and businesses with 400+ background-verified professionals for AC repair, deep cleaning, electrical, plumbing, carpentry, painting, and false ceiling installations — delivering guaranteed on-time doorstep service with upfront pricing and 30-day warranty.
+              REFIXEL is the professional doorstep home services platform rated #1 across <strong>Kashipur</strong>, <strong>Jaspur</strong> &amp; <strong>Thakurdwara</strong>. We connect households and businesses with 400+ background-verified professionals for AC repair, deep cleaning, electrical, plumbing, carpentry, painting, and false ceiling installations — delivering guaranteed on-time doorstep service with upfront pricing and 30-day warranty.
             </p>
 
             <div class="d-flex flex-wrap align-items-center" style="gap: 14px;">

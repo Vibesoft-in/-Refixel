@@ -1058,7 +1058,7 @@ $serviceCardDescriptions = [
             <span class="text_highlight">Kashipur, Jaspur &amp; Thakurdwara</span>
           </h2>
           <p class="home_about_desc">
-            REFIXEL is a trusted local home services company based in Jaspur, Uttarakhand. We connect homeowners in Kashipur, Jaspur and Thakurdwara with background-verified professionals for cleaning, AC service, plumbing, electrical work, painting, pest control and repairs, with upfront pricing and doorstep service.
+            REFIXEL is a trusted, professional local home services company based in Jaspur, Uttarakhand. We connect homeowners in Kashipur, Jaspur and Thakurdwara with background-verified professionals for cleaning, AC service, plumbing, electrical work, painting, pest control and repairs, with upfront pricing and doorstep service.
           </p>
 
           <!-- 3 Key Value Feature Cards -->
