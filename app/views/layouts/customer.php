@@ -39,7 +39,7 @@
   <title><?= \App\Core\View::e($pageTitle) ?></title>
   <meta name="description" content="<?= \App\Core\View::e($pageDesc) ?>">
   <meta name="keywords" content="<?= \App\Core\View::e($pageKeywords) ?>">
-  <meta name="author" content="REFIXEL">
+  <meta name="author" content="Shanu Kumar, Manish Kumar, Aakash Kumar (Founders, REFIXEL)">
   <meta name="robots" content="<?= \App\Core\View::e($robotsDirective) ?>">
   <link rel="canonical" href="<?= \App\Core\View::e($cleanCanonical) ?>">
   <?= \App\Core\View::partial('partials.csrf-init') ?>
@@ -71,6 +71,40 @@
       'telephone'=> '+91-8791154730',
       'email'    => 'contact@refixel.com',
       'priceRange'=> '₹₹',
+      'founders' => [
+        [
+          '@type'    => 'Person',
+          'name'     => 'Shanu Kumar',
+          'jobTitle' => 'Co-Founder',
+        ],
+        [
+          '@type'    => 'Person',
+          'name'     => 'Manish Kumar',
+          'jobTitle' => 'Co-Founder',
+        ],
+        [
+          '@type'    => 'Person',
+          'name'     => 'Aakash Kumar',
+          'jobTitle' => 'Co-Founder',
+        ],
+      ],
+      'founder' => [
+        [
+          '@type'    => 'Person',
+          'name'     => 'Shanu Kumar',
+          'jobTitle' => 'Co-Founder',
+        ],
+        [
+          '@type'    => 'Person',
+          'name'     => 'Manish Kumar',
+          'jobTitle' => 'Co-Founder',
+        ],
+        [
+          '@type'    => 'Person',
+          'name'     => 'Aakash Kumar',
+          'jobTitle' => 'Co-Founder',
+        ],
+      ],
       'address'  => [
         '@type'          => 'PostalAddress',
         'streetAddress'  => 'Jaspur - Kashipur Road, in front of BSV Girls Degree College',

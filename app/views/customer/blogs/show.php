@@ -143,16 +143,30 @@ $encodedTitle = urlencode($post['title']);
           </div>
         </div>
 
-        <!-- Author Credibility Note -->
-        <div class="p-4 bg-light rounded-lg d-flex align-items-center mb-5" style="border-radius: 12px; border: 1px solid #e2e8f0;">
-          <div class="mr-3 d-none d-sm-block">
-            <img src="<?= View::asset('img/refixel-logo-original.png') ?>" alt="REFIXEL" style="width: 60px; height: auto;">
+        <!-- Refixel Founders & Editorial Review Board Note -->
+        <div class="p-4 rounded-lg mb-5" style="border-radius: 14px; background: #f8fafc; border: 1.5px solid #e2e8f0;">
+          <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-3" style="gap: 12px;">
+            <div class="d-flex align-items-center" style="gap: 12px;">
+              <div class="bg-white p-2 rounded shadow-sm border" style="width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <img src="<?= View::asset('img/refixel-logo-original.png') ?>" alt="REFIXEL" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+              </div>
+              <div>
+                <h5 class="font-weight-bold mb-0 text-dark" style="font-size: 15.5px;">About REFIXEL &bull; Founded by Shanu Kumar, Manish Kumar &amp; Aakash Kumar</h5>
+                <span class="text-muted small">Standardized Doorstep Home Care in Kashipur, Jaspur &amp; Thakurdwara</span>
+              </div>
+            </div>
+            <a href="<?= View::url('/about') ?>" class="btn btn-sm btn-outline-brand font-weight-bold px-3 py-1 text-nowrap" style="font-size: 12px;">
+              About Founders &rarr;
+            </a>
           </div>
-          <div>
-            <h5 class="font-weight-bold mb-1 text-dark">About the REFIXEL Technical Review Board</h5>
-            <p class="text-muted small mb-0">
-              All guides and case studies are written and verified by licensed electricians, certified HVAC engineers, and environmental hygiene supervisors active in Uttarakhand and Western UP. We use only OEM genuine parts, calibrated digital diagnostic tools, and eco-friendly certified chemicals.
-            </p>
+          <p class="text-muted small mb-3" style="line-height: 1.65; font-size: 13.5px;">
+            REFIXEL is led by co-founders <strong>Shanu Kumar</strong> (Operations &amp; Digital Infrastructure), <strong>Manish Kumar</strong> (Service Partner Network &amp; Quality Audits), and <strong>Aakash Kumar</strong> (Customer Experience &amp; Brand Strategy). Every tutorial, inspection metric, and troubleshooting guide on this platform is verified by our field engineers and editorial board to ensure safe, transparent practices for homeowners.
+          </p>
+          <div class="d-flex flex-wrap align-items-center pt-2 border-top" style="gap: 8px; font-size: 12px; color: #64748b; border-color: #e2e8f0 !important;">
+            <span class="font-weight-bold text-dark"><i class="fa fa-users text-brand mr-1"></i> Founders of Refixel:</span>
+            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">Shanu Kumar</span>
+            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">Manish Kumar</span>
+            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1">Aakash Kumar</span>
           </div>
         </div>
 

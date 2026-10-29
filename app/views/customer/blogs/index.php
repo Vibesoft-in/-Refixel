@@ -9,8 +9,8 @@ use App\Core\View;
     <h1 class="font-weight-bold display-5 mb-3" style="color: #1a1a1a; font-size: clamp(28px, 4vw, 42px);">
       The REFIXEL Knowledge Journal
     </h1>
-    <p class="text-muted mx-auto" style="max-width: 680px; font-size: 16px; line-height: 1.6;">
-      Practical home care checklists, troubleshooting guides, and real client case studies from our certified technicians across <strong>Kashipur, Jaspur &amp; Thakurdwara</strong>.
+    <p class="text-muted mx-auto" style="max-width: 720px; font-size: 16px; line-height: 1.6;">
+      Practical home care checklists, troubleshooting guides, and real client case studies curated by Refixel founders <strong>Shanu Kumar</strong>, <strong>Manish Kumar</strong> &amp; <strong>Aakash Kumar</strong> together with our certified technicians across <strong>Kashipur, Jaspur &amp; Thakurdwara</strong>.
     </p>
 
     <!-- Search & Filter Bar -->

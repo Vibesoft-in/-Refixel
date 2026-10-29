@@ -17,14 +17,66 @@ class PageController extends Controller
 {
     public function about(Request $request): Response
     {
+        $aboutSchema = [
+            '@context'   => 'https://schema.org',
+            '@type'      => 'AboutPage',
+            'name'       => 'About REFIXEL',
+            'url'        => View::fullUrl('/about'),
+            'description'=> 'Founded by Shanu Kumar, Manish Kumar, and Aakash Kumar, REFIXEL delivers standardized, background-verified home maintenance services across Kashipur, Jaspur & Thakurdwara.',
+            'mainEntity' => [
+                '@type'       => 'Organization',
+                'name'        => 'REFIXEL',
+                'url'         => View::fullUrl('/'),
+                'logo'        => View::fullUrl('assets/img/refixel-logo-horizontal.png'),
+                'founders'    => [
+                    [
+                        '@type'       => 'Person',
+                        'name'        => 'Shanu Kumar',
+                        'jobTitle'    => 'Co-Founder',
+                        'description' => 'Operations & Digital Platforms Lead',
+                    ],
+                    [
+                        '@type'       => 'Person',
+                        'name'        => 'Manish Kumar',
+                        'jobTitle'    => 'Co-Founder',
+                        'description' => 'Partner Network & Technical Quality Audits Lead',
+                    ],
+                    [
+                        '@type'       => 'Person',
+                        'name'        => 'Aakash Kumar',
+                        'jobTitle'    => 'Co-Founder',
+                        'description' => 'Customer Experience & Growth Strategy Lead',
+                    ],
+                ],
+                'founder'     => [
+                    [
+                        '@type'       => 'Person',
+                        'name'        => 'Shanu Kumar',
+                        'jobTitle'    => 'Co-Founder',
+                    ],
+                    [
+                        '@type'       => 'Person',
+                        'name'        => 'Manish Kumar',
+                        'jobTitle'    => 'Co-Founder',
+                    ],
+                    [
+                        '@type'       => 'Person',
+                        'name'        => 'Aakash Kumar',
+                        'jobTitle'    => 'Co-Founder',
+                    ],
+                ],
+            ],
+        ];
+
         return $this->render('customer.about', [
-            'title'         => 'About Us | REFIXEL - Trusted Home Services in Uttarakhand & UP',
-            'description'   => 'Learn about REFIXEL - delivering standardized, background-verified home maintenance, deep cleaning, AC repair & plumbing across Kashipur, Jaspur & Thakurdwara.',
-            'keywords'      => 'about refixel, refixel home services, verified technicians uttarakhand, doorstep home maintenance kashipur',
+            'title'         => 'About Us | REFIXEL - Founded by Shanu Kumar, Manish Kumar & Aakash Kumar',
+            'description'   => 'Learn about REFIXEL, founded by Shanu Kumar, Manish Kumar, and Aakash Kumar. Standardized, background-verified home maintenance, deep cleaning, AC repair & plumbing across Kashipur, Jaspur & Thakurdwara.',
+            'keywords'      => 'refixel founders, shanu kumar, manish kumar, aakash kumar, about refixel, refixel home services, verified technicians uttarakhand, doorstep home maintenance kashipur',
             'canonicalUrl'  => View::fullUrl('/about'),
-            'ogTitle'       => 'About Us | REFIXEL - Trusted Home Care in Uttarakhand & UP',
-            'ogDescription' => 'Learn about REFIXEL - delivering standardized, background-verified home maintenance, deep cleaning, AC repair & plumbing across Kashipur, Jaspur & Thakurdwara.',
+            'ogTitle'       => 'About Us | REFIXEL - Founded by Shanu Kumar, Manish Kumar & Aakash Kumar',
+            'ogDescription' => 'Learn about REFIXEL, founded by Shanu Kumar, Manish Kumar, and Aakash Kumar. Standardized, background-verified home maintenance across Kashipur, Jaspur & Thakurdwara.',
             'ogUrl'         => View::fullUrl('/about'),
+            'schemaData'    => $aboutSchema,
         ], 'customer');
     }
 

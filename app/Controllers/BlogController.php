@@ -94,19 +94,39 @@ class BlogController extends Controller
         $postImage = View::fullUrl('assets/img/' . $post['image']);
 
         // Structured Data (BlogPosting Schema & BreadcrumbList)
+        if (str_contains($post['author'], '&')) {
+            $authorSchema = [
+                ['@type' => 'Person', 'name' => 'Shanu Kumar', 'jobTitle' => 'Co-Founder'],
+                ['@type' => 'Person', 'name' => 'Manish Kumar', 'jobTitle' => 'Co-Founder'],
+                ['@type' => 'Person', 'name' => 'Aakash Kumar', 'jobTitle' => 'Co-Founder'],
+            ];
+        } else {
+            $authorSchema = [
+                '@type' => 'Person',
+                'name'  => $post['author'],
+            ];
+        }
+
         $schemaGraph = [
             [
                 '@type'            => 'BlogPosting',
                 'headline'         => $post['title'],
                 'description'      => $post['excerpt'],
                 'image'            => $postImage,
-                'author'           => [
-                    '@type' => 'Person',
-                    'name'  => $post['author'],
-                ],
+                'author'           => $authorSchema,
                 'publisher'        => [
                     '@type' => 'Organization',
                     'name'  => 'REFIXEL Home Services',
+                    'founder' => [
+                        ['@type' => 'Person', 'name' => 'Shanu Kumar', 'jobTitle' => 'Co-Founder'],
+                        ['@type' => 'Person', 'name' => 'Manish Kumar', 'jobTitle' => 'Co-Founder'],
+                        ['@type' => 'Person', 'name' => 'Aakash Kumar', 'jobTitle' => 'Co-Founder'],
+                    ],
+                    'founders' => [
+                        ['@type' => 'Person', 'name' => 'Shanu Kumar', 'jobTitle' => 'Co-Founder'],
+                        ['@type' => 'Person', 'name' => 'Manish Kumar', 'jobTitle' => 'Co-Founder'],
+                        ['@type' => 'Person', 'name' => 'Aakash Kumar', 'jobTitle' => 'Co-Founder'],
+                    ],
                     'logo'  => [
                         '@type' => 'ImageObject',
                         'url'   => View::fullUrl('assets/img/refixel-logo-horizontal.png'),
