@@ -402,9 +402,14 @@
         </li>
 
         <li class="nav-heading">Services & Catalog</li>
-        <li class="<?= ($uri === '/admin/services' || str_starts_with($uri, '/admin/services/categories')) ? 'active' : '' ?>">
+        <li class="<?= ($uri === '/admin/services' && !str_starts_with($uri, '/admin/services/categories') && !str_starts_with($uri, '/admin/services/addons')) ? 'active' : '' ?>">
           <a href="<?= \App\Core\View::url('/admin/services') ?>">
-            <span class="nav-text"><i class="fa fa-wrench"></i> Services & Catalog</span>
+            <span class="nav-text"><i class="fa fa-wrench"></i> Services & Packages</span>
+          </a>
+        </li>
+        <li class="<?= str_starts_with($uri, '/admin/services/categories') ? 'active' : '' ?>">
+          <a href="<?= \App\Core\View::url('/admin/services/categories') ?>">
+            <span class="nav-text"><i class="fa fa-th-large"></i> Homepage Categories</span>
           </a>
         </li>
         <li class="<?= str_contains($uri, '/admin/services/addons') ? 'active' : '' ?>">

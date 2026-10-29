@@ -49,14 +49,15 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
             <th class="py-3 text-dark">Slug / URL</th>
             <th class="py-3 text-dark text-center">Services</th>
             <th class="py-3 text-dark text-center">Sort Order</th>
-            <th class="py-3 text-dark text-center">Homepage Status</th>
+            <th class="py-3 text-dark text-center">Availability Status</th>
+            <th class="py-3 text-dark text-center">Coming Soon Control</th>
             <th class="py-3 text-right text-dark">Actions</th>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($categories)): ?>
             <tr>
-              <td colspan="8" class="text-center py-5 text-muted">No service categories configured yet. Click "Add New Service / Category" above.</td>
+              <td colspan="9" class="text-center py-5 text-muted">No service categories configured yet. Click "Add New Service / Category" above.</td>
             </tr>
           <?php else: ?>
             <?php foreach ($categories as $c): 
@@ -64,6 +65,8 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
               $iconVal = trim((string)($c['icon'] ?? ''));
               $isImageIcon = !empty($iconVal) && (str_contains($iconVal, '/') || str_ends_with($iconVal, '.png') || str_ends_with($iconVal, '.jpg') || str_ends_with($iconVal, '.webp') || str_ends_with($iconVal, '.svg'));
               $iconUrl = $isImageIcon ? $resolveAsset($iconVal, 'icons/') : '';
+              $isComingSoon = !empty($c['is_coming_soon']);
+              $isActive = !empty($c['is_active']);
             ?>
               <tr>
                 <!-- Banner Image -->
@@ -118,21 +121,39 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
                   <span class="badge badge-secondary px-2 py-1 font-weight-bold">#<?= (int)$c['sort_order'] ?></span>
                 </td>
 
-                <!-- Homepage Active Status -->
+                <!-- Availability Status (Live vs Coming Soon vs Hidden) -->
                 <td class="align-middle text-center">
-                  <?php if (!empty($c['is_active'])): ?>
-                    <span class="badge badge-success px-2 py-1"><i class="fa fa-check-circle mr-1"></i>Homepage Live</span>
+                  <?php if (!$isActive): ?>
+                    <span class="badge badge-danger px-2 py-1"><i class="fa fa-eye-slash mr-1"></i>Hidden (Disabled)</span>
+                  <?php elseif ($isComingSoon): ?>
+                    <span class="badge badge-warning text-dark px-2 py-1" style="background:#fef3c7; color:#92400e; border: 1px solid #fde68a;" title="Visible to customers with Coming Soon badge"><i class="fa fa-clock-o mr-1"></i>Coming Soon</span>
                   <?php else: ?>
-                    <span class="badge badge-danger px-2 py-1"><i class="fa fa-eye-slash mr-1"></i>Hidden</span>
+                    <span class="badge badge-success px-2 py-1"><i class="fa fa-check-circle mr-1"></i>Live &amp; Bookable</span>
                   <?php endif; ?>
+                </td>
+
+                <!-- Coming Soon Control Button -->
+                <td class="align-middle text-center text-nowrap">
+                  <form method="POST" action="<?= View::url('/admin/services/categories/' . $c['id'] . '/toggle-coming-soon') ?>" class="d-inline">
+                    <?= View::csrfField() ?>
+                    <?php if ($isComingSoon): ?>
+                      <button type="submit" class="btn btn-sm font-weight-bold px-3 py-1 shadow-sm" style="background: #fef3c7; color: #92400e; border: 1.5px solid #f59e0b; border-radius: 20px; font-size: 11.5px; transition: all 0.2s;" title="Coming Soon is currently ON. Click to make Live">
+                        <i class="fa fa-clock-o mr-1 text-warning"></i> Soon: <strong class="text-danger">ON</strong>
+                      </button>
+                    <?php else: ?>
+                      <button type="submit" class="btn btn-sm font-weight-bold px-3 py-1 text-muted" style="background: #f8fafc; color: #64748b; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 11.5px; transition: all 0.2s;" title="Coming Soon is currently OFF. Click to set Coming Soon">
+                        <i class="fa fa-clock-o mr-1"></i> Soon: <strong>OFF</strong>
+                      </button>
+                    <?php endif; ?>
+                  </form>
                 </td>
 
                 <!-- Actions -->
                 <td class="align-middle text-right text-nowrap">
                   <form method="POST" action="<?= View::url('/admin/services/categories/' . $c['id'] . '/toggle-status') ?>" class="d-inline mr-1">
                     <?= View::csrfField() ?>
-                    <button type="submit" class="btn btn-sm <?= !empty($c['is_active']) ? 'btn-outline-secondary' : 'btn-outline-success' ?> py-1 px-2 font-weight-bold" title="Toggle active status">
-                      <?= !empty($c['is_active']) ? 'Hide' : 'Show' ?>
+                    <button type="submit" class="btn btn-sm <?= $isActive ? 'btn-outline-secondary' : 'btn-outline-success' ?> py-1 px-2 font-weight-bold" title="<?= $isActive ? 'Disable category' : 'Enable category' ?>">
+                      <?= $isActive ? 'Disable' : 'Enable' ?>
                     </button>
                   </form>
 
@@ -146,6 +167,7 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
                     data-icon-preview="<?= $iconUrl ?>"
                     data-sort-order="<?= (int)$c['sort_order'] ?>"
                     data-description="<?= View::e($c['description'] ?? '') ?>"
+                    data-is-coming-soon="<?= !empty($c['is_coming_soon']) ? '1' : '0' ?>"
                     title="Edit category">
                     <i class="fa fa-pencil"></i>
                   </button>
@@ -229,10 +251,25 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
             </div>
           </div>
 
-          <div class="form-group mb-0">
-            <label class="font-weight-bold small">Homepage Sort Order</label>
-            <input type="number" name="sort_order" class="form-control" value="10" style="max-width: 150px;">
-            <small class="text-muted">Lower numbers appear first on the homepage grid (e.g. 1, 2, 3...).</small>
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <div class="form-group mb-0">
+                <label class="font-weight-bold small">Homepage Sort Order</label>
+                <input type="number" name="sort_order" class="form-control" value="10" style="max-width: 150px;">
+                <small class="text-muted">Lower numbers appear first on the homepage grid (e.g. 1, 2, 3...).</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-0 pt-2">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" name="is_coming_soon" value="1" class="custom-control-input" id="new_cat_is_coming_soon">
+                  <label class="custom-control-label font-weight-bold text-dark" for="new_cat_is_coming_soon">
+                    <i class="fa fa-clock-o text-warning mr-1"></i> Set as "Coming Soon"
+                  </label>
+                </div>
+                <small class="text-muted">Users will see a Coming Soon tag and bookings will be paused.</small>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -314,9 +351,24 @@ $resolveAsset = function(?string $path, string $defaultPrefix = 'img/'): string 
             </div>
           </div>
 
-          <div class="form-group mb-0">
-            <label class="font-weight-bold small">Homepage Sort Order</label>
-            <input type="number" name="sort_order" id="edit_cat_sort_order" class="form-control" value="0" style="max-width: 150px;">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <div class="form-group mb-0">
+                <label class="font-weight-bold small">Homepage Sort Order</label>
+                <input type="number" name="sort_order" id="edit_cat_sort_order" class="form-control" value="0" style="max-width: 150px;">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-0 pt-2">
+                <div class="custom-control custom-checkbox">
+                  <input type="checkbox" name="is_coming_soon" value="1" class="custom-control-input" id="edit_cat_is_coming_soon">
+                  <label class="custom-control-label font-weight-bold text-dark" for="edit_cat_is_coming_soon">
+                    <i class="fa fa-clock-o text-warning mr-1"></i> Set as "Coming Soon"
+                  </label>
+                </div>
+                <small class="text-muted">Check to mark this category as Coming Soon.</small>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -342,6 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var iconPreview = this.getAttribute('data-icon-preview');
       var sortOrder = this.getAttribute('data-sort-order');
       var description = this.getAttribute('data-description');
+      var isComingSoon = this.getAttribute('data-is-coming-soon');
 
       var form = document.getElementById('editCategoryForm');
       var cleanBase = (baseUrl || '').replace(/\/+$/, '');
@@ -353,6 +406,11 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('edit_cat_icon').value = icon || '';
       document.getElementById('edit_cat_sort_order').value = sortOrder || '0';
       document.getElementById('edit_cat_description').value = description || '';
+
+      var comingSoonCheck = document.getElementById('edit_cat_is_coming_soon');
+      if (comingSoonCheck) {
+        comingSoonCheck.checked = (isComingSoon === '1');
+      }
 
       var imgEl = document.getElementById('edit_img_preview');
       if (imagePreview) {

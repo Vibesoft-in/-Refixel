@@ -27,16 +27,22 @@ class Report
         
         $staffCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM users WHERE role = 'staff' AND status = 'active'")['c'] ?? 0);
         $servicesCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM services WHERE is_active = 1")['c'] ?? 0);
+        $servicesComingSoon = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM services WHERE is_coming_soon = 1")['c'] ?? 0);
+        $categoriesCount = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM categories")['c'] ?? 0);
+        $categoriesComingSoon = (int)(Database::fetchOne("SELECT COUNT(*) as c FROM categories WHERE is_coming_soon = 1")['c'] ?? 0);
 
         return [
-            'enquiries_count'  => $enquiriesCount,
-            'assigned_jobs'    => $assignedJobs,
-            'active_jobs'      => $activeJobs,
-            'completed_jobs'   => $completedJobs,
-            'total_revenue'    => $totalRevenue,
-            'pending_payments' => $pendingPayments,
-            'staff_count'      => $staffCount,
-            'services_count'   => $servicesCount,
+            'enquiries_count'        => $enquiriesCount,
+            'assigned_jobs'          => $assignedJobs,
+            'active_jobs'            => $activeJobs,
+            'completed_jobs'         => $completedJobs,
+            'total_revenue'          => $totalRevenue,
+            'pending_payments'       => $pendingPayments,
+            'staff_count'            => $staffCount,
+            'services_count'         => $servicesCount,
+            'services_coming_soon'   => $servicesComingSoon,
+            'categories_count'       => $categoriesCount,
+            'categories_coming_soon' => $categoriesComingSoon,
         ];
     }
 

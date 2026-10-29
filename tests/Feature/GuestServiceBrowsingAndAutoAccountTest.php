@@ -76,7 +76,7 @@ $_SESSION = [];
 
 $testEmail = 'guest_test_' . time() . '@refixeltest.com';
 $testPhone = '98' . str_pad((string)random_int(10000000, 99999999), 8, '0', STR_PAD_LEFT);
-$testName  = 'Rishabh Customer';
+$testName  = 'Rahul Customer';
 
 $service = Service::getActive()[0] ?? null;
 if (!$service) {

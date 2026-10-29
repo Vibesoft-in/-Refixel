@@ -318,22 +318,26 @@ class ServiceController extends Controller
             } catch (\Throwable $e) {}
         }
 
+        $isComingSoon = (int)$request->input('is_coming_soon', 0);
+
         Category::create([
-            'name'        => $name,
-            'slug'        => $slug,
-            'description' => $description,
-            'image'       => $imagePath,
-            'icon'        => $icon,
-            'sort_order'  => $sortOrder,
-            'is_active'   => 1,
+            'name'           => $name,
+            'slug'           => $slug,
+            'description'    => $description,
+            'image'          => $imagePath,
+            'icon'           => $icon,
+            'sort_order'     => $sortOrder,
+            'is_coming_soon' => $isComingSoon ? 1 : 0,
+            'is_active'      => 1,
         ]);
 
-        View::setFlash('success', "Category '{$name}' created successfully and is now active on the homepage!");
+        View::setFlash('success', "Category '{$name}' created successfully!");
         return $this->redirect('/admin/services/categories');
     }
 
     public function updateCategory(Request $request, string $id): Response
     {
+        Category::ensureSchema();
         $cat = Category::find((int)$id);
         if (!$cat) {
             View::setFlash('error', 'Category not found.');
@@ -356,10 +360,11 @@ class ServiceController extends Controller
             : strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name), '-'));
 
         $data = [
-            'name'        => $name,
-            'slug'        => $slug,
-            'description' => $description,
-            'sort_order'  => $sortOrder,
+            'name'           => $name,
+            'slug'           => $slug,
+            'description'    => $description,
+            'sort_order'     => $sortOrder,
+            'is_coming_soon' => $request->has('is_coming_soon') ? ((int)$request->input('is_coming_soon') ? 1 : 0) : 0,
         ];
 
         $fileImage = $request->file('image');
@@ -423,6 +428,25 @@ class ServiceController extends Controller
         Category::update((int)$id, ['is_active' => $newActive]);
 
         View::setFlash('success', "Category '{$cat['name']}' " . ($newActive ? 'activated' : 'deactivated') . ".");
+        return $this->redirect('/admin/services/categories');
+    }
+
+    public function toggleCategoryComingSoon(Request $request, string $id): Response
+    {
+        Category::ensureSchema();
+        $cat = Category::find((int)$id);
+        if (!$cat) {
+            View::setFlash('error', 'Category not found.');
+            return $this->redirect('/admin/services/categories');
+        }
+
+        $newComingSoon = empty($cat['is_coming_soon']) ? 1 : 0;
+        Category::update((int)$id, ['is_coming_soon' => $newComingSoon]);
+
+        $statusText = $newComingSoon 
+            ? 'marked as Coming Soon (visible with Coming Soon badge on website)' 
+            : 'marked as Live & Active';
+        View::setFlash('success', "Category '{$cat['name']}' {$statusText}.");
         return $this->redirect('/admin/services/categories');
     }
 

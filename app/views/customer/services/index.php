@@ -1507,8 +1507,20 @@ if (empty($activeCategory)) {
                   </div>
                 <?php endforeach; ?>
               <?php else: ?>
-                <div class="col-12 text-center py-5" style="grid-column: 1 / -1; background: #f8fafc; border-radius: 14px; border: 1px dashed #cbd5e1; padding: 40px 20px;">
-                  <p class="text-muted mb-0" style="font-size: 15px;">No packages available for this category yet.</p>
+                <div class="col-12 text-center py-5" style="grid-column: 1 / -1; background: #fff8f5; border-radius: 14px; border: 1.5px dashed #ffdacf; padding: 40px 24px;">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; background: #fff3ec; color: #f25b29; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(242, 91, 41, 0.15);">
+                    <i class="fa fa-clock-o"></i>
+                  </div>
+                  <h4 class="font-weight-bold text-dark mb-1" style="font-size: 18px;"><?= $catName ?> Packages Coming Soon in <?= \App\Core\View::e(!empty($city) ? $city : 'Your Area') ?></h4>
+                  <p class="text-muted mb-3" style="font-size: 13.5px; max-width: 520px; margin: 0 auto; line-height: 1.5;">We are expanding our verified technician coverage for <strong><?= $catName ?></strong>. Need urgent doorstep service or custom quotation? Reach out directly to our operations desk:</p>
+                  <div class="d-flex justify-content-center align-items-center flex-wrap" style="gap: 10px;">
+                    <a href="https://wa.me/918791154730?text=<?= urlencode('Hi REFIXEL, I need doorstep ' . $catName . ' in ' . (!empty($city) ? $city : 'Kashipur')) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm text-white font-weight-bold px-3 py-2" style="background: #25D366; border-radius: 8px; font-size: 13px; text-decoration: none;">
+                      <i class="fa fa-whatsapp mr-1"></i> Book on WhatsApp
+                    </a>
+                    <a href="tel:+918791154730" class="btn btn-sm btn-outline-dark font-weight-bold px-3 py-2" style="border-radius: 8px; font-size: 13px; text-decoration: none;">
+                      <i class="fa fa-phone mr-1" style="color: #f25b29;"></i> Call Support (+91 87911 54730)
+                    </a>
+                  </div>
                 </div>
               <?php endif; ?>
             </div>

@@ -322,6 +322,7 @@ Router::group(['middleware' => ['RequireRole:admin']], function () {
     Router::post('/admin/services/categories/{id}/update', 'Admin\\ServiceController@updateCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/delete', 'Admin\\ServiceController@deleteCategory', ['VerifyCsrf']);
     Router::post('/admin/services/categories/{id}/toggle-status', 'Admin\\ServiceController@toggleCategoryStatus', ['VerifyCsrf']);
+    Router::post('/admin/services/categories/{id}/toggle-coming-soon', 'Admin\\ServiceController@toggleCategoryComingSoon', ['VerifyCsrf']);
 
     // Service Variations & Options
     Router::get('/admin/services/{id}/variants', 'Admin\\ServiceController@variants');

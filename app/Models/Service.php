@@ -43,6 +43,8 @@ class Service extends Model
             'mosquito-mesh-net-installation'             => 'refixel-carpenter.jpg',
             'furniture-polish-surface-restoration'       => 'service-carpenter.jpg',
             // AC Service & Repair
+            'ac-jet-service'                             => 'refixel-ac-service.jpg',
+            'window-ac-deep-jet-service'                 => 'service-ac-repair.jpg',
             'ac-gas-leakage-refill'                      => 'ac-repair.jpg',
             'split-ac-installation-mounting'             => 'refixel-ac-service.jpg',
             'ac-uninstallation-safe-packing'             => 'service-ac-repair.jpg',
@@ -229,8 +231,17 @@ class Service extends Model
         } catch (\Throwable $e) {}
 
         try {
-            $hasNewServices = Database::fetchOne("SELECT id FROM services WHERE slug = 'water-tank-cleaning'");
-            if (!$hasNewServices) {
+            $missingCoreServices = false;
+            $hasAcGas = Database::fetchOne("SELECT id FROM services WHERE slug = 'ac-gas-leakage-refill'");
+            $hasWaterTank = Database::fetchOne("SELECT id FROM services WHERE slug = 'water-tank-cleaning'");
+            $hasAcJet = Database::fetchOne("SELECT id FROM services WHERE slug = 'ac-jet-service'");
+            $acCount = (int)(Database::fetchOne("SELECT COUNT(*) as cnt FROM services WHERE category_id = 6 AND is_active = 1 AND (is_addon = 0 OR is_addon IS NULL)")['cnt'] ?? 0);
+
+            if (!$hasAcGas || !$hasWaterTank || !$hasAcJet || $acCount < 3) {
+                $missingCoreServices = true;
+            }
+
+            if ($missingCoreServices) {
                 $seederFile = dirname(__DIR__, 2) . '/database/add_comprehensive_category_services.php';
                 if (file_exists($seederFile)) {
                     require_once $seederFile;
@@ -239,6 +250,18 @@ class Service extends Model
                     }
                 }
             }
+
+            // Ensure AC High-Pressure Jet Service is strictly active under AC (id: 6)
+            $acJetExists = Database::fetchOne("SELECT id FROM services WHERE slug = 'ac-jet-service' LIMIT 1");
+            if ($acJetExists) {
+                Database::execute("UPDATE services SET category_id = 6, is_addon = 0, is_active = 1, image = 'refixel-ac-service.jpg' WHERE id = ?", [(int)$acJetExists['id']]);
+            } else {
+                Database::execute(
+                    "INSERT INTO services (category_id, name, slug, description, starting_price, duration_minutes, image, is_active, is_addon, is_coming_soon, created_at)
+                     VALUES (6, 'AC High-Pressure Jet Service', 'ac-jet-service', 'Deep high-pressure water jet cleaning of indoor cooling coils and outdoor condensing unit with protective water jacket for 2x cooling boost.', 499.00, 60, 'refixel-ac-service.jpg', 1, 0, 0, NOW())"
+                );
+            }
+
             // Ensure Water Tank Cleaning is strictly categorized under Cleaning (id: 1), not Plumbers (id: 4)
             Database::execute("UPDATE services SET category_id = 1, is_addon = 0, is_active = 1, starting_price = 299.00, image = 'refixel-water-tank-cleaning.jpg' WHERE slug = 'water-tank-cleaning' OR name LIKE '%Tank Cleaning%'");
 

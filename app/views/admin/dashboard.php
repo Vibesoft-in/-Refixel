@@ -222,17 +222,67 @@ $isBusyMode = $isBusyMode ?? false;
     <div class="col-6 col-md-6 col-xl-3 px-1 px-sm-2 mb-2 mb-sm-3">
       <div class="dash-stat-card" style="border-left: 4px solid #14b8a6 !important;">
         <div class="d-flex justify-content-between align-items-start mb-1">
-          <div class="stat-label text-truncate pr-1" style="color: #0d9488;" title="Active Services">Services</div>
+          <div class="stat-label text-truncate pr-1" style="color: #0d9488;" title="Active Services">Services & Hubs</div>
           <div class="stat-icon-circle" style="background: rgba(20, 184, 166, 0.12); color: #0d9488;">
             <i class="fa fa-wrench"></i>
           </div>
         </div>
-        <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
-          <?= (int)($summary['services_count'] ?? 0) ?>
+        <div class="d-flex align-items-baseline" style="gap: 6px;">
+          <div class="stat-value text-dark" style="font-size: clamp(18px, 4.2vw, 24px); font-weight: 800; line-height: 1.1; margin: 2px 0 4px;">
+            <?= (int)($summary['services_count'] ?? 0) ?>
+          </div>
+          <?php if (!empty($summary['services_coming_soon']) && $summary['services_coming_soon'] > 0): ?>
+            <span class="badge badge-warning text-dark px-1 py-0" style="font-size: 10px; font-weight: 700; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b;" title="Coming Soon Packages">
+              <?= (int)$summary['services_coming_soon'] ?> Soon
+            </span>
+          <?php endif; ?>
         </div>
-        <a href="<?= View::url('/admin/services') ?>" class="small font-weight-bold text-truncate d-inline-block" style="color: #0d9488; font-size: 11px; max-width: 100%;">
-          Catalog &rarr;
-        </a>
+        <div class="d-flex align-items-center justify-content-between">
+          <a href="<?= View::url('/admin/services') ?>" class="small font-weight-bold text-truncate" style="color: #0d9488; font-size: 11px;">
+            Packages &rarr;
+          </a>
+          <a href="<?= View::url('/admin/services/categories') ?>" class="small font-weight-bold text-muted text-truncate" style="font-size: 11px;">
+            Categories &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Availability & Coming Soon Control Bar -->
+  <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px; background: #ffffff; border: 1px solid #e2e8f0;">
+    <div class="card-body p-3">
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between" style="gap: 12px;">
+        <div class="d-flex align-items-center" style="gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(242, 91, 41, 0.1); color: #f25b29; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+            <i class="fa fa-sliders"></i>
+          </div>
+          <div>
+            <h6 class="font-weight-bold text-dark mb-0" style="font-size: 14px;">Service Availability & Coming Soon Controls</h6>
+            <p class="text-muted small mb-0">Control which categories and service packages are live for instant bookings or tagged as "Coming Soon".</p>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center" style="gap: 8px;">
+          <span class="badge badge-light border px-2 py-1 text-muted" style="font-size: 12px;">
+            <i class="fa fa-check-circle text-success mr-1"></i> <?= (int)($summary['services_count'] ?? 0) ?> Live Packages
+          </span>
+          <?php if (!empty($summary['services_coming_soon']) && $summary['services_coming_soon'] > 0): ?>
+            <span class="badge badge-warning px-2 py-1 text-dark font-weight-bold" style="font-size: 12px; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b;">
+              <i class="fa fa-clock-o mr-1"></i> <?= (int)$summary['services_coming_soon'] ?> Packages Coming Soon
+            </span>
+          <?php endif; ?>
+          <?php if (!empty($summary['categories_coming_soon']) && $summary['categories_coming_soon'] > 0): ?>
+            <span class="badge badge-warning px-2 py-1 text-dark font-weight-bold" style="font-size: 12px; background: #fff7ed; color: #c2410c; border: 1px solid #ea580c;">
+              <i class="fa fa-th-large mr-1"></i> <?= (int)$summary['categories_coming_soon'] ?> Categories Coming Soon
+            </span>
+          <?php endif; ?>
+          <a href="<?= View::url('/admin/services') ?>" class="btn btn-sm btn-outline-brand font-weight-bold px-3 py-1" style="font-size: 12px;">
+            <i class="fa fa-wrench mr-1"></i> Manage Packages
+          </a>
+          <a href="<?= View::url('/admin/services/categories') ?>" class="btn btn-sm btn-brand font-weight-bold px-3 py-1" style="font-size: 12px;">
+            <i class="fa fa-th-large mr-1"></i> Category Coming Soon
+          </a>
+        </div>
       </div>
     </div>
   </div>

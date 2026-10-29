@@ -241,29 +241,100 @@
     </div>
   </section>
 
-  <!-- 4. Meet The Founder Section -->
-  <section class="meet-founder-section">
+  <!-- 4. Meet The Founders Section -->
+  <section class="meet-founder-section" style="padding: 70px 0; background-color: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
     <div class="container">
-      <div class="row align-items-center">
-        <!-- Left: Founder Bio & Quote (Comes second on mobile, first on desktop) -->
-        <div class="col-lg-6 col-md-12 order-2 order-lg-1 mb-4 mb-lg-0 founder-text-col">
-          <span class="section-eyebrow">MEET THE FOUNDER</span>
-          <h2 class="founder-title">Aakash Kumar</h2>
-          <span class="founder-designation">Founder, REFIXEL</span>
-          <p class="founder-bio">
-            Aakash Kumar, the founder of REFIXEL, is dedicated to building a reliable and customer-focused home services platform. With a strong focus on quality, transparency, and customer satisfaction, his vision is to make professional home services easily accessible for every home.
-          </p>
+      <div class="text-center mb-5">
+        <span class="section-eyebrow" style="color: #f25b29; font-weight: 700; letter-spacing: 1.5px; font-size: 13px; text-transform: uppercase;">LEADERSHIP &amp; VISION</span>
+        <h2 class="founder-title text-center" style="font-size: 36px; font-weight: 800; color: #0a1c33; margin-top: 8px; margin-bottom: 12px;">Meet The Founders of REFIXEL</h2>
+        <p class="text-muted mx-auto" style="max-width: 720px; font-size: 16px; line-height: 1.7;">
+          Driven by a shared mission to standardize doorstep maintenance, eliminate hidden pricing, and connect every household across Kashipur, Jaspur &amp; Thakurdwara with vetted, skilled professionals.
+        </p>
+      </div>
 
-          <div class="founder-quote-box mb-4">
-            <div class="quote-icon"><i class="fa fa-quote-left"></i></div>
-            <p>“Our goal is to make every home cleaner, safer and more comfortable with professional services.”</p>
-            <div class="quote-author">— Aakash Kumar</div>
+      <!-- 3 Founders Grid -->
+      <div class="row justify-content-center mb-4">
+        <!-- Founder 1: Shanu Kumar -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 border-0 shadow-sm" style="border-radius: 18px; overflow: hidden; background: #ffffff; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e2e8f0;">
+            <div class="card-body p-4 d-flex flex-column text-center">
+              <div class="founder-avatar-wrap mx-auto mb-3" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #0a1c33 0%, #1e3a8a 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 34px; font-weight: 800; border: 4px solid #fff; box-shadow: 0 4px 14px rgba(10,28,51,0.15);">
+                SK
+              </div>
+              <h3 style="font-size: 22px; font-weight: 800; color: #0a1c33; margin-bottom: 4px;">Shanu Kumar</h3>
+              <span class="badge px-3 py-1 mb-3 mx-auto" style="background: rgba(242, 91, 41, 0.12); color: #f25b29; font-weight: 700; font-size: 12.5px; border-radius: 20px;">
+                Founder, REFIXEL
+              </span>
+              <p class="text-muted small" style="line-height: 1.7; flex-grow: 1; font-size: 14px;">
+                Steering platform operations, digital dispatch workflows, and service reliability. Committed to making emergency and regular home maintenance accessible within 60 minutes across all local hubs.
+              </p>
+              <div class="pt-3 border-top mt-auto" style="border-color: #f1f5f9 !important;">
+                <span class="small font-weight-bold text-dark"><i class="fa fa-cogs mr-1 text-primary"></i> Operations &amp; Technology</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Founder 2: Manish Kumar -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 border-0 shadow-sm" style="border-radius: 18px; overflow: hidden; background: #ffffff; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e2e8f0;">
+            <div class="card-body p-4 d-flex flex-column text-center">
+              <div class="founder-avatar-wrap mx-auto mb-3" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #f25b29 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 34px; font-weight: 800; border: 4px solid #fff; box-shadow: 0 4px 14px rgba(242,91,41,0.2);">
+                MK
+              </div>
+              <h3 style="font-size: 22px; font-weight: 800; color: #0a1c33; margin-bottom: 4px;">Manish Kumar</h3>
+              <span class="badge px-3 py-1 mb-3 mx-auto" style="background: rgba(242, 91, 41, 0.12); color: #f25b29; font-weight: 700; font-size: 12.5px; border-radius: 20px;">
+                Founder, REFIXEL
+              </span>
+              <p class="text-muted small" style="line-height: 1.7; flex-grow: 1; font-size: 14px;">
+                Leading service partner onboarding, stringent background verification, and quality audits. Ensuring every electrician, plumber, AC specialist, and cleaner delivers standardized, safe work.
+              </p>
+              <div class="pt-3 border-top mt-auto" style="border-color: #f1f5f9 !important;">
+                <span class="small font-weight-bold text-dark"><i class="fa fa-shield mr-1 text-success"></i> Partner Network &amp; Quality</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Founder 3: Aakash Kumar -->
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="card h-100 border-0 shadow-sm" style="border-radius: 18px; overflow: hidden; background: #ffffff; transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid #e2e8f0;">
+            <div class="card-body p-4 d-flex flex-column text-center">
+              <div class="founder-avatar-wrap mx-auto mb-3" style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 4px solid #fff; box-shadow: 0 4px 14px rgba(10,28,51,0.15);">
+                <img src="<?= \App\Core\View::asset('img/founder-aakash-kumar.jpg') ?>" alt="Aakash Kumar, Founder of REFIXEL" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <h3 style="font-size: 22px; font-weight: 800; color: #0a1c33; margin-bottom: 4px;">Aakash Kumar</h3>
+              <span class="badge px-3 py-1 mb-3 mx-auto" style="background: rgba(242, 91, 41, 0.12); color: #f25b29; font-weight: 700; font-size: 12.5px; border-radius: 20px;">
+                Founder, REFIXEL
+              </span>
+              <p class="text-muted small" style="line-height: 1.7; flex-grow: 1; font-size: 14px;">
+                Directing customer experience, growth strategy, and brand trust. Championing upfront fixed rate-cards, 30-day service warranties, and community-first home hygiene solutions.
+              </p>
+              <div class="pt-3 border-top mt-auto" style="border-color: #f1f5f9 !important;">
+                <span class="small font-weight-bold text-dark"><i class="fa fa-heart mr-1 text-danger"></i> Customer Experience &amp; Growth</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shared Founders Quote & Social Links -->
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="founder-quote-box p-4" style="background: #ffffff; border-radius: 16px; border-left: 5px solid #f25b29; box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+            <div class="quote-icon mb-2" style="color: #f25b29; font-size: 24px;"><i class="fa fa-quote-left"></i></div>
+            <p style="font-size: 17px; font-style: italic; color: #0a1c33; font-weight: 600; line-height: 1.6; margin-bottom: 8px;">
+              “Our goal is to make every home cleaner, safer, and more comfortable with reliable, background-verified professional services. Together, we are building a brand people trust with open doors.”
+            </p>
+            <div class="quote-author" style="font-size: 14.5px; font-weight: 700; color: #f25b29;">
+              — Shanu Kumar, Manish Kumar &amp; Aakash Kumar (Founders, REFIXEL)
+            </div>
           </div>
 
-          <!-- Founder Social Links -->
-          <div class="founder-social-links">
-            <span class="founder-social-label">Follow REFIXEL:</span>
-            <div class="founder-social-icons">
+          <!-- Social Links -->
+          <div class="founder-social-links mt-4 text-center justify-content-center">
+            <span class="founder-social-label mr-3">Connect With REFIXEL:</span>
+            <div class="founder-social-icons d-inline-flex" style="gap: 10px;">
               <a href="https://www.linkedin.com/in/lets-refixel-3aab5a43b?utm_source=share_via&amp;utm_content=profile&amp;utm_medium=member_android" target="_blank" rel="noopener noreferrer" class="founder-social-btn btn-linkedin" title="Follow REFIXEL on LinkedIn" aria-label="LinkedIn">
                 <i class="fa fa-linkedin"></i>
               </a>
@@ -280,20 +351,6 @@
                 <i class="fa fa-youtube-play"></i>
               </a>
             </div>
-          </div>
-        </div>
-
-        <!-- Right: Founder Photo (Comes first on mobile, second on desktop) -->
-        <div class="col-lg-6 col-md-12 order-1 order-lg-2 mb-4 mb-lg-0 founder-photo-col">
-          <div class="founder-photo-wrap shadow-sm" style="border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0;">
-            <img 
-              src="<?= \App\Core\View::asset('img/founder-aakash-kumar.jpg') ?>" 
-              alt="Aakash Kumar, Founder of REFIXEL" 
-              class="img-fluid w-100"
-              style="border-radius: 20px; display: block; object-fit: cover;"
-              loading="lazy"
-              decoding="async"
-            >
           </div>
         </div>
       </div>

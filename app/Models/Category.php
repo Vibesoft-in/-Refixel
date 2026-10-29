@@ -9,8 +9,24 @@ class Category extends Model
 {
     protected static string $table = 'categories';
 
+    public static function ensureSchema(): void
+    {
+        static $ensured = false;
+        if ($ensured) return;
+        $ensured = true;
+
+        try {
+            $cols = Database::fetchAll("SHOW COLUMNS FROM categories");
+            $fields = array_column($cols, 'Field');
+            if (!in_array('is_coming_soon', $fields, true)) {
+                Database::execute("ALTER TABLE categories ADD COLUMN is_coming_soon TINYINT(1) NOT NULL DEFAULT 0 AFTER is_active");
+            }
+        } catch (\Throwable $e) {}
+    }
+
     public static function getActive(): array
     {
+        self::ensureSchema();
         return Database::fetchAll("SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC");
     }
 

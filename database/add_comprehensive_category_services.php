@@ -5,9 +5,9 @@ require_once __DIR__ . '/../tests/bootstrap.php';
 
 use App\Core\Database;
 
-try {
-    echo "=== Adding Comprehensive Services Across All Categories ===\n";
-
+if (!function_exists('seedComprehensiveCategoryServices')) {
+function seedComprehensiveCategoryServices(): int
+{
     $servicesToSeed = [
         // -------------------------------------------------------------
         // CATEGORY 4: Plumbers
@@ -182,6 +182,44 @@ try {
         // -------------------------------------------------------------
         // CATEGORY 6: AC Service & Repair
         // -------------------------------------------------------------
+        [
+            'category_id'      => 6,
+            'name'             => 'AC High-Pressure Jet Service',
+            'slug'             => 'ac-jet-service',
+            'description'      => 'Deep high-pressure water jet cleaning of indoor cooling coils and outdoor condensing unit with protective water jacket for 2x cooling boost.',
+            'starting_price'   => 499.00,
+            'duration_minutes' => 60,
+            'image'            => 'refixel-ac-service.jpg',
+            'inclusions'       => [
+                'Indoor AC cover dismounting and waterproof service-jacket installation',
+                'High-pressure rotary jet spray deep wash across evaporator cooling fins',
+                'Cross-flow blower wheel grime removal and antibacterial foam wash',
+                'Condensate drain tray flush and unblocking to stop indoor water dripping',
+                'Outdoor condenser coil pressure jet wash for rapid heat dissipation',
+                'Post-service cooling temperature drop test & airflow check',
+            ],
+            'exclusions'       => [
+                'Refrigerant gas refill or copper pipe repair (billed separately if needed)',
+            ],
+        ],
+        [
+            'category_id'      => 6,
+            'name'             => 'Window AC Deep Jet Cleaning & Chemical Wash',
+            'slug'             => 'window-ac-deep-jet-service',
+            'description'      => 'Complete dismounting, high-pressure jet cleaning of front evaporator and rear condenser coils, rust inhibitor spray and fan lubrications.',
+            'starting_price'   => 449.00,
+            'duration_minutes' => 60,
+            'image'            => 'service-ac-repair.jpg',
+            'inclusions'       => [
+                'Safe dismounting from window frame and cover removal',
+                'Intensive chemical foam jet spray on front cooling and rear heat-sink coils',
+                'Base tray rust descaling, drainage hole unclogging, and sanitization',
+                'Motor bearing check, fan blade cleaning, and re-mounting with tight seal',
+            ],
+            'exclusions'       => [
+                'Window wooden frame or glass replacement',
+            ],
+        ],
         [
             'category_id'      => 6,
             'name'             => 'AC Gas Leakage Fix & Complete Gas Refill',
